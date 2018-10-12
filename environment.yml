@@ -1,0 +1,7 @@
+name: xeus-python
+channels:
+  - QuantStack
+  - conda-forge
+dependencies:
+  - xeus-python=0.0.1
+  - notebook
