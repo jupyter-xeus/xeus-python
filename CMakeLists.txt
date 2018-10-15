@@ -141,6 +141,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${
 
 set(XEUSCLING_SRC
     src/main.cpp
+    src/xpython_interpreter.cpp
     src/xpyt_config.hpp
 )
 
