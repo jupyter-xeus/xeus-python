@@ -141,23 +141,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${
 
 set(XEUSCLING_SRC
     src/main.cpp
-    src/xbuffer.hpp
-    src/xinterpreter.cpp
-    src/xinterpreter.hpp
-    src/xdemangle.hpp
-    src/xoptions.cpp
-    src/xoptions.hpp
     src/xpyt_config.hpp
-    src/xparser.cpp
-    src/xparser.hpp
-    src/xholder_cling.cpp
-    src/xholder_cling.hpp
-    src/xmagics.hpp
-    src/xmagics/execution.cpp
-    src/xmagics/execution.hpp
-    src/xmagics/os.cpp
-    src/xmagics/os.hpp
-    src/xmime_internal.hpp
 )
 
 set(LIBS ${PYTHON_LIBRARIES} clingMetaProcessor clingUtils xeus pugixml cxxopts::cxxopts)
