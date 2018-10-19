@@ -98,6 +98,7 @@ find_package(pugixml REQUIRED)
 
 find_package(Clang REQUIRED)
 find_package(PythonLibs REQUIRED)
+find_package(pybind11 REQUIRED)
 find_package(cxxopts REQUIRED)
 
 #########
