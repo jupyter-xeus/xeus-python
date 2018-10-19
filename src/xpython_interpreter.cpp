@@ -155,7 +155,6 @@ namespace xpyt
         result["language_info"]["name"] = "python";
         result["language_info"]["version"] = "TODO";
         result["language_info"]["mimetype"] = "text/x-python";
-        // result["language_info"]["codemirror_mode"] = "text/python";
         result["language_info"]["file_extension"] = ".py";
         return result;
     }
