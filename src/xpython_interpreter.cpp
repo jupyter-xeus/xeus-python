@@ -8,55 +8,39 @@
 ****************************************************************************/
 
 #include <iostream>
-#include <sstream>
 #include <vector>
 #include <string>
 
-#include "Python.h"
-
 #include "pybind11/embed.h"
-#include "pybind11/eval.h"
-#include "pybind11/stl.h"
+#include "pybind11/functional.h"
 
 #include "xeus/xjson.hpp"
 
 #include "xpyt_config.hpp"
 #include "xpython_interpreter.hpp"
+#include "xpython_logger.hpp"
 
 namespace py = pybind11;
 
 namespace xpyt
 {
-    void python_interpreter::configure_impl()
+    void xpython_interpreter::configure_impl()
     {
     }
 
-    python_interpreter::python_interpreter(int /*argc*/, const char* const* /*argv*/)
+    xpython_interpreter::xpython_interpreter(int /*argc*/, const char* const* /*argv*/)
     {
         py::initialize_interpreter();
 
-        py::exec(
-            "import sys\n"
-            "\n"
-            "class XPytLogger(object):\n"
-            "    def __init__(self):\n"
-            "        self.terminal = sys.stdout\n"
-            "        self.log = ''\n"
-            "\n"
-            "    def write(self, message):\n"
-            "        self.terminal.write(message)\n"
-            "        self.log += message\n"
-            "\n"
-            "sys.stdout = XPytLogger()\n"
-        );
+        redirect_output();
     }
 
-    python_interpreter::~python_interpreter()
+    xpython_interpreter::~xpython_interpreter()
     {
         py::finalize_interpreter();
     }
 
-    xeus::xjson python_interpreter::execute_request_impl(
+    xeus::xjson xpython_interpreter::execute_request_impl(
         int execution_counter,
         const std::string& code,
         bool silent,
@@ -69,13 +53,6 @@ namespace xpyt
         try
         {
             py::exec(code);
-
-            std::string stdout = py::eval("sys.stdout.log").cast<std::string>();
-            if (!silent && stdout.size() != 0)
-            {
-                publish_stream("stdout", stdout);
-                py::exec("sys.stdout.log = ''");
-            }
 
             kernel_res["status"] = "ok";
             kernel_res["payload"] = xeus::xjson::array();
@@ -100,7 +77,7 @@ namespace xpyt
         return kernel_res;
     }
 
-    xeus::xjson python_interpreter::complete_request_impl(
+    xeus::xjson xpython_interpreter::complete_request_impl(
         const std::string& code,
         int cursor_pos)
     {
@@ -109,24 +86,24 @@ namespace xpyt
         return xeus::xjson::object();
     }
 
-    xeus::xjson python_interpreter::inspect_request_impl(const std::string& /*code*/,
+    xeus::xjson xpython_interpreter::inspect_request_impl(const std::string& /*code*/,
                                                   int /*cursor_pos*/,
                                                   int /*detail_level*/)
     {
         return xeus::xjson::object();
     }
 
-    xeus::xjson python_interpreter::history_request_impl(const xeus::xhistory_arguments& /*args*/)
+    xeus::xjson xpython_interpreter::history_request_impl(const xeus::xhistory_arguments& /*args*/)
     {
         return xeus::xjson::object();
     }
 
-    xeus::xjson python_interpreter::is_complete_request_impl(const std::string& /*code*/)
+    xeus::xjson xpython_interpreter::is_complete_request_impl(const std::string& /*code*/)
     {
         return xeus::xjson::object();
     }
 
-    xeus::xjson python_interpreter::kernel_info_request_impl()
+    xeus::xjson xpython_interpreter::kernel_info_request_impl()
     {
         xeus::xjson result;
         result["implementation"] = "xeus-python";
@@ -159,7 +136,39 @@ namespace xpyt
         return result;
     }
 
-    void python_interpreter::input_reply_impl(const std::string& /*value*/)
+    void xpython_interpreter::input_reply_impl(const std::string& /*value*/)
     {
+    }
+
+    void xpython_interpreter::redirect_output()
+    {
+        // In Python:
+        // import sys and import xeus_python_logger
+        py::module sys = py::module::import("sys");
+        py::module xeus_python_logger = py::module::import("xeus_python_logger");
+
+        // Create XPythonLogger instance
+        py::object out_logger = xeus_python_logger.attr("XPythonLogger")();
+        py::object err_logger = xeus_python_logger.attr("XPythonLogger")();
+
+        py::cpp_function publish_stdout_stream = [this](const std::string& message){
+            this->publish_stream("stdout", message);
+        };
+
+        py::cpp_function publish_stderr_stream = [this](const std::string& message){
+            this->publish_stream("stderr", message);
+        };
+
+        // Add publish_stream as a logger function
+        out_logger.attr("add_logger")(publish_stdout_stream);
+        err_logger.attr("add_logger")(publish_stderr_stream);
+
+        // Save current stdout/stderr
+        sys.attr("__stdout__") = sys.attr("stdout");
+        sys.attr("__stderr__") = sys.attr("stderr");
+
+        // And replace sys.stdout by the XPythonLogger instance
+        sys.attr("stdout") = out_logger;
+        sys.attr("stderr") = err_logger;
     }
 }
