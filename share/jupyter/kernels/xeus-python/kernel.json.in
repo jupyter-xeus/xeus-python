@@ -5,5 +5,5 @@
       "-f",
       "{connection_file}"
   ],
-  "language": "Python"
+  "language": "python"
 }

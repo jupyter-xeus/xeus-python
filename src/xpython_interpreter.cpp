@@ -7,11 +7,23 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <string>
+
+#include "Python.h"
+
+#include "pybind11/embed.h"
+#include "pybind11/eval.h"
+#include "pybind11/stl.h"
+
 #include "xeus/xjson.hpp"
 
 #include "xpyt_config.hpp"
 #include "xpython_interpreter.hpp"
 
+namespace py = pybind11;
 
 namespace xpyt
 {
@@ -21,26 +33,79 @@ namespace xpyt
 
     python_interpreter::python_interpreter(int /*argc*/, const char* const* /*argv*/)
     {
+        py::initialize_interpreter();
+
+        py::exec(
+            "import sys\n"
+            "\n"
+            "class XPytLogger(object):\n"
+            "    def __init__(self):\n"
+            "        self.terminal = sys.stdout\n"
+            "        self.log = ''\n"
+            "\n"
+            "    def write(self, message):\n"
+            "        self.terminal.write(message)\n"
+            "        self.log += message\n"
+            "\n"
+            "sys.stdout = XPytLogger()\n"
+        );
     }
 
     python_interpreter::~python_interpreter()
     {
+        py::finalize_interpreter();
     }
 
     xeus::xjson python_interpreter::execute_request_impl(
-        int /*execution_counter*/,
-        const std::string& /*code*/,
-        bool /*silent*/,
-        bool /*store_history*/,
-        const xeus::xjson_node* /*user_expressions*/,
-        bool /*allow_stdin*/)
+        int execution_counter,
+        const std::string& code,
+        bool silent,
+        bool store_history,
+        const xeus::xjson_node* user_expressions,
+        bool allow_stdin)
     {
-        return xeus::xjson::object();
+        xeus::xjson kernel_res;
+
+        try
+        {
+            py::exec(code);
+
+            std::string stdout = py::eval("sys.stdout.log").cast<std::string>();
+            if (!silent && stdout.size() != 0)
+            {
+                publish_stream("stdout", stdout);
+                py::exec("sys.stdout.log = ''");
+            }
+
+            kernel_res["status"] = "ok";
+            kernel_res["payload"] = xeus::xjson::array();
+            kernel_res["user_expressions"] = xeus::xjson::object();
+        } catch(const std::exception& e) {
+
+            std::string ename = "Execution error";
+            std::string evalue = e.what();
+            std::vector<std::string> traceback({ename + ": " + evalue});
+
+            if (!silent)
+            {
+                publish_execution_error(ename, evalue, traceback);
+            }
+
+            kernel_res["status"] = "error";
+            kernel_res["ename"] = ename;
+            kernel_res["evalue"] = evalue;
+            kernel_res["traceback"] = traceback;
+        }
+
+        return kernel_res;
     }
 
-    xeus::xjson python_interpreter::complete_request_impl(const std::string& /*code*/,
-                                                   int /*cursor_pos*/)
+    xeus::xjson python_interpreter::complete_request_impl(
+        const std::string& code,
+        int cursor_pos)
     {
+        std::cout << code << std::endl;
+        std::cout << cursor_pos << std::endl;
         return xeus::xjson::object();
     }
 
@@ -89,8 +154,7 @@ namespace xpyt
 
         result["language_info"]["name"] = "python";
         result["language_info"]["version"] = "TODO";
-        result["language_info"]["mimetype"] = "text/python";
-        result["language_info"]["codemirror_mode"] = "text/python";
+        result["language_info"]["mimetype"] = "text/x-python";
         result["language_info"]["file_extension"] = ".py";
         return result;
     }
