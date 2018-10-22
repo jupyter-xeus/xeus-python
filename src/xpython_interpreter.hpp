@@ -12,22 +12,18 @@
 
 #include <string>
 
-#include "pybind11/embed.h"
-
 #include "xeus/xjson.hpp"
 #include "xeus/xinterpreter.hpp"
 
-namespace py = pybind11;
-
 namespace xpyt
 {
-    class python_interpreter : public xeus::xinterpreter
+    class xpython_interpreter : public xeus::xinterpreter
     {
 
     public:
 
-        python_interpreter(int argc, const char* const* argv);
-        virtual ~python_interpreter();
+        xpython_interpreter(int argc, const char* const* argv);
+        virtual ~xpython_interpreter();
 
     private:
 
@@ -57,6 +53,8 @@ namespace xpyt
         xeus::xjson kernel_info_request_impl() override;
 
         void input_reply_impl(const std::string& value) override;
+
+        void redirect_output();
     };
 }
 

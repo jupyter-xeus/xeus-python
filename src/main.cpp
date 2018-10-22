@@ -39,12 +39,12 @@ std::string extract_filename(int& argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    using interpreter_ptr = std::unique_ptr<xpyt::python_interpreter>;
+    using interpreter_ptr = std::unique_ptr<xpyt::xpython_interpreter>;
 
     std::string file_name = (argc == 1) ? "connection.json" : extract_filename(argc, argv);
     xeus::xconfiguration config = xeus::load_configuration(file_name);
 
-    interpreter_ptr interpreter = interpreter_ptr(new xpyt::python_interpreter(argc, argv));
+    interpreter_ptr interpreter = interpreter_ptr(new xpyt::xpython_interpreter(argc, argv));
     xeus::xkernel kernel(config, xeus::get_user_name(), std::move(interpreter));
     std::cout << "starting xeus-python kernel" << std::endl;
     kernel.start();
