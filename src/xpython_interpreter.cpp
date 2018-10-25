@@ -35,10 +35,7 @@ namespace xpyt
         redirect_output();
     }
 
-    xpython_interpreter::~xpython_interpreter()
-    {
-        py::finalize_interpreter();
-    }
+    xpython_interpreter::~xpython_interpreter() {}
 
     xeus::xjson xpython_interpreter::execute_request_impl(
         int execution_counter,
@@ -81,8 +78,6 @@ namespace xpyt
         const std::string& code,
         int cursor_pos)
     {
-        std::cout << code << std::endl;
-        std::cout << cursor_pos << std::endl;
         return xeus::xjson::object();
     }
 
@@ -136,6 +131,11 @@ namespace xpyt
         return result;
     }
 
+    void xpython_interpreter::shutdown_request_impl()
+    {
+        py::finalize_interpreter();
+    }
+
     void xpython_interpreter::input_reply_impl(const std::string& /*value*/)
     {
     }
@@ -162,10 +162,6 @@ namespace xpyt
         // Add publish_stream as a logger function
         out_logger.attr("add_logger")(publish_stdout_stream);
         err_logger.attr("add_logger")(publish_stderr_stream);
-
-        // Save current stdout/stderr
-        sys.attr("__stdout__") = sys.attr("stdout");
-        sys.attr("__stderr__") = sys.attr("stderr");
 
         // And replace sys.stdout by the XPythonLogger instance
         sys.attr("stdout") = out_logger;
