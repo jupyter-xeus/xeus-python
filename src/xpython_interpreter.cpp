@@ -41,7 +41,6 @@ namespace xpyt
         int execution_counter,
         const std::string& code,
         bool silent,
-        bool store_history,
         const xeus::xjson_node* user_expressions,
         bool allow_stdin)
     {
@@ -54,8 +53,9 @@ namespace xpyt
             kernel_res["status"] = "ok";
             kernel_res["payload"] = xeus::xjson::array();
             kernel_res["user_expressions"] = xeus::xjson::object();
-        } catch(const std::exception& e) {
-
+        }
+        catch(const std::exception& e)
+        {
             std::string ename = "Execution error";
             std::string evalue = e.what();
             std::vector<std::string> traceback({ename + ": " + evalue});
@@ -84,11 +84,6 @@ namespace xpyt
     xeus::xjson xpython_interpreter::inspect_request_impl(const std::string& /*code*/,
                                                   int /*cursor_pos*/,
                                                   int /*detail_level*/)
-    {
-        return xeus::xjson::object();
-    }
-
-    xeus::xjson xpython_interpreter::history_request_impl(const xeus::xhistory_arguments& /*args*/)
     {
         return xeus::xjson::object();
     }

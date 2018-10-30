@@ -33,7 +33,6 @@ namespace xpyt
             int execution_counter,
             const std::string& code,
             bool silent,
-            bool store_history,
             const xeus::xjson_node* user_expressions,
             bool allow_stdin) override;
 
@@ -45,8 +44,6 @@ namespace xpyt
             const std::string& code,
             int cursor_pos,
             int detail_level) override;
-
-        xeus::xjson history_request_impl(const xeus::xhistory_arguments& args) override;
 
         xeus::xjson is_complete_request_impl(const std::string& code) override;
 
