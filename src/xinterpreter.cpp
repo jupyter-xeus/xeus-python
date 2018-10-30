@@ -48,6 +48,41 @@ namespace xpyt
     {
         xeus::xjson kernel_res;
 
+        // TODO: Check for magics
+        if (code.compare("?") == 0)
+        {
+            std::string html_content = R"(<style>
+            #pager-container {
+                padding: 0;
+                margin: 0;
+                width: 100%;
+                height: 100%;
+            }
+            .xpyt-iframe-pager {
+                padding: 0;
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                border: none;
+            }
+            </style>
+            <iframe class="xpyt-iframe-pager" src="https://docs.python.org/"></iframe>)";
+
+            kernel_res["status"] = "ok";
+            kernel_res["payload"] = xeus::xjson::array();
+            kernel_res["payload"][0] = xeus::xjson::object({
+                {"data", {
+                    {"text/plain", "https://docs.python.org/"},
+                    {"text/html", html_content}}
+                },
+                {"source", "page"},
+                {"start", 0}
+            });
+            kernel_res["user_expressions"] = xeus::xjson::object();
+
+            return kernel_res;
+        }
+
         try
         {
             // Import AST ans builtins modules
