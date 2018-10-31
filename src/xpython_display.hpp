@@ -7,32 +7,37 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_PYTHON_LOGGER_HPP
-#define XPYT_PYTHON_LOGGER_HPP
+#ifndef XPYT_PYTHON_DISPLAY_HPP
+#define XPYT_PYTHON_DISPLAY_HPP
 
-#include <string>
-#include <vector>
 #include <functional>
+
+#include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
+
+namespace py = pybind11;
 
 namespace xpyt
 {
-    class xpython_logger
+    class xdisplayhook
     {
 
     public:
 
-        using logger_function_type = std::function<void(const std::string&)>;
-        using loggers_type = std::vector<logger_function_type>;
+        using hook_function_type = std::function<void(int, py::object)>;
+        using hooks_type = std::vector<hook_function_type>;
 
-        xpython_logger();
-        virtual ~xpython_logger();
+        xdisplayhook();
+        virtual ~xdisplayhook();
 
-        void add_logger(logger_function_type logger);
-        void write(const std::string& message);
+        void set_execution_count(int execution_count);
+        void add_hook(hook_function_type hook);
+        void operator()(py::object obj);
 
     private:
 
-        loggers_type m_loggers;
+        int m_execution_count;
+        hooks_type m_hooks;
     };
 }
 
