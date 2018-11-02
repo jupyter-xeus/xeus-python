@@ -50,27 +50,39 @@ namespace xpyt
 
         try
         {
+            // Import AST ans builtins modules
             py::module ast = py::module::import("ast");
             py::module builtins = py::module::import("builtins");
 
+            // Parse code to AST
             py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
             py::list expressions = code_ast.attr("body");
 
-            py::object last_expression = expressions[py::len(expressions) - 1];
-            code_ast.attr("body").attr("pop")();
+            // If the last statement is an expression, we compile it seperately
+            // in an interactive mode (This will trigger the display hook)
+            py::object last_stmt = expressions[py::len(expressions) - 1];
+            if (py::isinstance(last_stmt, ast.attr("Expr")))
+            {
+                code_ast.attr("body").attr("pop")();
 
-            py::list interactive_nodes;
-            interactive_nodes.append(last_expression);
+                py::list interactive_nodes;
+                interactive_nodes.append(last_stmt);
 
-            py::object interactive_ast = ast.attr("Interactive")(interactive_nodes);
+                py::object interactive_ast = ast.attr("Interactive")(interactive_nodes);
 
-            py::object compiled_code = builtins.attr("compile")(code_ast, "<ast>", "exec");
-            py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, "<ast>", "single");
+                py::object compiled_code = builtins.attr("compile")(code_ast, "<ast>", "exec");
+                py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, "<ast>", "single");
 
-            m_displayhook.attr("set_execution_count")(execution_counter);
+                m_displayhook.attr("set_execution_count")(execution_counter);
 
-            builtins.attr("exec")(compiled_code, py::globals());
-            builtins.attr("exec")(compiled_interactive_code, py::globals());
+                builtins.attr("exec")(compiled_code, py::globals());
+                builtins.attr("exec")(compiled_interactive_code, py::globals());
+            }
+            else
+            {
+                py::object compiled_code = builtins.attr("compile")(code_ast, "<ast>", "exec");
+                builtins.attr("exec")(compiled_code, py::globals());
+            }
 
             kernel_res["status"] = "ok";
             kernel_res["payload"] = xeus::xjson::array();
