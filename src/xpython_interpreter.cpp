@@ -198,9 +198,12 @@ namespace xpyt
         m_displayhook = xeus_python_display.attr("XPythonDisplay")();
 
         py::cpp_function publish_display = [this](int execution_counter, py::object obj){
-            xeus::xjson pub_data;
-            pub_data["text/plain"] = py::str(obj);
-            publish_execution_result(execution_counter, std::move(pub_data), xeus::xjson::object());
+            if (!obj.is_none())
+            {
+                xeus::xjson pub_data;
+                pub_data["text/plain"] = py::str(obj);
+                publish_execution_result(execution_counter, std::move(pub_data), xeus::xjson::object());
+            }
         };
 
         m_displayhook.attr("add_hook")(publish_display);
