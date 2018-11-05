@@ -19,14 +19,14 @@ def setup(app):
     app.add_stylesheet("main_stylesheet.css")
 
 extensions = ['breathe']
-breathe_projects = { 'xeus-cling': '../xml' }
+breathe_projects = { 'xeus-python': '../xml' }
 templates_path = ['_templates']
 html_static_path = ['_static']
 source_suffix = '.rst'
 master_doc = 'index'
-project = 'xeus-cling'
-copyright = '2017, Johan Mabille, Loic Gouarin and Sylvain Corlay'
-author = 'Johan Mabille, Loic Gouarin and Sylvain Corlay'
+project = 'xeus-python'
+copyright = '2017, Martin Renou, Johan Mabille, Sylvain Corlay and Wolf Vollprecht'
+author = 'Martin Renou, Johan Mabille, Sylvain Corlay and Wolf Vollprecht'
 
 html_logo = 'quantstack-white.svg'
 
@@ -34,4 +34,4 @@ exclude_patterns = []
 highlight_language = 'c++'
 pygments_style = 'sphinx'
 todo_include_todos = False
-htmlhelp_basename = 'xeus-clingdoc'
+htmlhelp_basename = 'xeus-pythondoc'

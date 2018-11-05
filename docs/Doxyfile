@@ -1,4 +1,4 @@
-PROJECT_NAME      = "xeus-cling"
+PROJECT_NAME      = "xeus-python"
 XML_OUTPUT        = xml
 INPUT             = ../include
 GENERATE_LATEX    = NO
