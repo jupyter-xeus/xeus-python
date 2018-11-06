@@ -1,4 +1,5 @@
-.. Copyright (c) 2017, Johan Mabille, Loic Gouarin and Sylvain Corlay
+.. Copyright (c) 2017, Martin Renou, Johan Mabille, Sylvain Corlay and
+   Wolf Vollprecht
 
    Distributed under the terms of the BSD 3-Clause License.
 
@@ -20,23 +21,10 @@
 Installation
 ============
 
-.. image:: conda.svg
-
-Using the conda package
------------------------
-
-A package for xeus-cling is available on the conda package manager.
-
-.. code::
-
-    conda install -c QuantStack -c conda-forge xeus-cling
-
-.. image:: cmake.svg
-
 From source with cmake
 ----------------------
 
-You can also install ``xeus-cling`` from source with cmake. This requires that you have all the dependencies installed in the same prefix.
+You can install ``xeus-python`` from source with cmake. This requires that you have all the dependencies installed in the same prefix.
 
 .. code::
 
@@ -54,4 +42,3 @@ On Windows platforms, from the source directory:
     cmake -G "NMake Makefiles" -DCMAKE_INSTALL_PREFIX=/path/to/prefix ..
     nmake
     nmake install
-
