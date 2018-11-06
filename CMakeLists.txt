@@ -144,6 +144,7 @@ set(XEUSCLING_SRC
     src/main.cpp
     src/xpython_interpreter.cpp
     src/xpython_logger.cpp
+    src/xpython_display.cpp
     src/xpyt_config.hpp
 )
 

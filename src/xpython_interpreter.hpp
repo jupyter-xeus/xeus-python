@@ -12,8 +12,12 @@
 
 #include <string>
 
+#include "pybind11/pybind11.h"
+
 #include "xeus/xjson.hpp"
 #include "xeus/xinterpreter.hpp"
+
+namespace py = pybind11;
 
 namespace xpyt
 {
@@ -57,6 +61,9 @@ namespace xpyt
         void input_reply_impl(const std::string& value) override;
 
         void redirect_output();
+        void redirect_display();
+
+        py::object m_displayhook;
     };
 }
 

@@ -33,6 +33,7 @@ namespace xpyt
         py::initialize_interpreter();
 
         redirect_output();
+        redirect_display();
     }
 
     xpython_interpreter::~xpython_interpreter() {}
@@ -49,11 +50,44 @@ namespace xpyt
 
         try
         {
-            py::exec(code);
+            // Import AST ans builtins modules
+            py::module ast = py::module::import("ast");
+            py::module builtins = py::module::import("builtins");
+
+            // Parse code to AST
+            py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
+            py::list expressions = code_ast.attr("body");
+
+            // If the last statement is an expression, we compile it seperately
+            // in an interactive mode (This will trigger the display hook)
+            py::object last_stmt = expressions[py::len(expressions) - 1];
+            if (py::isinstance(last_stmt, ast.attr("Expr")))
+            {
+                code_ast.attr("body").attr("pop")();
+
+                py::list interactive_nodes;
+                interactive_nodes.append(last_stmt);
+
+                py::object interactive_ast = ast.attr("Interactive")(interactive_nodes);
+
+                py::object compiled_code = builtins.attr("compile")(code_ast, "<ast>", "exec");
+                py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, "<ast>", "single");
+
+                m_displayhook.attr("set_execution_count")(execution_counter);
+
+                builtins.attr("exec")(compiled_code, py::globals());
+                builtins.attr("exec")(compiled_interactive_code, py::globals());
+            }
+            else
+            {
+                py::object compiled_code = builtins.attr("compile")(code_ast, "<ast>", "exec");
+                builtins.attr("exec")(compiled_code, py::globals());
+            }
 
             kernel_res["status"] = "ok";
             kernel_res["payload"] = xeus::xjson::array();
             kernel_res["user_expressions"] = xeus::xjson::object();
+
         } catch(const std::exception& e) {
 
             std::string ename = "Execution error";
@@ -166,5 +200,26 @@ namespace xpyt
         // And replace sys.stdout by the XPythonLogger instance
         sys.attr("stdout") = out_logger;
         sys.attr("stderr") = err_logger;
+    }
+
+    void xpython_interpreter::redirect_display()
+    {
+        py::module sys = py::module::import("sys");
+
+        py::module xeus_python_display = py::module::import("xeus_python_display");
+        m_displayhook = xeus_python_display.attr("XPythonDisplay")();
+
+        py::cpp_function publish_display = [this](int execution_counter, py::object obj){
+            if (!obj.is_none())
+            {
+                xeus::xjson pub_data;
+                pub_data["text/plain"] = py::str(obj);
+                publish_execution_result(execution_counter, std::move(pub_data), xeus::xjson::object());
+            }
+        };
+
+        m_displayhook.attr("add_hook")(publish_display);
+
+        sys.attr("displayhook") = m_displayhook;
     }
 }
