@@ -12,10 +12,10 @@
 
 #include <string>
 
-#include "pybind11/pybind11.h"
-
 #include "xeus/xjson.hpp"
 #include "xeus/xinterpreter.hpp"
+
+#include "pybind11/pybind11.h"
 
 namespace py = pybind11;
 

@@ -11,10 +11,10 @@
 #include <vector>
 #include <string>
 
+#include "xeus/xjson.hpp"
+
 #include "pybind11/embed.h"
 #include "pybind11/functional.h"
-
-#include "xeus/xjson.hpp"
 
 #include "xpyt_config.hpp"
 #include "xpython_interpreter.hpp"
