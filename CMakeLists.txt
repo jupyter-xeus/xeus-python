@@ -36,65 +36,12 @@ configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xeus-python/kernel.json"
 )
 
-#######################
-# Rely on llvm-config #
-#######################
-
-set(CONFIG_OUTPUT)
-find_program(LLVM_CONFIG "llvm-config")
-if(LLVM_CONFIG)
-    message(STATUS "Found LLVM_CONFIG as ${LLVM_CONFIG}")
-    set(CONFIG_COMMAND ${LLVM_CONFIG}
-        "--assertion-mode"
-        "--bindir"
-        "--libdir"
-        "--includedir"
-        "--prefix"
-        "--src-root")
-    execute_process(COMMAND ${CONFIG_COMMAND}
-                    RESULT_VARIABLE HAD_ERROR
-                    OUTPUT_VARIABLE CONFIG_OUTPUT)
-    if(NOT HAD_ERROR)
-        string(REGEX REPLACE
-               "[ \t]*[\r\n]+[ \t]*" ";"
-               CONFIG_OUTPUT ${CONFIG_OUTPUT})
-    else()
-        string(REPLACE ";" " " CONFIG_COMMAND_STR "${CONFIG_COMMAND}")
-        message(STATUS "${CONFIG_COMMAND_STR}")
-        message(FATAL_ERROR "llvm-config failed with status ${HAD_ERROR}")
-    endif()
-else()
-    message(FATAL_ERROR "llvm-config not found -- ${LLVM_CONFIG}")
-endif()
-
-list(GET CONFIG_OUTPUT 0 ENABLE_ASSERTIONS)
-list(GET CONFIG_OUTPUT 1 TOOLS_BINARY_DIR)
-list(GET CONFIG_OUTPUT 2 LIBRARY_DIR)
-list(GET CONFIG_OUTPUT 3 INCLUDE_DIR)
-list(GET CONFIG_OUTPUT 4 LLVM_OBJ_ROOT)
-list(GET CONFIG_OUTPUT 5 MAIN_SRC_DIR)
-
-if(NOT MSVC_IDE)
-    set(LLVM_ENABLE_ASSERTIONS ${ENABLE_ASSERTIONS} CACHE BOOL "Enable assertions")
-    mark_as_advanced(LLVM_ENABLE_ASSERTIONS)
-endif()
-
-set(LLVM_TOOLS_BINARY_DIR ${TOOLS_BINARY_DIR} CACHE PATH "Path to llvm/bin")
-set(LLVM_LIBRARY_DIR ${LIBRARY_DIR} CACHE PATH "Path to llvm/lib")
-set(LLVM_MAIN_INCLUDE_DIR ${INCLUDE_DIR} CACHE PATH "Path to llvm/include")
-set(LLVM_BINARY_DIR ${LLVM_OBJ_ROOT} CACHE PATH "Path to LLVM build tree")
-set(LLVM_MAIN_SRC_DIR ${MAIN_SRC_DIR} CACHE PATH "Path to LLVM source tree")
-
-link_directories(${LLVM_LIBRARY_DIR})
-add_definitions(-DLLVM_DIR="${LLVM_BINARY_DIR}")
-
 ################
 # Dependencies #
 ################
 
-find_package(xeus 0.14.1 REQUIRED)
+find_package(xeus 0.15.0 REQUIRED)
 find_package(cppzmq 4.3.0 REQUIRED)
-find_package(pugixml REQUIRED)
 
 find_package(PythonLibs REQUIRED)
 find_package(pybind11 REQUIRED)
@@ -146,7 +93,7 @@ set(XEUSCLING_SRC
     src/xpyt_config.hpp
 )
 
-set(LIBS ${PYTHON_LIBRARIES} clingMetaProcessor clingUtils xeus pugixml cxxopts::cxxopts)
+set(LIBS ${PYTHON_LIBRARIES} xeus)
 set(XEUSPYTHON_TARGET xeus-python)
 add_executable(${XEUSPYTHON_TARGET} ${XEUSCLING_SRC})
 set_target_properties(${XEUSPYTHON_TARGET} PROPERTIES ENABLE_EXPORTS 1)
@@ -173,11 +120,11 @@ target_link_libraries(${XEUSPYTHON_TARGET} ${LIBS})
 # Installation #
 ################
 
-# Install xeus-cling
+# Install xeus-python
 install(TARGETS ${XEUSPYTHON_TARGET}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# Configuration and data directories for jupyter and xeus-cling
+# Configuration and data directories for jupyter and xeus-python
 set(XJUPYTER_DATA_DIR "share/jupyter"    CACHE STRING "Jupyter data directory")
 
 # Install Jupyter kernelspecs

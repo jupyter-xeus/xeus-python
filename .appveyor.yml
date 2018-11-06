@@ -29,8 +29,8 @@ install:
   - conda update -q conda
   - conda info -a
   # Install dependencies
-  - conda install cmake xeus=0.14.1 cling=0.5.0 nlohmann_json=3.1.2 cppzmq=4.3.0 xtl=0.4.15 pugixml -c QuantStack -c conda-forge
-  # Build and install xeus-cling
+  - conda install cmake xeus=0.15.0 nlohmann_json=3.2.0 cppzmq=4.3.0 xtl=0.4.15 pybind11=2.2.4 -c QuantStack -c conda-forge
+  # Build and install xeus-python
   - mkdir build
   - cd build
   - cmake -G "NMake Makefiles" -D CMAKE_INSTALL_PREFIX=%MINICONDA%\\Library -D XEXTRA_JUPYTER_DATA_DIR=%MINICONDA%\\share\\jupyter ..

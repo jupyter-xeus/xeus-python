@@ -60,15 +60,13 @@ Launch the jupyter notebook with `jupyter notebook` and launch a new C++ noteboo
 
  - [xeus](https://github.com/QuantStack/xeus)
  - [xtl](https://github.com/QuantStack/xtl)
- - [Python C API](https://github.com/root-project/cling)
- - [pugixml](https://github.com/zeux/pugixml)
- - [cxxopts](https://github.com/jarro2783/cxxopts)
+ - [pybind11](https://github.com/pybind/pybind11)
  - [nlohmann_json](https://github.com/nlohmann/json)
 
 
-| `xeus-python`|   `xeus`        |      `xtl`      |   `pugixml`   | `cppzmq` | `nlohmann_json` |
-|--------------|-----------------|-----------------|---------------|----------|-----------------|
-|  master      |  >=0.14.1,<0.15 |  >=0.4.0,<0.5   | ~1.8.1        | ~4.3.0   | >=3.1.2,<4.0    |
+| `xeus-python`|   `xeus`        |      `xtl`      | `cppzmq` | `nlohmann_json` | `pybind11`      |
+|--------------|-----------------|-----------------|----------|-----------------|-----------------|
+|  master      |  >=0.15.0,<0.16 |  >=0.4.0,<0.5   | ~4.3.0   | >=3.1.2,<4.0    | >=2.2.4,<3.0    |
 
 
 The `QuantStack` channel provides `xeus` dependencies built with gcc-7. We highly recommend installing

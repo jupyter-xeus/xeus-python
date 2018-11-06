@@ -23,7 +23,6 @@ namespace xpyt
 {
     class xpython_interpreter : public xeus::xinterpreter
     {
-
     public:
 
         xpython_interpreter(int argc, const char* const* argv);
