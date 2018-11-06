@@ -96,10 +96,8 @@ find_package(xeus 0.14.1 REQUIRED)
 find_package(cppzmq 4.3.0 REQUIRED)
 find_package(pugixml REQUIRED)
 
-find_package(Clang REQUIRED)
 find_package(PythonLibs REQUIRED)
 find_package(pybind11 REQUIRED)
-find_package(cxxopts REQUIRED)
 
 #########
 # flags #

@@ -66,9 +66,9 @@ Launch the jupyter notebook with `jupyter notebook` and launch a new C++ noteboo
  - [nlohmann_json](https://github.com/nlohmann/json)
 
 
-| `xeus-python`|   `xeus`        |      `xtl`      |   `pugixml`   | `cppzmq` | `cxxopts`     | `nlohmann_json` | `dirent` (windows only) |
-|--------------|-----------------|-----------------|---------------|----------|---------------|-----------------|-------------------------|
-|  master      |  >=0.14.1,<0.15 |  >=0.4.0,<0.5   | ~1.8.1        | ~4.3.0   | >=2.1.1,<=3.0 | >=3.1.2,<4.0    | >=2.3.2,<3              |
+| `xeus-python`|   `xeus`        |      `xtl`      |   `pugixml`   | `cppzmq` | `nlohmann_json` |
+|--------------|-----------------|-----------------|---------------|----------|-----------------|
+|  master      |  >=0.14.1,<0.15 |  >=0.4.0,<0.5   | ~1.8.1        | ~4.3.0   | >=3.1.2,<4.0    |
 
 
 The `QuantStack` channel provides `xeus` dependencies built with gcc-7. We highly recommend installing
