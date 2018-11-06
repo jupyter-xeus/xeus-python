@@ -9,13 +9,14 @@
 
 #include <iostream>
 #include <string>
-
-#include "Python.h"
+#include <stdio.h>
 
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 
 #include "xpython_interpreter.hpp"
+
+#include "Python.h"
 
 std::string extract_filename(int& argc, char* argv[])
 {

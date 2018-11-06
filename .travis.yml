@@ -29,13 +29,13 @@ install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     # Install dependencies
-    - conda install cmake xeus=0.14.1 cling=0.5.0 nlohmann_json=3.1.2 cppzmq=4.3.0 xtl=0.4.15 pugixml -c QuantStack -c conda-forge
+    - conda install cmake xeus=0.15.0 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.4.15 pybind11=2.2.4 -c QuantStack -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
           conda install gcc-7 -c QuantStack -c conda-forge;
       elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-          conda install clangdev llvmdev -c QuantStack -c conda-forge;
+          conda install clangdev -c QuantStack -c conda-forge;
       fi
-    # Build and install xeus-cling
+    # Build and install xeus-python
     - mkdir build
     - cd build
     - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda/ ..

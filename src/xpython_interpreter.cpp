@@ -11,10 +11,10 @@
 #include <vector>
 #include <string>
 
+#include "xeus/xjson.hpp"
+
 #include "pybind11/embed.h"
 #include "pybind11/functional.h"
-
-#include "xeus/xjson.hpp"
 
 #include "xpyt_config.hpp"
 #include "xpython_interpreter.hpp"
@@ -138,7 +138,7 @@ namespace xpyt
         result["implementation"] = "xeus-python";
         result["implementation_version"] = XPYT_VERSION;
 
-        /* The jupyter-console banner for xeus-cling is the following:
+        /* The jupyter-console banner for xeus-python is the following:
             __   ________ _    _  _____       _______     _________ _    _  ____  _   _
             \ \ / /  ____| |  | |/ ____|     |  __ \ \   / /__   __| |  | |/ __ \| \ | |
              \ V /| |__  | |  | | (___ ______| |__) \ \_/ /   | |  | |__| | |  | |  \| |
