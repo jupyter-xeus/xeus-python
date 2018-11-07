@@ -7,8 +7,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_PYTHON_INTERPRETER_HPP
-#define XPYT_PYTHON_INTERPRETER_HPP
+#ifndef XPYT_INTERPRETER_HPP
+#define XPYT_INTERPRETER_HPP
 
 #include <string>
 
@@ -21,12 +21,12 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    class xpython_interpreter : public xeus::xinterpreter
+    class interpreter : public xeus::xinterpreter
     {
     public:
 
-        xpython_interpreter(int argc, const char* const* argv);
-        virtual ~xpython_interpreter();
+        interpreter(int argc, const char* const* argv);
+        virtual ~interpreter();
 
     private:
 

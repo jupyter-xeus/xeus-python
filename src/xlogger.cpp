@@ -13,26 +13,26 @@
 #include "pybind11/embed.h"
 #include "pybind11/functional.h"
 
-#include "xpython_logger.hpp"
+#include "xlogger.hpp"
 
 namespace py = pybind11;
 
 namespace xpyt
 {
-    xpython_logger::xpython_logger()
+    xlogger::xlogger()
     {
     }
 
-    xpython_logger::~xpython_logger()
+    xlogger::~xlogger()
     {
     }
 
-    void xpython_logger::add_logger(logger_function_type logger)
+    void xlogger::add_logger(logger_function_type logger)
     {
         m_loggers.push_back(logger);
     }
 
-    void xpython_logger::write(const std::string& message)
+    void xlogger::write(const std::string& message)
     {
         for (auto it = m_loggers.begin(); it != m_loggers.end(); ++it)
         {
@@ -41,9 +41,9 @@ namespace xpyt
     }
 
     PYBIND11_EMBEDDED_MODULE(xeus_python_logger, m) {
-        py::class_<xpython_logger>(m, "XPythonLogger")
+        py::class_<xlogger>(m, "XPythonLogger")
             .def(py::init<>())
-            .def("add_logger", &xpython_logger::add_logger)
-            .def("write", &xpython_logger::write);
+            .def("add_logger", &xlogger::add_logger)
+            .def("write", &xlogger::write);
     }
 }

@@ -7,8 +7,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_PYTHON_DISPLAY_HPP
-#define XPYT_PYTHON_DISPLAY_HPP
+#ifndef XPYT_DISPLAY_HPP
+#define XPYT_DISPLAY_HPP
 
 #include <functional>
 
