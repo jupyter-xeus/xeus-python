@@ -17,18 +17,18 @@
 #include "pybind11/functional.h"
 
 #include "xpyt_config.hpp"
-#include "xpython_interpreter.hpp"
-#include "xpython_logger.hpp"
+#include "xinterpreter.hpp"
+#include "xlogger.hpp"
 
 namespace py = pybind11;
 
 namespace xpyt
 {
-    void xpython_interpreter::configure_impl()
+    void interpreter::configure_impl()
     {
     }
 
-    xpython_interpreter::xpython_interpreter(int /*argc*/, const char* const* /*argv*/)
+    interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
     {
         py::initialize_interpreter();
 
@@ -36,9 +36,9 @@ namespace xpyt
         redirect_display();
     }
 
-    xpython_interpreter::~xpython_interpreter() {}
+    interpreter::~interpreter() {}
 
-    xeus::xjson xpython_interpreter::execute_request_impl(
+    xeus::xjson interpreter::execute_request_impl(
         int execution_counter,
         const std::string& code,
         bool silent,
@@ -108,31 +108,31 @@ namespace xpyt
         return kernel_res;
     }
 
-    xeus::xjson xpython_interpreter::complete_request_impl(
+    xeus::xjson interpreter::complete_request_impl(
         const std::string& code,
         int cursor_pos)
     {
         return xeus::xjson::object();
     }
 
-    xeus::xjson xpython_interpreter::inspect_request_impl(const std::string& /*code*/,
+    xeus::xjson interpreter::inspect_request_impl(const std::string& /*code*/,
                                                   int /*cursor_pos*/,
                                                   int /*detail_level*/)
     {
         return xeus::xjson::object();
     }
 
-    xeus::xjson xpython_interpreter::history_request_impl(const xeus::xhistory_arguments& /*args*/)
+    xeus::xjson interpreter::history_request_impl(const xeus::xhistory_arguments& /*args*/)
     {
         return xeus::xjson::object();
     }
 
-    xeus::xjson xpython_interpreter::is_complete_request_impl(const std::string& /*code*/)
+    xeus::xjson interpreter::is_complete_request_impl(const std::string& /*code*/)
     {
         return xeus::xjson::object();
     }
 
-    xeus::xjson xpython_interpreter::kernel_info_request_impl()
+    xeus::xjson interpreter::kernel_info_request_impl()
     {
         xeus::xjson result;
         result["implementation"] = "xeus-python";
@@ -165,16 +165,16 @@ namespace xpyt
         return result;
     }
 
-    void xpython_interpreter::shutdown_request_impl()
+    void interpreter::shutdown_request_impl()
     {
         py::finalize_interpreter();
     }
 
-    void xpython_interpreter::input_reply_impl(const std::string& /*value*/)
+    void interpreter::input_reply_impl(const std::string& /*value*/)
     {
     }
 
-    void xpython_interpreter::redirect_output()
+    void interpreter::redirect_output()
     {
         // In Python:
         // import sys and import xeus_python_logger
@@ -202,7 +202,7 @@ namespace xpyt
         sys.attr("stderr") = err_logger;
     }
 
-    void xpython_interpreter::redirect_display()
+    void interpreter::redirect_display()
     {
         py::module sys = py::module::import("sys");
 

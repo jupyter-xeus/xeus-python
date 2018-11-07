@@ -7,8 +7,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_PYTHON_LOGGER_HPP
-#define XPYT_PYTHON_LOGGER_HPP
+#ifndef XPYT_LOGGER_HPP
+#define XPYT_LOGGER_HPP
 
 #include <string>
 #include <vector>
@@ -16,7 +16,7 @@
 
 namespace xpyt
 {
-    class xpython_logger
+    class xlogger
     {
 
     public:
@@ -24,8 +24,8 @@ namespace xpyt
         using logger_function_type = std::function<void(const std::string&)>;
         using loggers_type = std::vector<logger_function_type>;
 
-        xpython_logger();
-        virtual ~xpython_logger();
+        xlogger();
+        virtual ~xlogger();
 
         void add_logger(logger_function_type logger);
         void write(const std::string& message);
