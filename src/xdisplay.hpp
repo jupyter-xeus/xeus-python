@@ -21,7 +21,6 @@ namespace xpyt
 {
     class xdisplayhook
     {
-
     public:
 
         using hook_function_type = std::function<void(int, py::object)>;

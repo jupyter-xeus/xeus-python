@@ -9,14 +9,12 @@
 
 #include <iostream>
 #include <string>
-#include <stdio.h>
+#include <utility>
 
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 
 #include "xinterpreter.hpp"
-
-#include "Python.h"
 
 std::string extract_filename(int& argc, char* argv[])
 {
@@ -47,7 +45,7 @@ int main(int argc, char* argv[])
 
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));
     xeus::xkernel kernel(config, xeus::get_user_name(), std::move(interpreter));
-    std::cout << "starting xeus-python kernel" << std::endl;
+    std::cout << "Starting xeus-python kernel" << std::endl;
     kernel.start();
 
     return 0;

@@ -15,6 +15,7 @@
 #include "xeus/xjson.hpp"
 #include "xeus/xinterpreter.hpp"
 
+#include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
 
 namespace py = pybind11;
@@ -62,6 +63,7 @@ namespace xpyt
         void redirect_output();
         void redirect_display();
 
+        py::scoped_interpreter m_guard;
         py::object m_displayhook;
     };
 }
