@@ -18,6 +18,7 @@
 #include "xpyt_config.hpp"
 #include "xinterpreter.hpp"
 #include "xlogger.hpp"
+#include "xdisplay.hpp"
 
 namespace py = pybind11;
 
@@ -237,66 +238,14 @@ namespace xpyt
     void interpreter::redirect_display()
     {
         py::module sys = py::module::import("sys");
-        py::module py_json = py::module::import("json");
 
         py::module xeus_python_display = py::module::import("xeus_python_display");
         m_displayhook = xeus_python_display.attr("XPythonDisplay")();
 
-        py::cpp_function publish_display = [this, py_json](int execution_counter, py::object obj){
+        py::cpp_function publish_display = [this](int execution_counter, py::object obj){
             if (!obj.is_none())
             {
-                xeus::xjson pub_data;
-
-                if (hasattr(obj, "_repr_mimebundle_"))
-                {
-                    pub_data = xeus::xjson::parse(static_cast<std::string>(
-                        py::str(py_json.attr("dumps")(obj.attr("_repr_mimebundle_")()))
-                    ));
-                }
-                else if (hasattr(obj, "_repr_html_"))
-                {
-                    pub_data["text/html"] = static_cast<std::string>(
-                        py::str(obj.attr("_repr_html_")())
-                    );
-                }
-                else if (hasattr(obj, "_repr_json_"))
-                {
-                    pub_data["application/json"] = static_cast<std::string>(
-                        py::str(obj.attr("_repr_json_")())
-                    );
-                }
-                else if (hasattr(obj, "_repr_jpeg_"))
-                {
-                    pub_data["image/jpeg"] = static_cast<std::string>(
-                        py::str(obj.attr("_repr_jpeg_")())
-                    );
-                }
-                else if (hasattr(obj, "_repr_png_"))
-                {
-                    pub_data["image/png"] = static_cast<std::string>(
-                        py::str(obj.attr("_repr_png_")())
-                    );
-                }
-                else if (hasattr(obj, "_repr_svg_"))
-                {
-                    pub_data["image/svg+xml"] = static_cast<std::string>(
-                        py::str(obj.attr("_repr_svg_")())
-                    );
-                }
-                else if (hasattr(obj, "_repr_latex_"))
-                {
-                    pub_data["text/latex"] = static_cast<std::string>(
-                        py::str(obj.attr("_repr_latex_")())
-                    );
-                }
-                else if (hasattr(obj, "__repr__"))
-                {
-                    pub_data["text/plain"] = static_cast<std::string>(
-                        py::str(obj.attr("__repr__")())
-                    );
-                }
-
-                publish_execution_result(execution_counter, std::move(pub_data), xeus::xjson::object());
+                publish_execution_result(execution_counter, std::move(display_pub_data(obj)), xeus::xjson::object());
             }
         };
 
