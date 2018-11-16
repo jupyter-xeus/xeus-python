@@ -261,6 +261,9 @@ namespace xpyt
                 }
                 else if (hasattr(obj, "_repr_json_"))
                 {
+                    pub_data["application/json"] = static_cast<std::string>(
+                        py::str(obj.attr("_repr_json_")())
+                    );
                 }
                 else if (hasattr(obj, "_repr_jpeg_"))
                 {
@@ -282,6 +285,9 @@ namespace xpyt
                 }
                 else if (hasattr(obj, "_repr_latex_"))
                 {
+                    pub_data["text/latex"] = static_cast<std::string>(
+                        py::str(obj.attr("_repr_latex_")())
+                    );
                 }
                 else if (hasattr(obj, "__repr__"))
                 {
@@ -290,7 +296,6 @@ namespace xpyt
                     );
                 }
 
-                std::cout << pub_data << std::endl;
                 publish_execution_result(execution_counter, std::move(pub_data), xeus::xjson::object());
             }
         };
