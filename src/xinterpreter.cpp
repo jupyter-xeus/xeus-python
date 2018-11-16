@@ -250,7 +250,9 @@ namespace xpyt
         };
 
         m_displayhook.attr("add_hook")(publish_display);
-
         sys.attr("displayhook") = m_displayhook;
+
+        // Create a global "display" function
+        py::globals()["display"] = m_displayhook;
     }
 }
