@@ -18,7 +18,6 @@ namespace xpyt
 {
     class xlogger
     {
-
     public:
 
         using logger_function_type = std::function<void(const std::string&)>;

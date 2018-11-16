@@ -7,13 +7,12 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include <iostream>
-#include <vector>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "xeus/xjson.hpp"
 
-#include "pybind11/embed.h"
 #include "pybind11/functional.h"
 
 #include "xpyt_config.hpp"
@@ -30,8 +29,6 @@ namespace xpyt
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
     {
-        py::initialize_interpreter();
-
         redirect_output();
         redirect_display();
     }
@@ -42,9 +39,9 @@ namespace xpyt
         int execution_counter,
         const std::string& code,
         bool silent,
-        bool store_history,
-        const xeus::xjson_node* user_expressions,
-        bool allow_stdin)
+        bool /*store_history*/,
+        const xeus::xjson_node* /*user_expressions*/,
+        bool /*allow_stdin*/)
     {
         xeus::xjson kernel_res;
 
@@ -144,8 +141,8 @@ namespace xpyt
     }
 
     xeus::xjson interpreter::complete_request_impl(
-        const std::string& code,
-        int cursor_pos)
+        const std::string& /*code*/,
+        int /*cursor_pos*/)
     {
         return xeus::xjson::object();
     }
