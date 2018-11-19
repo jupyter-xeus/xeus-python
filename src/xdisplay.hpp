@@ -38,6 +38,8 @@ namespace xpyt
         int m_execution_count;
         hooks_type m_hooks;
     };
+
+    xeus::xjson display_pub_data(py::object obj);
 }
 
 #endif

@@ -18,6 +18,7 @@
 #include "xpyt_config.hpp"
 #include "xinterpreter.hpp"
 #include "xlogger.hpp"
+#include "xdisplay.hpp"
 
 namespace py = pybind11;
 
@@ -244,14 +245,19 @@ namespace xpyt
         py::cpp_function publish_display = [this](int execution_counter, py::object obj){
             if (!obj.is_none())
             {
-                xeus::xjson pub_data;
-                pub_data["text/plain"] = py::str(obj);
-                publish_execution_result(execution_counter, std::move(pub_data), xeus::xjson::object());
+                if (hasattr(obj, "_ipython_display_"))
+                {
+                    this->publish_stream("stderr", "_ipython_display_ is not supported");
+                }
+
+                this->publish_execution_result(execution_counter, std::move(display_pub_data(obj)), xeus::xjson::object());
             }
         };
 
         m_displayhook.attr("add_hook")(publish_display);
-
         sys.attr("displayhook") = m_displayhook;
+
+        // Create a global "display" function
+        py::globals()["display"] = m_displayhook;
     }
 }
