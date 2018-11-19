@@ -95,12 +95,10 @@ namespace xpyt
                     py::str(obj.attr("_repr_latex_")())
                 );
             }
-            if (hasattr(obj, "__repr__"))
-            {
-                pub_data["text/plain"] = static_cast<std::string>(
-                    py::str(obj.attr("__repr__")())
-                );
-            }
+
+            pub_data["text/plain"] = static_cast<std::string>(
+                py::str(obj.attr("__repr__")())
+            );
         }
 
         return pub_data;
