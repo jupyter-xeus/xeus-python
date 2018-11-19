@@ -57,47 +57,50 @@ namespace xpyt
                 py::str(py_json.attr("dumps")(obj.attr("_repr_mimebundle_")()))
             ));
         }
-        else if (hasattr(obj, "_repr_html_"))
+        else
         {
-            pub_data["text/html"] = static_cast<std::string>(
-                py::str(obj.attr("_repr_html_")())
-            );
-        }
-        else if (hasattr(obj, "_repr_json_"))
-        {
-            pub_data["application/json"] = static_cast<std::string>(
-                py::str(obj.attr("_repr_json_")())
-            );
-        }
-        else if (hasattr(obj, "_repr_jpeg_"))
-        {
-            pub_data["image/jpeg"] = static_cast<std::string>(
-                py::str(obj.attr("_repr_jpeg_")())
-            );
-        }
-        else if (hasattr(obj, "_repr_png_"))
-        {
-            pub_data["image/png"] = static_cast<std::string>(
-                py::str(obj.attr("_repr_png_")())
-            );
-        }
-        else if (hasattr(obj, "_repr_svg_"))
-        {
-            pub_data["image/svg+xml"] = static_cast<std::string>(
-                py::str(obj.attr("_repr_svg_")())
-            );
-        }
-        else if (hasattr(obj, "_repr_latex_"))
-        {
-            pub_data["text/latex"] = static_cast<std::string>(
-                py::str(obj.attr("_repr_latex_")())
-            );
-        }
-        else if (hasattr(obj, "__repr__"))
-        {
-            pub_data["text/plain"] = static_cast<std::string>(
-                py::str(obj.attr("__repr__")())
-            );
+            if (hasattr(obj, "_repr_html_"))
+            {
+                pub_data["text/html"] = static_cast<std::string>(
+                    py::str(obj.attr("_repr_html_")())
+                );
+            }
+            if (hasattr(obj, "_repr_json_"))
+            {
+                pub_data["application/json"] = static_cast<std::string>(
+                    py::str(obj.attr("_repr_json_")())
+                );
+            }
+            if (hasattr(obj, "_repr_jpeg_"))
+            {
+                pub_data["image/jpeg"] = static_cast<std::string>(
+                    py::str(obj.attr("_repr_jpeg_")())
+                );
+            }
+            if (hasattr(obj, "_repr_png_"))
+            {
+                pub_data["image/png"] = static_cast<std::string>(
+                    py::str(obj.attr("_repr_png_")())
+                );
+            }
+            if (hasattr(obj, "_repr_svg_"))
+            {
+                pub_data["image/svg+xml"] = static_cast<std::string>(
+                    py::str(obj.attr("_repr_svg_")())
+                );
+            }
+            if (hasattr(obj, "_repr_latex_"))
+            {
+                pub_data["text/latex"] = static_cast<std::string>(
+                    py::str(obj.attr("_repr_latex_")())
+                );
+            }
+            if (hasattr(obj, "__repr__"))
+            {
+                pub_data["text/plain"] = static_cast<std::string>(
+                    py::str(obj.attr("__repr__")())
+                );
+            }
         }
 
         return pub_data;
