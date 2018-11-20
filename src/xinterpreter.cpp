@@ -211,12 +211,9 @@ namespace xpyt
 
     void interpreter::redirect_output()
     {
-        // In Python:
-        // import sys and import xeus_python_logger
         py::module sys = py::module::import("sys");
         py::module xeus_python_logger = py::module::import("xeus_python_logger");
 
-        // And replace sys.stdout by the XPythonLogger instance
         sys.attr("stdout") = xeus_python_logger.attr("XPythonLogger")("stdout");
         sys.attr("stderr") = xeus_python_logger.attr("XPythonLogger")("stderr");
     }
@@ -224,26 +221,11 @@ namespace xpyt
     void interpreter::redirect_display()
     {
         py::module sys = py::module::import("sys");
-
         py::module xeus_python_display = py::module::import("xeus_python_display");
+
         m_displayhook = xeus_python_display.attr("XPythonDisplay")();
 
-        py::cpp_function publish_display = [this](int execution_counter, py::object obj){
-            if (!obj.is_none())
-            {
-                if (hasattr(obj, "_ipython_display_"))
-                {
-                    this->publish_stream("stderr", "_ipython_display_ is not supported");
-                }
-
-                this->publish_execution_result(execution_counter, std::move(display_pub_data(obj)), xeus::xjson::object());
-            }
-        };
-
-        m_displayhook.attr("add_hook")(publish_display);
         sys.attr("displayhook") = m_displayhook;
-
-        // Create a global "display" function
         py::globals()["display"] = m_displayhook;
     }
 }
