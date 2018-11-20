@@ -27,6 +27,9 @@ namespace xpyt
 {
     void interpreter::configure_impl()
     {
+        // Create "jupyter.widget" target for widgets support
+        auto handle_widget_comm_opened = [](xeus::xcomm&& /*comm*/, const xeus::xmessage& /*message*/) {};
+        comm_manager().register_comm_target("jupyter.widget", handle_widget_comm_opened);
     }
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
@@ -34,6 +37,17 @@ namespace xpyt
         xeus::register_interpreter(this);
         redirect_output();
         redirect_display();
+
+        // Monkey patch "from ipykernel.comm import Comm" if it's there
+        try {
+            py::module xeus_python_comm = py::module::import("xeus_python_comm");
+            py::object xpython_comm = xeus_python_comm.attr("XPythonComm");
+            py::module::import("ipykernel.comm").attr("Comm") = xpython_comm;
+        }
+        catch(const std::exception& /*e*/) {
+            // Ignoring exception, as it's certainly an Import Error because
+            // ipywidgets is not installed
+        }
     }
 
     interpreter::~interpreter() {}
