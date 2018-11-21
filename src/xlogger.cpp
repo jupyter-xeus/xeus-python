@@ -9,11 +9,11 @@
 
 #include <string>
 
+#include "xeus/xinterpreter.hpp"
+
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 #include "pybind11/functional.h"
-
-#include "xeus/xinterpreter.hpp"
 
 #include "xlogger.hpp"
 
