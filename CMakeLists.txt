@@ -54,6 +54,10 @@ include(CheckCXXCompilerFlag)
 
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 
+# This flag is needed by pybind11
+# https://pybind11.readthedocs.io/en/stable/faq.html?highlight=greater%20visibility#someclass-declared-with-greater-visibility-than-the-type-of-its-field-someclass-member-wattributes
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+
 if(MSVC)
     add_definitions(/DNOMINMAX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251 /wd4141")
