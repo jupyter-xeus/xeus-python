@@ -15,28 +15,28 @@
 #include "pybind11/embed.h"
 #include "pybind11/functional.h"
 
-#include "xlogger.hpp"
+#include "xstream.hpp"
 
 namespace py = pybind11;
 
 namespace xpyt
 {
-    xlogger::xlogger(std::string pipe_name) : m_pipe_name(pipe_name)
+    xstream::xstream(std::string stream_name) : m_stream_name(stream_name)
     {
     }
 
-    xlogger::~xlogger()
+    xstream::~xstream()
     {
     }
 
-    void xlogger::write(const std::string& message)
+    void xstream::write(const std::string& message)
     {
-        xeus::get_interpreter().publish_stream(m_pipe_name, message);
+        xeus::get_interpreter().publish_stream(m_stream_name, message);
     }
 
-    PYBIND11_EMBEDDED_MODULE(xeus_python_logger, m) {
-        py::class_<xlogger>(m, "XPythonLogger")
+    PYBIND11_EMBEDDED_MODULE(xeus_python_stream, m) {
+        py::class_<xstream>(m, "XPythonStream")
             .def(py::init<std::string>())
-            .def("write", &xlogger::write);
+            .def("write", &xstream::write);
     }
 }

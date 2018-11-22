@@ -7,25 +7,25 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_LOGGER_HPP
-#define XPYT_LOGGER_HPP
+#ifndef XPYT_STREAM_HPP
+#define XPYT_STREAM_HPP
 
 #include <string>
 
 namespace xpyt
 {
-    class xlogger
+    class xstream
     {
     public:
 
-        xlogger(std::string pipe_name);
-        virtual ~xlogger();
+        xstream(std::string stream_name);
+        virtual ~xstream();
 
         void write(const std::string& message);
 
     private:
 
-        std::string m_pipe_name;
+        std::string m_stream_name;
     };
 }
 

@@ -18,7 +18,7 @@
 
 #include "xpyt_config.hpp"
 #include "xinterpreter.hpp"
-#include "xlogger.hpp"
+#include "xstream.hpp"
 #include "xdisplay.hpp"
 
 namespace py = pybind11;
@@ -212,10 +212,10 @@ namespace xpyt
     void interpreter::redirect_output()
     {
         py::module sys = py::module::import("sys");
-        py::module xeus_python_logger = py::module::import("xeus_python_logger");
+        py::module xeus_python_stream = py::module::import("xeus_python_stream");
 
-        sys.attr("stdout") = xeus_python_logger.attr("XPythonLogger")("stdout");
-        sys.attr("stderr") = xeus_python_logger.attr("XPythonLogger")("stderr");
+        sys.attr("stdout") = xeus_python_stream.attr("XPythonStream")("stdout");
+        sys.attr("stderr") = xeus_python_stream.attr("XPythonStream")("stderr");
     }
 
     void interpreter::redirect_display()
