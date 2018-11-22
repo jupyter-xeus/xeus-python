@@ -11,8 +11,6 @@
 #define XPYT_LOGGER_HPP
 
 #include <string>
-#include <vector>
-#include <functional>
 
 namespace xpyt
 {
@@ -20,18 +18,14 @@ namespace xpyt
     {
     public:
 
-        using logger_function_type = std::function<void(const std::string&)>;
-        using loggers_type = std::vector<logger_function_type>;
-
-        xlogger();
+        xlogger(std::string pipe_name);
         virtual ~xlogger();
 
-        void add_logger(logger_function_type logger);
         void write(const std::string& message);
 
     private:
 
-        loggers_type m_loggers;
+        std::string m_pipe_name;
     };
 }
 

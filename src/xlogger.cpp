@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "xeus/xinterpreter.hpp"
+
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 #include "pybind11/functional.h"
@@ -19,7 +21,7 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    xlogger::xlogger()
+    xlogger::xlogger(std::string pipe_name) : m_pipe_name(pipe_name)
     {
     }
 
@@ -27,23 +29,14 @@ namespace xpyt
     {
     }
 
-    void xlogger::add_logger(logger_function_type logger)
-    {
-        m_loggers.push_back(logger);
-    }
-
     void xlogger::write(const std::string& message)
     {
-        for (auto it = m_loggers.begin(); it != m_loggers.end(); ++it)
-        {
-            it->operator()(message);
-        }
+        xeus::get_interpreter().publish_stream(m_pipe_name, message);
     }
 
     PYBIND11_EMBEDDED_MODULE(xeus_python_logger, m) {
         py::class_<xlogger>(m, "XPythonLogger")
-            .def(py::init<>())
-            .def("add_logger", &xlogger::add_logger)
+            .def(py::init<std::string>())
             .def("write", &xlogger::write);
     }
 }
