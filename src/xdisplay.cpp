@@ -9,8 +9,9 @@
 
 #include <string>
 
+#include "nlohmann/json.hpp"
+
 #include "xeus/xinterpreter.hpp"
-#include "xeus/xjson.hpp"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
@@ -18,6 +19,7 @@
 #include "xdisplay.hpp"
 
 namespace py = pybind11;
+namespace nl = nlohmann;
 
 namespace xpyt
 {
@@ -48,19 +50,19 @@ namespace xpyt
             interp.publish_execution_result(
                 m_execution_count,
                 std::move(display_pub_data(obj)),
-                xeus::xjson::object()
+                nl::json::object()
             );
         }
     }
 
-    xeus::xjson display_pub_data(py::object obj)
+    nl::json display_pub_data(py::object obj)
     {
         py::module py_json = py::module::import("json");
-        xeus::xjson pub_data;
+        nl::json pub_data;
 
         if (hasattr(obj, "_repr_mimebundle_"))
         {
-            pub_data = xeus::xjson::parse(static_cast<std::string>(
+            pub_data = nl::json::parse(static_cast<std::string>(
                 py::str(py_json.attr("dumps")(obj.attr("_repr_mimebundle_")()))
             ));
         }

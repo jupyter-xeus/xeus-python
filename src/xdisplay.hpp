@@ -13,7 +13,10 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
 
+#include "nlohmann/json.hpp"
+
 namespace py = pybind11;
+namespace nl = nlohmann;
 
 namespace xpyt
 {
@@ -32,7 +35,7 @@ namespace xpyt
         int m_execution_count;
     };
 
-    xeus::xjson display_pub_data(py::object obj);
+    nl::json display_pub_data(py::object obj);
 }
 
 #endif

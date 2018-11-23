@@ -11,7 +11,8 @@
 #include <vector>
 #include <stdexcept>
 
-#include "xeus/xjson.hpp"
+#include "nlohmann/json.hpp"
+
 #include "xeus/xcomm.hpp"
 
 #include "pybind11/pybind11.h"
@@ -19,6 +20,7 @@
 #include "xutils.hpp"
 
 namespace py = pybind11;
+namespace nl = nlohmann;
 
 namespace xpyt
 {
@@ -35,16 +37,16 @@ namespace xpyt
         return zmq::message_t(buffer, length);
     }
 
-    xeus::xjson pydict_to_xjson(py::dict dict)
+    nl::json pyobj_to_nljson(py::object obj)
     {
         py::module py_json = py::module::import("json");
 
-        return xeus::xjson::parse(static_cast<std::string>(
-            py::str(py_json.attr("dumps")(dict))
+        return nl::json::parse(static_cast<std::string>(
+            py::str(py_json.attr("dumps")(obj))
         ));
     }
 
-    py::dict xjson_to_pydict(const xeus::xjson& json)
+    py::object nljson_to_pyobj(const nl::json& json)
     {
         py::module py_json = py::module::import("json");
 
@@ -70,6 +72,18 @@ namespace xpyt
             buffers.push_back(pybytes_to_zmq_message(bytes.cast<py::bytes>()));
         }
         return buffers;
+    }
+
+    py::object cppmessage_to_pymessage(const xeus::xmessage& msg)
+    {
+        py::dict py_msg;
+        py_msg["header"] = nljson_to_pyobj(msg.header());
+        py_msg["parent_header"] = nljson_to_pyobj(msg.parent_header());
+        py_msg["metadata"] = nljson_to_pyobj(msg.metadata());
+        py_msg["content"] = nljson_to_pyobj(msg.content());
+        py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
+
+        return py_msg;
     }
 
 }

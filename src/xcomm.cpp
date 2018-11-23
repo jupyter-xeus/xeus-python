@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "nlohmann/json.hpp"
+
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xcomm.hpp"
 
@@ -20,6 +22,7 @@
 #include "xcomm.hpp"
 
 namespace py = pybind11;
+namespace nl = nlohmann;
 
 namespace xpyt
 {
@@ -87,14 +90,14 @@ namespace xpyt
         }
     }
 
-    xeus::xjson xcomm::json_data(py::kwargs kwargs) const
+    nl::json xcomm::json_data(py::kwargs kwargs) const
     {
-        return pydict_to_xjson(kwargs.attr("get")("data", py::dict()));
+        return pyobj_to_nljson(kwargs.attr("get")("data", py::dict()));
     }
 
-    xeus::xjson xcomm::json_metadata(py::kwargs kwargs) const
+    nl::json xcomm::json_metadata(py::kwargs kwargs) const
     {
-        return pydict_to_xjson(kwargs.attr("get")("metadata", py::dict()));
+        return pyobj_to_nljson(kwargs.attr("get")("metadata", py::dict()));
     }
 
     auto xcomm::zmq_buffers(py::kwargs kwargs) const -> zmq_buffers_type
@@ -105,48 +108,19 @@ namespace xpyt
     auto xcomm::cpp_callback(python_callback_type py_callback) const -> cpp_callback_type
     {
         return [this, py_callback] (const xeus::xmessage& msg) {
-            xeus::xjson json_msg;
-            json_msg["header"] = msg.header();
-            json_msg["parent_header"] = msg.parent_header();
-            json_msg["metadata"] = msg.metadata();
-            json_msg["content"] = msg.content();
-
-            py::dict py_msg = xjson_to_pydict(json_msg);
-            py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
-
-            py_callback(py_msg);
+            py_callback(cppmessage_to_pymessage(msg));
         };
     }
 
     void register_target(py::str target_name, py::object callback)
     {
-        auto cpp_callback = [target_name, callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
-            xeus::xjson json_msg;
-            json_msg["header"] = msg.header();
-            json_msg["parent_header"] = msg.parent_header();
-            json_msg["metadata"] = msg.metadata();
-            json_msg["content"] = msg.content();
-
-            py::dict py_msg = xjson_to_pydict(json_msg);
-            py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
-
-            callback(xcomm(std::move(comm)), py_msg);
+        auto target_callback = [target_name, callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
+            callback(xcomm(std::move(comm)), cppmessage_to_pymessage(msg));
         };
 
         xeus::get_interpreter().comm_manager().register_comm_target(
-            static_cast<std::string>(target_name), cpp_callback
+            static_cast<std::string>(target_name), target_callback
         );
-    }
-
-    PYBIND11_EMBEDDED_MODULE(xeus_python_comm, m) {
-        py::class_<xcomm>(m, "XPythonComm")
-            .def(py::init<py::args, py::kwargs>())
-            .def("close", &xcomm::close)
-            .def("send", &xcomm::send)
-            .def("on_msg", &xcomm::on_msg)
-            .def("on_close", &xcomm::on_close)
-            .def_property_readonly("comm_id", &xcomm::comm_id)
-            .def_property_readonly("kernel", &xcomm::kernel);
     }
 
     namespace detail
@@ -158,6 +132,15 @@ namespace xpyt
 
     PYBIND11_EMBEDDED_MODULE(xeus_python_kernel, m) {
         py::class_<detail::xmock_object> _Mock(m, "_Mock");
+
+        py::class_<xcomm>(m, "XPythonComm")
+            .def(py::init<py::args, py::kwargs>())
+            .def("close", &xcomm::close)
+            .def("send", &xcomm::send)
+            .def("on_msg", &xcomm::on_msg)
+            .def("on_close", &xcomm::on_close)
+            .def_property_readonly("comm_id", &xcomm::comm_id)
+            .def_property_readonly("kernel", &xcomm::kernel);
 
         m.def("register_target", &register_target);
 

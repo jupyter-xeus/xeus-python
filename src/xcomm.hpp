@@ -13,12 +13,15 @@
 #include <string>
 #include <functional>
 
+#include "nlohmann/json.hpp"
+
 #include "xeus/xcomm.hpp"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
 
 namespace py = pybind11;
+namespace nl = nlohmann;
 
 namespace xpyt
 {
@@ -47,8 +50,8 @@ namespace xpyt
 
         xeus::xtarget* target(py::kwargs kwargs) const;
         xeus::xguid id(py::kwargs kwargs) const;
-        xeus::xjson json_data(py::kwargs kwargs) const;
-        xeus::xjson json_metadata(py::kwargs kwargs) const;
+        nl::json json_data(py::kwargs kwargs) const;
+        nl::json json_metadata(py::kwargs kwargs) const;
         zmq_buffers_type zmq_buffers(py::kwargs kwargs) const;
         cpp_callback_type cpp_callback(python_callback_type callback) const;
 
