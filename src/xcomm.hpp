@@ -31,6 +31,8 @@ namespace xpyt
         using zmq_buffers_type = std::vector<zmq::message_t>;
 
         xcomm(py::args args, py::kwargs kwargs);
+        xcomm(xeus::xcomm&& comm);
+        xcomm(xcomm&& comm) = default;
         virtual ~xcomm();
 
         std::string comm_id() const;
@@ -48,7 +50,6 @@ namespace xpyt
         xeus::xjson json_data(py::kwargs kwargs) const;
         xeus::xjson json_metadata(py::kwargs kwargs) const;
         zmq_buffers_type zmq_buffers(py::kwargs kwargs) const;
-        py::dict py_message(const xeus::xmessage& message) const;
         cpp_callback_type cpp_callback(python_callback_type callback) const;
 
         xeus::xcomm m_comm;

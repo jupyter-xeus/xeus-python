@@ -30,6 +30,11 @@ namespace xpyt
         m_comm.open(json_metadata(kwargs), json_data(kwargs), zmq_buffers(kwargs));
     }
 
+    xcomm::xcomm(xeus::xcomm&& comm)
+        : m_comm(std::move(comm))
+    {
+    }
+
     xcomm::~xcomm()
     {
     }
@@ -76,7 +81,8 @@ namespace xpyt
         {
             return static_cast<std::string>(py::str(kwargs["comm_id"]));
         }
-        else {
+        else
+        {
             return xeus::new_xguid();
         }
     }
@@ -96,25 +102,40 @@ namespace xpyt
         return pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()));
     }
 
-    py::dict xcomm::py_message(const xeus::xmessage& msg) const
-    {
-        xeus::xjson json_msg;
-        json_msg["header"] = msg.header();
-        json_msg["parent_header"] = msg.parent_header();
-        json_msg["metadata"] = msg.metadata();
-        json_msg["content"] = msg.content();
-
-        py::dict py_msg = xjson_to_pydict(json_msg);
-        py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
-
-        return py_msg;
-    }
-
     auto xcomm::cpp_callback(python_callback_type py_callback) const -> cpp_callback_type
     {
         return [this, py_callback] (const xeus::xmessage& msg) {
-            py_callback(py_message(msg));
+            xeus::xjson json_msg;
+            json_msg["header"] = msg.header();
+            json_msg["parent_header"] = msg.parent_header();
+            json_msg["metadata"] = msg.metadata();
+            json_msg["content"] = msg.content();
+
+            py::dict py_msg = xjson_to_pydict(json_msg);
+            py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
+
+            py_callback(py_msg);
         };
+    }
+
+    void register_target(py::str target_name, py::object callback)
+    {
+        auto cpp_callback = [target_name, callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
+            xeus::xjson json_msg;
+            json_msg["header"] = msg.header();
+            json_msg["parent_header"] = msg.parent_header();
+            json_msg["metadata"] = msg.metadata();
+            json_msg["content"] = msg.content();
+
+            py::dict py_msg = xjson_to_pydict(json_msg);
+            py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
+
+            callback(xcomm(std::move(comm)), py_msg);
+        };
+
+        xeus::get_interpreter().comm_manager().register_comm_target(
+            static_cast<std::string>(target_name), cpp_callback
+        );
     }
 
     PYBIND11_EMBEDDED_MODULE(xeus_python_comm, m) {
@@ -126,5 +147,29 @@ namespace xpyt
             .def("on_close", &xcomm::on_close)
             .def_property_readonly("comm_id", &xcomm::comm_id)
             .def_property_readonly("kernel", &xcomm::kernel);
+    }
+
+    namespace detail
+    {
+        struct xmock_object
+        {
+        };
+    }
+
+    PYBIND11_EMBEDDED_MODULE(xeus_python_kernel, m) {
+        py::class_<detail::xmock_object> _Mock(m, "_Mock");
+
+        m.def("register_target", &register_target);
+
+        m.def("get_kernel", [m] () {
+            py::object xeus_python = m.attr("_Mock");
+            py::object kernel = m.attr("_Mock");
+            py::object comm_manager = m.attr("_Mock");
+
+            comm_manager.attr("register_target") = m.attr("register_target");
+            kernel.attr("comm_manager") = comm_manager;
+            xeus_python.attr("kernel") = kernel;
+            return xeus_python;
+        });
     }
 }
