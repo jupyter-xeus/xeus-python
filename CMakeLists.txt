@@ -88,7 +88,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${
 set(XEUSCLING_SRC
     src/main.cpp
     src/xinterpreter.cpp
-    src/xlogger.cpp
+    src/xstream.cpp
     src/xdisplay.cpp
     src/xpyt_config.hpp
 )
