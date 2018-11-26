@@ -16,6 +16,7 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 
+#include "xutils.hpp"
 #include "xdisplay.hpp"
 
 namespace py = pybind11;
@@ -36,7 +37,7 @@ namespace xpyt
         m_execution_count = execution_count;
     }
 
-    void xdisplayhook::operator()(py::object obj)
+    void xdisplayhook::operator()(py::object obj, bool raw = false)
     {
         auto& interp = xeus::get_interpreter();
 
@@ -44,12 +45,23 @@ namespace xpyt
         {
             if (hasattr(obj, "_ipython_display_"))
             {
-                interp.publish_stream("stderr", "_ipython_display_ is not supported");
+                obj.attr("_ipython_display_")();
+                return;
+            }
+
+            xeus::xjson pub_data;
+            if (raw)
+            {
+                pub_data = pyobj_to_nljson(obj);
+            }
+            else
+            {
+                pub_data = display_pub_data(obj);
             }
 
             interp.publish_execution_result(
                 m_execution_count,
-                std::move(display_pub_data(obj)),
+                std::move(pub_data),
                 nl::json::object()
             );
         }
@@ -117,6 +129,6 @@ namespace xpyt
         py::class_<xdisplayhook>(m, "XPythonDisplay")
             .def(py::init<>())
             .def("set_execution_count", &xdisplayhook::set_execution_count)
-            .def("__call__", &xdisplayhook::operator());
+            .def("__call__", &xdisplayhook::operator(), py::arg("obj"), py::arg("raw") = false);
     }
 }

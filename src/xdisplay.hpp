@@ -28,7 +28,7 @@ namespace xpyt
         virtual ~xdisplayhook();
 
         void set_execution_count(int execution_count);
-        void operator()(py::object obj);
+        void operator()(py::object obj, bool raw);
 
     private:
 
