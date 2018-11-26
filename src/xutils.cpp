@@ -67,21 +67,30 @@ namespace xpyt
     std::vector<zmq::message_t> pylist_to_zmq_buffers(py::list bufferlist)
     {
         std::vector<zmq::message_t> buffers;
-        for (py::handle bytes: bufferlist)
+        for (py::handle buffer: bufferlist)
         {
-            buffers.push_back(pybytes_to_zmq_message(bytes.cast<py::bytes>()));
+            if (py::isinstance<py::memoryview>(buffer))
+            {
+                py::bytes bytes = buffer.attr("tobytes")();
+                buffers.push_back(pybytes_to_zmq_message(bytes));
+            }
+            else
+            {
+                buffers.push_back(pybytes_to_zmq_message(buffer.cast<py::bytes>()));
+            }
         }
         return buffers;
     }
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg)
     {
-        py::dict py_msg;
-        py_msg["header"] = nljson_to_pyobj(msg.header());
-        py_msg["parent_header"] = nljson_to_pyobj(msg.parent_header());
-        py_msg["metadata"] = nljson_to_pyobj(msg.metadata());
-        py_msg["content"] = nljson_to_pyobj(msg.content());
-        py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
+        py::dict py_msg = (
+            "header"_a, nljson_to_pyobj(msg.header()),
+            "parent_header"_a, nljson_to_pyobj(msg.parent_header()),
+            "metadata"_a, nljson_to_pyobj(msg.metadata()),
+            "content"_a, nljson_to_pyobj(msg.content()),
+            "buffers"_a, zmq_buffers_to_pylist(msg.buffers())
+        );
 
         return py_msg;
     }
