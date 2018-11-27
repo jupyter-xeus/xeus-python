@@ -50,9 +50,6 @@ namespace xpyt
 
         xeus::xtarget* target(py::kwargs kwargs) const;
         xeus::xguid id(py::kwargs kwargs) const;
-        nl::json json_data(py::kwargs kwargs) const;
-        nl::json json_metadata(py::kwargs kwargs) const;
-        zmq_buffers_type zmq_buffers(py::kwargs kwargs) const;
         cpp_callback_type cpp_callback(python_callback_type callback) const;
 
         xeus::xcomm m_comm;

@@ -37,22 +37,6 @@ namespace xpyt
         return zmq::message_t(buffer, length);
     }
 
-    nl::json pyobj_to_nljson(py::object obj)
-    {
-        py::module py_json = py::module::import("json");
-
-        return nl::json::parse(static_cast<std::string>(
-            py::str(py_json.attr("dumps")(obj))
-        ));
-    }
-
-    py::object nljson_to_pyobj(const nl::json& json)
-    {
-        py::module py_json = py::module::import("json");
-
-        return py_json.attr("loads")(json.dump());
-    }
-
     py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers)
     {
         py::list bufferlist;
@@ -84,15 +68,35 @@ namespace xpyt
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg)
     {
-        py::dict py_msg = (
-            "header"_a, nljson_to_pyobj(msg.header()),
-            "parent_header"_a, nljson_to_pyobj(msg.parent_header()),
-            "metadata"_a, nljson_to_pyobj(msg.metadata()),
-            "content"_a, nljson_to_pyobj(msg.content()),
-            "buffers"_a, zmq_buffers_to_pylist(msg.buffers())
-        );
+        py::dict py_msg;
+        py_msg["header"] = msg.header().get<py::object>();
+        py_msg["parent_header"] = msg.parent_header().get<py::object>();
+        py_msg["metadata"] = msg.metadata().get<py::object>();
+        py_msg["content"] = msg.content().get<py::object>();
+        py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
 
         return py_msg;
+    }
+
+}
+
+namespace nlohmann
+{
+
+    py::object adl_serializer<py::object>::from_json(const json& j)
+    {
+        py::module py_json = py::module::import("json");
+
+        return py_json.attr("loads")(j.dump());
+    }
+
+    void adl_serializer<py::object>::to_json(json& j, py::object obj)
+    {
+        py::module py_json = py::module::import("json");
+
+        j = nl::json::parse(static_cast<std::string>(
+            py::str(py_json.attr("dumps")(obj))
+        ));
     }
 
 }

@@ -25,13 +25,24 @@ namespace nl = nlohmann;
 namespace xpyt
 {
 
-    nl::json pyobj_to_nljson(py::object obj);
-    py::object nljson_to_pyobj(const nl::json& json);
-
     py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers);
     std::vector<zmq::message_t> pylist_to_zmq_buffers(py::list bufferlist);
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
+
+}
+
+namespace nlohmann
+{
+
+    template <>
+    struct adl_serializer<py::object>
+    {
+
+        static py::object from_json(const json& j);
+        static void to_json(json& j, py::object obj);
+
+    };
 
 }
 

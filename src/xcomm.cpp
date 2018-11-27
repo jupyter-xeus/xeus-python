@@ -30,7 +30,11 @@ namespace xpyt
     xcomm::xcomm(py::args /*args*/, py::kwargs kwargs)
         : m_comm(target(kwargs), id(kwargs))
     {
-        m_comm.open(json_metadata(kwargs), json_data(kwargs), zmq_buffers(kwargs));
+        m_comm.open(
+            kwargs.attr("get")("metadata", py::dict()),
+            kwargs.attr("get")("data", py::dict()),
+            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
+        );
     }
 
     xcomm::xcomm(xeus::xcomm&& comm)
@@ -54,12 +58,20 @@ namespace xpyt
 
     void xcomm::close(py::args /*args*/, py::kwargs kwargs)
     {
-        m_comm.close(json_metadata(kwargs), json_data(kwargs), zmq_buffers(kwargs));
+        m_comm.close(
+            kwargs.attr("get")("metadata", py::dict()),
+            kwargs.attr("get")("data", py::dict()),
+            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
+        );
     }
 
     void xcomm::send(py::args /*args*/, py::kwargs kwargs)
     {
-        m_comm.send(json_metadata(kwargs), json_data(kwargs), zmq_buffers(kwargs));
+        m_comm.send(
+            kwargs.attr("get")("metadata", py::dict()),
+            kwargs.attr("get")("data", py::dict()),
+            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
+        );
     }
 
     void xcomm::on_msg(python_callback_type callback)
@@ -90,21 +102,6 @@ namespace xpyt
         }
     }
 
-    nl::json xcomm::json_data(py::kwargs kwargs) const
-    {
-        return pyobj_to_nljson(kwargs.attr("get")("data", py::dict()));
-    }
-
-    nl::json xcomm::json_metadata(py::kwargs kwargs) const
-    {
-        return pyobj_to_nljson(kwargs.attr("get")("metadata", py::dict()));
-    }
-
-    auto xcomm::zmq_buffers(py::kwargs kwargs) const -> zmq_buffers_type
-    {
-        return pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()));
-    }
-
     auto xcomm::cpp_callback(python_callback_type py_callback) const -> cpp_callback_type
     {
         return [this, py_callback] (const xeus::xmessage& msg) {
@@ -130,7 +127,8 @@ namespace xpyt
         };
     }
 
-    PYBIND11_EMBEDDED_MODULE(xeus_python_kernel, m) {
+    PYBIND11_EMBEDDED_MODULE(xeus_python_kernel, m)
+    {
         py::class_<detail::xmock_object> _Mock(m, "_Mock");
 
         py::class_<xcomm>(m, "XPythonComm")

@@ -52,7 +52,7 @@ namespace xpyt
             xeus::xjson pub_data;
             if (raw)
             {
-                pub_data = pyobj_to_nljson(obj);
+                pub_data = obj;
             }
             else
             {
