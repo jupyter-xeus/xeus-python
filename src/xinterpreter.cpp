@@ -11,8 +11,9 @@
 #include <utility>
 #include <vector>
 
+#include "nlohmann/json.hpp"
+
 #include "xeus/xinterpreter.hpp"
-#include "xeus/xjson.hpp"
 
 #include "pybind11/functional.h"
 
@@ -22,6 +23,7 @@
 #include "xdisplay.hpp"
 
 namespace py = pybind11;
+namespace nl = nlohmann;
 
 namespace xpyt
 {
@@ -34,19 +36,40 @@ namespace xpyt
         xeus::register_interpreter(this);
         redirect_output();
         redirect_display();
+
+        py::module xeus_python_kernel = py::module::import("xeus_python_kernel");
+        // Monkey patching "from ipykernel.comm import Comm"
+        try
+        {
+            py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
+            py::module::import("ipykernel.comm").attr("Comm") = xpython_comm;
+        }
+        catch (const std::exception& /*e*/) {}
+        // Monkey patching "from IPython.display import display"
+        try
+        {
+            py::module::import("IPython.display").attr("display") = m_displayhook;
+        }
+        catch (const std::exception& /*e*/) {}
+        // Monkey patching "from IPython import get_ipython"
+        try
+        {
+            py::module::import("IPython").attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
+        }
+        catch (const std::exception& /*e*/) {}
     }
 
     interpreter::~interpreter() {}
 
-    xeus::xjson interpreter::execute_request_impl(
+    nl::json interpreter::execute_request_impl(
         int execution_counter,
         const std::string& code,
         bool silent,
         bool /*store_history*/,
-        const xeus::xjson_node* /*user_expressions*/,
+        const nl::json::object_t* /*user_expressions*/,
         bool /*allow_stdin*/)
     {
-        xeus::xjson kernel_res;
+        nl::json kernel_res;
 
         // TODO: Check for magics
         if (code.compare("?") == 0)
@@ -69,8 +92,8 @@ namespace xpyt
             <iframe class="xpyt-iframe-pager" src="https://docs.python.org/"></iframe>)";
 
             kernel_res["status"] = "ok";
-            kernel_res["payload"] = xeus::xjson::array();
-            kernel_res["payload"][0] = xeus::xjson::object({
+            kernel_res["payload"] = nl::json::array();
+            kernel_res["payload"][0] = nl::json::object({
                 {"data", {
                     {"text/plain", "https://docs.python.org/"},
                     {"text/html", html_content}}
@@ -78,7 +101,7 @@ namespace xpyt
                 {"source", "page"},
                 {"start", 0}
             });
-            kernel_res["user_expressions"] = xeus::xjson::object();
+            kernel_res["user_expressions"] = nl::json::object();
 
             return kernel_res;
         }
@@ -120,8 +143,8 @@ namespace xpyt
             }
 
             kernel_res["status"] = "ok";
-            kernel_res["payload"] = xeus::xjson::array();
-            kernel_res["user_expressions"] = xeus::xjson::object();
+            kernel_res["payload"] = nl::json::array();
+            kernel_res["user_expressions"] = nl::json::object();
 
         } catch(const std::exception& e) {
 
@@ -143,33 +166,33 @@ namespace xpyt
         return kernel_res;
     }
 
-    xeus::xjson interpreter::complete_request_impl(
+    nl::json interpreter::complete_request_impl(
         const std::string& /*code*/,
         int /*cursor_pos*/)
     {
-        return xeus::xjson::object();
+        return nl::json::object();
     }
 
-    xeus::xjson interpreter::inspect_request_impl(const std::string& /*code*/,
+    nl::json interpreter::inspect_request_impl(const std::string& /*code*/,
                                                   int /*cursor_pos*/,
                                                   int /*detail_level*/)
     {
-        return xeus::xjson::object();
+        return nl::json::object();
     }
 
-    xeus::xjson interpreter::history_request_impl(const xeus::xhistory_arguments& /*args*/)
+    nl::json interpreter::history_request_impl(const xeus::xhistory_arguments& /*args*/)
     {
-        return xeus::xjson::object();
+        return nl::json::object();
     }
 
-    xeus::xjson interpreter::is_complete_request_impl(const std::string& /*code*/)
+    nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)
     {
-        return xeus::xjson::object();
+        return nl::json::object();
     }
 
-    xeus::xjson interpreter::kernel_info_request_impl()
+    nl::json interpreter::kernel_info_request_impl()
     {
-        xeus::xjson result;
+        nl::json result;
         result["implementation"] = "xeus-python";
         result["implementation_version"] = XPYT_VERSION;
 
