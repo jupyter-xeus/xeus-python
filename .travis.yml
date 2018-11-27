@@ -8,6 +8,7 @@ matrix:
   fast_finish: true
   include:
     - os: linux
+      env: PYTHON=3.6
       addons:
         apt:
           sources:
@@ -29,7 +30,7 @@ install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     # Install dependencies
-    - conda install cmake xeus=0.16.0 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.4.15 pybind11=2.2.4 -c QuantStack -c conda-forge
+    - conda install cmake xeus=0.16.0 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.4.15 pybind11=2.2.4 jedi=0.13.1 -c QuantStack -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
           conda install gcc-7 -c QuantStack -c conda-forge;
       elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
