@@ -217,7 +217,7 @@ namespace xpyt
                            "  C++ Jupyter Kernel for Python  ";
 
         result["language_info"]["name"] = "python";
-        result["language_info"]["version"] = "TODO";
+        result["language_info"]["version"] = PY_VERSION;
         result["language_info"]["mimetype"] = "text/x-python";
         result["language_info"]["file_extension"] = ".py";
         return result;
