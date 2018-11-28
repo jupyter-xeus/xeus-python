@@ -109,6 +109,14 @@ namespace xpyt
         };
     }
 
+    void register_post_execute(py::args, py::kwargs)
+    {
+    }
+
+    void enable_gui(py::args, py::kwargs)
+    {
+    }
+
     void register_target(py::str target_name, py::object callback)
     {
         auto target_callback = [target_name, callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
@@ -141,12 +149,16 @@ namespace xpyt
             .def_property_readonly("kernel", &xcomm::kernel);
 
         m.def("register_target", &register_target);
+        m.def("register_post_execute", &register_post_execute);
+        m.def("enable_gui", &enable_gui);
 
         m.def("get_kernel", [m] () {
             py::object xeus_python = m.attr("_Mock");
             py::object kernel = m.attr("_Mock");
             py::object comm_manager = m.attr("_Mock");
 
+            xeus_python.attr("register_post_execute") = m.attr("register_post_execute");
+            xeus_python.attr("enable_gui") = m.attr("enable_gui");
             comm_manager.attr("register_target") = m.attr("register_target");
             kernel.attr("comm_manager") = comm_manager;
             xeus_python.attr("kernel") = kernel;
