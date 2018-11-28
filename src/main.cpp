@@ -24,9 +24,9 @@ std::string extract_filename(int& argc, char* argv[])
         if ((std::string(argv[i]) == "-f") && (i + 1 < argc))
         {
             res = argv[i + 1];
-            for(int j = i; j < argc - 2; ++j)
+            for (int j = i; j < argc - 2; ++j)
             {
-                argv[j]  = argv[j + 2];
+                argv[j] = argv[j + 2];
             }
             argc -= 2;
             break;

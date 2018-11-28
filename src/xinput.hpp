@@ -7,36 +7,33 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-
-#ifndef XPYT_UTILS_HPP
-#define XPYT_UTILS_HPP
-
-#include <vector>
-
-#include "nlohmann/json.hpp"
-
-#include "xeus/xcomm.hpp"
+#ifndef XPYT_INPUT_HPP
+#define XPYT_INPUT_HPP
 
 #include "pybind11/pybind11.h"
 
 namespace py = pybind11;
-namespace nl = nlohmann;
 
 namespace xpyt
 {
-    py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers);
-    std::vector<zmq::message_t> pylist_to_zmq_buffers(py::list bufferlist);
-
-    py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
-}
-
-namespace nlohmann
-{
-    template <>
-    struct adl_serializer<py::object>
+    /**
+     * Input_redirection is a scope guard implementing the redirection of
+     * input() and getpass() to the frontend through an input_request message.
+     *
+     * For Python 2, this also redirects raw_input().
+     */
+    class input_redirection
     {
-        static py::object from_json(const json& j);
-        static void to_json(json& j, py::object obj);
+    public:
+
+        input_redirection(bool allow_stdin);
+        ~input_redirection();
+
+    private:
+
+        py::object m_sys_input;
+        py::object m_sys_getpass;
+        py::object m_sys_raw_input;  // Only used for Python 2
     };
 }
 
