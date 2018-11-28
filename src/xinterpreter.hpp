@@ -52,8 +52,6 @@ namespace xpyt
             int cursor_pos,
             int detail_level) override;
 
-        nl::json history_request_impl(const xeus::xhistory_arguments& args) override;
-
         nl::json is_complete_request_impl(const std::string& code) override;
 
         nl::json kernel_info_request_impl() override;

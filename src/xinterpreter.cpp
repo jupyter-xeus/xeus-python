@@ -180,11 +180,6 @@ namespace xpyt
         return nl::json::object();
     }
 
-    nl::json interpreter::history_request_impl(const xeus::xhistory_arguments& /*args*/)
-    {
-        return nl::json::object();
-    }
-
     nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)
     {
         return nl::json::object();
