@@ -11,6 +11,7 @@
 #define XPYT_STREAM_HPP
 
 #include <string>
+#include <vector>
 
 namespace xpyt
 {
@@ -22,9 +23,12 @@ namespace xpyt
         virtual ~xstream();
 
         void write(const std::string& message);
+        void flush();
 
     private:
 
+        static const int m_buffer_max_size = 50;
+        std::vector<std::string> m_buffer_messages;
         std::string m_stream_name;
     };
 }

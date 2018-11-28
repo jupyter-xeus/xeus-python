@@ -31,12 +31,27 @@ namespace xpyt
 
     void xstream::write(const std::string& message)
     {
-        xeus::get_interpreter().publish_stream(m_stream_name, message);
+        m_buffer_messages.push_back(message);
+
+        if (m_buffer_messages.size() >= m_buffer_max_size)
+        {
+            flush();
+        }
+    }
+
+    void xstream::flush()
+    {
+        for (const std::string& message: m_buffer_messages)
+        {
+            xeus::get_interpreter().publish_stream(m_stream_name, message);
+        }
+        m_buffer_messages.clear();
     }
 
     PYBIND11_EMBEDDED_MODULE(xeus_python_stream, m) {
         py::class_<xstream>(m, "XPythonStream")
             .def(py::init<std::string>())
-            .def("write", &xstream::write);
+            .def("write", &xstream::write)
+            .def("flush", &xstream::flush);
     }
 }
