@@ -42,5 +42,4 @@ install:
   - cd test
 
 build_script:
-  # Allowing failure on jupyter kernel tests as Cling does not support windows
-  - py.test . & exit 0
+  - py.test .
