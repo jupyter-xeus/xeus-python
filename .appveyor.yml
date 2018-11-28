@@ -29,7 +29,7 @@ install:
   - conda update -q conda
   - conda info -a
   # Install dependencies
-  - conda install cmake xeus=0.15.0 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.4.15 pybind11=2.2.4 -c QuantStack -c conda-forge
+  - conda install cmake xeus=0.16.0 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.4.15 pybind11=2.2.4 -c QuantStack -c conda-forge
   # Build and install xeus-python
   - mkdir build
   - cd build
