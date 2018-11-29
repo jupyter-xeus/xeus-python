@@ -109,14 +109,6 @@ namespace xpyt
         };
     }
 
-    void register_post_execute(py::args, py::kwargs)
-    {
-    }
-
-    void enable_gui(py::args, py::kwargs)
-    {
-    }
-
     void register_target(py::str target_name, py::object callback)
     {
         auto target_callback = [target_name, callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
@@ -128,41 +120,22 @@ namespace xpyt
         );
     }
 
-    namespace detail
+    py::object get_kernel()
     {
-        struct xmock_object
-        {
-        };
+        return py::none();
     }
 
-    PYBIND11_EMBEDDED_MODULE(xeus_python_kernel, m)
-    {
-        py::class_<detail::xmock_object> _Mock(m, "_Mock");
-
+    PYBIND11_EMBEDDED_MODULE(xeus_python_kernel, m) {
         py::class_<xcomm>(m, "XPythonComm")
-            .def(py::init<py::args, py::kwargs>())
-            .def("close", &xcomm::close)
-            .def("send", &xcomm::send)
-            .def("on_msg", &xcomm::on_msg)
-            .def("on_close", &xcomm::on_close)
-            .def_property_readonly("comm_id", &xcomm::comm_id)
-            .def_property_readonly("kernel", &xcomm::kernel);
+        .def(py::init<py::args, py::kwargs>())
+        .def("close", &xcomm::close)
+        .def("send", &xcomm::send)
+        .def("on_msg", &xcomm::on_msg)
+        .def("on_close", &xcomm::on_close)
+        .def_property_readonly("comm_id", &xcomm::comm_id)
+        .def_property_readonly("kernel", &xcomm::kernel);
 
         m.def("register_target", &register_target);
-        m.def("register_post_execute", &register_post_execute);
-        m.def("enable_gui", &enable_gui);
-
-        m.def("get_kernel", [m] () {
-            py::object xeus_python = m.attr("_Mock");
-            py::object kernel = m.attr("_Mock");
-            py::object comm_manager = m.attr("_Mock");
-
-            xeus_python.attr("register_post_execute") = m.attr("register_post_execute");
-            xeus_python.attr("enable_gui") = m.attr("enable_gui");
-            comm_manager.attr("register_target") = m.attr("register_target");
-            kernel.attr("comm_manager") = comm_manager;
-            xeus_python.attr("kernel") = kernel;
-            return xeus_python;
-        });
+        m.def("get_kernel", &get_kernel);
     }
 }

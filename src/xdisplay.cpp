@@ -125,10 +125,17 @@ namespace xpyt
         return pub_data;
     }
 
+    void clear_output()
+    {
+        // TODO Implement the clear_output message
+    }
+
     PYBIND11_EMBEDDED_MODULE(xeus_python_display, m) {
         py::class_<xdisplayhook>(m, "XPythonDisplay")
             .def(py::init<>())
             .def("set_execution_count", &xdisplayhook::set_execution_count)
             .def("__call__", &xdisplayhook::operator(), py::arg("obj"), py::arg("raw") = false);
+
+        m.def("clear_output", &clear_output);
     }
 }

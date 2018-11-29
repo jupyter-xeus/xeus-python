@@ -43,26 +43,27 @@ namespace xpyt
         redirect_output();
         redirect_display();
 
+        // Monkey patching ipywidgets
         py::module sys = py::module::import("sys");
         py::module types = py::module::import("types");
         py::module xeus_python_kernel = py::module::import("xeus_python_kernel");
+        py::module xeus_python_display = py::module::import("xeus_python_display");
+
         py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
 
-        // Monkey patching "from ipykernel.comm import Comm"
         py::module kernel = types.attr("ModuleType")("kernel");
-        kernel.attr("Comm") = xpython_comm;
-        sys.attr("modules")["ipykernel.comm"] = kernel;
+        py::setattr(kernel, "Comm", xpython_comm);
+        py::setattr(kernel, "display", m_displayhook);
+        py::setattr(kernel, "clear_output", xeus_python_display.attr("clear_output"));
+        py::setattr(kernel, "register_target", xeus_python_kernel.attr("register_target"));
+        py::setattr(kernel, "get_ipython", xeus_python_kernel.attr("get_kernel"));
 
-        // Monkey patching "from IPython.display import display"
         py::module display = types.attr("ModuleType")("display");
-        display.attr("display") = m_displayhook;
-        display.attr("clear_output") = py::cpp_function([] () {});
-        sys.attr("modules")["IPython.display"] = display;
+        py::setattr(display, "display", m_displayhook);
+        py::setattr(display, "clear_output", xeus_python_display.attr("clear_output"));
 
-        // Monkey patching "from IPython import get_ipython"
-        py::module ipython = types.attr("ModuleType")("get_kernel");
-        ipython.attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
-        sys.attr("modules")["IPython.core.getipython"] = ipython;
+        sys.attr("modules")["ipywidgets.widgets.kernel"] = kernel;
+        sys.attr("modules")["IPython.display"] = display; // For support of a variety of notebooks
     }
 
     interpreter::~interpreter() {}
