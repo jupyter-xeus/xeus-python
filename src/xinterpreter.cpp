@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 #include "nlohmann/json.hpp"
 
@@ -24,11 +25,16 @@
 
 namespace py = pybind11;
 namespace nl = nlohmann;
+using namespace pybind11::literals;
 
 namespace xpyt
 {
     void interpreter::configure_impl()
     {
+        py::module jedi = py::module::import("jedi");
+        jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
+            jedi.attr("api").attr("environment").attr("SameEnvironment")();
+        });
     }
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
@@ -37,26 +43,25 @@ namespace xpyt
         redirect_output();
         redirect_display();
 
+        py::module sys = py::module::import("sys");
+        py::module types = py::module::import("types");
         py::module xeus_python_kernel = py::module::import("xeus_python_kernel");
+        py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
+
         // Monkey patching "from ipykernel.comm import Comm"
-        try
-        {
-            py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
-            py::module::import("ipykernel.comm").attr("Comm") = xpython_comm;
-        }
-        catch (const std::exception& /*e*/) {}
+        py::module kernel = types.attr("ModuleType")("kernel");
+        kernel.attr("Comm") = xpython_comm;
+        sys.attr("modules")["ipykernel.comm"] = kernel;
+
         // Monkey patching "from IPython.display import display"
-        try
-        {
-            py::module::import("IPython.display").attr("display") = m_displayhook;
-        }
-        catch (const std::exception& /*e*/) {}
+        py::module display = types.attr("ModuleType")("display");
+        display.attr("display") = m_displayhook;
+        sys.attr("modules")["IPython.display"] = display;
+
         // Monkey patching "from IPython import get_ipython"
-        try
-        {
-            py::module::import("IPython").attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
-        }
-        catch (const std::exception& /*e*/) {}
+        py::module ipython = types.attr("ModuleType")("get_kernel");
+        ipython.attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
+        sys.attr("modules")["IPython"] = ipython;
     }
 
     interpreter::~interpreter() {}
@@ -167,10 +172,34 @@ namespace xpyt
     }
 
     nl::json interpreter::complete_request_impl(
-        const std::string& /*code*/,
-        int /*cursor_pos*/)
+        const std::string& code,
+        int cursor_pos)
     {
-        return nl::json::object();
+        nl::json kernel_res;
+
+        py::module jedi = py::module::import("jedi");
+
+        py::str py_code = code.substr(0, cursor_pos);
+        py::list lines = py_code.attr("splitlines")();
+        py::int_ line = py::len(lines);
+        py::int_ column = py::len(lines[py::len(lines) - 1]);
+
+        py::object inter = jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a=line, "column"_a=column);
+        py::list completions = inter.attr("completions")();
+
+        int cursor_start = cursor_pos - (py::len(completions[0].attr("name_with_symbols")) - py::len(completions[0].attr("complete")));
+
+        std::vector<std::string> matches;
+        for (py::handle completion: completions)
+        {
+            matches.push_back(static_cast<std::string>(py::str(completion.attr("name_with_symbols"))));
+        }
+
+        kernel_res["cursor_start"] = cursor_start;
+        kernel_res["cursor_end"] = cursor_pos;
+        kernel_res["matches"] = matches;
+        kernel_res["status"] = "ok";
+        return kernel_res;
     }
 
     nl::json interpreter::inspect_request_impl(const std::string& /*code*/,

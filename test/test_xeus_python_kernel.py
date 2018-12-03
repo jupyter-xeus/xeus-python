@@ -11,6 +11,12 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
     code_page_something = "?"
 
+    completion_samples = [
+        {'text': 'pri', 'matches': {'print'}},
+        {'text': 'from sys imp', 'matches': {'import'}},
+        {'text': 'is', 'matches': {'isinstance', 'issubclass', 'IsADirectoryError'}},
+    ]
+
     def test_xeus_python_stdout(self):
         reply, output_msgs = self.execute_helper(code='print(3)')
         self.assertEqual(output_msgs[0]['msg_type'], 'stream')

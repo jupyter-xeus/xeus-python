@@ -4,6 +4,7 @@ channels:
   - conda-forge
 dependencies:
   - xeus-python=0.0.2
+  - jedi
   - notebook
   - ipywidgets>=7.4
   - itkwidgets
