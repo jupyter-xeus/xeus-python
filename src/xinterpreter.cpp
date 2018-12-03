@@ -220,7 +220,6 @@ namespace xpyt
 
     void interpreter::shutdown_request_impl()
     {
-        py::finalize_interpreter();
     }
 
     void interpreter::input_reply_impl(const std::string& /*value*/)
