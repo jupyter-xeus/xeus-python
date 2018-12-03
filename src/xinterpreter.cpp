@@ -56,12 +56,13 @@ namespace xpyt
         // Monkey patching "from IPython.display import display"
         py::module display = types.attr("ModuleType")("display");
         display.attr("display") = m_displayhook;
+        display.attr("clear_output") = py::cpp_function([] () {});
         sys.attr("modules")["IPython.display"] = display;
 
         // Monkey patching "from IPython import get_ipython"
         py::module ipython = types.attr("ModuleType")("get_kernel");
         ipython.attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
-        sys.attr("modules")["IPython"] = ipython;
+        sys.attr("modules")["IPython.core.getipython"] = ipython;
     }
 
     interpreter::~interpreter() {}
