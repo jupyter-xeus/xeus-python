@@ -192,7 +192,7 @@ namespace xpyt
         std::vector<std::string> matches;
         for (py::handle completion: completions)
         {
-            matches.push_back(static_cast<std::string>(py::str(completion.attr("name_with_symbols"))));
+            matches.push_back(completion.attr("name_with_symbols").cast<std::string>());
         }
 
         kernel_res["cursor_start"] = cursor_start;

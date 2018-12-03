@@ -86,7 +86,7 @@ namespace xpyt
 
     xeus::xtarget* xcomm::target(py::kwargs kwargs) const
     {
-        std::string target_name = static_cast<std::string>(py::str(kwargs["target_name"]));
+        std::string target_name = kwargs["target_name"].cast<std::string>();
         return xeus::get_interpreter().comm_manager().target(target_name);
     }
 
@@ -94,7 +94,7 @@ namespace xpyt
     {
         if (py::hasattr(kwargs, "comm_id"))
         {
-            return static_cast<std::string>(py::str(kwargs["comm_id"]));
+            return kwargs["comm_id"].cast<std::string>();
         }
         else
         {
