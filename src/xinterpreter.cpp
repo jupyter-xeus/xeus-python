@@ -31,10 +31,6 @@ namespace xpyt
 {
     void interpreter::configure_impl()
     {
-        py::module jedi_env = py::module::import("jedi.api.environment");
-        jedi_env.attr("get_default_environment") = [jedi_env] () {
-            return jedi_env.attr("SameEnvironment")();
-        };
     }
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
@@ -43,26 +39,25 @@ namespace xpyt
         redirect_output();
         redirect_display();
 
+        py::module sys = py::module::import("sys");
+        py::module types = py::module::import("types");
         py::module xeus_python_kernel = py::module::import("xeus_python_kernel");
+        py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
+
         // Monkey patching "from ipykernel.comm import Comm"
-        try
-        {
-            py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
-            py::module::import("ipykernel.comm").attr("Comm") = xpython_comm;
-        }
-        catch (const std::exception& /*e*/) {}
+        py::module kernel = types.attr("ModuleType")("kernel");
+        kernel.attr("Comm") = xpython_comm;
+        sys.attr("modules")["ipykernel.comm"] = kernel;
+
         // Monkey patching "from IPython.display import display"
-        try
-        {
-            py::module::import("IPython.display").attr("display") = m_displayhook;
-        }
-        catch (const std::exception& /*e*/) {}
+        py::module display = types.attr("ModuleType")("display");
+        display.attr("display") = m_displayhook;
+        sys.attr("modules")["IPython.display"] = display;
+
         // Monkey patching "from IPython import get_ipython"
-        try
-        {
-            py::module::import("IPython").attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
-        }
-        catch (const std::exception& /*e*/) {}
+        py::module ipython = types.attr("ModuleType")("get_kernel");
+        ipython.attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
+        sys.attr("modules")["IPython"] = ipython;
     }
 
     interpreter::~interpreter() {}

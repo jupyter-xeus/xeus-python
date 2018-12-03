@@ -14,7 +14,7 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
     completion_samples = [
         {'text': 'pri', 'matches': {'print'}},
         {'text': 'from sys imp', 'matches': {'import'}},
-        {'text': 'is', 'matches': {'isinstance', 'issubclass'}},
+        {'text': 'is', 'matches': {'isinstance', 'issubclass', 'IsADirectoryError'}},
     ]
 
     def test_xeus_python_stdout(self):
