@@ -17,6 +17,8 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
         {'text': 'is', 'matches': {'isinstance', 'issubclass', 'IsADirectoryError'}},
     ]
 
+    code_inspect_sample = "print"
+
     def test_xeus_python_stdout(self):
         reply, output_msgs = self.execute_helper(code='print(3)')
         self.assertEqual(output_msgs[0]['msg_type'], 'stream')

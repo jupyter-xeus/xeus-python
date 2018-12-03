@@ -178,15 +178,7 @@ namespace xpyt
     {
         nl::json kernel_res;
 
-        py::module jedi = py::module::import("jedi");
-
-        py::str py_code = code.substr(0, cursor_pos);
-        py::list lines = py_code.attr("splitlines")();
-        py::int_ line = py::len(lines);
-        py::int_ column = py::len(lines[py::len(lines) - 1]);
-
-        py::object inter = jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a=line, "column"_a=column);
-        py::list completions = inter.attr("completions")();
+        py::list completions = jedi_interpret(code, cursor_pos).attr("completions")();
 
         int cursor_start = cursor_pos - (py::len(completions[0].attr("name_with_symbols")) - py::len(completions[0].attr("complete")));
 
@@ -203,11 +195,28 @@ namespace xpyt
         return kernel_res;
     }
 
-    nl::json interpreter::inspect_request_impl(const std::string& /*code*/,
-                                                  int /*cursor_pos*/,
-                                                  int /*detail_level*/)
+    nl::json interpreter::inspect_request_impl(
+        const std::string& code,
+        int cursor_pos,
+        int /*detail_level*/)
     {
-        return nl::json::object();
+        nl::json kernel_res;
+        nl::json pub_data;
+
+        py::list definitions = jedi_interpret(code, cursor_pos).attr("goto_definitions")();
+
+        bool found = false;
+        if (py::len(definitions) != 0)
+        {
+            found = true;
+            pub_data["text/plain"] = definitions[0].attr("docstring")().cast<std::string>();
+        }
+
+        kernel_res["data"] = pub_data;
+        kernel_res["metadata"] = nl::json::object();;
+        kernel_res["found"] = found;
+        kernel_res["status"] = "ok";
+        return kernel_res;
     }
 
     nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)
@@ -274,5 +283,23 @@ namespace xpyt
 
         sys.attr("displayhook") = m_displayhook;
         py::globals()["display"] = m_displayhook;
+    }
+
+    py::object interpreter::jedi_interpret(const std::string& code, int cursor_pos)
+    {
+        py::module jedi = py::module::import("jedi");
+
+        py::str py_code = code.substr(0, cursor_pos + 1);
+
+        py::int_ line = 1;
+        py::int_ column = 0;
+        if (py::len(py_code) != 0)
+        {
+            py::list lines = py_code.attr("splitlines")();
+            line = py::len(lines);
+            column = py::len(lines[py::len(lines) - 1]);
+        }
+
+        return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a=line, "column"_a=column);
     }
 }
