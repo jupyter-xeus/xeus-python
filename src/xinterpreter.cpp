@@ -31,6 +31,10 @@ namespace xpyt
 {
     void interpreter::configure_impl()
     {
+        py::module jedi = py::module::import("jedi");
+        jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
+            jedi.attr("api").attr("environment").attr("SameEnvironment")();
+        });
     }
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
