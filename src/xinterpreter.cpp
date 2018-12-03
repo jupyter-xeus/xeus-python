@@ -287,10 +287,16 @@ namespace xpyt
     {
         py::module jedi = py::module::import("jedi");
 
-        py::str py_code = code.substr(0, cursor_pos);
-        py::list lines = py_code.attr("splitlines")();
-        py::int_ line = py::len(lines);
-        py::int_ column = py::len(lines[py::len(lines) - 1]);
+        py::str py_code = code.substr(0, cursor_pos + 1);
+
+        py::int_ line = 1;
+        py::int_ column = 0;
+        if (py::len(py_code) != 0)
+        {
+            py::list lines = py_code.attr("splitlines")();
+            line = py::len(lines);
+            column = py::len(lines[py::len(lines) - 1]);
+        }
 
         return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a=line, "column"_a=column);
     }
