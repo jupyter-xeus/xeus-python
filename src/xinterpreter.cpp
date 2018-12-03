@@ -204,7 +204,7 @@ namespace xpyt
 
         py::list definitions = jedi_interpret(code, cursor_pos).attr("goto_definitions")();
 
-        int found = false;
+        bool found = false;
         if (py::len(definitions) != 0)
         {
             found = true;
@@ -212,6 +212,7 @@ namespace xpyt
         }
 
         kernel_res["data"] = pub_data;
+        kernel_res["metadata"] = nl::json::object();;
         kernel_res["found"] = found;
         kernel_res["status"] = "ok";
         return kernel_res;
