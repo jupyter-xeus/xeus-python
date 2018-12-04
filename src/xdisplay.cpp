@@ -125,7 +125,8 @@ namespace xpyt
         return pub_data;
     }
 
-    PYBIND11_EMBEDDED_MODULE(xeus_python_display, m) {
+    PYBIND11_EMBEDDED_MODULE(xeus_python_display, m)
+    {
         py::class_<xdisplayhook>(m, "XPythonDisplay")
             .def(py::init<>())
             .def("set_execution_count", &xdisplayhook::set_execution_count)

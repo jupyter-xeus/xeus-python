@@ -40,7 +40,7 @@ configure_file (
 # Dependencies #
 ################
 
-find_package(xeus 0.16.0 REQUIRED)
+find_package(xeus 0.17.0 REQUIRED)
 find_package(cppzmq 4.3.0 REQUIRED)
 
 find_package(PythonLibs REQUIRED)
@@ -94,11 +94,18 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${
 set(XEUSCLING_SRC
     src/main.cpp
     src/xcomm.cpp
+    src/xcomm.hpp
+    src/xinput.cpp
+    src/xinput.hpp
     src/xinterpreter.cpp
+    src/xinterpreter.hpp
     src/xstream.cpp
+    src/xstream.hpp
     src/xdisplay.cpp
+    src/xdisplay.hpp
     src/xpyt_config.hpp
     src/xutils.cpp
+    src/xutils.hpp
 )
 
 set(LIBS ${PYTHON_LIBRARIES} xeus)

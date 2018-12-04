@@ -24,7 +24,6 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
-
     zmq::message_t pybytes_to_zmq_message(py::bytes bytes)
     {
         char* buffer;
@@ -40,7 +39,7 @@ namespace xpyt
     py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers)
     {
         py::list bufferlist;
-        for (const zmq::message_t& buffer: buffers)
+        for (const zmq::message_t& buffer : buffers)
         {
             const char* buf = buffer.data<const char>();
             bufferlist.attr("append")(py::bytes(buf));
@@ -51,7 +50,7 @@ namespace xpyt
     std::vector<zmq::message_t> pylist_to_zmq_buffers(py::list bufferlist)
     {
         std::vector<zmq::message_t> buffers;
-        for (py::handle buffer: bufferlist)
+        for (py::handle buffer : bufferlist)
         {
             if (py::isinstance<py::memoryview>(buffer))
             {
@@ -77,12 +76,10 @@ namespace xpyt
 
         return py_msg;
     }
-
 }
 
 namespace nlohmann
 {
-
     py::object adl_serializer<py::object>::from_json(const json& j)
     {
         py::module py_json = py::module::import("json");
@@ -98,5 +95,4 @@ namespace nlohmann
             py::str(py_json.attr("dumps")(obj))
         ));
     }
-
 }

@@ -50,6 +50,7 @@ namespace xpyt
         py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
 
         // Monkey patching "from ipykernel.comm import Comm"
+<<<<<<< HEAD
         py::module kernel = types.attr("ModuleType")("kernel");
         kernel.attr("Comm") = xpython_comm;
         sys.attr("modules")["ipykernel.comm"] = kernel;
@@ -64,6 +65,33 @@ namespace xpyt
         py::module ipython = types.attr("ModuleType")("get_kernel");
         ipython.attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
         sys.attr("modules")["IPython.core.getipython"] = ipython;
+=======
+        try
+        {
+            py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
+            py::module::import("ipykernel.comm").attr("Comm") = xpython_comm;
+        }
+        catch (const std::exception& /*e*/)
+        {
+        }
+        // Monkey patching "from IPython.display import display"
+        try
+        {
+            py::module::import("IPython.display").attr("display") = m_displayhook;
+        }
+        catch (const std::exception& /*e*/)
+        {
+        }
+        // Monkey patching "from IPython import get_ipython"
+        try
+        {
+            py::module::import("IPython").attr("get_ipython")
+                = xeus_python_kernel.attr("get_kernel");
+        }
+        catch (const std::exception& /*e*/)
+        {
+        }
+>>>>>>> Implementation of a scope guard
     }
 
     interpreter::~interpreter()
@@ -74,7 +102,7 @@ namespace xpyt
                                                const std::string& code,
                                                bool silent,
                                                bool /*store_history*/,
-                                               xeus::xjson /*user_expressions*/,
+                                               const nl::json::object_t* /*user_expressions*/,
                                                bool allow_stdin)
     {
         nl::json kernel_res;
@@ -178,9 +206,13 @@ namespace xpyt
         return kernel_res;
     }
 
+<<<<<<< HEAD
     nl::json interpreter::complete_request_impl(
         const std::string& code,
         int cursor_pos)
+=======
+    nl::json interpreter::complete_request_impl(const std::string& /*code*/, int /*cursor_pos*/)
+>>>>>>> Implementation of a scope guard
     {
         nl::json kernel_res;
 
@@ -201,10 +233,16 @@ namespace xpyt
         return kernel_res;
     }
 
+<<<<<<< HEAD
     nl::json interpreter::inspect_request_impl(
         const std::string& code,
         int cursor_pos,
         int /*detail_level*/)
+=======
+    nl::json interpreter::inspect_request_impl(const std::string& /*code*/,
+                                               int /*cursor_pos*/,
+                                               int /*detail_level*/)
+>>>>>>> Implementation of a scope guard
     {
         nl::json kernel_res;
         nl::json pub_data;
@@ -268,6 +306,10 @@ namespace xpyt
     {
     }
 
+    void interpreter::input_reply_impl(const std::string& /*value*/)
+    {
+    }
+
     void interpreter::redirect_output()
     {
         py::module sys = py::module::import("sys");
@@ -287,6 +329,46 @@ namespace xpyt
         sys.attr("displayhook") = m_displayhook;
         py::globals()["display"] = m_displayhook;
     }
+<<<<<<< HEAD
+
+    void interpreter::forward_input(bool /*allow_stdin*/)
+    {
+        py::module xeus_python_stream = py::module::import("xeus_python_stream");
+        if (PY_MAJOR_VERSION == 3)
+        {
+            py::module builtins = py::module::import("builtins");
+            m_sys_raw_input = builtins.attr("input");
+            builtins.attr("input") = xeus_python_stream.attr("input");
+        }
+        else
+        {
+            py::module builtins = py::module::import("__builtins__");
+            m_sys_raw_input = builtins.attr("raw_input");
+            m_sys_input = builtins.attr("input");
+            builtins.attr("raw_input") = xeus_python_stream.attr("raw_input");
+            builtins.attr("input") = xeus_python_stream.attr("input");
+        }
+        py::module getpass = py::module::import("getpass");
+        m_sys_getpass = getpass.attr("getpass");
+        getpass.attr("getpass") = xeus_python_stream.attr("getpass");
+    }
+
+    void interpreter::restore_input()
+    {
+        if (PY_MAJOR_VERSION == 3)
+        {
+            py::module builtins = py::module::import("builtins");
+            builtins.attr("input") = m_sys_raw_input;
+        }
+        else
+        {
+            py::module builtins = py::module::import("__builtins__");
+            builtins.attr("raw_input") = m_sys_raw_input;
+            builtins.attr("input") = m_sys_input;
+        }
+        py::module getpass = py::module::import("getpass");
+        getpass.attr("getpass") = m_sys_getpass;
+    }
 
     py::object interpreter::jedi_interpret(const std::string& code, int cursor_pos)
     {
@@ -305,4 +387,6 @@ namespace xpyt
 
         return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a=line, "column"_a=column);
     }
+=======
+>>>>>>> Implementation of a scope guard
 }

@@ -21,7 +21,8 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    xstream::xstream(std::string stream_name) : m_stream_name(stream_name)
+    xstream::xstream(std::string stream_name)
+        : m_stream_name(stream_name)
     {
     }
 
@@ -34,7 +35,8 @@ namespace xpyt
         xeus::get_interpreter().publish_stream(m_stream_name, message);
     }
 
-    PYBIND11_EMBEDDED_MODULE(xeus_python_stream, m) {
+    PYBIND11_EMBEDDED_MODULE(xeus_python_stream, m)
+    {
         py::class_<xstream>(m, "XPythonStream")
             .def(py::init<std::string>())
             .def("write", &xstream::write);

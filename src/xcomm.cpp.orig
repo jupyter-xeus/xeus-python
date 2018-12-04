@@ -29,11 +29,9 @@ namespace xpyt
     xcomm::xcomm(py::args /*args*/, py::kwargs kwargs)
         : m_comm(target(kwargs), id(kwargs))
     {
-        m_comm.open(
-            kwargs.attr("get")("metadata", py::dict()),
-            kwargs.attr("get")("data", py::dict()),
-            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
-        );
+        m_comm.open(kwargs.attr("get")("metadata", py::dict()),
+                    kwargs.attr("get")("data", py::dict()),
+                    pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list())));
     }
 
     xcomm::xcomm(xeus::xcomm&& comm)
@@ -57,20 +55,16 @@ namespace xpyt
 
     void xcomm::close(py::args /*args*/, py::kwargs kwargs)
     {
-        m_comm.close(
-            kwargs.attr("get")("metadata", py::dict()),
-            kwargs.attr("get")("data", py::dict()),
-            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
-        );
+        m_comm.close(kwargs.attr("get")("metadata", py::dict()),
+                     kwargs.attr("get")("data", py::dict()),
+                     pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list())));
     }
 
     void xcomm::send(py::args /*args*/, py::kwargs kwargs)
     {
-        m_comm.send(
-            kwargs.attr("get")("metadata", py::dict()),
-            kwargs.attr("get")("data", py::dict()),
-            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
-        );
+        m_comm.send(kwargs.attr("get")("metadata", py::dict()),
+                    kwargs.attr("get")("data", py::dict()),
+                    pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list())));
     }
 
     void xcomm::on_msg(python_callback_type callback)
@@ -93,8 +87,12 @@ namespace xpyt
     {
         if (py::hasattr(kwargs, "comm_id"))
         {
+<<<<<<< HEAD
+            return kwargs["comm_id"].cast<std::string>();
+=======
             // TODO: prevent copy
-            return xeus::xguid(kwargs["comm_id"].cast<std::string>());
+            return xeus::xguid(static_cast<std::string>(py::str(kwargs["comm_id"])));
+>>>>>>> ..
         }
         else
         {
