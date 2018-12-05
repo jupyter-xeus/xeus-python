@@ -22,6 +22,12 @@
 namespace py = pybind11;
 namespace nl = nlohmann;
 
+#if PY_MAJOR_VERSION == 2
+    #define XPYT_BUILTINS "__builtin__"
+#else
+    #define XPYT_BUILTINS "builtins"
+#endif
+
 namespace xpyt
 {
     py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers);

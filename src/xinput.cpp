@@ -17,7 +17,7 @@
 #include "pybind11/functional.h"
 
 #include "xinput.hpp"
-#include "xpyt_config.hpp"
+#include "xutils.hpp"
 
 namespace py = pybind11;
 
@@ -76,18 +76,12 @@ namespace xpyt
 
     // Implementation of input_redirection
 
-#if PY_MAJOR_VERSION == 2
-#define XEUS_PYTHON_BUILTINS __builtin__
-#else
-#define XEUS_PYTHON_BUILTINS builtins
-#endif
-
     input_redirection::input_redirection(bool allow_stdin)
     {
         py::module xeus_python_input = py::module::import("xeus_python_input");
 
         // Forward input()
-        py::module builtins = py::module::import(XPYT_STRINGIFY(XEUS_PYTHON_BUILTINS));
+        py::module builtins = py::module::import(XPYT_BUILTINS);
         m_sys_input = builtins.attr("input");
         builtins.attr("input") = allow_stdin ? xeus_python_input.attr("input")
                                              : xeus_python_input.attr("notimplemented");
@@ -110,7 +104,7 @@ namespace xpyt
     input_redirection::~input_redirection()
     {
         // Restore input()
-        py::module builtins = py::module::import(XPYT_STRINGIFY(XEUS_PYTHON_BUILTINS));
+        py::module builtins = py::module::import(XPYT_BUILTINS);
         builtins.attr("input") = m_sys_input;
 
         // Restore raw_input()

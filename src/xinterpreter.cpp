@@ -19,6 +19,7 @@
 #include "pybind11/functional.h"
 
 #include "xpyt_config.hpp"
+#include "xutils.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
 #include "xinterpreter.hpp"
@@ -122,7 +123,7 @@ namespace xpyt
         {
             // Import AST ans builtins modules
             py::module ast = py::module::import("ast");
-            py::module builtins = py::module::import("builtins");
+            py::module builtins = py::module::import(XPYT_BUILTINS);
 
             // Parse code to AST
             py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
