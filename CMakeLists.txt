@@ -91,7 +91,7 @@ endif()
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
-set(XEUSCLING_SRC
+set(XEUSPYTHON_SRC
     src/main.cpp
     src/xcomm.cpp
     src/xcomm.hpp
@@ -110,7 +110,7 @@ set(XEUSCLING_SRC
 
 set(LIBS ${PYTHON_LIBRARIES} xeus)
 set(XEUSPYTHON_TARGET xeus-python)
-add_executable(${XEUSPYTHON_TARGET} ${XEUSCLING_SRC})
+add_executable(${XEUSPYTHON_TARGET} ${XEUSPYTHON_SRC})
 set_target_properties(${XEUSPYTHON_TARGET} PROPERTIES ENABLE_EXPORTS 1)
 
 if (APPLE)
@@ -130,6 +130,21 @@ set_target_properties(${XEUSPYTHON_TARGET} PROPERTIES
 
 include_directories(${PYTHON_INCLUDE_DIRS})
 target_link_libraries(${XEUSPYTHON_TARGET} ${LIBS})
+
+#########
+# Tests #
+#########
+
+OPTION(BUILD_TESTS "xeus-python test suite" OFF)
+OPTION(DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
+
+if(DOWNLOAD_GTEST OR GTEST_SRC_DIR)
+    set(BUILD_TESTS ON)
+endif()
+
+if(BUILD_TESTS)
+    add_subdirectory(test)
+endif()
 
 ################
 # Installation #

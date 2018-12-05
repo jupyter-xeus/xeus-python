@@ -39,10 +39,10 @@ install:
     # Build and install xeus-python
     - mkdir build
     - cd build
-    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda/ ..
+    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda/ -D DOWNLOAD_GTEST=ON ..
     - make -j2 install
     # Install jupyter_kernel_test and pytest
     - conda install pytest jupyter_kernel_test -c conda-forge
-    - cd ../test
 script:
-    - py.test .
+    - ./test/test_xeus_python
+    - cd ../test && py.test .
