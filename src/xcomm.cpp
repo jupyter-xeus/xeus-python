@@ -26,7 +26,7 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
-    xcomm::xcomm(py::args /*args*/, py::kwargs kwargs)
+    xcomm::xcomm(const py::args& /*args*/, const py::kwargs& kwargs)
         : m_comm(target(kwargs), id(kwargs))
     {
         m_comm.open(
@@ -55,7 +55,7 @@ namespace xpyt
         return true;
     }
 
-    void xcomm::close(py::args /*args*/, py::kwargs kwargs)
+    void xcomm::close(const py::args& /*args*/, const py::kwargs& kwargs)
     {
         m_comm.close(
             kwargs.attr("get")("metadata", py::dict()),
@@ -64,7 +64,7 @@ namespace xpyt
         );
     }
 
-    void xcomm::send(py::args /*args*/, py::kwargs kwargs)
+    void xcomm::send(const py::args& /*args*/, const py::kwargs& kwargs)
     {
         m_comm.send(
             kwargs.attr("get")("metadata", py::dict()),
@@ -73,23 +73,23 @@ namespace xpyt
         );
     }
 
-    void xcomm::on_msg(python_callback_type callback)
+    void xcomm::on_msg(const python_callback_type& callback)
     {
         m_comm.on_message(cpp_callback(callback));
     }
 
-    void xcomm::on_close(python_callback_type callback)
+    void xcomm::on_close(const python_callback_type& callback)
     {
         m_comm.on_close(cpp_callback(callback));
     }
 
-    xeus::xtarget* xcomm::target(py::kwargs kwargs) const
+    xeus::xtarget* xcomm::target(const py::kwargs& kwargs) const
     {
         std::string target_name = kwargs["target_name"].cast<std::string>();
         return xeus::get_interpreter().comm_manager().target(target_name);
     }
 
-    xeus::xguid xcomm::id(py::kwargs kwargs) const
+    xeus::xguid xcomm::id(const py::kwargs& kwargs) const
     {
         if (py::hasattr(kwargs, "comm_id"))
         {
@@ -102,7 +102,7 @@ namespace xpyt
         }
     }
 
-    auto xcomm::cpp_callback(python_callback_type py_callback) const -> cpp_callback_type
+    auto xcomm::cpp_callback(const python_callback_type& py_callback) const -> cpp_callback_type
     {
         return [this, py_callback](const xeus::xmessage& msg) {
             py_callback(cppmessage_to_pymessage(msg));
@@ -117,9 +117,9 @@ namespace xpyt
     {
     }
 
-    void register_target(py::str target_name, py::object callback)
+    void register_target(const py::str& target_name, const py::object& callback)
     {
-        auto target_callback = [target_name, callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
+        auto target_callback = [&callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
             callback(xcomm(std::move(comm)), cppmessage_to_pymessage(msg));
         };
 

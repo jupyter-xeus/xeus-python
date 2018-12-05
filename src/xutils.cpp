@@ -48,7 +48,7 @@ namespace xpyt
         return bufferlist;
     }
 
-    std::vector<zmq::message_t> pylist_to_zmq_buffers(py::list bufferlist)
+    std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::list& bufferlist)
     {
         std::vector<zmq::message_t> buffers;
         for (py::handle buffer : bufferlist)
@@ -130,7 +130,7 @@ namespace nlohmann
             }
         }
 
-        json to_json_impl(py::handle obj)
+        json to_json_impl(const py::handle& obj)
         {
             if (obj.is_none())
             {
@@ -155,7 +155,7 @@ namespace nlohmann
             if (py::isinstance<py::tuple>(obj) || py::isinstance<py::list>(obj))
             {
                 json out;
-                for (py::handle value: obj)
+                for (const py::handle& value: obj)
                 {
                     out.push_back(to_json_impl(value));
                 }
@@ -164,7 +164,7 @@ namespace nlohmann
             if (py::isinstance<py::dict>(obj))
             {
                 json out;
-                for (py::handle key: obj)
+                for (const py::handle& key: obj)
                 {
                     out[key.cast<std::string>()] = to_json_impl(obj[key]);
                 }
@@ -179,7 +179,7 @@ namespace nlohmann
         return detail::from_json_impl(j);
     }
 
-    void adl_serializer<py::object>::to_json(json& j, py::object obj)
+    void adl_serializer<py::object>::to_json(json& j, const py::object& obj)
     {
         j = detail::to_json_impl(obj);
     }

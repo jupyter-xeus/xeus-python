@@ -37,7 +37,7 @@ namespace xpyt
         m_execution_count = execution_count;
     }
 
-    void xdisplayhook::operator()(py::object obj, bool raw = false)
+    void xdisplayhook::operator()(const py::object& obj, bool raw = false) const
     {
         auto& interp = xeus::get_interpreter();
 
@@ -67,7 +67,7 @@ namespace xpyt
         }
     }
 
-    nl::json display_pub_data(py::object obj)
+    nl::json xdisplayhook::display_pub_data(const py::object& obj) const
     {
         py::module py_json = py::module::import("json");
         nl::json pub_data;
