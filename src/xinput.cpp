@@ -68,10 +68,9 @@ namespace xpyt
          .def("getpass", getpass, py::arg("prompt") = "")
          .def("notimplemented", notimplemented, py::arg("prompt") = "");
 
-        if (PY_MAJOR_VERSION == 2)
-        {
-            m.def("raw_input", input, py::arg("prompt") = "");
-        }
+#if PY_MAJOR_VERSION == 2
+        m.def("raw_input", input, py::arg("prompt") = "");
+#endif
     }
 
     // Implementation of input_redirection
@@ -86,13 +85,12 @@ namespace xpyt
         builtins.attr("input") = allow_stdin ? xeus_python_input.attr("input")
                                              : xeus_python_input.attr("notimplemented");
 
+#if PY_MAJOR_VERSION == 2
         // Forward raw_input()
-        if (PY_MAJOR_VERSION == 2)
-        {
-            m_sys_raw_input = builtins.attr("raw_input");
-            builtins.attr("raw_input") = allow_stdin ? xeus_python_input.attr("raw_input")
-                                                     : xeus_python_input.attr("notimplemented");
-        }
+        m_sys_raw_input = builtins.attr("raw_input");
+        builtins.attr("raw_input") = allow_stdin ? xeus_python_input.attr("raw_input")
+                                                 : xeus_python_input.attr("notimplemented");
+#endif
 
         // Forward getpass()
         py::module getpass = py::module::import("getpass");
@@ -107,11 +105,10 @@ namespace xpyt
         py::module builtins = py::module::import(XPYT_BUILTINS);
         builtins.attr("input") = m_sys_input;
 
+#if PY_MAJOR_VERSION == 2
         // Restore raw_input()
-        if (PY_MAJOR_VERSION == 2)
-        {
-            builtins.attr("raw_input") = m_sys_raw_input;
-        }
+        builtins.attr("raw_input") = m_sys_raw_input;
+#endif
 
         // Restore getpass()
         py::module getpass = py::module::import("getpass");
