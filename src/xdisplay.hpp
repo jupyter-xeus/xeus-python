@@ -28,14 +28,14 @@ namespace xpyt
         virtual ~xdisplayhook();
 
         void set_execution_count(int execution_count);
-        void operator()(py::object obj, bool raw);
+        void operator()(const py::object& obj, bool raw) const;
 
     private:
 
+        nl::json display_pub_data(const py::object& obj) const;
+
         int m_execution_count;
     };
-
-    nl::json display_pub_data(py::object obj);
 }
 
 #endif

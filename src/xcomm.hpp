@@ -33,7 +33,7 @@ namespace xpyt
         using cpp_callback_type = std::function<void(const xeus::xmessage&)>;
         using zmq_buffers_type = std::vector<zmq::message_t>;
 
-        xcomm(py::args args, py::kwargs kwargs);
+        xcomm(const py::args& args, const py::kwargs& kwargs);
         xcomm(xeus::xcomm&& comm);
         xcomm(xcomm&& comm) = default;
         virtual ~xcomm();
@@ -41,16 +41,16 @@ namespace xpyt
         std::string comm_id() const;
         bool kernel() const;
 
-        void close(py::args args, py::kwargs kwargs);
-        void send(py::args args, py::kwargs kwargs);
-        void on_msg(python_callback_type callback);
-        void on_close(python_callback_type callback);
+        void close(const py::args& args, const py::kwargs& kwargs);
+        void send(const py::args& args, const py::kwargs& kwargs);
+        void on_msg(const python_callback_type& callback);
+        void on_close(const python_callback_type& callback);
 
     private:
 
-        xeus::xtarget* target(py::kwargs kwargs) const;
-        xeus::xguid id(py::kwargs kwargs) const;
-        cpp_callback_type cpp_callback(python_callback_type callback) const;
+        xeus::xtarget* target(const py::kwargs& kwargs) const;
+        xeus::xguid id(const py::kwargs& kwargs) const;
+        cpp_callback_type cpp_callback(const python_callback_type& callback) const;
 
         xeus::xcomm m_comm;
     };

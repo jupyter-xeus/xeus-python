@@ -22,10 +22,16 @@
 namespace py = pybind11;
 namespace nl = nlohmann;
 
+#if PY_MAJOR_VERSION == 2
+    #define XPYT_BUILTINS "__builtin__"
+#else
+    #define XPYT_BUILTINS "builtins"
+#endif
+
 namespace xpyt
 {
     py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers);
-    std::vector<zmq::message_t> pylist_to_zmq_buffers(py::list bufferlist);
+    std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::list& bufferlist);
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
 }
@@ -36,7 +42,7 @@ namespace nlohmann
     struct adl_serializer<py::object>
     {
         static py::object from_json(const json& j);
-        static void to_json(json& j, py::object obj);
+        static void to_json(json& j, const py::object& obj);
     };
 }
 
