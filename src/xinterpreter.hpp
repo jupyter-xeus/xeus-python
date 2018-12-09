@@ -39,7 +39,7 @@ namespace xpyt
                                       const std::string& code,
                                       bool silent,
                                       bool store_history,
-                                      xeus::xjson user_expressions,
+                                      nl::json user_expressions,
                                       bool allow_stdin) override;
 
         nl::json complete_request_impl(const std::string& code, int cursor_pos) override;

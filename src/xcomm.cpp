@@ -12,14 +12,14 @@
 
 #include "nlohmann/json.hpp"
 
-#include "xeus/xinterpreter.hpp"
 #include "xeus/xcomm.hpp"
+#include "xeus/xinterpreter.hpp"
 
-#include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
+#include "pybind11/pybind11.h"
 
-#include "xutils.hpp"
 #include "xcomm.hpp"
+#include "xutils.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;
