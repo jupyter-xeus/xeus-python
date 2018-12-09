@@ -7,10 +7,10 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <cmath>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
-#include <cmath>
 
 #include "nlohmann/json.hpp"
 
@@ -81,7 +81,6 @@ namespace xpyt
 
 namespace nlohmann
 {
-
     namespace detail
     {
         py::object from_json_impl(const json& j)
@@ -113,7 +112,7 @@ namespace nlohmann
             if (j.is_array())
             {
                 py::list obj;
-                for (const auto& el: j)
+                for (const auto& el : j)
                 {
                     obj.attr("append")(from_json_impl(el));
                 }
@@ -155,7 +154,7 @@ namespace nlohmann
             if (py::isinstance<py::tuple>(obj) || py::isinstance<py::list>(obj))
             {
                 json out;
-                for (const py::handle& value: obj)
+                for (const py::handle& value : obj)
                 {
                     out.push_back(to_json_impl(value));
                 }
@@ -164,7 +163,7 @@ namespace nlohmann
             if (py::isinstance<py::dict>(obj))
             {
                 json out;
-                for (const py::handle& key: obj)
+                for (const py::handle& key : obj)
                 {
                     out[key.cast<std::string>()] = to_json_impl(obj[key]);
                 }

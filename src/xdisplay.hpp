@@ -32,8 +32,6 @@ namespace xpyt
 
     private:
 
-        nl::json display_pub_data(const py::object& obj) const;
-
         int m_execution_count;
     };
 }

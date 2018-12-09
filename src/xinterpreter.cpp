@@ -7,10 +7,10 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 #include "nlohmann/json.hpp"
 
@@ -18,12 +18,12 @@
 
 #include "pybind11/functional.h"
 
-#include "xpyt_config.hpp"
-#include "xutils.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
 #include "xinterpreter.hpp"
+#include "xpyt_config.hpp"
 #include "xstream.hpp"
+#include "xutils.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;
@@ -48,6 +48,7 @@ namespace xpyt
         py::module sys = py::module::import("sys");
         py::module types = py::module::import("types");
         py::module xeus_python_kernel = py::module::import("xeus_python_kernel");
+        py::module xeus_python_display = py::module::import("xeus_python_display");
         py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
 
         // Monkey patching "from ipykernel.comm import Comm"
@@ -57,7 +58,8 @@ namespace xpyt
 
         // Monkey patching "from IPython.display import display"
         py::module display = types.attr("ModuleType")("display");
-        display.attr("display") = m_displayhook;
+        display.attr("display") = xeus_python_display.attr("display");
+        display.attr("update_display") = xeus_python_display.attr("update_display");
         display.attr("clear_output") = py::cpp_function([] () {});
         sys.attr("modules")["IPython.display"] = display;
 
@@ -71,11 +73,11 @@ namespace xpyt
     {
     }
 
-    nl::json interpreter::execute_request_impl(int execution_counter,
+    nl::json interpreter::execute_request_impl(int execution_count,
                                                const std::string& code,
                                                bool silent,
                                                bool /*store_history*/,
-                                               xeus::xjson /*user_expressions*/,
+                                               nl::json /*user_expressions*/,
                                                bool allow_stdin)
     {
         nl::json kernel_res;
@@ -144,7 +146,7 @@ namespace xpyt
                 py::object compiled_code = builtins.attr("compile")(code_ast, "<ast>", "exec");
                 py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, "<ast>", "single");
 
-                m_displayhook.attr("set_execution_count")(execution_counter);
+                m_displayhook.attr("set_execution_count")(execution_count);
 
                 builtins.attr("exec")(compiled_code, py::globals());
                 builtins.attr("exec")(compiled_interactive_code, py::globals());
@@ -190,7 +192,7 @@ namespace xpyt
         int cursor_start = cursor_pos - (py::len(completions[0].attr("name_with_symbols")) - py::len(completions[0].attr("complete")));
 
         std::vector<std::string> matches;
-        for (py::handle completion: completions)
+        for (py::handle completion : completions)
         {
             matches.push_back(completion.attr("name_with_symbols").cast<std::string>());
         }
@@ -202,10 +204,9 @@ namespace xpyt
         return kernel_res;
     }
 
-    nl::json interpreter::inspect_request_impl(
-        const std::string& code,
-        int cursor_pos,
-        int /*detail_level*/)
+    nl::json interpreter::inspect_request_impl(const std::string& code,
+                                               int cursor_pos,
+                                               int /*detail_level*/)
     {
         nl::json kernel_res;
         nl::json pub_data;
@@ -220,7 +221,7 @@ namespace xpyt
         }
 
         kernel_res["data"] = pub_data;
-        kernel_res["metadata"] = nl::json::object();;
+        kernel_res["metadata"] = nl::json::object();
         kernel_res["found"] = found;
         kernel_res["status"] = "ok";
         return kernel_res;
@@ -286,7 +287,7 @@ namespace xpyt
         m_displayhook = xeus_python_display.attr("XPythonDisplay")();
 
         sys.attr("displayhook") = m_displayhook;
-        py::globals()["display"] = m_displayhook;
+        py::globals()["display"] = xeus_python_display.attr("display");
     }
 
     py::object interpreter::jedi_interpret(const std::string& code, int cursor_pos)
@@ -304,6 +305,6 @@ namespace xpyt
             column = py::len(lines[py::len(lines) - 1]);
         }
 
-        return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a=line, "column"_a=column);
+        return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a = line, "column"_a = column);
     }
 }

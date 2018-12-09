@@ -13,61 +13,18 @@
 
 #include "xeus/xinterpreter.hpp"
 
-#include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
+#include "pybind11/pybind11.h"
 
-#include "xutils.hpp"
 #include "xdisplay.hpp"
+#include "xutils.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;
 
 namespace xpyt
 {
-    xdisplayhook::xdisplayhook() : m_execution_count(0)
-    {
-    }
-
-    xdisplayhook::~xdisplayhook()
-    {
-    }
-
-    void xdisplayhook::set_execution_count(int execution_count)
-    {
-        m_execution_count = execution_count;
-    }
-
-    void xdisplayhook::operator()(const py::object& obj, bool raw = false) const
-    {
-        auto& interp = xeus::get_interpreter();
-
-        if (!obj.is_none())
-        {
-            if (hasattr(obj, "_ipython_display_"))
-            {
-                obj.attr("_ipython_display_")();
-                return;
-            }
-
-            xeus::xjson pub_data;
-            if (raw)
-            {
-                pub_data = obj;
-            }
-            else
-            {
-                pub_data = display_pub_data(obj);
-            }
-
-            interp.publish_execution_result(
-                m_execution_count,
-                std::move(pub_data),
-                nl::json::object()
-            );
-        }
-    }
-
-    nl::json xdisplayhook::display_pub_data(const py::object& obj) const
+    nl::json mime_bundle_repr(const py::object& obj)
     {
         py::module py_json = py::module::import("json");
         nl::json pub_data;
@@ -125,11 +82,110 @@ namespace xpyt
         return pub_data;
     }
 
+    /*******************************
+     * xdisplayhook implementation *
+     *******************************/
+
+    xdisplayhook::xdisplayhook()
+        : m_execution_count(0)
+    {
+    }
+
+    xdisplayhook::~xdisplayhook()
+    {
+    }
+
+    void xdisplayhook::set_execution_count(int execution_count)
+    {
+        m_execution_count = execution_count;
+    }
+
+    void xdisplayhook::operator()(const py::object& obj, bool raw = false) const
+    {
+        auto& interp = xeus::get_interpreter();
+
+        if (!obj.is_none())
+        {
+            if (hasattr(obj, "_ipython_display_"))
+            {
+                obj.attr("_ipython_display_")();
+                return;
+            }
+
+            nl::json pub_data;
+            if (raw)
+            {
+                pub_data = obj;
+            }
+            else
+            {
+                pub_data = mime_bundle_repr(obj);
+            }
+
+            interp.publish_execution_result(
+                m_execution_count,
+                std::move(pub_data),
+                nl::json::object()
+            );
+        }
+    }
+
+    /***************************
+     * xdisplay implementation *
+     ***************************/
+
+    void xdisplay(const py::object& obj, const py::object display_id, bool update)
+    {
+        auto& interp = xeus::get_interpreter();
+
+        if (!obj.is_none())
+        {
+            if (hasattr(obj, "_ipython_display_"))
+            {
+                obj.attr("_ipython_display_")();
+                return;
+            }
+
+            nl::json pub_data = mime_bundle_repr(obj);
+
+            nl::json transient = nl::json::object();
+            if (!display_id.is_none())
+            {
+                transient["display_id"] = display_id;
+            }
+            if (update)
+            {
+                interp.update_display_data(
+                    std::move(pub_data), nl::json::object(), std::move(transient));
+            }
+            else
+            {
+                interp.display_data(std::move(pub_data), nl::json::object(), std::move(transient));
+            }
+        }
+    }
+
+    /***************************
+     * Python module *
+     ***************************/
+
     PYBIND11_EMBEDDED_MODULE(xeus_python_display, m)
     {
         py::class_<xdisplayhook>(m, "XPythonDisplay")
             .def(py::init<>())
             .def("set_execution_count", &xdisplayhook::set_execution_count)
             .def("__call__", &xdisplayhook::operator(), py::arg("obj"), py::arg("raw") = false);
+
+        m.def("display",
+              xdisplay,
+              py::arg("obj"),
+              py::arg("display_id") = py::none(),
+              py::arg("update") = false);
+
+        m.def("update_display",
+              xdisplay,
+              py::arg("obj"),
+              py::arg("display_id"),
+              py::arg("update") = true);
     }
 }
