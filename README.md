@@ -8,7 +8,6 @@
 
 `xeus-python` is a Jupyter kernel for Python based on the native implementation of the Jupyter protocol [xeus](https://github.com/QuantStack/xeus).
 
-**xeus-python is an early developer preview, and is not suitable for general usage yet. Features and implementation are subject to change.**
 
 ## Installation
 
