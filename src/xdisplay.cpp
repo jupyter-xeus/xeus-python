@@ -134,7 +134,7 @@ namespace xpyt
      * xdisplay implementation *
      ***************************/
 
-    void xdisplay(const py::object& obj, const py::object display_id, bool update)
+    void xdisplay(const py::object& obj, const py::object display_id, bool update, bool raw)
     {
         auto& interp = xeus::get_interpreter();
 
@@ -146,7 +146,15 @@ namespace xpyt
                 return;
             }
 
-            nl::json pub_data = mime_bundle_repr(obj);
+            nl::json pub_data;
+            if (raw)
+            {
+                pub_data = obj;
+            }
+            else
+            {
+                pub_data = mime_bundle_repr(obj);
+            }
 
             nl::json transient = nl::json::object();
             if (!display_id.is_none())
@@ -180,12 +188,14 @@ namespace xpyt
               xdisplay,
               py::arg("obj"),
               py::arg("display_id") = py::none(),
-              py::arg("update") = false);
+              py::arg("update") = false,
+              py::arg("raw") = false);
 
         m.def("update_display",
               xdisplay,
               py::arg("obj"),
               py::arg("display_id"),
-              py::arg("update") = true);
+              py::arg("update") = true,
+              py::arg("raw") = false);
     }
 }
