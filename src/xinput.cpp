@@ -23,7 +23,7 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    std::string input_request(const std::string& prompt, bool b)
+    std::string input_request(const std::string& prompt, bool password)
     {
         auto& interpreter = xeus::get_interpreter();
 
@@ -34,14 +34,10 @@ namespace xpyt
         });
 
         // Send the input request.
-        interpreter.input_request(prompt, b);
+        interpreter.input_request(prompt, password);
 
         // Remove input handler;
         interpreter.register_input_handler(nullptr);
-
-        // TODO: Handle EOF
-        // if value == '\x04':
-        //    raise EOFError
 
         return value;
     }
