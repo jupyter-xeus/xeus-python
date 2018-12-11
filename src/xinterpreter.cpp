@@ -211,7 +211,10 @@ namespace xpyt
         nl::json kernel_res;
         nl::json pub_data;
 
-        py::list definitions = jedi_interpret(code, cursor_pos).attr("goto_definitions")();
+        py::module xeus_python_inspect = py::module::import("xeus_python_inspect");
+        auto token = py::str(xeus_python_inspect.attr("token_at_cursor")(code, cursor_pos));
+
+        py::list definitions = jedi_interpret(token, py::len(token)).attr("goto_definitions")();
 
         bool found = false;
         if (py::len(definitions) != 0)

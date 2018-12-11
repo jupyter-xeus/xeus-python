@@ -97,6 +97,7 @@ set(XEUSPYTHON_SRC
     src/xcomm.hpp
     src/xinput.cpp
     src/xinput.hpp
+    src/xinspect.cpp
     src/xinterpreter.cpp
     src/xinterpreter.hpp
     src/xstream.cpp
