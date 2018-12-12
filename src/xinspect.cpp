@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+#include "nlohmann/json.hpp"
+
 #include "pybind11/embed.h"
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
