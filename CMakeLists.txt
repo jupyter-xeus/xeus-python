@@ -40,7 +40,7 @@ configure_file (
 # Dependencies #
 ################
 
-find_package(xeus 0.17.0 REQUIRED)
+find_package(xeus 0.18.1 REQUIRED)
 find_package(cppzmq 4.3.0 REQUIRED)
 
 find_package(PythonLibs REQUIRED)

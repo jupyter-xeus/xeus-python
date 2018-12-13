@@ -11,6 +11,7 @@
 #include <string>
 
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xinput.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/functional.h"
@@ -23,38 +24,15 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    std::string input_request(const std::string& prompt, bool b)
-    {
-        auto& interpreter = xeus::get_interpreter();
-
-        // Register the input handler
-        std::string value;
-        interpreter.register_input_handler([&value](const std::string& v) {
-            value = v;
-        });
-
-        // Send the input request.
-        interpreter.input_request(prompt, b);
-
-        // Remove input handler;
-        interpreter.register_input_handler(nullptr);
-
-        // TODO: Handle EOF
-        // if value == '\x04':
-        //    raise EOFError
-
-        return value;
-    }
-
     // Free functions for intput, raw_input and getpass
     std::string input(const std::string& prompt)
     {
-        return input_request(prompt, false);
+        return xeus::blocking_input_request(prompt, false);
     }
 
     std::string getpass(const std::string& prompt)
     {
-        return input_request(prompt, true);
+        return xeus::blocking_input_request(prompt, true);
     }
 
     void notimplemented(const std::string&)
