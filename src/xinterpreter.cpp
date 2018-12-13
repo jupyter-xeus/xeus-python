@@ -186,15 +186,18 @@ namespace xpyt
         int cursor_pos)
     {
         nl::json kernel_res;
+        std::vector<std::string> matches;
+        int cursor_start = cursor_pos;
 
         py::list completions = jedi_interpret(code, cursor_pos).attr("completions")();
 
-        int cursor_start = cursor_pos - (py::len(completions[0].attr("name_with_symbols")) - py::len(completions[0].attr("complete")));
-
-        std::vector<std::string> matches;
-        for (py::handle completion : completions)
+        if (py::len(completions) != 0)
         {
-            matches.push_back(completion.attr("name_with_symbols").cast<std::string>());
+            cursor_start -= py::len(completions[0].attr("name_with_symbols")) - py::len(completions[0].attr("complete"));
+            for (py::handle completion : completions)
+            {
+                matches.push_back(completion.attr("name_with_symbols").cast<std::string>());
+            }
         }
 
         kernel_res["cursor_start"] = cursor_start;
