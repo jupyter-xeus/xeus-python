@@ -17,6 +17,10 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
         {'text': 'is', 'matches': {'isinstance', 'issubclass', 'IsADirectoryError'}},
     ]
 
+    complete_code_samples = ['1', "print('hello, world')", "def f(x):\n  return x*2\n\n\n"]
+    incomplete_code_samples = ["print('''hello", "def f(x):\n  x*2"]
+    invalid_code_samples = ['import = 7q']
+
     code_inspect_sample = "print"
 
     def test_xeus_python_stdout(self):

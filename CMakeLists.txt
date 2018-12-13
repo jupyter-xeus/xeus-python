@@ -100,6 +100,7 @@ set(XEUSPYTHON_SRC
     src/xinspect.cpp
     src/xinterpreter.cpp
     src/xinterpreter.hpp
+    src/xis_complete.cpp
     src/xstream.cpp
     src/xstream.hpp
     src/xdisplay.cpp

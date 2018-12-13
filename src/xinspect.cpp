@@ -7,16 +7,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include <iostream>
-
-#include "nlohmann/json.hpp"
-
-#include "pybind11/embed.h"
-#include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
-
-#include "xinput.hpp"
-#include "xutils.hpp"
+#include "pybind11/embed.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;

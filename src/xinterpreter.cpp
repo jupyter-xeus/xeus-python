@@ -230,9 +230,21 @@ namespace xpyt
         return kernel_res;
     }
 
-    nl::json interpreter::is_complete_request_impl(const std::string& /*code*/)
+    nl::json interpreter::is_complete_request_impl(const std::string& code)
     {
-        return nl::json::object();
+        nl::json kernel_res;
+
+        py::module xeus_python_is_complete = py::module::import("xeus_python_is_complete");
+        py::list result = xeus_python_is_complete.attr("check_complete")(code);
+
+        auto status = result[0].cast<std::string>();
+
+        kernel_res["status"] = status;
+        if (status.compare("incomplete") == 0)
+        {
+            kernel_res["indent"] = std::string(result[1].cast<std::size_t>(), ' ');
+        }
+        return kernel_res;
     }
 
     nl::json interpreter::kernel_info_request_impl()
