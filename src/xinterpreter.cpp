@@ -82,33 +82,30 @@ namespace xpyt
     {
         nl::json kernel_res;
 
-        // TODO: Check for magics
-        if (code.compare("?") == 0)
+        if (code.size() >= 2 && code[0] == '?')
         {
-            std::string html_content = R"(<style>
-            #pager-container {
-                padding: 0;
-                margin: 0;
-                width: 100%;
-                height: 100%;
+            py::module xeus_python_inspect = py::module::import("xeus_python_inspect");
+            auto token = py::str(xeus_python_inspect.attr("token_at_cursor")(code, 2));
+
+            py::list definitions = jedi_interpret(token, py::len(token)).attr("goto_definitions")();
+            std::string plain_text;
+            if (py::len(definitions) != 0)
+            {
+                plain_text = definitions[0].attr("docstring")().cast<std::string>();
             }
-            .xpyt-iframe-pager {
-                padding: 0;
-                margin: 0;
-                width: 100%;
-                height: 100%;
-                border: none;
+            else
+            {
+                plain_text = "Object `";
+                plain_text.append(token);
+                plain_text.append("` not found.");
             }
-            </style>
-            <iframe class="xpyt-iframe-pager" src="https://docs.python.org/"></iframe>)";
 
             kernel_res["status"] = "ok";
             kernel_res["payload"] = nl::json::array();
             kernel_res["payload"][0] = nl::json::object({
                 {"data", {
-                    {"text/plain", "https://docs.python.org/"},
-                    {"text/html", html_content}}
-                },
+                    {"text/plain", plain_text}
+                }},
                 {"source", "page"},
                 {"start", 0}
             });

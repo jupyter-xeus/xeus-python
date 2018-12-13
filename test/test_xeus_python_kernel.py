@@ -9,7 +9,7 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
     code_hello_world = "print('hello, world')"
 
-    code_page_something = "?"
+    code_page_something = "?print"
 
     completion_samples = [
         {'text': 'pri', 'matches': {'print'}},
