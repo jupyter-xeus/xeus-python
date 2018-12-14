@@ -10,6 +10,8 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 
+#include "xutils.hpp"
+
 namespace py = pybind11;
 
 namespace xpyt
@@ -17,7 +19,7 @@ namespace xpyt
 
     PYBIND11_EMBEDDED_MODULE(xeus_python_is_complete, m)
     {
-        py::module builtins = py::module::import("builtins");
+        py::module builtins = py::module::import(XPYT_BUILTINS);
         builtins.attr("exec")(R"(
 # Implementation from https://github.com/ipython/ipython/blob/master/IPython/core/inputtransformer2.py
 import re

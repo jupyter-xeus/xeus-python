@@ -10,6 +10,8 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 
+#include "xutils.hpp"
+
 namespace py = pybind11;
 using namespace pybind11::literals;
 
@@ -18,7 +20,7 @@ namespace xpyt
 
     PYBIND11_EMBEDDED_MODULE(xeus_python_inspect, m)
     {
-        py::module builtins = py::module::import("builtins");
+        py::module builtins = py::module::import(XPYT_BUILTINS);
         builtins.attr("exec")(R"(
 # Implementation from https://github.com/ipython/ipython/blob/master/IPython/utils/tokenutil.py
 from collections import namedtuple
