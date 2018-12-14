@@ -107,6 +107,8 @@ set(XEUSPYTHON_SRC
     src/xdisplay.cpp
     src/xdisplay.hpp
     src/xpyt_config.hpp
+    src/xtraceback.cpp
+    src/xtraceback.hpp
     src/xutils.cpp
     src/xutils.hpp
 )
