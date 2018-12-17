@@ -89,11 +89,11 @@ namespace nlohmann
             {
                 return py::none();
             }
-            if (j.is_boolean())
+            else if (j.is_boolean())
             {
                 return py::bool_(j.get<bool>());
             }
-            if (j.is_number())
+            else if (j.is_number())
             {
                 double number = j.get<double>();
                 if (number == std::floor(number))
@@ -105,11 +105,11 @@ namespace nlohmann
                     return py::float_(number);
                 }
             }
-            if (j.is_string())
+            else if (j.is_string())
             {
                 return py::str(j.get<std::string>());
             }
-            if (j.is_array())
+            else if (j.is_array())
             {
                 py::list obj;
                 for (const auto& el : j)
@@ -118,7 +118,7 @@ namespace nlohmann
                 }
                 return obj;
             }
-            if (j.is_object())
+            else // Object
             {
                 py::dict obj;
                 for (json::const_iterator it = j.cbegin(); it != j.cend(); ++it)
