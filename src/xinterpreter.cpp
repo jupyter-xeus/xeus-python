@@ -24,6 +24,7 @@
 #include "xinterpreter.hpp"
 #include "xpyt_config.hpp"
 #include "xstream.hpp"
+#include "xtraceback.hpp"
 #include "xutils.hpp"
 
 namespace py = pybind11;
@@ -82,6 +83,7 @@ namespace xpyt
                                                bool allow_stdin)
     {
         nl::json kernel_res;
+        m_inputs.push_back(code);
 
         if (code.size() >= 2 && code[0] == '?')
         {
@@ -119,6 +121,8 @@ namespace xpyt
             py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
             py::list expressions = code_ast.attr("body");
 
+            std::string filename = "[" + std::to_string(execution_count) + "]";
+
             // If the last statement is an expression, we compile it seperately
             // in an interactive mode (This will trigger the display hook)
             py::object last_stmt = expressions[py::len(expressions) - 1];
@@ -131,8 +135,8 @@ namespace xpyt
 
                 py::object interactive_ast = ast.attr("Interactive")(interactive_nodes);
 
-                py::object compiled_code = builtins.attr("compile")(code_ast, "<ast>", "exec");
-                py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, "<ast>", "single");
+                py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
+                py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, filename, "single");
 
                 m_displayhook.attr("set_execution_count")(execution_count);
 
@@ -141,7 +145,7 @@ namespace xpyt
             }
             else
             {
-                py::object compiled_code = builtins.attr("compile")(code_ast, "<ast>", "exec");
+                py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
                 builtins.attr("exec")(compiled_code, py::globals());
             }
 
@@ -149,21 +153,19 @@ namespace xpyt
             kernel_res["payload"] = nl::json::array();
             kernel_res["user_expressions"] = nl::json::object();
         }
-        catch (const std::exception& e)
+        catch (py::error_already_set& e)
         {
-            std::string ename = "Execution error";
-            std::string evalue = e.what();
-            std::vector<std::string> traceback({ ename + ": " + evalue });
+            xerror error = extract_error(e, m_inputs);
 
             if (!silent)
             {
-                publish_execution_error(ename, evalue, traceback);
+                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
 
             kernel_res["status"] = "error";
-            kernel_res["ename"] = ename;
-            kernel_res["evalue"] = evalue;
-            kernel_res["traceback"] = traceback;
+            kernel_res["ename"] = error.m_ename;
+            kernel_res["evalue"] = error.m_evalue;
+            kernel_res["traceback"] = error.m_traceback;
         }
 
         return kernel_res;

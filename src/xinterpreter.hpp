@@ -11,6 +11,7 @@
 #define XPYT_INTERPRETER_HPP
 
 #include <string>
+#include <vector>
 
 #include "nlohmann/json.hpp"
 
@@ -59,6 +60,7 @@ namespace xpyt
 
         py::scoped_interpreter m_guard;
         py::object m_displayhook;
+        std::vector<std::string> m_inputs;
     };
 }
 
