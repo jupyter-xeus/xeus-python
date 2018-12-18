@@ -20,6 +20,7 @@
 
 #include "xdisplay.hpp"
 #include "xinput.hpp"
+#include "xinspect.hpp"
 #include "xinterpreter.hpp"
 #include "xpyt_config.hpp"
 #include "xstream.hpp"
@@ -84,27 +85,17 @@ namespace xpyt
 
         if (code.size() >= 2 && code[0] == '?')
         {
-            py::module xeus_python_inspect = py::module::import("xeus_python_inspect");
-            auto token = py::str(xeus_python_inspect.attr("token_at_cursor")(code, 2));
-
-            py::list definitions = jedi_interpret(token, py::len(token)).attr("goto_definitions")();
-            std::string plain_text;
-            if (py::len(definitions) != 0)
+            std::string result = formatted_docstring(code);
+            if (result.empty())
             {
-                plain_text = definitions[0].attr("docstring")().cast<std::string>();
-            }
-            else
-            {
-                plain_text = "Object `";
-                plain_text.append(token);
-                plain_text.append("` not found.");
+                result = "Object " + code.substr(1) + " not found.";
             }
 
             kernel_res["status"] = "ok";
             kernel_res["payload"] = nl::json::array();
             kernel_res["payload"][0] = nl::json::object({
                 {"data", {
-                    {"text/plain", plain_text}
+                    {"text/plain", result}
                 }},
                 {"source", "page"},
                 {"start", 0}
@@ -186,7 +177,7 @@ namespace xpyt
         std::vector<std::string> matches;
         int cursor_start = cursor_pos;
 
-        py::list completions = jedi_interpret(code, cursor_pos).attr("completions")();
+        py::list completions = static_inspect(code, cursor_pos).attr("completions")();
 
         if (py::len(completions) != 0)
         {
@@ -211,16 +202,13 @@ namespace xpyt
         nl::json kernel_res;
         nl::json pub_data;
 
-        py::module xeus_python_inspect = py::module::import("xeus_python_inspect");
-        auto token = py::str(xeus_python_inspect.attr("token_at_cursor")(code, cursor_pos));
-
-        py::list definitions = jedi_interpret(token, py::len(token)).attr("goto_definitions")();
+        std::string docstring = formatted_docstring(code, cursor_pos);
 
         bool found = false;
-        if (py::len(definitions) != 0)
+        if (!docstring.empty())
         {
             found = true;
-            pub_data["text/plain"] = definitions[0].attr("docstring")().cast<std::string>();
+            pub_data["text/plain"] = docstring;
         }
 
         kernel_res["data"] = pub_data;
@@ -303,23 +291,5 @@ namespace xpyt
 
         sys.attr("displayhook") = m_displayhook;
         py::globals()["display"] = xeus_python_display.attr("display");
-    }
-
-    py::object interpreter::jedi_interpret(const std::string& code, int cursor_pos)
-    {
-        py::module jedi = py::module::import("jedi");
-
-        py::str py_code = code.substr(0, cursor_pos + 1);
-
-        py::int_ line = 1;
-        py::int_ column = 0;
-        if (py::len(py_code) != 0)
-        {
-            py::list lines = py_code.attr("splitlines")();
-            line = py::len(lines);
-            column = py::len(lines[py::len(lines) - 1]);
-        }
-
-        return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a = line, "column"_a = column);
     }
 }

@@ -25,6 +25,11 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
+    std::string red_text(const std::string& text)
+    {
+        return "\033[0;31m" + text + "\033[0m";
+    }
+
     zmq::message_t pybytes_to_zmq_message(py::bytes bytes)
     {
         char* buffer;

@@ -57,8 +57,6 @@ namespace xpyt
         void redirect_output();
         void redirect_display();
 
-        py::object jedi_interpret(const std::string& code, int cursor_pos);
-
         py::scoped_interpreter m_guard;
         py::object m_displayhook;
     };

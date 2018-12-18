@@ -30,6 +30,8 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
+    std::string red_text(const std::string& text);
+
     py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers);
     std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::list& bufferlist);
 

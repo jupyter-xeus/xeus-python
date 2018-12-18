@@ -98,6 +98,7 @@ set(XEUSPYTHON_SRC
     src/xinput.cpp
     src/xinput.hpp
     src/xinspect.cpp
+    src/xinspect.hpp
     src/xinterpreter.cpp
     src/xinterpreter.hpp
     src/xis_complete.cpp

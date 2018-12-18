@@ -7,93 +7,114 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include "pybind11/pybind11.h"
-#include "pybind11/embed.h"
+#include <string>
+#include <vector>
 
 #include "xutils.hpp"
+#include "xinspect.hpp"
+
+#include "pybind11/pybind11.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace xpyt
 {
-
-    PYBIND11_EMBEDDED_MODULE(xeus_python_inspect, m)
+    py::object static_inspect(const std::string& code, int cursor_pos)
     {
-        py::module builtins = py::module::import(XPYT_BUILTINS);
-        builtins.attr("exec")(R"(
-# Implementation from https://github.com/ipython/ipython/blob/master/IPython/utils/tokenutil.py
-from collections import namedtuple
-from io import StringIO
-from keyword import iskeyword
+        py::module jedi = py::module::import("jedi");
 
-import tokenize
+        py::str py_code = code.substr(0, cursor_pos + 1);
 
-Token = namedtuple('Token', ['token', 'text', 'start', 'end', 'line'])
+        py::int_ line = 1;
+        py::int_ column = 0;
+        if (py::len(py_code) != 0)
+        {
+            py::list lines = py_code.attr("splitlines")();
+            line = py::len(lines);
+            column = py::len(lines[py::len(lines) - 1]);
+        }
 
-def generate_tokens(readline):
-    try:
-        for token in tokenize.generate_tokens(readline):
-            yield token
-    except tokenize.TokenError:
-        # catch EOF error
-        return
+        return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a = line, "column"_a = column);
+    }
 
-def token_at_cursor(cell, cursor_pos=0):
-    names = []
-    tokens = []
-    call_names = []
+    py::object static_inspect(const std::string& code)
+    {
+        py::module jedi = py::module::import("jedi");
+        return jedi.attr("Interpreter")(code, py::make_tuple(py::globals()));
+    }
 
-    offsets = {1: 0} # lines start at 1
-    for tup in generate_tokens(StringIO(cell).readline):
+    std::string formatted_docstring_impl(py::object inter)
+    {
+        py::object definition = py::none();
 
-        tok = Token(*tup)
+        // If it's a function call
+        py::list call_sig = inter.attr("call_signatures")();
+        py::list definitions = inter.attr("goto_definitions")();
+        if (py::len(call_sig) != 0)
+        {
+            definition = call_sig[0];
+        }
+        else if (py::len(definitions) != 0)
+        {
+            definition = definitions[0];
+        }
+        else
+        {
+            return "";
+        }
 
-        # token, text, start, end, line = tup
-        start_line, start_col = tok.start
-        end_line, end_col = tok.end
-        if end_line + 1 not in offsets:
-            # keep track of offsets for each line
-            lines = tok.line.splitlines(True)
-            for lineno, line in enumerate(lines, start_line + 1):
-                if lineno not in offsets:
-                    offsets[lineno] = offsets[lineno-1] + len(line)
+        auto name = definition.attr("name").cast<std::string>();
+        auto docstring = definition.attr("docstring")().cast<std::string>();
+        auto type = definition.attr("type").cast<std::string>();
 
-        offset = offsets[start_line]
-        # allow '|foo' to find 'foo' at the beginning of a line
-        boundary = cursor_pos + 1 if start_col == 0 else cursor_pos
-        if offset + start_col >= boundary:
-            # current token starts after the cursor,
-            # don't consume it
-            break
+        std::vector<std::string> params;
+        // This code will throw if there is no params
+        try
+        {
+            py::list py_params = definition.attr("params");
+            for (py::handle param : py_params)
+            {
+                // keyword arguments?? default value??
+                params.push_back(param.attr("name").cast<std::string>());
+            }
+        }
+        catch (...)
+        {
+        }
 
-        if tok.token == tokenize.NAME and not iskeyword(tok.text):
-            if names and tokens and tokens[-1].token == tokenize.OP and tokens[-1].text == '.':
-                names[-1] = "%s.%s" % (names[-1], tok.text)
-            else:
-                names.append(tok.text)
-        elif tok.token == tokenize.OP:
-            if tok.text == '=' and names:
-                # don't inspect the lhs of an assignment
-                names.pop(-1)
-            if tok.text == '(' and names:
-                # if we are inside a function call, inspect the function
-                call_names.append(names[-1])
-            elif tok.text == ')' and call_names:
-                call_names.pop(-1)
+        std::string result;
+        if (type.compare("function") == 0)
+        {
+            result.append(red_text("Name:  ") + name + "(");
+            for (auto it = params.cbegin(); it < params.cend() - 1; it++)
+            {
+                result.append(*it + ", ");
+            }
+            result.append(params.at(params.size() - 1) + ")");
+        }
+        else
+        {
+            result.append(red_text("Name:  ") + name);
+        }
 
-        tokens.append(tok)
+        result.append(
+            red_text("  Type:  ") + type + "\n" +
+            red_text("Docstring:\n") + docstring
+        );
 
-        if offsets[end_line] + end_col > cursor_pos:
-            # we found the cursor, stop reading
-            break
+        return result;
+    }
 
-    if call_names:
-        return call_names[-1]
-    elif names:
-        return names[-1]
-    else:
-        return ''
-        )", m.attr("__dict__"));
+    std::string formatted_docstring(const std::string& code, int cursor_pos)
+    {
+        py::object inter = static_inspect(code, cursor_pos);
+        return formatted_docstring_impl(inter);
+    }
+
+    std::string formatted_docstring(const std::string& code)
+    {
+        py::object inter = static_inspect(code);
+        return formatted_docstring_impl(inter);
     }
 }
