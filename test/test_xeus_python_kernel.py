@@ -4,7 +4,7 @@ import jupyter_kernel_test
 
 class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
-    kernel_name = "xeus-python"
+    kernel_name = "xpython"
     language_name = "python"
 
     code_hello_world = "print('hello, world')"

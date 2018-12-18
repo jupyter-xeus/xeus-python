@@ -10,6 +10,11 @@
 #ifndef XPYT_INPUT_HPP
 #define XPYT_INPUT_HPP
 
+#ifdef __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 #include "pybind11/pybind11.h"
 
 namespace py = pybind11;
@@ -36,5 +41,9 @@ namespace xpyt
         py::object m_sys_raw_input;  // Only used for Python 2
     };
 }
+
+#ifdef __GNUC__
+    #pragma GCC diagnostic pop
+#endif
 
 #endif

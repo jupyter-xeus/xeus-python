@@ -1,9 +1,0 @@
-{
-  "display_name": "xeus-python",
-  "argv": [
-      "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@/xeus-python",
-      "-f",
-      "{connection_file}"
-  ],
-  "language": "python"
-}

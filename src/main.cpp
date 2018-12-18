@@ -14,7 +14,11 @@
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 
-#include "xinterpreter.hpp"
+#include "xeus-python/xinterpreter.hpp"
+
+#include "pybind11/pybind11.h"
+
+namespace py = pybind11;
 
 std::string extract_filename(int& argc, char* argv[])
 {
@@ -40,6 +44,7 @@ int main(int argc, char* argv[])
 {
     std::string file_name = extract_filename(argc, argv);
 
+    py::scoped_interpreter guard;
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));
 
