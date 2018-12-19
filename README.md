@@ -9,6 +9,44 @@
 `xeus-python` is a Jupyter kernel for Python based on the native implementation of the Jupyter protocol [xeus](https://github.com/QuantStack/xeus).
 
 
+## Usage
+
+Launch the jupyter notebook with `jupyter notebook` or Jupyter lab with `jupyter lab` and launch a new Python notebook by selecting the **xpython** kernel in the *new* dropdown.
+
+**Code execution and variable display**:
+
+![Basic code execution](code_exec.gif)
+
+**Output streams**:
+
+![Streams](streams.gif)
+
+**Input streams**:
+
+![Input](input.gif)
+
+**Error handling**:
+
+![Erro handling](error.gif)
+
+**Inspect**:
+
+![Inspect](inspect.gif)
+
+**Code completion**:
+
+![Completion](code_completion.gif)
+
+**Rich display**:
+
+![Rich display](rich_disp.gif)
+
+**And of course widgets**:
+
+![Widgets](widgets.gif)
+![Widgets binary](binary.gif)
+
+
 ## Installation
 
 xeus-python has been packaged for the conda package manager.
@@ -16,11 +54,11 @@ xeus-python has been packaged for the conda package manager.
 To ensure that the installation works, it is preferable to install `xeus-python` in a fresh conda environment. It is also needed to use a [miniconda](https://conda.io/miniconda.html) installation because with the full [anaconda](https://www.anaconda.com/) you may have a conflict with the `zeromq` library which is already installed in the anaconda distribution.
 
 
-The safest usage is to create an environment named `xeus` with your miniconda installation
+The safest usage is to create an environment named `xeus-python` with your miniconda installation
 
 ```
-conda create -n xeus
-source activate xeus
+conda create -n xeus-python
+source activate xeus-python
 ```
 
 Then you can install in this environment `xeus-python` and its dependencies
@@ -48,10 +86,6 @@ link:
 To get started with using `xeus-python`, check out the full documentation
 
 http://xeus-python.readthedocs.io/
-
-## Usage
-
-Launch the jupyter notebook with `jupyter notebook` and launch a new C++ notebook by selecting the **xeus-python** kernel in the *new* dropdown.
 
 ## Dependencies
 
