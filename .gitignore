@@ -45,9 +45,7 @@ docs/build/
 build/
 
 # generated kernel specs
-/share/jupyter/kernels/xeus-python/kernel.json
-/share/jupyter/kernels/xeus-python/kernel.json
-/share/jupyter/kernels/xeus-python/kernel.json
+/share/jupyter/kernels/xpython/kernel.json
 
 # Jupyter artefacts
 .ipynb_checkpoints/

@@ -18,11 +18,11 @@
 
 #include "pybind11/functional.h"
 
+#include "xeus-python/xinterpreter.hpp"
+#include "xeus-python/xeus_python_config.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
 #include "xinspect.hpp"
-#include "xinterpreter.hpp"
-#include "xpyt_config.hpp"
 #include "xstream.hpp"
 #include "xtraceback.hpp"
 #include "xutils.hpp"

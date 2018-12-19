@@ -10,6 +10,11 @@
 #ifndef XPYT_INTERPRETER_HPP
 #define XPYT_INTERPRETER_HPP
 
+#ifdef __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 #include <string>
 #include <vector>
 
@@ -20,12 +25,14 @@
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
 
+#include "xeus_python_config.hpp"
+
 namespace py = pybind11;
 namespace nl = nlohmann;
 
 namespace xpyt
 {
-    class interpreter : public xeus::xinterpreter
+    class XEUS_PYTHON_API interpreter : public xeus::xinterpreter
     {
     public:
 
@@ -58,10 +65,13 @@ namespace xpyt
         void redirect_output();
         void redirect_display();
 
-        py::scoped_interpreter m_guard;
         py::object m_displayhook;
         std::vector<std::string> m_inputs;
     };
 }
+
+#ifdef __GNUC__
+    #pragma GCC diagnostic pop
+#endif
 
 #endif

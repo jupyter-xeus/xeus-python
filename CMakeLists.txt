@@ -10,12 +10,13 @@
 cmake_minimum_required(VERSION 3.4.3)
 project(xeus-python)
 
-set(XPYT_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(XEUSPYTHON_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(XEUSPYTHON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Versionning
 # ===========
 
-file(STRINGS "${XPYT_SRC_DIR}/xpyt_config.hpp" xpyt_version_defines
+file(STRINGS "${XEUSPYTHON_INCLUDE_DIR}/xeus-python/xeus_python_config.hpp" xpyt_version_defines
      REGEX "#define XPYT_VERSION_(MAJOR|MINOR|PATCH)")
 foreach(ver ${xpyt_version_defines})
     if(ver MATCHES "#define XPYT_VERSION_(MAJOR|MINOR|PATCH) +([^ ]+)$")
@@ -32,19 +33,23 @@ message(STATUS "Building xeus-python v${${PROJECT_NAME}_VERSION}")
 include(GNUInstallDirs)
 
 configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xeus-python/kernel.json.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xeus-python/kernel.json"
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
 )
 
 ################
 # Dependencies #
 ################
 
-find_package(xeus 0.18.1 REQUIRED)
-find_package(cppzmq 4.3.0 REQUIRED)
+set(xeus_REQUIRED_VERSION 0.18.1)
+set(cppzmq_REQUIRED_VERSION 4.3.0)
+set(pybind11_REQUIRED_VERSION 2.2.4)
+
+find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
+find_package(cppzmq ${cppzmq_REQUIRED_VERSION} REQUIRED)
 
 find_package(PythonLibs REQUIRED)
-find_package(pybind11 REQUIRED)
+find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
 
 #########
 # flags #
@@ -53,12 +58,6 @@ find_package(pybind11 REQUIRED)
 include(CheckCXXCompilerFlag)
 
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-
-if(NOT MSVC)
-    # This flag is needed by pybind11
-    # https://pybind11.readthedocs.io/en/stable/faq.html?highlight=greater%20visibility#someclass-declared-with-greater-visibility-than-the-type-of-its-field-someclass-member-wattributes
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
-endif()
 
 if(MSVC)
     add_definitions(/DNOMINMAX)
@@ -92,7 +91,6 @@ endif()
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
 set(XEUSPYTHON_SRC
-    src/main.cpp
     src/xcomm.cpp
     src/xcomm.hpp
     src/xinput.cpp
@@ -100,41 +98,59 @@ set(XEUSPYTHON_SRC
     src/xinspect.cpp
     src/xinspect.hpp
     src/xinterpreter.cpp
-    src/xinterpreter.hpp
     src/xis_complete.cpp
     src/xstream.cpp
     src/xstream.hpp
     src/xdisplay.cpp
     src/xdisplay.hpp
-    src/xpyt_config.hpp
     src/xtraceback.cpp
     src/xtraceback.hpp
     src/xutils.cpp
     src/xutils.hpp
 )
 
-set(LIBS ${PYTHON_LIBRARIES} xeus)
-set(XEUSPYTHON_TARGET xeus-python)
-add_executable(${XEUSPYTHON_TARGET} ${XEUSPYTHON_SRC})
-set_target_properties(${XEUSPYTHON_TARGET} PROPERTIES ENABLE_EXPORTS 1)
+set(XEUSPYTHON_HEADERS
+    include/xeus-python/xinterpreter.hpp
+    include/xeus-python/xeus_python_config.hpp
+)
+
+# xeus-python is the target for the library
+add_library(xeus-python SHARED ${XEUSPYTHON_SRC} ${XEUSPYTHON_HEADERS})
+
+# xpython is the target for the kernel executable
+add_executable(xpython src/main.cpp)
+set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
+target_link_libraries(xpython PRIVATE xeus-python)
 
 if (APPLE)
-    set_target_properties(${XEUSPYTHON_TARGET} PROPERTIES
+    set_target_properties(xpython xeus-python PROPERTIES
         MACOSX_RPATH ON
     )
 else()
-    set_target_properties(${XEUSPYTHON_TARGET} PROPERTIES
+    set_target_properties(xpython xeus-python PROPERTIES
         BUILD_WITH_INSTALL_RPATH 1
         SKIP_BUILD_RPATH FALSE
     )
 endif()
 
-set_target_properties(${XEUSPYTHON_TARGET} PROPERTIES
+set_target_properties(xpython xeus-python PROPERTIES
     INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 
-include_directories(${PYTHON_INCLUDE_DIRS})
-target_link_libraries(${XEUSPYTHON_TARGET} ${LIBS})
+target_include_directories(xeus-python
+                           PUBLIC
+                               ${PYTHON_INCLUDE_DIRS}
+                               $<BUILD_INTERFACE:${XEUSPYTHON_INCLUDE_DIR}>
+                               $<INSTALL_INTERFACE:include>)
+target_link_libraries(xeus-python PUBLIC pybind11::embed xeus)
+
+set_target_properties(xeus-python PROPERTIES
+                      PUBLIC_HEADER "${XEUSPYTHON_HEADERS}"
+                      COMPILE_DEFINITIONS "XEUS_PYTHON_EXPORTS"
+                      PREFIX ""
+                      VERSION ${${PROJECT_NAME}_VERSION}
+                      SOVERSION ${XPYT_VERSION_MAJOR}
+                      OUTPUT_NAME "libxeus-python")
 
 #########
 # Tests #
@@ -155,8 +171,18 @@ endif()
 # Installation #
 ################
 
-# Install xeus-python
-install(TARGETS ${XEUSPYTHON_TARGET}
+include(CMakePackageConfigHelpers)
+
+set(XEUSPYTHON_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for xeus-pythonConfig.cmake")
+
+# Install xeus-python and xpython
+install(TARGETS xeus-python
+        EXPORT ${PROJECT_NAME}-targets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/xeus-python)
+install(TARGETS xpython
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # Configuration and data directories for jupyter and xeus-python
@@ -174,3 +200,32 @@ if (XEXTRA_JUPYTER_DATA_DIR)
             DESTINATION ${XEXTRA_JUPYTER_DATA_DIR}
             PATTERN "*.in" EXCLUDE)
 endif(XEXTRA_JUPYTER_DATA_DIR)
+
+# Makes the project importable from the build directory
+export(EXPORT ${PROJECT_NAME}-targets
+       FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
+
+# Configure 'xeus-pythonConfig.cmake' for a build tree
+set(XEUSPYTHON_CONFIG_CODE "####### Expanded from \@XEUSPYTHON_CONFIG_CODE\@ #######\n")
+set(XEUSPYTHON_CONFIG_CODE "${XEUSPYTHON_CONFIG_CODE}set(CMAKE_MODULE_PATH \"${CMAKE_CURRENT_SOURCE_DIR}/cmake;\${CMAKE_MODULE_PATH}\")\n")
+set(XEUSPYTHON_CONFIG_CODE "${XEUSPYTHON_CONFIG_CODE}##################################################")
+configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+                              "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+                              INSTALL_DESTINATION ${PROJECT_BINARY_DIR})
+
+# Configure 'xeus-pythonConfig.cmake' for an install tree
+set(XEUSPYTHON_CONFIG_CODE "")
+configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+                              "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}Config.cmake"
+                              INSTALL_DESTINATION ${XEUSPYTHON_CMAKECONFIG_INSTALL_DIR})
+
+
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+                                 VERSION ${${PROJECT_NAME}_VERSION}
+                                 COMPATIBILITY AnyNewerVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+              DESTINATION ${XEUSPYTHON_CMAKECONFIG_INSTALL_DIR})
+install(EXPORT ${PROJECT_NAME}-targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        DESTINATION ${XEUSPYTHON_CMAKECONFIG_INSTALL_DIR})
