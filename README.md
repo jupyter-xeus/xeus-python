@@ -11,7 +11,7 @@
 
 ## Usage
 
-Launch the jupyter notebook with `jupyter notebook` or Jupyter lab with `jupyter lab` and launch a new Python notebook by selecting the **xpython** kernel in the *new* dropdown.
+Launch the Jupyter notebook with `jupyter notebook` or Jupyter lab with `jupyter lab` and launch a new Python notebook by selecting the **xpython** kernel.
 
 **Code execution and variable display**:
 
