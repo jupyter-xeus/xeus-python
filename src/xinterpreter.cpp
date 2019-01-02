@@ -21,6 +21,7 @@
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 #include "xinput.hpp"
+#include "xcomm.hpp"
 #include "xinspect.hpp"
 #include "xtraceback.hpp"
 #include "xutils.hpp"
@@ -47,14 +48,11 @@ namespace xpyt
 
         py::module sys = py::module::import("sys");
         py::module types = py::module::import("types");
-        py::module xeus_python_kernel = py::module::import("xeus_python_kernel");
+        py::module kernel_module = get_kernel_module();
         py::module xeus_python_display = py::module::import("xeus_python_display");
-        py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
 
         // Monkey patching "from ipykernel.comm import Comm"
-        py::module kernel = types.attr("ModuleType")("kernel");
-        kernel.attr("Comm") = xpython_comm;
-        sys.attr("modules")["ipykernel.comm"] = kernel;
+        sys.attr("modules")["ipykernel.comm"] = kernel_module;
 
         // Monkey patching "from IPython.display import display"
         py::module display = types.attr("ModuleType")("display");
@@ -64,9 +62,7 @@ namespace xpyt
         sys.attr("modules")["IPython.display"] = display;
 
         // Monkey patching "from IPython import get_ipython"
-        py::module ipython = types.attr("ModuleType")("get_kernel");
-        ipython.attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
-        sys.attr("modules")["IPython.core.getipython"] = ipython;
+        sys.attr("modules")["IPython.core.getipython"] = kernel_module;
     }
 
     interpreter::~interpreter()
