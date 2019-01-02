@@ -20,7 +20,7 @@
 
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
-#include "xinput.hpp"
+#include "xinput_redirection.hpp"
 #include "xinspect.hpp"
 #include "xtraceback.hpp"
 #include "xutils.hpp"
@@ -47,9 +47,8 @@ namespace xpyt
 
         py::module sys = py::module::import("sys");
         py::module types = py::module::import("types");
-        py::module xeus_python_kernel = py::module::import("xeus_python_kernel");
-        py::module xeus_python_display = py::module::import("xeus_python_display");
-        py::object xpython_comm = xeus_python_kernel.attr("XPythonComm");
+        py::module xeus_python = py::module::import("xeus_python_extension");
+        py::object xpython_comm = xeus_python.attr("XPythonComm");
 
         // Monkey patching "from ipykernel.comm import Comm"
         py::module kernel = types.attr("ModuleType")("kernel");
@@ -58,14 +57,14 @@ namespace xpyt
 
         // Monkey patching "from IPython.display import display"
         py::module display = types.attr("ModuleType")("display");
-        display.attr("display") = xeus_python_display.attr("display");
-        display.attr("update_display") = xeus_python_display.attr("update_display");
+        display.attr("display") = xeus_python.attr("display");
+        display.attr("update_display") = xeus_python.attr("update_display");
         display.attr("clear_output") = py::cpp_function([] () {});
         sys.attr("modules")["IPython.display"] = display;
 
         // Monkey patching "from IPython import get_ipython"
         py::module ipython = types.attr("ModuleType")("get_kernel");
-        ipython.attr("get_ipython") = xeus_python_kernel.attr("get_kernel");
+        ipython.attr("get_ipython") = xeus_python.attr("get_kernel");
         sys.attr("modules")["IPython.core.getipython"] = ipython;
     }
 
@@ -222,8 +221,8 @@ namespace xpyt
     {
         nl::json kernel_res;
 
-        py::module xeus_python_is_complete = py::module::import("xeus_python_is_complete");
-        py::list result = xeus_python_is_complete.attr("check_complete")(code);
+        py::module xeus_python = py::module::import("xeus_python_extension");
+        py::list result = xeus_python.attr("check_complete")(code);
 
         auto status = result[0].cast<std::string>();
 
@@ -276,20 +275,20 @@ namespace xpyt
     void interpreter::redirect_output()
     {
         py::module sys = py::module::import("sys");
-        py::module xeus_python_stream = py::module::import("xeus_python_stream");
+        py::module xeus_python = py::module::import("xeus_python_extension");
 
-        sys.attr("stdout") = xeus_python_stream.attr("XPythonStream")("stdout");
-        sys.attr("stderr") = xeus_python_stream.attr("XPythonStream")("stderr");
+        sys.attr("stdout") = xeus_python.attr("XPythonStream")("stdout");
+        sys.attr("stderr") = xeus_python.attr("XPythonStream")("stderr");
     }
 
     void interpreter::redirect_display()
     {
         py::module sys = py::module::import("sys");
-        py::module xeus_python_display = py::module::import("xeus_python_display");
+        py::module xeus_python = py::module::import("xeus_python_extension");
 
-        m_displayhook = xeus_python_display.attr("XPythonDisplay")();
+        m_displayhook = xeus_python.attr("XPythonDisplay")();
 
         sys.attr("displayhook") = m_displayhook;
-        py::globals()["display"] = xeus_python_display.attr("display");
+        py::globals()["display"] = xeus_python.attr("display");
     }
 }

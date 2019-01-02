@@ -48,7 +48,6 @@ set(pybind11_REQUIRED_VERSION 2.2.4)
 find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 find_package(cppzmq ${cppzmq_REQUIRED_VERSION} REQUIRED)
 
-find_package(PythonLibs REQUIRED)
 find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
 
 #########
@@ -91,18 +90,11 @@ endif()
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
 set(XEUSPYTHON_SRC
-    src/xcomm.cpp
-    src/xcomm.hpp
-    src/xinput.cpp
-    src/xinput.hpp
+    src/xinput_redirection.cpp
+    src/xinput_redirection.hpp
     src/xinspect.cpp
     src/xinspect.hpp
     src/xinterpreter.cpp
-    src/xis_complete.cpp
-    src/xstream.cpp
-    src/xstream.hpp
-    src/xdisplay.cpp
-    src/xdisplay.hpp
     src/xtraceback.cpp
     src/xtraceback.hpp
     src/xutils.cpp
@@ -152,6 +144,15 @@ set_target_properties(xeus-python PROPERTIES
                       SOVERSION ${XPYT_VERSION_MAJOR}
                       OUTPUT_NAME "libxeus-python")
 
+# Python modules
+pybind11_add_module(xeus_python_extension "${XEUSPYTHON_SRC_DIR}/xeus_python_extension.cpp" "${XEUSPYTHON_SRC_DIR}/xutils.cpp")
+target_link_libraries(xeus_python_extension PUBLIC pybind11::module xeus)
+target_include_directories(xeus_python_extension
+                           PUBLIC
+                           ${PYTHON_INCLUDE_DIRS}
+                           $<BUILD_INTERFACE:${XEUSPYTHON_INCLUDE_DIR}>
+                           $<INSTALL_INTERFACE:include>)
+
 #########
 # Tests #
 #########
@@ -175,7 +176,7 @@ include(CMakePackageConfigHelpers)
 
 set(XEUSPYTHON_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for xeus-pythonConfig.cmake")
 
-# Install xeus-python and xpython
+# Install xeus-python, xpython and the python module
 install(TARGETS xeus-python
         EXPORT ${PROJECT_NAME}-targets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -184,6 +185,8 @@ install(TARGETS xeus-python
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/xeus-python)
 install(TARGETS xpython
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS xeus_python_extension
+        DESTINATION ${PYTHON_SITE_PACKAGES})
 
 # Configuration and data directories for jupyter and xeus-python
 set(XJUPYTER_DATA_DIR "share/jupyter"    CACHE STRING "Jupyter data directory")

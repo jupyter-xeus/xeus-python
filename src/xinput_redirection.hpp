@@ -7,8 +7,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_INPUT_HPP
-#define XPYT_INPUT_HPP
+#ifndef XPYT_INPUT_REDIRECTION_HPP
+#define XPYT_INPUT_REDIRECTION_HPP
 
 #ifdef __GNUC__
     #pragma GCC diagnostic push
