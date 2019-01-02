@@ -22,6 +22,7 @@
 #include "xeus-python/xeus_python_config.hpp"
 #include "xinput.hpp"
 #include "xinspect.hpp"
+#include "xstream.hpp"
 #include "xtraceback.hpp"
 #include "xutils.hpp"
 
@@ -276,10 +277,10 @@ namespace xpyt
     void interpreter::redirect_output()
     {
         py::module sys = py::module::import("sys");
-        py::module xeus_python_stream = py::module::import("xeus_python_stream");
+        py::module stream_module = get_stream_module();
 
-        sys.attr("stdout") = xeus_python_stream.attr("XPythonStream")("stdout");
-        sys.attr("stderr") = xeus_python_stream.attr("XPythonStream")("stderr");
+        sys.attr("stdout") = stream_module.attr("Stream")("stdout");
+        sys.attr("stderr") = stream_module.attr("Stream")("stderr");
     }
 
     void interpreter::redirect_display()
