@@ -8,7 +8,6 @@
 ****************************************************************************/
 
 #include "pybind11/pybind11.h"
-#include "pybind11/embed.h"
 
 #include "xutils.hpp"
 
@@ -17,9 +16,11 @@ namespace py = pybind11;
 namespace xpyt
 {
 
-    PYBIND11_EMBEDDED_MODULE(xeus_python_is_complete, m)
+    py::module get_completion_module_impl()
     {
         py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module completion_module("completion");
+
         builtins.attr("exec")(R"(
 # Implementation from https://github.com/ipython/ipython/blob/master/IPython/core/inputtransformer2.py
 import re
@@ -197,6 +198,14 @@ def check_complete(cell):
         return 'complete', None
 
     return 'complete', None
-        )", m.attr("__dict__"));
+        )", completion_module.attr("__dict__"));
+
+        return completion_module;
+    }
+
+    py::module get_completion_module()
+    {
+        static py::module completion_module = get_completion_module_impl();
+        return completion_module;
     }
 }

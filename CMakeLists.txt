@@ -93,12 +93,13 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${
 set(XEUSPYTHON_SRC
     src/xcomm.cpp
     src/xcomm.hpp
+    src/xcompletion.cpp
+    src/xcompletion.hpp
     src/xinput.cpp
     src/xinput.hpp
     src/xinspect.cpp
     src/xinspect.hpp
     src/xinterpreter.cpp
-    src/xis_complete.cpp
     src/xstream.cpp
     src/xstream.hpp
     src/xdisplay.cpp
