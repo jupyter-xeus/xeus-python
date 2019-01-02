@@ -13,8 +13,8 @@
 
 #include "xeus/xinterpreter.hpp"
 
-#include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
 
 #include "xdisplay.hpp"
 #include "xutils.hpp"
@@ -66,6 +66,21 @@ namespace xpyt
 
         return pub_data;
     }
+
+    class xdisplayhook
+    {
+    public:
+
+        xdisplayhook();
+        virtual ~xdisplayhook();
+
+        void set_execution_count(int execution_count);
+        void operator()(const py::object& obj, bool raw) const;
+
+    private:
+
+        int m_execution_count;
+    };
 
     /*******************************
      * xdisplayhook implementation *
@@ -158,29 +173,37 @@ namespace xpyt
         }
     }
 
-    /***************************
-     * Python module *
-     ***************************/
-
-    PYBIND11_EMBEDDED_MODULE(xeus_python_display, m)
+    py::module get_display_module_impl()
     {
-        py::class_<xdisplayhook>(m, "XPythonDisplay")
+        py::module display_module("display");
+
+        py::class_<xdisplayhook>(display_module, "DisplayHook")
             .def(py::init<>())
             .def("set_execution_count", &xdisplayhook::set_execution_count)
             .def("__call__", &xdisplayhook::operator(), py::arg("obj"), py::arg("raw") = false);
 
-        m.def("display",
+        display_module.def("display",
               xdisplay,
               py::arg("obj"),
               py::arg("display_id") = py::none(),
               py::arg("update") = false,
               py::arg("raw") = false);
 
-        m.def("update_display",
+        display_module.def("update_display",
               xdisplay,
               py::arg("obj"),
               py::arg("display_id"),
               py::arg("update") = true,
               py::arg("raw") = false);
+
+        display_module.def("clear_output", []() {});
+
+        return display_module;
+    }
+
+    py::module get_display_module()
+    {
+        static py::module display_module = get_display_module_impl();
+        return display_module;
     }
 }
