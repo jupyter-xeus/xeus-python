@@ -16,6 +16,10 @@ namespace py = pybind11;
 namespace xpyt
 {
 
+    /*********************
+     * completion module *
+     *********************/
+
     py::module get_completion_module_impl()
     {
         py::module builtins = py::module::import(XPYT_BUILTINS);

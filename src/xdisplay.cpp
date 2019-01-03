@@ -67,6 +67,10 @@ namespace xpyt
         return pub_data;
     }
 
+    /****************************
+     * xdisplayhook declaration *
+     ****************************/
+
     class xdisplayhook
     {
     public:
@@ -172,6 +176,10 @@ namespace xpyt
             }
         }
     }
+
+    /******************
+     * display module *
+     ******************/
 
     py::module get_display_module_impl()
     {
