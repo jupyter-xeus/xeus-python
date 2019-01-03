@@ -49,7 +49,7 @@ namespace xpyt
 #if PY_MAJOR_VERSION == 2
         // Forward raw_input()
         m_sys_raw_input = builtins.attr("raw_input");
-        builtins.attr("raw_input") = allow_stdin ? py::cpp_function(&cpp_raw_input, py::arg("prompt") = "")
+        builtins.attr("raw_input") = allow_stdin ? py::cpp_function(&cpp_input, py::arg("prompt") = "")
                                                  : py::cpp_function(&notimplemented, py::arg("prompt") = "");
 #endif
 
