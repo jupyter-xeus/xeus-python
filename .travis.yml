@@ -56,7 +56,11 @@ install:
     - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda/ -D DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` ..
     - make -j2 install
     # Install jupyter_kernel_test and pytest
-    - conda install pytest jupyter_kernel_test -c conda-forge
+    - if [[ "$PY" == "3" ]]; then
+          conda install pytest jupyter_kernel_test -c conda-forge;
+      fi
 script:
     - ./test/test_xeus_python
-    - cd ../test && py.test .
+    - if [[ "$PY" == "3" ]]; then
+          cd ../test && py.test .;
+      fi
