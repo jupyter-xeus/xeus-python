@@ -20,6 +20,11 @@ namespace py = pybind11;
 
 namespace xpyt
 {
+
+    /***********************
+     * xstream declaration *
+     ***********************/
+
     class xstream
     {
     public:
@@ -34,6 +39,10 @@ namespace xpyt
         std::string m_stream_name;
     };
 
+    /**************************
+     * xstream implementation *
+     **************************/
+
     xstream::xstream(std::string stream_name)
         : m_stream_name(stream_name)
     {
@@ -47,6 +56,10 @@ namespace xpyt
     {
         xeus::get_interpreter().publish_stream(m_stream_name, message);
     }
+
+    /*****************
+     * stream module *
+     *****************/
 
     py::module get_stream_module_impl()
     {

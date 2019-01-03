@@ -26,6 +26,10 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
+    /*********************
+     * xcomm declaration *
+     ********************/
+
     class xcomm
     {
     public:
@@ -55,6 +59,10 @@ namespace xpyt
 
         xeus::xcomm m_comm;
     };
+
+    /************************
+     * xcomm implementation *
+     ************************/
 
     xcomm::xcomm(const py::args& /*args*/, const py::kwargs& kwargs)
         : m_comm(target(kwargs), id(kwargs))
@@ -156,6 +164,10 @@ namespace xpyt
         {
         };
     }
+
+    /*****************
+     * kernel module *
+     *****************/
 
     py::module get_kernel_module_impl()
     {
