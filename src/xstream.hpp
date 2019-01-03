@@ -10,23 +10,13 @@
 #ifndef XPYT_STREAM_HPP
 #define XPYT_STREAM_HPP
 
-#include <string>
+#include "pybind11/pybind11.h"
+
+namespace py = pybind11;
 
 namespace xpyt
 {
-    class xstream
-    {
-    public:
-
-        xstream(std::string stream_name);
-        virtual ~xstream();
-
-        void write(const std::string& message);
-
-    private:
-
-        std::string m_stream_name;
-    };
+    py::module get_stream_module();
 }
 
 #endif
