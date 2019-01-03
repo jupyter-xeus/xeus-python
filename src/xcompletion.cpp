@@ -22,15 +22,15 @@ namespace xpyt
 
     py::module get_completion_module_impl()
     {
-        py::module builtins = py::module::import(XPYT_BUILTINS);
         py::module completion_module("completion");
 
-        builtins.attr("exec")(R"(
+        exec(py::str(R"(
 # Implementation from https://github.com/ipython/ipython/blob/master/IPython/core/inputtransformer2.py
 import re
 import tokenize
 import warnings
 from codeop import compile_command
+import six
 
 _indent_re = re.compile(r'^[ \t]+')
 
@@ -74,23 +74,42 @@ classic_prompt = PromptStripper(
 
 interactive_prompt = PromptStripper(re.compile(r'^(In \[\d+\]: |\s*\.{3,}: ?)'))
 
+def _extract_token(token, tokens_by_line, parenlev):
+    tokens_by_line[-1].append(token)
+    if (token.type == tokenize.NEWLINE) \
+            or ((token.type == tokenize.NL) and (parenlev <= 0)):
+        tokens_by_line.append([])
+    elif token.string in {'(', '[', '{'}:
+        parenlev += 1
+    elif token.string in {')', ']', '}'}:
+        if parenlev > 0:
+            parenlev -= 1
+
+if six.PY3:
+    def _gen_tokens(lines, tokens_by_line, parenlev):
+        for token in tokenize.generate_tokens(iter(lines).__next__):
+            _extract_token(token, tokens_by_line, parenlev)
+else:
+    class Token():
+        def __init__(self, token_tuple):
+            self.type = token_tuple[0]
+            self.string = token_tuple[1]
+            self.start = token_tuple[2]
+            self.end = token_tuple[3]
+            self.line = token_tuple[4]
+
+    def _gen_tokens(lines, tokens_by_line, parenlev):
+        for token_tuple in tokenize.generate_tokens(iter(lines).next):
+            token = Token(token_tuple)
+            _extract_token(token, tokens_by_line, parenlev)
+
 def make_tokens_by_line(lines):
-    NEWLINE, NL = tokenize.NEWLINE, tokenize.NL
     tokens_by_line = [[]]
     if len(lines) > 1 and not lines[0].endswith(('\n', '\r', '\r\n', '\x0b', '\x0c')):
         warnings.warn("`make_tokens_by_line` received a list of lines which do not have lineending markers ('\\n', '\\r', '\\r\\n', '\\x0b', '\\x0c'), behavior will be unspecified")
     parenlev = 0
     try:
-        for token in tokenize.generate_tokens(iter(lines).__next__):
-            tokens_by_line[-1].append(token)
-            if (token.type == NEWLINE) \
-                    or ((token.type == NL) and (parenlev <= 0)):
-                tokens_by_line.append([])
-            elif token.string in {'(', '[', '{'}:
-                parenlev += 1
-            elif token.string in {')', ']', '}'}:
-                if parenlev > 0:
-                    parenlev -= 1
+        _gen_tokens(lines, tokens_by_line, parenlev)
     except tokenize.TokenError:
         # Input ended in a multiline string or expression. That's OK for us.
         pass
@@ -115,7 +134,7 @@ def check_complete(cell):
     if not ends_with_newline:
         cell += '\n'
 
-    lines = cell.splitlines(keepends=True)
+    lines = cell.splitlines(True)
 
     if not lines:
         return 'complete', None
@@ -202,7 +221,7 @@ def check_complete(cell):
         return 'complete', None
 
     return 'complete', None
-        )", completion_module.attr("__dict__"));
+        )"), completion_module.attr("__dict__"));
 
         return completion_module;
     }

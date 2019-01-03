@@ -17,6 +17,7 @@
 #include "xeus/xcomm.hpp"
 
 #include "pybind11/pybind11.h"
+#include "pybind11/eval.h"
 
 #include "xutils.hpp"
 
@@ -91,6 +92,12 @@ namespace xpyt
         py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
 
         return py_msg;
+    }
+
+    void exec(const py::object& code, const py::object& scope)
+    {
+        py::module six = py::module::import("six");
+        six.attr("exec_")(code, scope);
     }
 }
 

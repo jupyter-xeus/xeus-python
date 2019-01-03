@@ -5,6 +5,7 @@ channels:
 dependencies:
   - xeus-python=0.1.1
   - jedi
+  - six
   - notebook
   - ipywidgets>=7.4
   - itkwidgets

@@ -38,6 +38,8 @@ namespace xpyt
     std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::list& bufferlist);
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
+
+    void exec(const py::object& code, const py::object& scope = py::globals());
 }
 
 namespace nlohmann
