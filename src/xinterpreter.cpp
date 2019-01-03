@@ -20,6 +20,7 @@
 
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
+#include "xcompletion.hpp"
 #include "xinput.hpp"
 #include "xcomm.hpp"
 #include "xinspect.hpp"
@@ -219,8 +220,8 @@ namespace xpyt
     {
         nl::json kernel_res;
 
-        py::module xeus_python_is_complete = py::module::import("xeus_python_is_complete");
-        py::list result = xeus_python_is_complete.attr("check_complete")(code);
+        py::module completion_module = get_completion_module();
+        py::list result = completion_module.attr("check_complete")(code);
 
         auto status = result[0].cast<std::string>();
 
