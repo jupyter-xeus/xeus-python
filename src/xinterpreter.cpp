@@ -245,15 +245,18 @@ namespace xpyt
           C++ Jupyter Kernel for Python
         */
 
-        result["banner"]
-            = " __   ________ _    _  _____       _______     _________ _    _  ____  _   _ \n"
+        std::string banner = ""
+              " __   ________ _    _  _____       _______     _________ _    _  ____  _   _ \n"
               " \\ \\ / /  ____| |  | |/ ____|     |  __ \\ \\   / /__   __| |  | |/ __ \\| \\ | |\n"
               "  \\ V /| |__  | |  | | (___ ______| |__) \\ \\_/ /   | |  | |__| | |  | |  \\| |\n"
               "   > < |  __| | |  | |\\___ \\______|  ___/ \\   /    | |  |  __  | |  | | . ` |\n"
               "  / . \\| |____| |__| |____) |     | |      | |     | |  | |  | | |__| | |\\  |\n"
               " /_/ \\_\\______|\\____/|_____/      |_|      |_|     |_|  |_|  |_|\\____/|_| \\_|\n"
               "\n"
-              "  C++ Jupyter Kernel for Python  ";
+              "  C++ Jupyter Kernel for Python  \n"
+              "  Python ";
+        banner.append(PY_VERSION);
+        result["banner"] = banner;
 
         result["language_info"]["name"] = "python";
         result["language_info"]["version"] = PY_VERSION;
