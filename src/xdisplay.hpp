@@ -13,27 +13,11 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
 
-#include "nlohmann/json.hpp"
-
 namespace py = pybind11;
-namespace nl = nlohmann;
 
 namespace xpyt
 {
-    class xdisplayhook
-    {
-    public:
-
-        xdisplayhook();
-        virtual ~xdisplayhook();
-
-        void set_execution_count(int execution_count);
-        void operator()(const py::object& obj, bool raw) const;
-
-    private:
-
-        int m_execution_count;
-    };
+    py::module get_display_module();
 }
 
 #endif

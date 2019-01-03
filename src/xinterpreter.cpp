@@ -25,6 +25,7 @@
 #include "xcomm.hpp"
 #include "xinspect.hpp"
 #include "xstream.hpp"
+#include "xdisplay.hpp"
 #include "xtraceback.hpp"
 #include "xutils.hpp"
 
@@ -49,19 +50,13 @@ namespace xpyt
         redirect_display();
 
         py::module sys = py::module::import("sys");
-        py::module types = py::module::import("types");
         py::module kernel_module = get_kernel_module();
-        py::module xeus_python_display = py::module::import("xeus_python_display");
 
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = kernel_module;
 
         // Monkey patching "from IPython.display import display"
-        py::module display = types.attr("ModuleType")("display");
-        display.attr("display") = xeus_python_display.attr("display");
-        display.attr("update_display") = xeus_python_display.attr("update_display");
-        display.attr("clear_output") = py::cpp_function([] () {});
-        sys.attr("modules")["IPython.display"] = display;
+        sys.attr("modules")["IPython.display"] = get_display_module();
 
         // Monkey patching "from IPython import get_ipython"
         sys.attr("modules")["IPython.core.getipython"] = kernel_module;
@@ -283,11 +278,11 @@ namespace xpyt
     void interpreter::redirect_display()
     {
         py::module sys = py::module::import("sys");
-        py::module xeus_python_display = py::module::import("xeus_python_display");
+        py::module display_module = get_display_module();
 
-        m_displayhook = xeus_python_display.attr("XPythonDisplay")();
+        m_displayhook = display_module.attr("DisplayHook")();
 
         sys.attr("displayhook") = m_displayhook;
-        py::globals()["display"] = xeus_python_display.attr("display");
+        py::globals()["display"] = display_module.attr("display");
     }
 }
