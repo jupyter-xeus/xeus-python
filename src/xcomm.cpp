@@ -15,8 +15,8 @@
 #include "xeus/xcomm.hpp"
 #include "xeus/xinterpreter.hpp"
 
-#include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
 
 #include "xcomm.hpp"
 #include "xutils.hpp"
@@ -26,6 +26,36 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
+    class xcomm
+    {
+    public:
+
+        using python_callback_type = std::function<void(py::object)>;
+        using cpp_callback_type = std::function<void(const xeus::xmessage&)>;
+        using zmq_buffers_type = std::vector<zmq::message_t>;
+
+        xcomm(const py::args& args, const py::kwargs& kwargs);
+        xcomm(xeus::xcomm&& comm);
+        xcomm(xcomm&& comm) = default;
+        virtual ~xcomm();
+
+        std::string comm_id() const;
+        bool kernel() const;
+
+        void close(const py::args& args, const py::kwargs& kwargs);
+        void send(const py::args& args, const py::kwargs& kwargs);
+        void on_msg(const python_callback_type& callback);
+        void on_close(const python_callback_type& callback);
+
+    private:
+
+        xeus::xtarget* target(const py::kwargs& kwargs) const;
+        xeus::xguid id(const py::kwargs& kwargs) const;
+        cpp_callback_type cpp_callback(const python_callback_type& callback) const;
+
+        xeus::xcomm m_comm;
+    };
+
     xcomm::xcomm(const py::args& /*args*/, const py::kwargs& kwargs)
         : m_comm(target(kwargs), id(kwargs))
     {
@@ -109,14 +139,6 @@ namespace xpyt
         };
     }
 
-    void register_post_execute(py::args, py::kwargs)
-    {
-    }
-
-    void enable_gui(py::args, py::kwargs)
-    {
-    }
-
     void register_target(const py::str& target_name, const py::object& callback)
     {
         auto target_callback = [&callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
@@ -135,11 +157,12 @@ namespace xpyt
         };
     }
 
-    PYBIND11_EMBEDDED_MODULE(xeus_python_kernel, m)
+    py::module get_kernel_module_impl()
     {
-        py::class_<detail::xmock_object> _Mock(m, "_Mock");
+        py::module kernel_module = py::module("kernel");
 
-        py::class_<xcomm>(m, "XPythonComm")
+        py::class_<detail::xmock_object> _Mock(kernel_module, "_Mock");
+        py::class_<xcomm>(kernel_module, "Comm")
             .def(py::init<py::args, py::kwargs>())
             .def("close", &xcomm::close)
             .def("send", &xcomm::send)
@@ -148,21 +171,29 @@ namespace xpyt
             .def_property_readonly("comm_id", &xcomm::comm_id)
             .def_property_readonly("kernel", &xcomm::kernel);
 
-        m.def("register_target", &register_target);
-        m.def("register_post_execute", &register_post_execute);
-        m.def("enable_gui", &enable_gui);
+        kernel_module.def("register_target", &register_target);
+        kernel_module.def("register_post_execute", [](py::args, py::kwargs) {});
+        kernel_module.def("enable_gui", [](py::args, py::kwargs) {});
 
-        m.def("get_kernel", [m]() {
-            py::object xeus_python = m.attr("_Mock");
-            py::object kernel = m.attr("_Mock");
-            py::object comm_manager = m.attr("_Mock");
+        kernel_module.def("get_ipython", [kernel_module]() {
+            py::object xeus_python = kernel_module.attr("_Mock");
+            py::object kernel = kernel_module.attr("_Mock");
+            py::object comm_manager = kernel_module.attr("_Mock");
 
-            xeus_python.attr("register_post_execute") = m.attr("register_post_execute");
-            xeus_python.attr("enable_gui") = m.attr("enable_gui");
-            comm_manager.attr("register_target") = m.attr("register_target");
+            xeus_python.attr("register_post_execute") = kernel_module.attr("register_post_execute");
+            xeus_python.attr("enable_gui") = kernel_module.attr("enable_gui");
+            comm_manager.attr("register_target") = kernel_module.attr("register_target");
             kernel.attr("comm_manager") = comm_manager;
             xeus_python.attr("kernel") = kernel;
             return xeus_python;
         });
+
+        return kernel_module;
+    }
+
+    py::module get_kernel_module()
+    {
+        static py::module kernel_module = get_kernel_module_impl();
+        return kernel_module;
     }
 }
