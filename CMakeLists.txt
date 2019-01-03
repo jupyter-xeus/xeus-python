@@ -48,7 +48,6 @@ set(pybind11_REQUIRED_VERSION 2.2.4)
 find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 find_package(cppzmq ${cppzmq_REQUIRED_VERSION} REQUIRED)
 
-find_package(PythonLibs REQUIRED)
 find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
 
 #########

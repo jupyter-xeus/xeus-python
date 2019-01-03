@@ -8,14 +8,21 @@ matrix:
   fast_finish: true
   include:
     - os: linux
-      env: PYTHON=3.6
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+      env: PY=3
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+      env: PY=2
     - os: osx
       osx_image: xcode8
       compiler: clang
+      env: PY=3
 install:
     # Define the version of miniconda to download
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -23,7 +30,11 @@ install:
       elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         MINCONDA_OS=$MINCONDA_OSX;
       fi
-    - wget "http://repo.continuum.io/miniconda/Miniconda3-$MINCONDA_VERSION-$MINCONDA_OS.sh" -O miniconda.sh;
+    - if [[ "$PY" == "3" ]]; then
+          wget "http://repo.continuum.io/miniconda/Miniconda3-$MINCONDA_VERSION-$MINCONDA_OS.sh" -O miniconda.sh;
+      else
+          wget "http://repo.continuum.io/miniconda/Miniconda2-$MINCONDA_VERSION-$MINCONDA_OS.sh" -O miniconda.sh;
+      fi
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
@@ -36,13 +47,20 @@ install:
       elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
           conda install clangdev -c QuantStack -c conda-forge;
       fi
+    # For debugging
+    - which python
+    - python --version
     # Build and install xeus-python
     - mkdir build
     - cd build
-    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda/ -D DOWNLOAD_GTEST=ON ..
+    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda/ -D DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` ..
     - make -j2 install
     # Install jupyter_kernel_test and pytest
-    - conda install pytest jupyter_kernel_test -c conda-forge
+    - if [[ "$PY" == "3" ]]; then
+          conda install pytest jupyter_kernel_test -c conda-forge;
+      fi
 script:
     - ./test/test_xeus_python
-    - cd ../test && py.test .
+    - if [[ "$PY" == "3" ]]; then
+          cd ../test && py.test .;
+      fi
