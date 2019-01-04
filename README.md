@@ -56,21 +56,31 @@ To ensure that the installation works, it is preferable to install `xeus-python`
 
 The safest usage is to create an environment named `xeus-python` with your miniconda installation
 
-```
+```bash
 conda create -n xeus-python
 source activate xeus-python
 ```
 
+### Installation directly from conda
+
 Then you can install in this environment `xeus-python` and its dependencies
 
-```
+```bash
 conda install xeus-python notebook -c QuantStack -c conda-forge
 ```
 
-Or you can install it directly from the sources, if all the dependencies are already installed.
+### Installation from source
+
+Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-cmake -DCMAKE_INSTALL_PREFIX=your_conda_path -DCMAKE_INSTALL_LIBDIR=your_conda_path/lib
+conda install cmake xeus nlohmann_json cppzmq xtl pybind11 jedi pygments six notebook -c QuantStack -c conda-forge
+```
+
+Then you can compile the sources
+
+```bash
+cmake -D CMAKE_INSTALL_PREFIX=your_conda_path -D PYTHON_EXECUTABLE=`which python`
 make && make install
 ```
 
