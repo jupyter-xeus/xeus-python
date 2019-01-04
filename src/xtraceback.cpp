@@ -102,11 +102,16 @@ namespace xpyt
                 std::string line;
 
 #if PY_MAJOR_VERSION == 2
-                py::list frame_list = py::make_tuple(py_frame);
-                filename = py::str(frame_list[0]);
-                lineno = py::str(frame_list[1]);
-                name = py::str(frame_list[2]);
-                line = py::str(frame_list[3]);
+                py::tuple frame_tuple = py_frame.cast<py::tuple>();
+                filename = py::str(frame_tuple[0]);
+                lineno = py::str(frame_tuple[1]);
+                name = py::str(frame_tuple[2]);
+                line = py::str(frame_tuple[3]);
+                // Workaround for six execution
+                if (filename == "<string>" || line == "exec(\"\"\"exec _code_ in _globs_, _locs_\"\"\")")
+                {
+                    continue;
+                }
 #else
                 filename = py::str(py_frame.attr("filename"));
                 lineno = py::str(py_frame.attr("lineno"));

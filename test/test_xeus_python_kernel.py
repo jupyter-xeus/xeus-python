@@ -14,14 +14,14 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
     completion_samples = [
         {'text': 'pri', 'matches': {'print'}},
         {'text': 'from sys imp', 'matches': {'import'}},
-        {'text': 'is', 'matches': {'isinstance', 'issubclass', 'IsADirectoryError'}},
+        {'text': 'se', 'matches': {'set', 'setattr'}},
     ]
 
     complete_code_samples = ['1', "print('hello, world')", "def f(x):\n  return x*2\n\n\n"]
     incomplete_code_samples = ["print('''hello", "def f(x):\n  x*2"]
     invalid_code_samples = ['import = 7q']
 
-    code_inspect_sample = "print"
+    code_inspect_sample = "open"
 
     def test_xeus_python_stdout(self):
         reply, output_msgs = self.execute_helper(code='print(3)')

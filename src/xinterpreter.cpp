@@ -104,7 +104,7 @@ namespace xpyt
 
         try
         {
-            // Import AST ans builtins modules
+            // Import modules
             py::module ast = py::module::import("ast");
             py::module builtins = py::module::import(XPYT_BUILTINS);
 
@@ -131,13 +131,13 @@ namespace xpyt
 
                 m_displayhook.attr("set_execution_count")(execution_count);
 
-                builtins.attr("exec")(compiled_code, py::globals());
-                builtins.attr("exec")(compiled_interactive_code, py::globals());
+                exec(compiled_code);
+                exec(compiled_interactive_code);
             }
             else
             {
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
-                builtins.attr("exec")(compiled_code, py::globals());
+                exec(compiled_code);
             }
 
             kernel_res["status"] = "ok";
