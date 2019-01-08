@@ -3,7 +3,7 @@ channels:
   - QuantStack
   - conda-forge
 dependencies:
-  - xeus-python=0.1.2
+  - xeus-python=0.1.3
   - jedi
   - notebook
   - ipywidgets>=7.4
