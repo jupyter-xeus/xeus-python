@@ -107,17 +107,18 @@ namespace xpyt
                 lineno = py::str(frame_tuple[1]);
                 name = py::str(frame_tuple[2]);
                 line = py::str(frame_tuple[3]);
-                // Workaround for six execution
-                if (filename == "<string>" || line == "exec(\"\"\"exec _code_ in _globs_, _locs_\"\"\")")
-                {
-                    continue;
-                }
 #else
                 filename = py::str(py_frame.attr("filename"));
                 lineno = py::str(py_frame.attr("lineno"));
                 name = py::str(py_frame.attr("name"));
                 line = py::str(py_frame.attr("line"));
 #endif
+
+                // Workaround for py::exec
+                if (filename == "<string>")
+                {
+                    continue;
+                }
 
                 std::stringstream cpp_frame;
                 std::string padding(6 - lineno.size(), ' ');

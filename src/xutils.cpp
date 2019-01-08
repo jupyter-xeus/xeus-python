@@ -96,8 +96,12 @@ namespace xpyt
 
     void exec(const py::object& code, const py::object& scope)
     {
-        py::module six = py::module::import("six");
-        six.attr("exec_")(code, scope);
+        // Workaround for https://github.com/pybind/pybind11/issues/1654
+        if (scope.attr("get")("__builtins__").is_none())
+        {
+            scope["__builtins__"] = py::module::import(XPYT_BUILTINS);
+        }
+        py::exec(XPYT_EXEC_COMMAND, py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
     }
 }
 

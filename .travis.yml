@@ -41,7 +41,7 @@ install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     # Install dependencies
-    - conda install cmake xeus=0.18.1 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.5.2 pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 six=1.12 -c QuantStack -c conda-forge
+    - conda install cmake xeus=0.18.1 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.5.2 pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 -c QuantStack -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
           conda install gcc-7 -c QuantStack -c conda-forge;
       elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then

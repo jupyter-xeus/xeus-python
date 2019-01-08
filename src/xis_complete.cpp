@@ -26,11 +26,11 @@ namespace xpyt
 
         exec(py::str(R"(
 # Implementation from https://github.com/ipython/ipython/blob/master/IPython/core/inputtransformer2.py
+import sys
 import re
 import tokenize
 import warnings
 from codeop import compile_command
-import six
 
 _indent_re = re.compile(r'^[ \t]+')
 
@@ -85,7 +85,7 @@ def _extract_token(token, tokens_by_line, parenlev):
         if parenlev > 0:
             parenlev -= 1
 
-if six.PY3:
+if sys.version_info.major == 3:
     def _gen_tokens(lines, tokens_by_line, parenlev):
         for token in tokenize.generate_tokens(iter(lines).__next__):
             _extract_token(token, tokens_by_line, parenlev)
