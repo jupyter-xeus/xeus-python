@@ -24,6 +24,7 @@ namespace xpyt
 
     TEST(pyobject_tojson, none)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         py::object obj = py::none();
         nl::json j = obj;
@@ -33,6 +34,7 @@ namespace xpyt
 
     TEST(pyobject_tojson, bool_)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         py::object obj = py::bool_(false);
         nl::json j = obj;
@@ -43,6 +45,7 @@ namespace xpyt
 
     TEST(pyobject_tojson, number)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         py::object obj = py::int_(36);
         nl::json j = obj;
@@ -59,6 +62,7 @@ namespace xpyt
 
     TEST(pyobject_tojson, string)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         py::object obj = py::str("Hello");
         nl::json j = obj;
@@ -69,6 +73,7 @@ namespace xpyt
 
     TEST(pyobject_tojson, list)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         py::object obj = py::list();
         obj.attr("append")(py::int_(36));
@@ -84,6 +89,7 @@ namespace xpyt
 
     TEST(pyobject_tojson, tuple)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         py::object obj = py::make_tuple(1234, "hello", false);
         nl::json j = obj;
@@ -96,6 +102,7 @@ namespace xpyt
 
     TEST(pyobject_tojson, dict)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         py::object obj = py::dict("number"_a=1234, "hello"_a="world");
         nl::json j = obj;
@@ -107,6 +114,7 @@ namespace xpyt
 
     TEST(pyobject_tojson, nested)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         py::object obj = py::dict(
             "list"_a=py::make_tuple(1234, "hello", false),
@@ -127,6 +135,7 @@ namespace xpyt
 
     TEST(pyobject_fromjson, none)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         nl::json j = "null"_json;
         py::object obj = j;
@@ -136,6 +145,7 @@ namespace xpyt
 
     TEST(pyobject_fromjson, bool_)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         nl::json j = "false"_json;
         py::object obj = j;
@@ -146,6 +156,7 @@ namespace xpyt
 
     TEST(pyobject_fromjson, number)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         nl::json j = "36"_json;
         py::object obj = j;
@@ -162,6 +173,7 @@ namespace xpyt
 
     TEST(pyobject_fromjson, string)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         nl::json j = "\"Hello World!\""_json;
         py::object obj = j;
@@ -172,6 +184,7 @@ namespace xpyt
 
     TEST(pyobject_fromjson, list)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         nl::json j = "[1234, \"Hello World!\", false]"_json;
         py::object obj = j;
@@ -184,6 +197,7 @@ namespace xpyt
 
     TEST(pyobject_fromjson, dict)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         nl::json j = "{\"a\": 1234, \"b\":\"Hello World!\", \"c\":false}"_json;
         py::object obj = j;
@@ -196,6 +210,7 @@ namespace xpyt
 
     TEST(pyobject_fromjson, nested)
     {
+        Py_SetPythonHome(XEUS_PYTHON_HOME);
         py::scoped_interpreter guard;
         nl::json j = R"({
             "baz": ["one", "two", "three"],

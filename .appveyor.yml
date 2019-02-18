@@ -9,7 +9,7 @@ image:
 
 environment:
   matrix:
-    - MINICONDA: C:\xwidgets-conda
+    - MINICONDA: C:\\xeus-conda
 
 init:
   - "ECHO %MINICONDA%"
@@ -21,15 +21,17 @@ init:
   - "%VCVARPATH% %VCARGUMENT%"
   - ps: if($env:Platform -eq "x64"){Start-FileDownload 'http://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe' C:\Miniconda.exe; echo "Done"}
   - ps: if($env:Platform -eq "x86"){Start-FileDownload 'http://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86.exe' C:\Miniconda.exe; echo "Done"}
-  - cmd: C:\Miniconda.exe /S /D=C:\xwidgets-conda
+  - cmd: C:\Miniconda.exe /S /D=C:\xeus-conda
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%MINICONDA%\\Library\\bin;%PATH%"
 
 install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  # Install dependencies
-  - conda install cmake xeus=0.18.1 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.5.2 pybind11=2.2.4  jedi=0.13.1 pygments=2.3.1 gtest=1.8.0 -c QuantStack -c conda-forge
+  # Host dependencies
+  - conda install xeus=0.18.1 nlohmann_json=3.4.0 cppzmq=4.3.0 xtl=0.5.2 pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 gtest=1.8.0 -c conda-forge
+  # Build dependencies
+  - conda install cmake -c conda-forge
   # Build and install xeus-python
   - mkdir build
   - cd build

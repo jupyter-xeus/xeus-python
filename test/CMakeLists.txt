@@ -16,10 +16,7 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 
     enable_testing()
 
-    find_package(xeus REQUIRED CONFIG)
-    find_package(cppzmq REQUIRED CONFIG)
-    find_package(PythonLibs REQUIRED CONFIG)
-    find_package(pybind11 REQUIRED CONFIG)
+    find_package(xeus-python REQUIRED CONFIG)
 endif ()
 
 message(STATUS "Forcing tests build type to Release")
@@ -67,7 +64,7 @@ if(DOWNLOAD_GTEST OR GTEST_SRC_DIR)
     # Add googletest directly to our build. This defines
     # the gtest and gtest_main targets.
     add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-                     ${CMAKE_CURRENT_BINARY_DIR}/googletest-build)
+                     ${CMAKE_CURRENT_BINARY_DIR}/googletest-build EXCLUDE_FROM_ALL)
 
     set(GTEST_INCLUDE_DIRS "${gtest_SOURCE_DIR}/include")
     set(GTEST_BOTH_LIBRARIES  gtest_main gtest)
@@ -81,33 +78,36 @@ include_directories(${GTEST_INCLUDE_DIRS} SYSTEM)
 
 set(XEUS_PYTHON_TESTS
     test_xutils.cpp
-
     ../src/xutils.cpp
 )
 
-set(XEUS_PYTHON_TEST_TARGET test_xeus_python)
-
-add_executable(${XEUS_PYTHON_TEST_TARGET} ${XEUS_PYTHON_TESTS})
+add_executable(test_xeus_python ${XEUS_PYTHON_TESTS})
 if(DOWNLOAD_GTEST OR GTEST_SRC_DIR)
-    add_dependencies(${XEUS_PYTHON_TEST_TARGET} gtest_main)
+    add_dependencies(test_xeus_python gtest_main)
 endif()
 
 if (APPLE)
-    set_target_properties(${XEUS_PYTHON_TEST_TARGET} PROPERTIES
+    set_target_properties(test_xeus_python PROPERTIES
         MACOSX_RPATH ON
     )
 else()
-    set_target_properties(${XEUS_PYTHON_TEST_TARGET} PROPERTIES
+    set_target_properties(test_xeus_python PROPERTIES
         BUILD_WITH_INSTALL_RPATH 1
         SKIP_BUILD_RPATH FALSE
     )
 endif()
 
-set_target_properties(${XEUS_PYTHON_TEST_TARGET} PROPERTIES
+set_target_properties(test_xeus_python PROPERTIES
     INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 
 include_directories(${PYTHON_INCLUDE_DIRS})
-target_link_libraries(${XEUS_PYTHON_TEST_TARGET} ${PYTHON_LIBRARIES} xeus ${GTEST_BOTH_LIBRARIES} Threads::Threads)
+target_link_libraries(test_xeus_python ${PYTHON_LIBRARIES} xeus ${GTEST_BOTH_LIBRARIES} Threads::Threads)
 
-add_custom_target(xtest COMMAND test_xeus_python DEPENDS ${XEUS_PYTHON_TEST_TARGET})
+if (${PYTHON_VERSION_MAJOR} EQUAL 2)
+    target_compile_definitions(test_xeus_python PRIVATE XEUS_PYTHON_HOME="${PYTHON_PREFIX}")
+else()
+    target_compile_definitions(test_xeus_python PRIVATE XEUS_PYTHON_HOME=L"${PYTHON_PREFIX}")
+endif()
+
+add_custom_target(xtest COMMAND test_xeus_python DEPENDS test_xeus_python)
