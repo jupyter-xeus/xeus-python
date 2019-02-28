@@ -47,7 +47,6 @@ set(pybind11_REQUIRED_VERSION 2.2.4)
 
 find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 find_package(cppzmq ${cppzmq_REQUIRED_VERSION} REQUIRED)
-
 find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
 
 #########
@@ -120,7 +119,13 @@ add_library(xeus-python SHARED ${XEUSPYTHON_SRC} ${XEUSPYTHON_HEADERS})
 # xpython is the target for the kernel executable
 add_executable(xpython src/main.cpp)
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
-target_link_libraries(xpython PRIVATE xeus-python)
+target_link_libraries(xpython PRIVATE pybind11::pybind11 xeus-python)
+
+if (${PYTHON_VERSION_MAJOR} EQUAL 2)
+    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_HOME="${PYTHON_PREFIX}")
+else()
+    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_HOME=L"${PYTHON_PREFIX}")
+endif()
 
 if (APPLE)
     set_target_properties(xpython xeus-python PROPERTIES
@@ -139,9 +144,9 @@ set_target_properties(xpython xeus-python PROPERTIES
 
 target_include_directories(xeus-python
                            PUBLIC
-                               ${PYTHON_INCLUDE_DIRS}
-                               $<BUILD_INTERFACE:${XEUSPYTHON_INCLUDE_DIR}>
-                               $<INSTALL_INTERFACE:include>)
+                           ${PYTHON_INCLUDE_DIRS}
+                           $<BUILD_INTERFACE:${XEUSPYTHON_INCLUDE_DIR}>
+                           $<INSTALL_INTERFACE:include>)
 target_link_libraries(xeus-python PUBLIC pybind11::embed xeus)
 
 set_target_properties(xeus-python PROPERTIES

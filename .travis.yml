@@ -40,33 +40,37 @@ install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
-    # Install dependencies
-    - conda install cmake xeus=0.18.1 nlohmann_json=3.3.0 cppzmq=4.3.0 xtl=0.5.2 pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 -c QuantStack -c conda-forge
+    # Host dependencies
+    - conda install xeus=0.18.1 nlohmann_json=3.4.0 cppzmq=4.3.0 xtl=0.5.2 pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 -c conda-forge
+    # Build dependencies
+    - conda install cmake -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-          conda install gcc-7 -c QuantStack -c conda-forge;
-      elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-          conda install clangdev -c QuantStack -c conda-forge;
+        conda install gxx_linux-64 libgcc -c conda-forge;
       fi
+    # Test dependencies
+    # jupyter_kernel_test is Python3 only.
+    # With Python2, we first create a Python3 environment for jupyter_kernel_test
+    - if [[ "$PY" == "3" ]]; then
+        conda install pytest jupyter_kernel_test -c conda-forge;
+      else
+        conda create --name=kernel_test python=3 pytest jupyter_kernel_test -c conda-forge;
+        source activate kernel_test;
+      fi
+    # Activate root environment
+    - source activate root
     # For debugging
     - which python
     - python --version
     # Build and install xeus-python
     - mkdir build
     - cd build
-    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda/ -D DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` ..
+    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
     - make -j2 install
-    # Install jupyter_kernel_test and pytest.
-    # If Python2, we first create a Python3 environment because jupyter_kernel_test has not Python2 support
-    - if [[ "$PY" == "3" ]]; then
-          conda install pytest jupyter_kernel_test -c conda-forge;
-      else
-          conda create --name=tests python=3;
-          echo ". $HOME/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc;
-          source ~/.bashrc;
-          conda activate tests;
-          conda install pytest jupyter_kernel_test -c conda-forge;
-          jupyter kernelspec install --sys-prefix ../share/jupyter/kernels/xpython;
-      fi
 script:
+    # For Python 2, activate the kernel_test Python3 environment
+    - if [[ "$PY" == "2" ]]; then
+        source activate kernel_test;
+        jupyter kernelspec install --sys-prefix ../share/jupyter/kernels/xpython;
+      fi
     - ./test/test_xeus_python
     - cd ../test && py.test .

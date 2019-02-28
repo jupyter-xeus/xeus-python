@@ -7,7 +7,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+#include <pybind11/embed.h>
 
 int main(int argc, char* argv[])
 {

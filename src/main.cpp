@@ -7,6 +7,7 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -16,6 +17,7 @@
 
 #include "xeus-python/xinterpreter.hpp"
 
+#include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
 
 namespace py = pybind11;
@@ -39,10 +41,11 @@ std::string extract_filename(int& argc, char* argv[])
     return res;
 }
 
-
 int main(int argc, char* argv[])
 {
     std::string file_name = extract_filename(argc, argv);
+
+    Py_SetPythonHome(XEUS_PYTHON_HOME);
 
     py::scoped_interpreter guard;
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
@@ -86,6 +89,5 @@ int main(int argc, char* argv[])
 
         kernel.start();
     }
-
     return 0;
 }
