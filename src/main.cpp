@@ -16,6 +16,7 @@
 #include "xeus/xkernel_configuration.hpp"
 
 #include "xeus-python/xinterpreter.hpp"
+#include "xeus-python/xpythonhome.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -45,8 +46,7 @@ int main(int argc, char* argv[])
 {
     std::string file_name = extract_filename(argc, argv);
 
-    Py_SetPythonHome(XEUS_PYTHON_HOME);
-
+    xpyt::set_pythonhome();
     py::scoped_interpreter guard;
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));

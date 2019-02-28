@@ -103,11 +103,8 @@ set_target_properties(test_xeus_python PROPERTIES
 
 include_directories(${PYTHON_INCLUDE_DIRS})
 target_link_libraries(test_xeus_python ${PYTHON_LIBRARIES} xeus ${GTEST_BOTH_LIBRARIES} Threads::Threads)
-
-if (${PYTHON_VERSION_MAJOR} EQUAL 2)
-    target_compile_definitions(test_xeus_python PRIVATE XEUS_PYTHON_HOME="${PYTHON_PREFIX}")
-else()
-    target_compile_definitions(test_xeus_python PRIVATE XEUS_PYTHON_HOME=L"${PYTHON_PREFIX}")
-endif()
+target_compile_definitions(test_xeus_python PRIVATE XEUS_PYTHON_HOME="${PYTHON_PREFIX}")
+target_include_directories(test_xeus_python PRIVATE ${XEUSPYTHON_INCLUDE_DIR})
 
 add_custom_target(xtest COMMAND test_xeus_python DEPENDS test_xeus_python)
+
