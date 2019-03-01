@@ -111,6 +111,7 @@ set(XEUSPYTHON_SRC
 set(XEUSPYTHON_HEADERS
     include/xeus-python/xinterpreter.hpp
     include/xeus-python/xeus_python_config.hpp
+    include/xeus-python/xpythonhome.hpp
 )
 
 # xeus-python is the target for the library
@@ -120,12 +121,7 @@ add_library(xeus-python SHARED ${XEUSPYTHON_SRC} ${XEUSPYTHON_HEADERS})
 add_executable(xpython src/main.cpp)
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
 target_link_libraries(xpython PRIVATE pybind11::pybind11 xeus-python)
-
-if (${PYTHON_VERSION_MAJOR} EQUAL 2)
-    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_HOME="${PYTHON_PREFIX}")
-else()
-    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_HOME=L"${PYTHON_PREFIX}")
-endif()
+target_compile_definitions(xpython PRIVATE XEUS_PYTHON_HOME="${PYTHON_PREFIX}")
 
 if (APPLE)
     set_target_properties(xpython xeus-python PROPERTIES
