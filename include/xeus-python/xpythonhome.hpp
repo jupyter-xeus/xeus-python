@@ -28,7 +28,7 @@ namespace xpyt
         // manager.
         static const char* ph = XEUS_PYTHON_HOME;
         std::wstring wstr(ph, ph + std::strlen(ph));;
-        Py_SetPythonHome(wstr.c_str());
+        Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
 #endif
 #endif
     }
