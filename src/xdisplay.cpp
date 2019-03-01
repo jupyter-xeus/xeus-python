@@ -177,6 +177,16 @@ namespace xpyt
         }
     }
 
+    /*************************
+     * xclear implementation *
+     *************************/
+
+    void xclear(bool wait = false)
+    {
+        auto& interp = xeus::get_interpreter();
+        interp.clear_output(wait);
+    }
+
     /******************
      * display module *
      ******************/
@@ -204,7 +214,9 @@ namespace xpyt
               py::arg("update") = true,
               py::arg("raw") = false);
 
-        display_module.def("clear_output", []() {});
+        display_module.def("clear_output", 
+              xclear,
+              py::arg("wait") = false);
 
         return display_module;
     }

@@ -27,7 +27,7 @@ namespace xpyt
         // but wide string literals are not properly relocated by the conda package
         // manager.
         static const char* ph = XEUS_PYTHON_HOME;
-        std::wstring wstr(ph, ph + std::strlen(ph));;
+        static const std::wstring wstr(ph, ph + std::strlen(ph));;
         Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
 #endif
 #endif
