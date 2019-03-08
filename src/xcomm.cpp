@@ -186,6 +186,7 @@ namespace xpyt
         kernel_module.def("register_target", &register_target);
         kernel_module.def("register_post_execute", [](py::args, py::kwargs) {});
         kernel_module.def("enable_gui", [](py::args, py::kwargs) {});
+        kernel_module.def("showtraceback", [](py::args, py::kwargs) {});
 
         kernel_module.def("get_ipython", [kernel_module]() {
             py::object xeus_python = kernel_module.attr("_Mock");
@@ -196,6 +197,7 @@ namespace xpyt
             xeus_python.attr("enable_gui") = kernel_module.attr("enable_gui");
             comm_manager.attr("register_target") = kernel_module.attr("register_target");
             kernel.attr("comm_manager") = comm_manager;
+            kernel.attr("showtraceback") = kernel_module.attr("showtraceback");
             xeus_python.attr("kernel") = kernel;
             return xeus_python;
         });
