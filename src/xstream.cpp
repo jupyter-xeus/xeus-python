@@ -33,6 +33,7 @@ namespace xpyt
         virtual ~xstream();
 
         void write(const std::string& message);
+        void flush();
 
     private:
 
@@ -57,6 +58,10 @@ namespace xpyt
         xeus::get_interpreter().publish_stream(m_stream_name, message);
     }
 
+    void xstream::flush()
+    {
+    }
+
     /*****************
      * stream module *
      *****************/
@@ -67,7 +72,8 @@ namespace xpyt
 
         py::class_<xstream>(stream_module, "Stream")
             .def(py::init<std::string>())
-            .def("write", &xstream::write);
+            .def("write", &xstream::write)
+            .def("flush", &xstream::flush);
 
         return stream_module;
     }
