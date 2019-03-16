@@ -179,7 +179,7 @@ namespace nlohmann
             }
             if (py::isinstance<py::tuple>(obj) || py::isinstance<py::list>(obj))
             {
-                json out;
+                auto out = json::array();
                 for (const py::handle& value : obj)
                 {
                     out.push_back(to_json_impl(value));
@@ -188,7 +188,7 @@ namespace nlohmann
             }
             if (py::isinstance<py::dict>(obj))
             {
-                json out;
+                auto out = json::object();
                 for (const py::handle& key : obj)
                 {
                     out[key.cast<std::string>()] = to_json_impl(obj[key]);

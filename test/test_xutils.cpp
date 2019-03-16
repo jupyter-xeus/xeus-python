@@ -87,6 +87,17 @@ namespace xpyt
         ASSERT_EQ(j[2].get<bool>(), false);
     }
 
+    TEST(pyobject_tojson, empty_list)
+    {
+        set_pythonhome();
+        py::scoped_interpreter guard;
+        py::object obj = py::list();
+        nl::json j = obj;
+
+        ASSERT_TRUE(j.is_array());
+        ASSERT_TRUE(j.empty());
+    }
+
     TEST(pyobject_tojson, tuple)
     {
         set_pythonhome();
@@ -110,6 +121,17 @@ namespace xpyt
         ASSERT_TRUE(j.is_object());
         ASSERT_EQ(j["number"].get<int>(), 1234);
         ASSERT_EQ(j["hello"].get<std::string>(), "world");
+    }
+
+    TEST(pyobject_tojson, empty_dict)
+    {
+        set_pythonhome();
+        py::scoped_interpreter guard;
+        py::object obj = py::dict();
+        nl::json j = obj;
+
+        ASSERT_TRUE(j.is_object());
+        ASSERT_TRUE(j.empty());
     }
 
     TEST(pyobject_tojson, nested)
