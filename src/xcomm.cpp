@@ -165,6 +165,16 @@ namespace xpyt
         };
     }
 
+    struct xmock_kernel
+    {
+        xmock_kernel() {}
+
+        inline py::object parent_header() const
+        {
+            return py::dict(py::arg("header")=xeus::get_interpreter().parent_header().get<py::object>());
+        }
+    };
+
     /*****************
      * kernel module *
      *****************/
@@ -182,6 +192,9 @@ namespace xpyt
             .def("on_close", &xcomm::on_close)
             .def_property_readonly("comm_id", &xcomm::comm_id)
             .def_property_readonly("kernel", &xcomm::kernel);
+        py::class_<xmock_kernel>(kernel_module, "mock_kernel", py::dynamic_attr())
+            .def(py::init<>())
+            .def_property_readonly("_parent_header", &xmock_kernel::parent_header);
 
         kernel_module.def("register_target", &register_target);
         kernel_module.def("register_post_execute", [](py::args, py::kwargs) {});
@@ -189,15 +202,15 @@ namespace xpyt
         kernel_module.def("showtraceback", [](py::args, py::kwargs) {});
 
         kernel_module.def("get_ipython", [kernel_module]() {
-            py::object xeus_python = kernel_module.attr("_Mock");
-            py::object kernel = kernel_module.attr("_Mock");
+            py::object kernel = kernel_module.attr("mock_kernel")();
             py::object comm_manager = kernel_module.attr("_Mock");
-
-            xeus_python.attr("register_post_execute") = kernel_module.attr("register_post_execute");
-            xeus_python.attr("enable_gui") = kernel_module.attr("enable_gui");
             comm_manager.attr("register_target") = kernel_module.attr("register_target");
             kernel.attr("comm_manager") = comm_manager;
-            kernel.attr("showtraceback") = kernel_module.attr("showtraceback");
+
+            py::object xeus_python = kernel_module.attr("_Mock");
+            xeus_python.attr("register_post_execute") = kernel_module.attr("register_post_execute");
+            xeus_python.attr("enable_gui") = kernel_module.attr("enable_gui");
+            xeus_python.attr("showtraceback") = kernel_module.attr("showtraceback");
             xeus_python.attr("kernel") = kernel;
             return xeus_python;
         });
