@@ -8,7 +8,6 @@
 
 `xeus-python` is a Jupyter kernel for Python based on the native implementation of the Jupyter protocol [xeus](https://github.com/QuantStack/xeus).
 
-
 ## Usage
 
 Launch the Jupyter notebook with `jupyter notebook` or Jupyter lab with `jupyter lab` and launch a new Python notebook by selecting the **xpython** kernel.
@@ -110,6 +109,7 @@ http://xeus-python.readthedocs.io/
 | `xeus-python`|   `xeus`        |      `xtl`      | `cppzmq` | `nlohmann_json` | `pybind11`      | `jedi`            | `pygments`        | `six`             |
 |--------------|-----------------|-----------------|----------|-----------------|-----------------|-------------------|-------------------|-------------------|
 |  master      |  >=0.18.1,<0.19 |  >=0.5.2,<0.6   | ~4.3.0   | >=3.3.0,<4.0    | >=2.2.4,<3.0    | >=0.13.1,<0.14.0  | >=2.3.1,<3.0.0    |                   |
+|  0.2.0       |  >=0.18.1,<0.19 |  >=0.5.2,<0.6   | ~4.3.0   | >=3.3.0,<4.0    | >=2.2.4,<3.0    | >=0.13.1,<0.14.0  | >=2.3.1,<3.0.0    |                   |
 |  0.1.5       |  >=0.18.1,<0.19 |  >=0.5.2,<0.6   | ~4.3.0   | >=3.3.0,<4.0    | >=2.2.4,<3.0    | >=0.13.1,<0.14.0  | >=2.3.1,<3.0.0    |                   |
 |  0.1.4       |  >=0.18.1,<0.19 |  >=0.5.2,<0.6   | ~4.3.0   | >=3.3.0,<4.0    | >=2.2.4,<3.0    | >=0.13.1,<0.14.0  | >=2.3.1,<3.0.0    |                   |
 |  0.1.3       |  >=0.18.1,<0.19 |  >=0.5.2,<0.6   | ~4.3.0   | >=3.3.0,<4.0    | >=2.2.4,<3.0    | >=0.13.1,<0.14.0  | >=2.3.1,<3.0.0    |                   |
