@@ -66,7 +66,7 @@ source activate xeus-python
 Then you can install in this environment `xeus-python` and its dependencies
 
 ```bash
-conda install xeus-python notebook -c QuantStack -c conda-forge
+conda install xeus-python notebook -c conda-forge
 ```
 
 ### Installation from source
@@ -74,7 +74,7 @@ conda install xeus-python notebook -c QuantStack -c conda-forge
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-conda install cmake xeus nlohmann_json cppzmq xtl pybind11 jedi pygments six notebook -c QuantStack -c conda-forge
+conda install cmake xeus nlohmann_json cppzmq xtl pybind11 jedi pygments six notebook -c conda-forge
 ```
 
 Then you can compile the sources
@@ -121,9 +121,6 @@ http://xeus-python.readthedocs.io/
 |  0.0.2       |  >=0.16.0,<0.17 |  >=0.4.0,<0.5   | ~4.3.0   | >=3.3.0,<4.0    | >=2.2.4,<3.0    |                   |                   |                   |
 |  0.0.1       |  >=0.15.0,<0.16 |  >=0.4.0,<0.5   | ~4.3.0   | >=3.3.0,<4.0    | >=2.2.4,<3.0    |                   |                   |                   |
 
-
-The `QuantStack` channel provides `xeus` dependencies built with gcc-7. We highly recommend installing
-these dependencies from QuantStack in a clean conda installation or environment.
 
 ## License
 
