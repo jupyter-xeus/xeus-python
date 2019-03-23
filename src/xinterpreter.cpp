@@ -20,6 +20,7 @@
 
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
+
 #include "xcomm.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
