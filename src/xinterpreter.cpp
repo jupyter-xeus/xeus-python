@@ -23,6 +23,7 @@
 
 #include "xcomm.hpp"
 #include "xdisplay.hpp"
+#include "xdebugger.hpp"
 #include "xinput.hpp"
 #include "xinspect.hpp"
 #include "xis_complete.hpp"
@@ -49,6 +50,10 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
         xeus::register_interpreter(this);
+
+        // TODO: Remove this. Start the debugger only if a Comm has been opened
+        start_debugger();
+
         redirect_output();
         redirect_display();
 
@@ -294,5 +299,11 @@ namespace xpyt
 
         sys.attr("displayhook") = m_displayhook;
         py::globals()["display"] = display_module.attr("display");
+    }
+
+    void interpreter::start_debugger()
+    {
+        py::module debugger_module = get_debugger_module();
+        py::globals()["current_debugger"] = debugger_module.attr("Debugger")();
     }
 }

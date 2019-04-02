@@ -89,6 +89,10 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${
 set(XEUS_PYTHON_SRC
     src/xcomm.cpp
     src/xcomm.hpp
+    src/xdebugger.cpp
+    src/xdebugger.hpp
+    src/xdisplay.cpp
+    src/xdisplay.hpp
     src/xinput.cpp
     src/xinput.hpp
     src/xinspect.cpp
@@ -98,8 +102,6 @@ set(XEUS_PYTHON_SRC
     src/xis_complete.hpp
     src/xstream.cpp
     src/xstream.hpp
-    src/xdisplay.cpp
-    src/xdisplay.hpp
     src/xtraceback.cpp
     src/xtraceback.hpp
     src/xutils.cpp

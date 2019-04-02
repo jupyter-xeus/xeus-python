@@ -64,6 +64,8 @@ namespace xpyt
         void redirect_output();
         void redirect_display();
 
+        void start_debugger();
+
         py::object m_displayhook;
         std::vector<std::string> m_inputs;
 
