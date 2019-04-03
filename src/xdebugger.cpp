@@ -88,7 +88,7 @@ namespace xpyt
         py::class_<xdebugger>(debugger_module, "Debugger")
             .def(py::init<>());
 
-        debugger_module.def("debugging", [debugger_module]() {
+        debugger_module.def("register_debugger_comm", [debugger_module]() {
             auto debugger_start_callback = [debugger_module] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
                 py::module sys = py::module::import("sys");
 

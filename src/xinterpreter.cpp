@@ -40,10 +40,15 @@ namespace xpyt
     void interpreter::configure_impl()
     {
         py::gil_scoped_acquire acquire;
+
+        // Initialize Jedi for autocompletion
         py::module jedi = py::module::import("jedi");
         jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
             jedi.attr("api").attr("environment").attr("SameEnvironment")();
         });
+
+        // Register debugger Comm target
+        get_debugger_module().attr("register_debugger_comm")();
     }
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
@@ -53,10 +58,6 @@ namespace xpyt
 
         redirect_output();
         redirect_display();
-
-        // Expose "debugging" function to Python.
-        // It is not yet possible to register a Comm programmatically from the interpreter constructor.
-        py::globals()["debugging"] = get_debugger_module().attr("debugging");
 
         py::module sys = py::module::import("sys");
         py::module kernel_module = get_kernel_module();
