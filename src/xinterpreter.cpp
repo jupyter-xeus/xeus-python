@@ -51,11 +51,10 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
         xeus::register_interpreter(this);
 
-        // TODO: Remove this. Start the debugger only if a Comm has been opened
-        start_debugger();
-
         redirect_output();
         redirect_display();
+
+        register_debugger_comm();
 
         py::module sys = py::module::import("sys");
         py::module kernel_module = get_kernel_module();
@@ -301,9 +300,33 @@ namespace xpyt
         py::globals()["display"] = display_module.attr("display");
     }
 
-    void interpreter::start_debugger()
+    void interpreter::register_debugger_comm()
     {
-        py::module debugger_module = get_debugger_module();
-        py::globals()["current_debugger"] = debugger_module.attr("Debugger")();
+        auto debugger_start_callback = [this] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
+            py::module sys = py::module::import("sys");
+
+            // TODO remove this print
+            py::print("Debugger Comm opened, starting debugger", "file"_a=sys.attr("__stdout__"));
+
+            if (m_debugger.is_none())
+            {
+                m_debugger = get_debugger_module().attr("Debugger")();
+            }
+            else
+            {
+                py::print("Debugger Comm already opened", "file"_a=sys.attr("__stderr__"));
+                return;
+            }
+
+            // On message, forward it to ptvsd?
+            // comm.on_message();
+
+            // On Comm close, stop the communication?
+            // comm.on_close();
+        };
+
+        xeus::get_interpreter().comm_manager().register_comm_target(
+            "jupyter.debugger", debugger_start_callback
+        );
     }
 }
