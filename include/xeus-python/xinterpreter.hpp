@@ -64,10 +64,7 @@ namespace xpyt
         void redirect_output();
         void redirect_display();
 
-        void register_debugger_comm();
-
         py::object m_displayhook;
-        py::object m_debugger;
         std::vector<std::string> m_inputs;
 
         // The interpreter has the same scope as a `gil_scoped_release` instance

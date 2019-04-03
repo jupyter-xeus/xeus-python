@@ -11,9 +11,12 @@
 
 #include "zmq_addon.hpp"
 
+#include "xeus/xinterpreter.hpp"
+
 #include "pybind11/pybind11.h"
 
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 namespace xpyt
 {
@@ -84,6 +87,38 @@ namespace xpyt
 
         py::class_<xdebugger>(debugger_module, "Debugger")
             .def(py::init<>());
+
+        debugger_module.def("debugging", [debugger_module]() {
+            auto debugger_start_callback = [debugger_module] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
+                py::module sys = py::module::import("sys");
+
+                // TODO remove this print
+                py::print("Debugger Comm opened, starting debugger", "file"_a=sys.attr("__stdout__"));
+
+                py::object debugger = py::globals()["xdebugger"];
+
+                if (debugger.is_none())
+                {
+                    debugger = debugger_module.attr("Debugger")();
+                    py::globals()["xdebugger"] = debugger;
+                }
+                else
+                {
+                    py::print("Debugger Comm already opened", "file"_a=sys.attr("__stderr__"));
+                    return;
+                }
+
+                // On message, forward it to ptvsd and send back the response to the client?
+                // comm.on_message();
+
+                // On Comm close, stop the communication?
+                // comm.on_close();
+            };
+
+            xeus::get_interpreter().comm_manager().register_comm_target(
+                "jupyter.debugger", debugger_start_callback
+            );
+        });
 
         return debugger_module;
     }

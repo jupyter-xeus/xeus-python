@@ -54,7 +54,9 @@ namespace xpyt
         redirect_output();
         redirect_display();
 
-        register_debugger_comm();
+        // Expose "debugging" function to Python.
+        // It is not yet possible to register a Comm programmatically from the interpreter constructor.
+        py::globals()["debugging"] = get_debugger_module().attr("debugging");
 
         py::module sys = py::module::import("sys");
         py::module kernel_module = get_kernel_module();
@@ -298,35 +300,5 @@ namespace xpyt
 
         sys.attr("displayhook") = m_displayhook;
         py::globals()["display"] = display_module.attr("display");
-    }
-
-    void interpreter::register_debugger_comm()
-    {
-        auto debugger_start_callback = [this] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
-            py::module sys = py::module::import("sys");
-
-            // TODO remove this print
-            py::print("Debugger Comm opened, starting debugger", "file"_a=sys.attr("__stdout__"));
-
-            if (m_debugger.is_none())
-            {
-                m_debugger = get_debugger_module().attr("Debugger")();
-            }
-            else
-            {
-                py::print("Debugger Comm already opened", "file"_a=sys.attr("__stderr__"));
-                return;
-            }
-
-            // On message, forward it to ptvsd?
-            // comm.on_message();
-
-            // On Comm close, stop the communication?
-            // comm.on_close();
-        };
-
-        xeus::get_interpreter().comm_manager().register_comm_target(
-            "jupyter.debugger", debugger_start_callback
-        );
     }
 }
