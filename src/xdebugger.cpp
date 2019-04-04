@@ -88,38 +88,6 @@ namespace xpyt
         py::class_<xdebugger>(debugger_module, "Debugger")
             .def(py::init<>());
 
-        debugger_module.def("register_debugger_comm", [debugger_module]() {
-            auto debugger_start_callback = [debugger_module] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
-                py::module sys = py::module::import("sys");
-
-                // TODO remove this print
-                py::print("Debugger Comm opened, starting debugger", "file"_a=sys.attr("__stdout__"));
-
-                py::object debugger = py::globals()["xdebugger"];
-
-                if (debugger.is_none())
-                {
-                    debugger = debugger_module.attr("Debugger")();
-                    py::globals()["xdebugger"] = debugger;
-                }
-                else
-                {
-                    py::print("Debugger Comm already opened", "file"_a=sys.attr("__stderr__"));
-                    return;
-                }
-
-                // On message, forward it to ptvsd and send back the response to the client?
-                // comm.on_message();
-
-                // On Comm close, stop the communication?
-                // comm.on_close();
-            };
-
-            xeus::get_interpreter().comm_manager().register_comm_target(
-                "jupyter.debugger", debugger_start_callback
-            );
-        });
-
         return debugger_module;
     }
 
@@ -127,5 +95,38 @@ namespace xpyt
     {
         static py::module debugger_module = get_debugger_module_impl();
         return debugger_module;
+    }
+
+    void register_debugger_comm()
+    {
+        auto debugger_start_callback = [] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
+            py::module sys = py::module::import("sys");
+
+            // TODO remove this print
+            py::print("Debugger Comm opened, starting debugger", "file"_a=sys.attr("__stdout__"));
+
+            py::object debugger = py::globals()["xdebugger"];
+
+            if (debugger.is_none())
+            {
+                debugger = get_debugger_module().attr("Debugger")();
+                py::globals()["xdebugger"] = debugger;
+            }
+            else
+            {
+                py::print("Debugger Comm already opened", "file"_a=sys.attr("__stderr__"));
+                return;
+            }
+
+            // On message, forward it to ptvsd and send back the response to the client?
+            // comm.on_message();
+
+            // On Comm close, stop the communication?
+            // comm.on_close();
+        };
+
+        xeus::get_interpreter().comm_manager().register_comm_target(
+            "jupyter.debugger", debugger_start_callback
+        );
     }
 }

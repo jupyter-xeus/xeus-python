@@ -48,7 +48,7 @@ namespace xpyt
         });
 
         // Register debugger Comm target
-        get_debugger_module().attr("register_debugger_comm")();
+        register_debugger_comm();
     }
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
