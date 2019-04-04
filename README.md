@@ -73,7 +73,7 @@ conda install xeus-python notebook -c conda-forge
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-conda install cmake xeus nlohmann_json cppzmq xtl pybind11 jedi pygments six notebook -c conda-forge
+conda install cmake xeus nlohmann_json cppzmq xtl pybind11 jedi pygments notebook -c conda-forge
 ```
 
 Then you can compile the sources
