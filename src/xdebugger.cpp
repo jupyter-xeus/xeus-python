@@ -8,10 +8,12 @@
 ****************************************************************************/
 
 #include <string>
+#include <iostream>
 
 #include "zmq_addon.hpp"
 
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xmessage.hpp"
 
 #include "pybind11/pybind11.h"
 
@@ -102,13 +104,13 @@ namespace xpyt
         auto debugger_start_callback = [] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
             py::module sys = py::module::import("sys");
 
-            // TODO remove this print
-            py::print("Debugger Comm opened, starting debugger", "file"_a=sys.attr("__stdout__"));
+            // TODO debugger should not be a global Python object
+            py::object debugger = py::globals().attr("get")("xdebugger", py::none());
 
-            py::object debugger = py::globals()["xdebugger"];
-
+            // TODO remove prints
             if (debugger.is_none())
             {
+                py::print("Debugger Comm opened, starting debugger", "file"_a=sys.attr("__stdout__"));
                 debugger = get_debugger_module().attr("Debugger")();
                 py::globals()["xdebugger"] = debugger;
             }
@@ -119,7 +121,9 @@ namespace xpyt
             }
 
             // On message, forward it to ptvsd and send back the response to the client?
-            // comm.on_message();
+            comm.on_message([] (const xeus::xmessage& msg) {
+                std::cout << "I received something!!!" << std::endl;
+            });
 
             // On Comm close, stop the communication?
             // comm.on_close();
