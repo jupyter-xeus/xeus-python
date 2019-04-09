@@ -76,6 +76,16 @@ namespace xpyt
     {
     }
 
+    py::object interpreter::start_debugging()
+    {
+        if (m_debugger.is_none())
+        {
+            m_debugger = get_debugger_module().attr("Debugger")();
+        }
+
+        return m_debugger;
+    }
+
     nl::json interpreter::execute_request_impl(int execution_count,
                                                const std::string& code,
                                                bool silent,

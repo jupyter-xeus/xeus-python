@@ -7,13 +7,16 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include <string>
 #include <iostream>
+#include <string>
+#include <thread>
 
 #include "zmq_addon.hpp"
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xmessage.hpp"
+
+#include "xeus-python/xinterpreter.hpp"
 
 #include "pybind11/pybind11.h"
 
@@ -42,6 +45,7 @@ namespace xpyt
 
         void init_server();
         void init_client();
+        void client_run();
 
         zmq::context_t m_context;
         std::string m_host;
@@ -71,12 +75,38 @@ namespace xpyt
     {
         py::module ptvsd = py::module::import("ptvsd");
 
-        ptvsd.attr("enable_attach")(py::make_tuple(m_host, m_server_port));
+        ptvsd.attr("enable_attach")(py::make_tuple(m_host, m_server_port), "log_dir"_a="xpython_debug_logs");
     }
 
     void xdebugger::init_client()
     {
+        std::thread client_thread(&xdebugger::client_run, this);
+        client_thread.detach();
+    }
+
+    void xdebugger::client_run()
+    {
         m_client_socket.connect(get_end_point(m_host, m_server_port));
+
+        while (true) // TODO Find a stop condition (ptvsd exit message?)
+        {
+            zmq::pollitem_t items[] = { { m_client_socket, 0, ZMQ_POLLIN, 0 } };
+
+            // Blocking call
+            zmq::poll(&items[0], 1, -1);
+
+            if (items[0].revents & ZMQ_POLLIN)
+            {
+                zmq::multipart_t msg;
+                msg.recv(m_client_socket);
+
+                while (!msg.empty()) {
+                    const unsigned char* msg_data = msg.pop().data<unsigned char>();
+                    std::cout << msg_data << std::endl;
+                    // TODO Send message through comms
+                }
+            }
+        }
     }
 
     /*******************
@@ -99,26 +129,15 @@ namespace xpyt
         return debugger_module;
     }
 
+    interpreter& get_interpreter()
+    {
+        return dynamic_cast<interpreter&>(xeus::get_interpreter());
+    }
+
     void register_debugger_comm()
     {
         auto debugger_start_callback = [] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
-            py::module sys = py::module::import("sys");
-
-            // TODO debugger should not be a global Python object
-            py::object debugger = py::globals().attr("get")("xdebugger", py::none());
-
-            // TODO remove prints
-            if (debugger.is_none())
-            {
-                py::print("Debugger Comm opened, starting debugger", "file"_a=sys.attr("__stdout__"));
-                debugger = get_debugger_module().attr("Debugger")();
-                py::globals()["xdebugger"] = debugger;
-            }
-            else
-            {
-                py::print("Debugger Comm already opened", "file"_a=sys.attr("__stderr__"));
-                return;
-            }
+            py::object debugger = get_interpreter().start_debugging();
 
             // On message, forward it to ptvsd and send back the response to the client?
             comm.on_message([] (const xeus::xmessage& msg) {

@@ -38,6 +38,8 @@ namespace xpyt
         interpreter(int argc, const char* const* argv);
         virtual ~interpreter();
 
+        py::object start_debugging();
+
     private:
 
         void configure_impl() override;
@@ -65,6 +67,7 @@ namespace xpyt
         void redirect_display();
 
         py::object m_displayhook;
+        py::object m_debugger;
         std::vector<std::string> m_inputs;
 
         // The interpreter has the same scope as a `gil_scoped_release` instance
