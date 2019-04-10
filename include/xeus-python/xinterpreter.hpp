@@ -38,7 +38,7 @@ namespace xpyt
         interpreter(int argc, const char* const* argv);
         virtual ~interpreter();
 
-        py::object start_debugging();
+        py::object start_debugging(py::object comm);
 
     private:
 

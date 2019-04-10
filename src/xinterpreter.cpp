@@ -52,6 +52,7 @@ namespace xpyt
     }
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
+        : m_debugger(py::none())
     {
         py::gil_scoped_acquire acquire;
         xeus::register_interpreter(this);
@@ -76,11 +77,11 @@ namespace xpyt
     {
     }
 
-    py::object interpreter::start_debugging()
+    py::object interpreter::start_debugging(py::object comm)
     {
         if (m_debugger.is_none())
         {
-            m_debugger = get_debugger_module().attr("Debugger")();
+            m_debugger = get_debugger_module().attr("Debugger")(comm);
         }
 
         return m_debugger;
