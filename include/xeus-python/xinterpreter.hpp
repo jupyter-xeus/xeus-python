@@ -66,6 +66,15 @@ namespace xpyt
 
         py::object m_displayhook;
         std::vector<std::string> m_inputs;
+
+        // The interpreter has the same scope as a `gil_scoped_release` instance
+        // so that the GIL is not held by default, it will only be held when the
+        // interpreter wants to execute Python code. This means that whenever
+        // the interpreter will execute Python code it will need to create an
+        // `gil_scoped_acquire` instance first.
+        // This member must be stay the last one, so that other Python object
+        // members can be initialized without crashing.
+        py::gil_scoped_release m_release_gil;
     };
 }
 
