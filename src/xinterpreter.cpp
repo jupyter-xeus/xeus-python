@@ -38,6 +38,7 @@ namespace xpyt
 {
     void interpreter::configure_impl()
     {
+        py::gil_scoped_acquire acquire;
         py::module jedi = py::module::import("jedi");
         jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
             jedi.attr("api").attr("environment").attr("SameEnvironment")();
@@ -46,6 +47,7 @@ namespace xpyt
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
     {
+        py::gil_scoped_acquire acquire;
         xeus::register_interpreter(this);
         redirect_output();
         redirect_display();
@@ -74,6 +76,7 @@ namespace xpyt
                                                nl::json /*user_expressions*/,
                                                bool allow_stdin)
     {
+        py::gil_scoped_acquire acquire;
         nl::json kernel_res;
         m_inputs.push_back(code);
 
@@ -167,6 +170,7 @@ namespace xpyt
         const std::string& code,
         int cursor_pos)
     {
+        py::gil_scoped_acquire acquire;
         nl::json kernel_res;
         std::vector<std::string> matches;
         int cursor_start = cursor_pos;
@@ -193,6 +197,7 @@ namespace xpyt
                                                int cursor_pos,
                                                int /*detail_level*/)
     {
+        py::gil_scoped_acquire acquire;
         nl::json kernel_res;
         nl::json pub_data;
 
@@ -214,6 +219,7 @@ namespace xpyt
 
     nl::json interpreter::is_complete_request_impl(const std::string& code)
     {
+        py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
         py::module completion_module = get_completion_module();
