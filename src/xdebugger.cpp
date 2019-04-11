@@ -31,14 +31,6 @@ namespace xpyt
         return "tcp://" + ip + ':' + std::to_string(port);
     }
 
-    py::object parse_zmq_message(const zmq::message_t& msg)
-    {
-        py::module json = py::module::import("json");
-        const char* buf = msg.data<const char>();
-        std::string msg_content(buf, msg.size());
-        return json.attr("loads")(msg_content);
-    }
-
     /*************************
      * xdebugger declaration *
      *************************/
@@ -93,28 +85,43 @@ namespace xpyt
 
         while (true) // TODO Find a stop condition (ptvsd exit message?)
         {
-            zmq::pollitem_t items[] = { { m_client_socket, 0, ZMQ_POLLIN, 0 } };
+            // Releasing the GIL before the blocking call
+            py::gil_scoped_release release;
 
+            zmq::pollitem_t items[] = { { m_client_socket, 0, ZMQ_POLLIN, 0 } };
             // Blocking call
             zmq::poll(&items[0], 1, -1);
 
             if (items[0].revents & ZMQ_POLLIN)
             {
-                zmq::multipart_t msg;
-                msg.recv(m_client_socket);
+                zmq::multipart_t multipart;
+                multipart.recv(m_client_socket);
 
-                while (!msg.empty()) {
-                    py::object msg_content = parse_zmq_message(msg.pop());
-                    std::cout << static_cast<std::string>(py::str(msg_content)) << std::endl;
-                    // std::cout << static_cast<std::string>(py::str(m_comm)) << std::endl;
+                while (!multipart.empty()) {
+                    // Acquire the GIL before executing Python code
+                    py::gil_scoped_acquire acquire;
+
+                    zmq::message_t msg = multipart.pop();
+                    py::object msg_content;
+
                     try
                     {
-                        m_comm.attr("send")("data"_a=msg_content);
+                        py::module json = py::module::import("json");
+                        const char* buf = msg.data<const char>();
+                        std::string msg_string(buf, msg.size());
+
+                        msg_content = json.attr("loads")(msg_string);
                     }
-                    catch (py::error_already_set& e)
+                    catch (...)
                     {
-                        std::cout << "Python error while sending message" << std::endl;
+                        // Could not decode the message, not sending anything
+                        continue;
                     }
+
+                    std::cout << "Sending through comms:" << std::endl;
+                    std::cout << static_cast<std::string>(py::str(msg_content)) << std::endl;
+
+                    m_comm.attr("send")("data"_a=msg_content);
                 }
             }
         }
@@ -129,11 +136,12 @@ namespace xpyt
     {
         py::object debugger = get_interpreter().start_debugging(comm);
 
-        debugger.attr("start_server")();
-
         // Start client in a secondary thread
         py::module threading = py::module::import("threading");
-        threading.attr("Thread")("target"_a=debugger.attr("start_client"));
+        py::object thread = threading.attr("Thread")("target"_a=debugger.attr("start_client"));
+        thread.attr("start")();
+
+        debugger.attr("start_server")();
 
         // On message, forward it to ptvsd and send back the response to the client?
         // comm.attr("on_msg")([] (py::object msg) {
