@@ -20,6 +20,7 @@
 #include "xcomm.hpp"
 
 #include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -118,8 +119,7 @@ namespace xpyt
                         continue;
                     }
 
-                    std::cout << "Sending through comms:" << std::endl;
-                    std::cout << static_cast<std::string>(py::str(msg_content)) << std::endl;
+                    std::cout << "client::Sending through comms: "<< static_cast<std::string>(py::str(msg_content)) << std::endl;
 
                     m_comm.attr("send")("data"_a=msg_content);
                 }
@@ -137,16 +137,21 @@ namespace xpyt
         py::object debugger = get_interpreter().start_debugging(comm);
 
         // Start client in a secondary thread
+        std::cout << "-- start_client" << std::endl;
         py::module threading = py::module::import("threading");
         py::object thread = threading.attr("Thread")("target"_a=debugger.attr("start_client"));
         thread.attr("start")();
 
+        std::cout << "-- start_server" << std::endl;
         debugger.attr("start_server")();
 
+        std::cout << "Successfully initialized the debugger" << std::endl;
+
         // On message, forward it to ptvsd and send back the response to the client?
-        // comm.attr("on_msg")([] (py::object msg) {
-        //     std::cout << "I received something:" << static_cast<std::string>(py::str(msg)) << std::endl;
-        // });
+        comm.attr("on_msg")(py::cpp_function([debugger] (py::object msg) {
+            std::cout << "comm::received: " << py::str(msg).cast<std::string>() << std::endl;
+            // TODO send msg.content.data with debugger.socket
+        }));
 
         // On Comm close, stop the communication?
         // comm.on_close();
