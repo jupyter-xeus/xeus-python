@@ -94,6 +94,19 @@ namespace xpyt
         return py_msg;
     }
 
+#if PY_MAJOR_VERSION == 2
+    bool holding_gil()
+    {
+        PyThreadState * tstate = _PyThreadState_Current;
+        return tstate && (tstate == PyGILState_GetThisThreadState());
+    }
+#else
+    bool holding_gil()
+    {
+        return PyGILState_Check();
+    }
+#endif
+
     void exec(const py::object& code, const py::object& scope)
     {
         // Workaround for https://github.com/pybind/pybind11/issues/1654

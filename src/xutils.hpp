@@ -41,6 +41,19 @@ namespace xpyt
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
 
+    bool holding_gil();
+
+#define XPYT_HOLDING_GIL(func)           \
+    if (holding_gil())                   \
+    {                                    \
+        func;                            \
+    }                                    \
+    else                                 \
+    {                                    \
+        py::gil_scoped_acquire acquire;  \
+        func;                            \
+    }
+
     void exec(const py::object& code, const py::object& scope = py::globals());
 }
 
