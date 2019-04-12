@@ -18,6 +18,7 @@
 
 #include "xeus-python/xinterpreter.hpp"
 #include "xcomm.hpp"
+#include "xutils.hpp"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
@@ -48,6 +49,8 @@ namespace xpyt
 
     private:
 
+        void start_client_impl();
+
         zmq::context_t m_context;
         std::string m_host;
         std::size_t m_server_port;
@@ -66,6 +69,7 @@ namespace xpyt
         , m_client_socket(m_context, zmq::socket_type::stream)
         , m_comm(comm)
     {
+        m_client_socket.connect(get_end_point(m_host, m_server_port));
     }
 
     xdebugger::~xdebugger()
@@ -82,14 +86,24 @@ namespace xpyt
 
     void xdebugger::start_client()
     {
-        m_client_socket.connect(get_end_point(m_host, m_server_port));
+        py::module threading = py::module::import("threading");
 
+        py::object thread = threading.attr("Thread")("target"_a=py::cpp_function([this] () {
+            start_client_impl();
+        }));
+        thread.attr("start")();
+    }
+
+    void xdebugger::start_client_impl()
+    {
         while (true) // TODO Find a stop condition (ptvsd exit message?)
         {
             // Releasing the GIL before the blocking call
             py::gil_scoped_release release;
 
             zmq::pollitem_t items[] = { { m_client_socket, 0, ZMQ_POLLIN, 0 } };
+
+            std::cout << green_text("client::waiting for new messages") << std::endl;
             // Blocking call
             zmq::poll(&items[0], 1, -1);
 
@@ -119,7 +133,7 @@ namespace xpyt
                         continue;
                     }
 
-                    std::cout << "client::Sending through comms: "<< static_cast<std::string>(py::str(msg_content)) << std::endl;
+                    std::cout << green_text("client::sending through comms: ") << static_cast<std::string>(py::str(msg_content)) << std::endl;
 
                     m_comm.attr("send")("data"_a=msg_content);
                 }
@@ -137,19 +151,17 @@ namespace xpyt
         py::object debugger = get_interpreter().start_debugging(comm);
 
         // Start client in a secondary thread
-        std::cout << "-- start_client" << std::endl;
-        py::module threading = py::module::import("threading");
-        py::object thread = threading.attr("Thread")("target"_a=debugger.attr("start_client"));
-        thread.attr("start")();
+        std::cout << red_text("-- start_client") << std::endl;
+        debugger.attr("start_client")();
 
-        std::cout << "-- start_server" << std::endl;
+        std::cout << red_text("-- start_server") << std::endl;
         debugger.attr("start_server")();
 
-        std::cout << "Successfully initialized the debugger" << std::endl;
+        std::cout << red_text("debugger::successfully initialized") << std::endl;
 
         // On message, forward it to ptvsd and send back the response to the client?
         comm.attr("on_msg")(py::cpp_function([debugger] (py::object msg) {
-            std::cout << "comm::received: " << py::str(msg).cast<std::string>() << std::endl;
+            std::cout << blue_text("comm::received: ") << py::str(msg).cast<std::string>() << std::endl;
             // TODO send msg.content.data with debugger.socket
         }));
 
