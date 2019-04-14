@@ -44,8 +44,10 @@ namespace xpyt
         xdebugger(py::object comm);
         virtual ~xdebugger();
 
-        void start_server();
+        void start_ptvsd();
         void start_client();
+
+        void send_to_ptvsd(py::object message);
 
     private:
 
@@ -77,7 +79,7 @@ namespace xpyt
         // TODO: Send stop event to ptvsd
     }
 
-    void xdebugger::start_server()
+    void xdebugger::start_ptvsd()
     {
         py::module ptvsd = py::module::import("ptvsd");
 
@@ -141,6 +143,13 @@ namespace xpyt
         }
     }
 
+    void xdebugger::send_to_ptvsd(py::object message)
+    {
+        std::string cpp_msg = static_cast<std::string>(py::str(message));
+        std::cout << green_text("client::send to ptvsd: ") << cpp_msg << std::endl;
+        m_client_socket.send(cpp_msg.cbegin(), cpp_msg.cend());
+    }
+
     interpreter& get_interpreter()
     {
         return dynamic_cast<interpreter&>(xeus::get_interpreter());
@@ -154,15 +163,15 @@ namespace xpyt
         std::cout << red_text("-- start_client") << std::endl;
         debugger.attr("start_client")();
 
-        std::cout << red_text("-- start_server") << std::endl;
-        debugger.attr("start_server")();
+        std::cout << red_text("-- start_ptvsd") << std::endl;
+        debugger.attr("start_ptvsd")();
 
         std::cout << red_text("debugger::successfully initialized") << std::endl;
 
         // On message, forward it to ptvsd and send back the response to the client?
         comm.attr("on_msg")(py::cpp_function([debugger] (py::object msg) {
             std::cout << blue_text("comm::received: ") << py::str(msg).cast<std::string>() << std::endl;
-            // TODO send msg.content.data with debugger.socket
+            debugger.attr("send_to_ptvsd")(msg["content"]["data"]);
         }));
 
         // On Comm close, stop the communication?
@@ -180,7 +189,8 @@ namespace xpyt
         py::class_<xdebugger>(debugger_module, "Debugger")
             .def(py::init<py::object>())
             .def("start_client", &xdebugger::start_client)
-            .def("start_server", &xdebugger::start_server);
+            .def("start_ptvsd", &xdebugger::start_ptvsd)
+            .def("send_to_ptvsd", &xdebugger::send_to_ptvsd);
 
         debugger_module.def("debugger_callback", &debugger_callback);
 
