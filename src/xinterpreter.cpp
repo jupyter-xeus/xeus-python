@@ -263,6 +263,7 @@ namespace xpyt
         result["language_info"]["version"] = PY_VERSION;
         result["language_info"]["mimetype"] = "text/x-python";
         result["language_info"]["file_extension"] = ".py";
+        result["status"] = "ok";
         return result;
     }
 
