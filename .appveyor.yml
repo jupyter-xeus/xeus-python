@@ -39,7 +39,7 @@ install:
   - nmake
   - nmake install
   # Install test dependencies
-  - conda install pytest jupyter_kernel_test -c conda-forge
+  - conda install pytest=4.4.0 jupyter_kernel_test -c conda-forge
 
 build_script:
   - .\test\test_xeus_python
