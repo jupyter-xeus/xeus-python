@@ -191,7 +191,7 @@ namespace nlohmann
                 auto out = json::object();
                 for (const py::handle& key : obj)
                 {
-                    out[key.cast<std::string>()] = to_json_impl(obj[key]);
+                    out[py::str(key).cast<std::string>()] = to_json_impl(obj[key]);
                 }
                 return out;
             }
