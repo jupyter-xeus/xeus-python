@@ -29,7 +29,7 @@ install:
   - conda update -q conda
   - conda info -a
   # Host dependencies
-  - conda install xeus=0.19.1 nlohmann_json=3.5.0 cppzmq=4.3.0 xtl=0.6.1 pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 gtest=1.8.0 -c conda-forge
+  - conda install xeus=0.19.1 nlohmann_json=3.5.0 cppzmq=4.3.0 zeromq=4.2.5 xtl=0.6.1 pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 gtest=1.8.0 -c conda-forge
   # Build dependencies
   - conda install cmake -c conda-forge
   # Build and install xeus-python
@@ -39,7 +39,7 @@ install:
   - nmake
   - nmake install
   # Install test dependencies
-  - conda install pytest=4.4.0 jupyter_kernel_test -c conda-forge
+  - conda install pytest jupyter_kernel_test -c conda-forge
 
 build_script:
   - .\test\test_xeus_python
