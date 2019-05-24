@@ -72,9 +72,7 @@ namespace xpyt
         // interpreter wants to execute Python code. This means that whenever
         // the interpreter will execute Python code it will need to create an
         // `gil_scoped_acquire` instance first.
-        // This member must be stay the last one, so that other Python object
-        // members can be initialized without crashing.
-        py::gil_scoped_release m_release_gil;
+        py::gil_scoped_release* m_release_gil;
     };
 }
 

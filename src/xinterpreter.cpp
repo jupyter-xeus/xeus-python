@@ -38,6 +38,8 @@ namespace xpyt
 {
     void interpreter::configure_impl()
     {
+        m_release_gil = new py::gil_scoped_release();
+
         py::gil_scoped_acquire acquire;
         py::module jedi = py::module::import("jedi");
         jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
@@ -47,7 +49,6 @@ namespace xpyt
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
     {
-        py::gil_scoped_acquire acquire;
         xeus::register_interpreter(this);
         redirect_output();
         redirect_display();
