@@ -38,7 +38,7 @@ namespace xpyt
         interpreter(int argc, const char* const* argv);
         virtual ~interpreter();
 
-    private:
+    protected:
 
         void configure_impl() override;
 
