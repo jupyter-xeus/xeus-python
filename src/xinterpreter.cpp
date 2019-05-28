@@ -8,6 +8,7 @@
 ****************************************************************************/
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -38,7 +39,9 @@ namespace xpyt
 {
     void interpreter::configure_impl()
     {
-        m_release_gil = new py::gil_scoped_release();
+        // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
+        // will need to acquire the GIL
+        m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
 
         py::gil_scoped_acquire acquire;
         py::module jedi = py::module::import("jedi");

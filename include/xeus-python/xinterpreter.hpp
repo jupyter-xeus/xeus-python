@@ -16,6 +16,7 @@
 #endif
 
 #include <string>
+#include <memory>
 #include <vector>
 
 #include "nlohmann/json.hpp"
@@ -34,6 +35,8 @@ namespace xpyt
     class XEUS_PYTHON_API interpreter : public xeus::xinterpreter
     {
     public:
+
+        using gil_scoped_release_ptr = std::unique_ptr<py::gil_scoped_release>;
 
         interpreter(int argc, const char* const* argv);
         virtual ~interpreter();
@@ -72,7 +75,7 @@ namespace xpyt
         // interpreter wants to execute Python code. This means that whenever
         // the interpreter will execute Python code it will need to create an
         // `gil_scoped_acquire` instance first.
-        py::gil_scoped_release* m_release_gil;
+        gil_scoped_release_ptr m_release_gil = nullptr;
     };
 }
 
