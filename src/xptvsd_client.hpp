@@ -21,6 +21,11 @@ namespace xpyt
     {
     public:
 
+        static constexpr const char* HEADER = "Content-Length: ";
+        static constexpr size_t HEADER_LENGTH = 16;
+        static constexpr const char* SEPARATOR = "\r\n\r\n";
+        static constexpr size_t SEPARATOR_LENGTH = 4;
+
         xptvsd_client(zmq::context_t& context,
                       int socket_linger);
 

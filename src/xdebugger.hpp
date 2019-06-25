@@ -10,12 +10,16 @@
 #ifndef XPYT_DEBUGGER_HPP
 #define XPYT_DEBUGGER_HPP
 
+#include "zmq.hpp"
 #include "nlohmann/json.hpp"
 #include "xeus/xdebugger.hpp"
+#include "xptvsd_client.hpp"
+
+#include "xeus-python/xeus_python_config.hpp"
 
 namespace xpyt
 {
-    class debugger : public xeus::xdebugger
+    class XEUS_PYTHON_API debugger : public xeus::xdebugger
     {
     public:
 
@@ -27,8 +31,16 @@ namespace xpyt
     private:
 
         virtual nl::json process_request_impl(const nl::json& message);
+
+        void start();
+        void stop();
+
+        xptvsd_client m_ptvsd_client;
+        zmq::socket_t m_ptvsd_socket;
+        bool m_is_started;
     };
 
+    XEUS_PYTHON_API
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
                                                           const xeus::xconfiguration& config);
 }

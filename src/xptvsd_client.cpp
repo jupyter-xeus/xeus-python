@@ -18,14 +18,6 @@ namespace nl = nlohmann;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace
-{
-    constexpr const char* HEADER = "Content-Length: ";
-    constexpr std::size_t HEADER_LENGTH = 16;
-    constexpr const char* SEPARATOR = "\r\n\r\n";
-    constexpr std::size_t SEPARATOR_LENGTH = 4;
-}
-
 namespace xpyt
 {
     xptvsd_client::xptvsd_client(zmq::context_t& context,
@@ -84,6 +76,10 @@ namespace xpyt
                 handle_control_socket();
             }
         }
+
+        m_ptvsd_socket.disconnect(end_point);
+        m_controller.disconnect(controller_end_point);
+        m_publisher.disconnect(publisher_end_point);
     }
 
     void xptvsd_client::process_message_queue()
@@ -160,7 +156,8 @@ namespace xpyt
         zmq::message_t message;
         m_controller.recv(&message);
 
-        // Sends a ZMQ header and forwards the received message
+        // Sends a ZMQ header (required for stream socket) and forwards
+        // the message
         m_ptvsd_socket.send(zmq::message_t(m_socket_id, m_id_size));
         m_ptvsd_socket.send(message);
     }
