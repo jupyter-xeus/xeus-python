@@ -32,8 +32,7 @@ namespace xpyt
 
         ~xptvsd_client() = default;
 
-        void start_debugger(std::string host,
-                            int ptvsd_port,
+        void start_debugger(std::string ptvsd_end_point,
                             std::string publisher_end_point,
                             std::string controller_end_point);
  

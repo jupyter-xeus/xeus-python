@@ -9,14 +9,9 @@
 
 #include "nlohmann/json.hpp"
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
-
 #include "xptvsd_client.hpp"
 
 namespace nl = nlohmann;
-namespace py = pybind11;
-using namespace pybind11::literals;
 
 namespace xpyt
 {
@@ -25,7 +20,7 @@ namespace xpyt
         : m_ptvsd_socket(context, zmq::socket_type::stream)
         , m_id_size(256)
         , m_publisher(context, zmq::socket_type::pub)
-        , m_controller(context, zmq::socket_type::rep)
+        , m_controller(context, zmq::socket_type::router)
         , m_request_stop(false)
     {
         m_ptvsd_socket.setsockopt(ZMQ_LINGER, socket_linger);
@@ -33,22 +28,14 @@ namespace xpyt
         m_controller.setsockopt(ZMQ_LINGER, socket_linger);
     }
 
-    void xptvsd_client::start_debugger(std::string host,
-                                       int ptvsd_port,
+    void xptvsd_client::start_debugger(std::string ptvsd_end_point,
                                        std::string publisher_end_point,
                                        std::string controller_end_point)
     {
         m_publisher.connect(publisher_end_point);
         m_controller.connect(controller_end_point);
-
-        std::string end_point = "tcp://" + host + ':' + std::to_string(ptvsd_port);
-        {
-            py::gil_scoped_acquire acquire;
-            py::module ptvsd = py::module::import("ptvsd");
-            ptvsd.attr("enable_attach")(py::make_tuple(host, ptvsd_port), "log_dir"_a="xpython_debug_logs");
-        }
         
-        m_ptvsd_socket.connect(end_point);
+        m_ptvsd_socket.connect(ptvsd_end_point);
         m_ptvsd_socket.getsockopt(ZMQ_IDENTITY, m_socket_id, &m_id_size);
 
         // Tells the controller that the connection with
@@ -77,7 +64,7 @@ namespace xpyt
             }
         }
 
-        m_ptvsd_socket.disconnect(end_point);
+        m_ptvsd_socket.disconnect(ptvsd_end_point);
         m_controller.disconnect(controller_end_point);
         m_publisher.disconnect(publisher_end_point);
     }
@@ -89,7 +76,7 @@ namespace xpyt
             const std::string& raw_message = m_message_queue.back();
             nl::json message = nl::json::parse(raw_message);
             // message is either an event or a response
-            // TODO: handle the message!
+            // TODO: handle the message
             m_message_queue.pop();
         }
     }
@@ -98,7 +85,7 @@ namespace xpyt
     {
         using size_type = std::string::size_type;
         
-        std::string buffer;
+        std::string buffer = "";
         bool messages_received = false;
         size_type header_pos = std::string::npos;
         size_type separator_pos = std::string::npos;
