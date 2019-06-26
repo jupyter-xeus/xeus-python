@@ -1,18 +1,38 @@
+/***************************************************************************
+* Copyright (c) 2018, Martin Renou, Johan Mabille, Sylvain Corlay and      *
+* Wolf Vollprecht                                                          *
+*                                                                          *
+* Distributed under the terms of the BSD 3-Clause License.                 *
+*                                                                          *
+* The full license is in the file LICENSE, distributed with this software. *
+****************************************************************************/
+
 #include <string>
 #include <thread>
+
+// This must be included BEFORE pybind
+// otherwise it fails to build on Windows
+// because of the redefinition of snprintf
+#include "nlohmann/json.hpp"
+
+#include "pybind11/pybind11.h"
+#include "pybind11/stl.h"
 
 #include "xeus/xmiddleware.hpp"
 
 #include "xdebugger.hpp"
 
 namespace nl = nlohmann;
+namespace py = pybind11;
+
+using namespace pybind11::literals;
 
 namespace xpyt
 {
     debugger::debugger(zmq::context_t& context,
                        const xeus::xconfiguration&)
         : m_ptvsd_client(context, xeus::get_socket_linger())
-        , m_ptvsd_socket(context, zmq::socket_type::req)
+        , m_ptvsd_socket(context, zmq::socket_type::dealer)
         , m_is_started(false)
     {
         m_ptvsd_socket.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
@@ -56,7 +76,16 @@ namespace xpyt
     {
         // TODO: should be read from configuration
         std::string host = "127.0.0.1";
-        int port = 5678;
+        int ptvsd_port = 5678;
+
+        // PTVSD has to be started in the main thread
+        std::string ptvsd_end_point = "tcp://" + host + ':' + std::to_string(ptvsd_port);
+        {
+            py::gil_scoped_acquire acquire;
+            py::module ptvsd = py::module::import("ptvsd");
+            ptvsd.attr("enable_attach")(py::make_tuple(host, ptvsd_port), "log_dir"_a="xpython_debug_logs");
+        }
+
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string publisher_end_point = xeus::get_publisher_end_point();
 
@@ -64,8 +93,7 @@ namespace xpyt
 
         std::thread client(&xptvsd_client::start_debugger,
                            &m_ptvsd_client,
-                           host,
-                           port,
+                           ptvsd_end_point,
                            publisher_end_point,
                            controller_end_point);
         client.detach();
