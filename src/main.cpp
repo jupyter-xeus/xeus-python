@@ -14,12 +14,14 @@
 
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
-
-#include "xeus-python/xinterpreter.hpp"
-#include "xeus-python/xpythonhome.hpp"
+#include "xeus/xserver_zmq_split.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
+
+#include "xeus-python/xinterpreter.hpp"
+#include "xeus-python/xpythonhome.hpp"
+#include "xdebugger.hpp"
 
 namespace py = pybind11;
 
@@ -51,11 +53,19 @@ int main(int argc, char* argv[])
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));
 
+    using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
+    history_manager_ptr hist = history_manager_ptr(new xeus::xin_memory_history_manager());
+
     if (!file_name.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(file_name);
 
-        xeus::xkernel kernel(config, xeus::get_user_name(), std::move(interpreter));
+        xeus::xkernel kernel(config,
+                             xeus::get_user_name(),
+                             std::move(interpreter),
+                             std::move(hist),
+                             xeus::make_xserver_split,
+                             xpyt::make_python_debugger);
 
         std::clog <<
             "Starting xeus-python kernel...\n\n"
@@ -67,7 +77,11 @@ int main(int argc, char* argv[])
     }
     else
     {
-        xeus::xkernel kernel(xeus::get_user_name(), std::move(interpreter));
+        xeus::xkernel kernel(xeus::get_user_name(),
+                             std::move(interpreter),
+                             std::move(hist),
+                             xeus::make_xserver_split,
+                             xpyt::make_python_debugger);
 
         const auto& config = kernel.get_config();
         std::clog <<
@@ -89,5 +103,6 @@ int main(int argc, char* argv[])
 
         kernel.start();
     }
+
     return 0;
 }
