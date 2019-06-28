@@ -57,7 +57,7 @@ The safest usage is to create an environment named `xeus-python` with your minic
 
 ```bash
 conda create -n xeus-python
-source activate xeus-python
+conda activate xeus-python # Or `source activate xeus-python` for conda < 4.6
 ```
 
 ### Installation directly from conda
