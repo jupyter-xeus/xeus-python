@@ -42,5 +42,6 @@ install:
   - conda install pytest jupyter_kernel_test -c conda-forge
 
 build_script:
-  - .\test\test_xeus_python
-  - cd.. && cd test && py.test .
+  - cd test
+  - .\test_xeus_python
+  - cd.. && cd.. && cd test && py.test .

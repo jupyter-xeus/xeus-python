@@ -72,5 +72,6 @@ script:
         source activate kernel_test;
         jupyter kernelspec install --sys-prefix ../share/jupyter/kernels/xpython;
       fi
-    - ./test/test_xeus_python
-    - cd ../test && py.test .
+    - cd test
+    - ./test_xeus_python
+    - cd ../../test && py.test .
