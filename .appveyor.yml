@@ -29,7 +29,7 @@ install:
   - conda update -q conda
   - conda info -a
   # Host dependencies
-  - conda install xeus=0.20.0 nlohmann_json cppzmq xtl pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 gtest=1.8.0 -c conda-forge
+  - conda install xeus=0.21.1 nlohmann_json cppzmq xtl pybind11=2.2.4 jedi=0.13.1 pygments=2.3.1 gtest=1.8.0 ptvsd -c conda-forge
   # Build dependencies
   - conda install cmake -c conda-forge
   # Build and install xeus-python
@@ -43,5 +43,5 @@ install:
 
 build_script:
   - cd test
-  - .\test_xeus_python
+  - test_xeus_python
   - cd.. && cd.. && cd test && py.test .

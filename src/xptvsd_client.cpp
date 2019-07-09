@@ -12,6 +12,10 @@
 #include "xeus/xmessage.hpp"
 #include "xptvsd_client.hpp"
 
+#include <iostream>
+#include <thread>
+#include <chrono>
+
 namespace nl = nlohmann;
 
 namespace xpyt
@@ -57,36 +61,40 @@ namespace xpyt
         m_controller.send(zmq::message_t("ACK", 3));
         
         zmq::pollitem_t items[] = {
-            { m_ptvsd_socket, 0, ZMQ_POLLIN, 0 },
+            { m_controller_header, 0, ZMQ_POLLIN, 0 },
             { m_controller, 0, ZMQ_POLLIN, 0 },
-            { m_controller_header, 0, ZMQ_POLLIN, 0 }
+            { m_ptvsd_socket, 0, ZMQ_POLLIN, 0 }
         };
         
+        m_request_stop = false;
         while(!m_request_stop)
         {
             zmq::poll(&items[0], 3, -1);
 
-            if(items[2].revents & ZMQ_POLLIN)
+            if(items[0].revents & ZMQ_POLLIN)
             {
                 handle_header_socket();
             }
-
-            if(items[0].revents & ZMQ_POLLIN)
-            {
-                handle_ptvsd_socket();
-            }
-
-            process_message_queue();
 
             if(items[1].revents & ZMQ_POLLIN)
             {
                 handle_control_socket();
             }
+
+            if(items[2].revents & ZMQ_POLLIN)
+            {
+                handle_ptvsd_socket();
+            }
+
+            process_message_queue();
         }
 
         m_ptvsd_socket.disconnect(ptvsd_end_point);
         m_controller.disconnect(controller_end_point);
+        m_controller_header.disconnect(controller_header_end_point);
         m_publisher.disconnect(publisher_end_point);
+        // Reset m_request_stop for the next debugging session
+        m_request_stop = false;
     }
 
     void xptvsd_client::process_message_queue()
@@ -112,6 +120,10 @@ namespace xpyt
             }
             else
             {
+                if(message["command"] == "disconnect")
+                {
+                    m_request_stop = true;
+                }
                 zmq::message_t reply(raw_message.c_str(), raw_message.size());
                 m_controller.send(reply);
             }

@@ -54,6 +54,20 @@ nl::json make_init_request()
     return req;
 }
 
+nl::json make_disconnect_request(int seq)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "disconnect"},
+        {"arguments", {
+            {"restart", false},
+            {"terminateDebuggee", false}
+        }}
+    };
+    return req;
+}
+
 nl::json make_shutdown_request()
 {
     nl::json req = {
@@ -75,6 +89,7 @@ public:
                     const std::string& log_file);
 
     bool test_init();
+    bool test_disconnect();
     void shutdown();
 
 private:
@@ -93,6 +108,15 @@ debugger_client::debugger_client(zmq::context_t& context,
 bool debugger_client::test_init()
 {
     m_client.send_on_control("debug_request", make_init_request());
+    nl::json rep = m_client.receive_on_control();
+    return rep["content"]["type"] == "response";
+}
+
+bool debugger_client::test_disconnect()
+{
+    m_client.send_on_control("debug_request", make_init_request());
+    m_client.receive_on_control();
+    m_client.send_on_control("debug_request", make_disconnect_request(3));
     nl::json rep = m_client.receive_on_control();
     return rep["content"]["type"] == "response";
 }
@@ -144,7 +168,11 @@ int start_kernel()
     int ret = std::system(mkdir.c_str());
     std::thread kernel([]()
     {
+#if WIN32
+        std::string cmd = ".\\..\\xpython -f " + KERNEL_JSON + "&";
+#else
         std::string cmd = "./../xpython -f " + KERNEL_JSON + "&";
+#endif
         int ret2 = std::system(cmd.c_str());
     });
     std::this_thread::sleep_for(2s);
@@ -157,11 +185,40 @@ TEST(debugger, init)
     start_kernel();
     zmq::context_t context;
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger.log");
+        debugger_client deb(context, KERNEL_JSON, "debugger_init.log");
         bool res = deb.test_init();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+    }
+}
+
+TEST(debugger, disconnect)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_disconnect.log");
+        bool res = deb.test_disconnect();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
+TEST(debugger, multisession)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_multi_session.log");
+        bool res1 = deb.test_disconnect();
+        std::this_thread::sleep_for(2s);
+        bool res2 = deb.test_disconnect();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res1);
+        EXPECT_TRUE(res2);
     }
 }
 

@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
-    history_manager_ptr hist = history_manager_ptr(new xeus::xin_memory_history_manager());
+    history_manager_ptr hist = xeus::make_in_memory_history_manager();
 
     if (!file_name.empty())
     {
@@ -64,6 +64,8 @@ int main(int argc, char* argv[])
                              xeus::get_user_name(),
                              std::move(interpreter),
                              std::move(hist),
+                             xeus::make_console_logger(xeus::xlogger::msg_type,
+                                                       xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
                              xeus::make_xserver_split,
                              xpyt::make_python_debugger);
 
@@ -80,6 +82,7 @@ int main(int argc, char* argv[])
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(interpreter),
                              std::move(hist),
+                             nullptr,
                              xeus::make_xserver_split,
                              xpyt::make_python_debugger);
 

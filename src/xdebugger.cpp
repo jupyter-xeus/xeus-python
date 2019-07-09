@@ -49,9 +49,8 @@ namespace xpyt
 
         if(message["command"] == "initialize" || message["command"] == "attach")
         {
-            std::cout << "XEUS-PYTHON: starting debugger" << std::endl;
             start();
-            std::cout << "XEUS-PYTHON: debugger has started" << std::endl;
+            std::cout << "XEUS-PYTHON: the debugger has started" << std::endl;
         }
 
         if(m_is_started)
@@ -74,14 +73,13 @@ namespace xpyt
             zmq::message_t raw_reply;
             m_ptvsd_socket.recv(&raw_reply);
 
-            reply = nl::json::parse(raw_reply.data<const char>());
-        }
+            reply = nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
+       }
 
         if(message["command"] == "disconnect")
         {
-            std::cout << "XEUS-PYTHON: stopping debugger" << std::endl;
             stop();
-            std::cout << "XEUS-PYTHON: debugger has stopped" << std::endl;
+            std::cout << "XEUS-PYTHON: the debugger has stopped" << std::endl;
         }
 
         return reply;
@@ -126,7 +124,9 @@ namespace xpyt
     void debugger::stop()
     {
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
+        std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
         m_ptvsd_socket.unbind(controller_end_point);
+        m_ptvsd_header.unbind(controller_header_end_point);
         m_is_started = false;
     }
     
