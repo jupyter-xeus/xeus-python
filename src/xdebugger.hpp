@@ -24,25 +24,31 @@ namespace xpyt
     public:
 
         debugger(zmq::context_t& context,
-                 const xeus::xconfiguration& config);
+                 const xeus::xconfiguration& config,
+                 const std::string& user_name,
+                 const std::string& session_id);
 
         virtual ~debugger() = default;
 
     private:
 
-        virtual nl::json process_request_impl(const nl::json& message);
+        virtual nl::json process_request_impl(const nl::json& header,
+                                              const nl::json& message);
 
         void start();
         void stop();
 
         xptvsd_client m_ptvsd_client;
         zmq::socket_t m_ptvsd_socket;
+        zmq::socket_t m_ptvsd_header;
         bool m_is_started;
     };
 
     XEUS_PYTHON_API
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
-                                                          const xeus::xconfiguration& config);
+                                                          const xeus::xconfiguration& config,
+                                                          const std::string& user_name,
+                                                          const std::string& session_id);
 }
 
 #endif
