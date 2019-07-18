@@ -39,7 +39,7 @@ install:
   - nmake
   - nmake install
   # Install test dependencies
-  - conda install pytest jupyter_kernel_test -c conda-forge
+  - conda install pytest jupyter_kernel_test pyzmq=18.0.2 -c conda-forge
 
 build_script:
   - cd test

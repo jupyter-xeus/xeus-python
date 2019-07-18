@@ -44,11 +44,26 @@ std::string extract_filename(int& argc, char* argv[])
     return res;
 }
 
+void print_python_home()
+{
+#if PY_MAJOR_VERSION == 2
+    char* mbstr = Py_GetPythonHome();
+#else
+    std::setlocale(LC_ALL, "en_US.utf8");
+    wchar_t* ph = Py_GetPythonHome();
+    
+    char mbstr[1024];
+    std::wcstombs(mbstr, ph, 1024);
+#endif
+    std::clog << "PYTHONHOME set to " << mbstr << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
     std::string file_name = extract_filename(argc, argv);
-
     xpyt::set_pythonhome();
+    print_python_home();
+
     py::scoped_interpreter guard;
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));
