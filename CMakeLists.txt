@@ -40,7 +40,7 @@ configure_file (
 # Dependencies #
 ################
 
-set(xeus_REQUIRED_VERSION 0.19.0)
+set(xeus_REQUIRED_VERSION 0.21.1)
 set(cppzmq_REQUIRED_VERSION 4.3.0)
 set(pybind11_REQUIRED_VERSION 2.2.4)
 
