@@ -2,7 +2,7 @@ name: xeus-python
 channels:
   - conda-forge
 dependencies:
-  - xeus-python=0.3.1
+  - xeus-python=0.3.2
   - jedi
   - notebook
   - ipywidgets>=7.4
