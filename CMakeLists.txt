@@ -102,6 +102,7 @@ set(XEUS_PYTHON_SRC
     src/xis_complete.hpp
     src/xptvsd_client.cpp
     src/xptvsd_client.hpp
+    src/xpythonhome.cpp
     src/xstream.cpp
     src/xstream.hpp
     src/xtraceback.cpp
@@ -123,7 +124,6 @@ add_library(xeus-python SHARED ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
 add_executable(xpython src/main.cpp)
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
 target_link_libraries(xpython PRIVATE pybind11::pybind11 xeus-python)
-target_compile_definitions(xpython PRIVATE XEUS_PYTHON_HOME="${PYTHON_PREFIX}")
 
 if (APPLE)
     set_target_properties(xpython xeus-python PROPERTIES
@@ -149,11 +149,12 @@ target_link_libraries(xeus-python PUBLIC pybind11::embed xeus)
 
 set_target_properties(xeus-python PROPERTIES
                       PUBLIC_HEADER "${XEUS_PYTHON_HEADERS}"
-                      COMPILE_DEFINITIONS "XEUS_PYTHON_EXPORTS"
                       PREFIX ""
                       VERSION ${${PROJECT_NAME}_VERSION}
                       SOVERSION ${XPYT_VERSION_MAJOR}
                       OUTPUT_NAME "libxeus-python")
+
+target_compile_definitions(xeus-python PUBLIC "XEUS_PYTHON_EXPORTS" XEUS_PYTHONHOME="${PYTHON_PREFIX}")
 
 #########
 # Tests #

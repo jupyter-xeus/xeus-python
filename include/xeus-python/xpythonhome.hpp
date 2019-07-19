@@ -15,21 +15,24 @@
 
 #include "pybind11/pybind11.h"
 
+#include "xeus_python_config.hpp"
+
 namespace xpyt
 {
+    XEUS_PYTHON_API
+    const char* get_pythonhome();
+
     inline void set_pythonhome()
     {
-#ifdef XEUS_PYTHON_HOME
+        static const char* ph = get_pythonhome();
 #if PY_MAJOR_VERSION == 2
-        Py_SetPythonHome(XEUS_PYTHON_HOME);
+        Py_SetPythonHome(const_cast<char*>(ph));
 #else
         // The same could be achieved with Py_SetPythonHome(T"" XEUS_PYTHON_HOME)
         // but wide string literals are not properly relocated by the conda package
         // manager.
-        static const char* ph = XEUS_PYTHON_HOME;
         static const std::wstring wstr(ph, ph + std::strlen(ph));;
         Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
-#endif
 #endif
     }
 }

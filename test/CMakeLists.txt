@@ -77,6 +77,7 @@ find_package(Threads)
 include_directories(${GTEST_INCLUDE_DIRS} SYSTEM)
 
 set(XEUS_PYTHON_TESTS
+    ../src/xpythonhome.cpp
     test_xutils.cpp
     ../src/xutils.cpp
     test_debugger.cpp
@@ -106,7 +107,7 @@ set_target_properties(test_xeus_python PROPERTIES
 
 include_directories(${PYTHON_INCLUDE_DIRS})
 target_link_libraries(test_xeus_python ${PYTHON_LIBRARIES} xeus ${GTEST_BOTH_LIBRARIES} Threads::Threads)
-target_compile_definitions(test_xeus_python PRIVATE XEUS_PYTHON_HOME="${PYTHON_PREFIX}")
+target_compile_definitions(test_xeus_python PRIVATE XEUS_PYTHONHOME="${PYTHON_PREFIX}")
 target_include_directories(test_xeus_python PRIVATE ${XEUS_PYTHON_INCLUDE_DIR})
 
 add_custom_target(xtest COMMAND test_xeus_python DEPENDS test_xeus_python)
