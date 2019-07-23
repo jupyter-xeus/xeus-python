@@ -14,7 +14,7 @@
 
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
-#include "xeus/xserver_zmq_split.hpp"
+#include "xeus/xserver.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
-                             xeus::make_xserver_split,
+                             xeus::make_xserver_shell_main,
                              xpyt::make_python_debugger);
 
         std::clog <<
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
                              std::move(interpreter),
                              std::move(hist),
                              nullptr,
-                             xeus::make_xserver_split,
+                             xeus::make_xserver_shell_main,
                              xpyt::make_python_debugger);
 
         const auto& config = kernel.get_config();

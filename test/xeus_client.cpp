@@ -192,7 +192,7 @@ void xeus_logger_client::send_on_shell(const std::string& msg_type, nl::json con
     base_type::send_on_shell(std::move(header),
                              nl::json::object(),
                              nl::json::object(),
-                             std::move(header));
+                             std::move(content));
 }
 
 void xeus_logger_client::send_on_control(const std::string& msg_type, nl::json content)

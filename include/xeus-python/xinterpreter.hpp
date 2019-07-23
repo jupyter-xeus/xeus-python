@@ -64,6 +64,8 @@ namespace xpyt
 
         void shutdown_request_impl() override;
 
+        nl::json internal_request_impl(const nl::json& content) override;
+
         void redirect_output();
         void redirect_display();
 
