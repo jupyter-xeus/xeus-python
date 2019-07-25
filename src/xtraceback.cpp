@@ -125,11 +125,15 @@ namespace xpyt
                 std::string file_prefix;
                 std::string func_name;
 
+                std::string prefix = get_tmp_prefix();
                 // If the error occured in a cell code, extract the line from the given code
-                if (!filename.empty() && filename[0] == '[')
+                if(!filename.empty() && !filename.compare(0, prefix.size(), prefix.c_str(), prefix.size()))
                 {
                     file_prefix = "In  ";
-                    int exec_count = std::stoi(filename.substr(1));
+                    auto pos = filename.find_last_of('[');
+                    auto last_pos = filename.find_first_of(']', pos);
+                    int exec_count = std::stoi(filename.substr(pos+1, last_pos - pos - 1));
+                    filename = filename.substr(pos, last_pos - pos + 1);
                     line = extract_line(inputs.at(exec_count - 1), std::stoi(lineno));
                 }
                 else

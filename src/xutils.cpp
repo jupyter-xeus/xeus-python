@@ -8,6 +8,7 @@
 ****************************************************************************/
 
 #include <cmath>
+#include <cstdlib>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -20,6 +21,10 @@
 #include "pybind11/eval.h"
 
 #include "xutils.hpp"
+
+#ifdef WIN32
+#include "Windows.h"
+#endif
 
 namespace py = pybind11;
 namespace nl = nlohmann;
@@ -115,6 +120,44 @@ namespace xpyt
             scope["__builtins__"] = py::module::import(XPYT_BUILTINS);
         }
         py::exec(XPYT_EXEC_COMMAND, py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
+    }
+
+    // TODO: move these functions to xeus
+    std::string get_tmp_prefix_impl()
+    {
+#ifdef WIN32
+        std::string tmp_prefix;
+        char char_path[MAX_PATH];
+        if(GetTempPathA(MAX_PATH, char_path))
+        {
+            tmp_prefix = char_path;
+        }
+        return tmp_prefix;
+#else
+        const char* tmpdir = std::getenv("TMPDIR");
+        const char* tmp = std::getenv("TMP");
+        const char* tempdir = std::getenv("TEMPDIR");
+        const char* temp = std::getenv("TEMP");
+        if(tmpdir != nullptr) return tmpdir;
+        else if(tmp != nullptr) return tmp;
+        else if(tempdir != nullptr) return tempdir;
+        else if(temp != nullptr) return temp;
+        else return "/tmp";
+#endif
+    }
+
+    std::string get_tmp_prefix()
+    {
+        static std::string tmp_prefix = get_tmp_prefix_impl();
+        return tmp_prefix;
+    }
+
+    std::string get_tmp_file(const std::string& prefix,
+                             //const std::string& session_id,
+                             int execution_count,
+                             const std::string& extension)
+    {
+        return prefix + "/[" + std::to_string(execution_count) + "]" + extension;
     }
 }
 

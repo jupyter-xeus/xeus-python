@@ -35,6 +35,9 @@ namespace xpyt
         virtual nl::json process_request_impl(const nl::json& header,
                                               const nl::json& message);
 
+        nl::json forward_message(const nl::json& message);
+        nl::json update_cell_request(const nl::json& message);
+
         void start();
         void stop();
 
