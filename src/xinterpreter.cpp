@@ -8,6 +8,7 @@
 ****************************************************************************/
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -279,6 +280,33 @@ namespace xpyt
 
     void interpreter::shutdown_request_impl()
     {
+    }
+
+    nl::json interpreter::internal_request_impl(const nl::json& content)
+    {
+        py::gil_scoped_acquire acquire;
+        std::string code = content.value("code", "");
+        nl::json reply;
+        try
+        {
+            // Import modules
+            py::module ast = py::module::import("ast");
+            py::module builtins = py::module::import(XPYT_BUILTINS);
+
+            // Parse code to AST
+            py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
+            
+            std::string filename = "debug_this_thread";
+            py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
+            exec(compiled_code);
+
+            reply["status"] = "ok";
+        }
+        catch (py::error_already_set& e)
+        {
+            reply["status"] = "error";
+        }
+        return reply;
     }
 
     void interpreter::redirect_output()

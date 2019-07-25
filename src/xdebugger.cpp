@@ -18,6 +18,7 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
+#include "xeus/xinterpreter.hpp"
 #include "xeus/xmiddleware.hpp"
 
 #include "xdebugger.hpp"
@@ -47,7 +48,7 @@ namespace xpyt
     {
         nl::json reply = nl::json::object();
 
-        if(message["command"] == "initialize" || message["command"] == "attach")
+        if(message["command"] == "initialize")
         {
             start();
             std::cout << "XEUS-PYTHON: the debugger has started" << std::endl;
@@ -92,12 +93,17 @@ namespace xpyt
         int ptvsd_port = 5678;
 
         // PTVSD has to be started in the main thread
-        std::string ptvsd_end_point = "tcp://" + host + ':' + std::to_string(ptvsd_port);
-        {
+        std::string code = "import ptvsd\nptvsd.enable_attach((\'" + host + "\'," + std::to_string(ptvsd_port)
+                         + "), log_dir=\'xpython_debug_logs\')";
+        nl::json json_code;
+        json_code["code"] = code;
+        nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
+
+        /*{
             py::gil_scoped_acquire acquire;
             py::module ptvsd = py::module::import("ptvsd");
             ptvsd.attr("enable_attach")(py::make_tuple(host, ptvsd_port), "log_dir"_a="xpython_debug_logs");
-        }
+        }*/
 
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
@@ -106,6 +112,7 @@ namespace xpyt
         m_ptvsd_socket.bind(controller_end_point);
         m_ptvsd_header.bind(controller_header_end_point);
 
+        std::string ptvsd_end_point = "tcp://" + host + ':' + std::to_string(ptvsd_port);
         std::thread client(&xptvsd_client::start_debugger,
                            &m_ptvsd_client,
                            ptvsd_end_point,
