@@ -15,6 +15,8 @@
 #include "gtest/gtest.h"
 #include "xeus_client.hpp"
 
+#include "pybind11/pybind11.h"
+
 #include <stdio.h>
 #ifdef WIN32
 #include <direct.h>
@@ -220,6 +222,21 @@ nl::json make_execute_request(const std::string& code)
     return req;
 }
 
+nl::json make_update_cell_request(int seq, int cell_id, int next_id, const std::string& code)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "updateCell"},
+        {"arguments", {
+            {"currentId", cell_id},
+            {"nextId", next_id},
+            {"code", code}
+        }}
+    };
+    return req;
+}
+
 /*******************
  * debugger_client *
  *******************/
@@ -237,22 +254,28 @@ public:
     bool test_attach();
     bool test_external_set_breakpoints();
     bool test_external_next_continue();
+    bool test_set_breakpoints();
+    bool test_next_continue();
     void shutdown();
 
 private:
 
     nl::json attach();
     nl::json set_external_breakpoints();
+    nl::json set_breakpoints();
     
     std::string get_external_path();
     void dump_external_file();
 
+    std::string make_code() const;
     std::string make_external_code() const;
     std::string make_external_invoker_code() const;
 
     bool print_code_variable(const std::string& expected, int& seq);
     void next(int& seq);
     void continue_exec(int& seq);
+
+    bool next_continue_common();
 
     xeus_logger_client m_client;
 };
@@ -310,10 +333,29 @@ bool debugger_client::print_code_variable(const std::string& expected, int& seq)
     ++seq;
     nl::json json3 = m_client.receive_on_control();
 
-    std::string name = json3["content"]["body"]["variables"][0]["name"].get<std::string>();
-    std::string value = json3["content"]["body"]["variables"][0]["value"].get<std::string>();
+    const auto& ar = json3["content"]["body"]["variables"];
+    bool var_found = false;
+    std::string name, value;
+    for(auto it = ar.begin(); it != ar.end() && !var_found; ++it)
+    {
+        auto d = *it;
+        name = d["name"];
+        if(name == "i")
+        {
+            var_found = true;
+            value = d["value"];
+        }
+    }
+
     std::cout << "Variable " << name << " = " << value << std::endl;
     return value == expected;
+}
+
+bool debugger_client::test_set_breakpoints()
+{
+    attach();
+    nl::json rep = set_breakpoints();
+    return rep["content"]["body"].size() != 0;
 }
 
 void debugger_client::next(int& seq)
@@ -330,16 +372,8 @@ void debugger_client::continue_exec(int& seq)
     ++seq;
 }
 
-bool debugger_client::test_external_next_continue()
+bool debugger_client::next_continue_common()
 {
-    attach();
-    // We set 2 breakpoints on line 2 and 3 of external_code.py
-    set_external_breakpoints();
-    m_client.send_on_control("debug_request", make_configuration_done_request(5));
-    m_client.receive_on_control();
-
-    m_client.send_on_shell("execute_request", make_execute_request(make_external_invoker_code()));
-
     // TODO: remove this, handle events
     std::this_thread::sleep_for(1s);
 
@@ -369,6 +403,30 @@ bool debugger_client::test_external_next_continue()
     return rep["content"]["status"] == "ok";
 }
 
+bool debugger_client::test_external_next_continue()
+{
+    attach();
+    // We set 2 breakpoints on line 3 and 5 of external_code.py
+    set_external_breakpoints();
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
+    m_client.send_on_shell("execute_request", make_execute_request(make_external_invoker_code()));
+    return next_continue_common();
+}
+
+bool debugger_client::test_next_continue()
+{
+    attach();
+    // We set 2 breakpoints on line 2 and 4 of the first cell
+    set_breakpoints();
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
+    m_client.send_on_shell("execute_request", make_execute_request(make_code()));
+    return next_continue_common();
+}
+
 void debugger_client::shutdown()
 {
     m_client.send_on_control("shutdown_request", make_shutdown_request());
@@ -392,6 +450,15 @@ nl::json debugger_client::set_external_breakpoints()
     return m_client.receive_on_control();
 }
 
+nl::json debugger_client::set_breakpoints()
+{
+    m_client.send_on_control("debug_request", make_update_cell_request(4, 0, 1, make_code()));
+    nl::json res = m_client.receive_on_control();
+    std::string path = res["content"]["body"]["sourcePath"].get<std::string>();
+    m_client.send_on_control("debug_request", make_breakpoint_request(4, path, 2, 4));
+    return m_client.receive_on_control();
+}
+
 std::string debugger_client::get_external_path()
 {
     return get_current_working_directory() + "/external_code.py";
@@ -407,6 +474,12 @@ void debugger_client::dump_external_file()
         already_dumped = true;
     }
 }
+
+std::string debugger_client::make_code() const
+{
+    return "i=4\ni+=4\ni+=3\ni";
+}
+
 std::string debugger_client::make_external_code() const
 {
     return "def my_test():\n\ti=4\n\ti+=4\n\ti+=3\n\treturn i\n";
@@ -552,6 +625,33 @@ TEST(debugger, external_next_continue)
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_external_next_continue.log");
         bool res = deb.test_external_next_continue();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
+TEST(debugger, set_breakpoints)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_set_breakpoints.log");
+        bool res = deb.test_set_breakpoints();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
+
+TEST(debugger, next_continue)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_next_continue.log");
+        bool res = deb.test_next_continue();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);

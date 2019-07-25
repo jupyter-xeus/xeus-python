@@ -7,6 +7,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <cstdlib>
+#include <fstream>
 #include <string>
 #include <thread>
 
@@ -22,6 +24,7 @@
 #include "xeus/xmiddleware.hpp"
 
 #include "xdebugger.hpp"
+#include "xutils.hpp"
 
 namespace nl = nlohmann;
 namespace py = pybind11;
@@ -62,19 +65,14 @@ namespace xpyt
             // client responds with ACK message
             m_ptvsd_header.recv(&raw_header);
 
-            std::string content = message.dump();
-            size_t content_length = content.length();
-            std::string buffer = xptvsd_client::HEADER
-                               + std::to_string(content_length)
-                               + xptvsd_client::SEPARATOR
-                               + content;
-            zmq::message_t raw_message(buffer.c_str(), buffer.length());
-            m_ptvsd_socket.send(raw_message);
-
-            zmq::message_t raw_reply;
-            m_ptvsd_socket.recv(&raw_reply);
-
-            reply = nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
+            if(message["command"] == "updateCell")
+            {
+                reply = update_cell_request(message);
+            }
+            else
+            {
+                reply = forward_message(message);
+            }
        }
 
         if(message["command"] == "disconnect")
@@ -83,6 +81,63 @@ namespace xpyt
             std::cout << "XEUS-PYTHON: the debugger has stopped" << std::endl;
         }
 
+        return reply;
+    }
+
+    nl::json debugger::forward_message(const nl::json& message)
+    {
+        std::string content = message.dump();
+        size_t content_length = content.length();
+        std::string buffer = xptvsd_client::HEADER
+                           + std::to_string(content_length)
+                           + xptvsd_client::SEPARATOR
+                           + content;
+        zmq::message_t raw_message(buffer.c_str(), buffer.length());
+        m_ptvsd_socket.send(raw_message);
+
+        zmq::message_t raw_reply;
+        m_ptvsd_socket.recv(&raw_reply);
+
+        return nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
+    }
+
+    nl::json debugger::update_cell_request(const nl::json& message)
+    {
+        //int current_id = message["arguments"]["currentId"];
+        int next_id;
+        std::string code;
+        try
+        {
+            next_id = message["arguments"]["nextId"];
+            code = message["arguments"]["code"];
+        }
+        catch(nl::json::type_error& e)
+        {
+            std::clog << e.what() << std::endl;
+        }
+        catch(...)
+        {
+            std::clog << "Unkown issue" << std::endl;
+        }
+
+        std::string next_file_name = get_tmp_file(get_tmp_prefix(),
+                                                  //m_ptvsd_client.get_session_id(),
+                                                  next_id,
+                                                  ".py");
+        std::clog << "debugger filename = " << next_file_name << std::endl;
+
+        std::ofstream out(next_file_name);
+        out << code << std::endl;
+        
+        nl::json reply = {
+            {"type", "response"},
+            {"request_seq", message["seq"]},
+            {"success", true},
+            {"command", message["command"]},
+            {"body", {
+                {"sourcePath", next_file_name}
+            }}
+        };
         return reply;
     }
 
@@ -98,12 +153,6 @@ namespace xpyt
         nl::json json_code;
         json_code["code"] = code;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
-
-        /*{
-            py::gil_scoped_acquire acquire;
-            py::module ptvsd = py::module::import("ptvsd");
-            ptvsd.attr("enable_attach")(py::make_tuple(host, ptvsd_port), "log_dir"_a="xpython_debug_logs");
-        }*/
 
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
@@ -126,6 +175,11 @@ namespace xpyt
         m_ptvsd_socket.recv(&ack);
 
         m_is_started = true;
+
+        //std::string tmp_folder = get_tmp_prefix + "/" + m_ptvsd_client.get_session_id();
+        std::string tmp_folder = get_tmp_prefix() + "/tmp_id";
+        std::string mk_tmp_folder = "mkdir " + tmp_folder;
+        std::system(mk_tmp_folder.c_str());
     }
 
     void debugger::stop()
