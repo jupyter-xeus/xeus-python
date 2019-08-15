@@ -117,7 +117,7 @@ namespace xpyt
         }
         catch(...)
         {
-            std::clog << "Unkown issue" << std::endl;
+            std::clog << "Unknown issue" << std::endl;
         }
 
         std::string next_file_name = get_tmp_file(get_tmp_prefix(),
