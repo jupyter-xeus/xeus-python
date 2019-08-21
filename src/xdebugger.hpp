@@ -44,6 +44,9 @@ namespace xpyt
         xptvsd_client m_ptvsd_client;
         zmq::socket_t m_ptvsd_socket;
         zmq::socket_t m_ptvsd_header;
+        // PTVSD cannot be started on different ports in a same process
+        // so we need to remember the port once it has be found.
+        std::string m_ptvsd_port;
         bool m_is_started;
     };
 

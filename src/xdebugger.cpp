@@ -22,6 +22,7 @@
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xmiddleware.hpp"
+#include "xeus/xsystem.hpp"
 
 #include "xdebugger.hpp"
 #include "xutils.hpp"
@@ -40,10 +41,12 @@ namespace xpyt
         : m_ptvsd_client(context, config, xeus::get_socket_linger(), user_name, session_id)
         , m_ptvsd_socket(context, zmq::socket_type::req)
         , m_ptvsd_header(context, zmq::socket_type::req)
+        , m_ptvsd_port("")
         , m_is_started(false)
     {
         m_ptvsd_socket.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
         m_ptvsd_header.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
+        m_ptvsd_port = xeus::find_free_port(100, 5678, 5900);
     }
 
     nl::json debugger::process_request_impl(const nl::json& header,
@@ -104,7 +107,7 @@ namespace xpyt
     nl::json debugger::update_cell_request(const nl::json& message)
     {
         //int current_id = message["arguments"]["currentId"];
-        int next_id;
+        int next_id = 0;
         std::string code;
         try
         {
@@ -120,10 +123,7 @@ namespace xpyt
             std::clog << "Unknown issue" << std::endl;
         }
 
-        std::string next_file_name = get_tmp_file(get_tmp_prefix(),
-                                                  //m_ptvsd_client.get_session_id(),
-                                                  next_id,
-                                                  ".py");
+        std::string next_file_name = xeus::get_cell_tmp_file(get_tmp_prefix(), next_id, ".py");
         std::clog << "debugger filename = " << next_file_name << std::endl;
 
         std::ofstream out(next_file_name);
@@ -143,13 +143,15 @@ namespace xpyt
 
     void debugger::start()
     {
-        // TODO: should be read from configuration
         std::string host = "127.0.0.1";
-        int ptvsd_port = 5678;
+        std::string temp_dir = xeus::get_temp_directory_path();
+        std::string log_dir = temp_dir + "/" + "xpython_debug_logs";
+
+        xeus::create_directory(log_dir);
 
         // PTVSD has to be started in the main thread
-        std::string code = "import ptvsd\nptvsd.enable_attach((\'" + host + "\'," + std::to_string(ptvsd_port)
-                         + "), log_dir=\'xpython_debug_logs\')";
+        std::string code = "import ptvsd\nptvsd.enable_attach((\'" + host + "\'," + m_ptvsd_port
+                         + "), log_dir=\'" + log_dir + "\')";
         nl::json json_code;
         json_code["code"] = code;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
@@ -161,7 +163,7 @@ namespace xpyt
         m_ptvsd_socket.bind(controller_end_point);
         m_ptvsd_header.bind(controller_header_end_point);
 
-        std::string ptvsd_end_point = "tcp://" + host + ':' + std::to_string(ptvsd_port);
+        std::string ptvsd_end_point = "tcp://" + host + ':' + m_ptvsd_port;
         std::thread client(&xptvsd_client::start_debugger,
                            &m_ptvsd_client,
                            ptvsd_end_point,
@@ -176,10 +178,8 @@ namespace xpyt
 
         m_is_started = true;
 
-        //std::string tmp_folder = get_tmp_prefix + "/" + m_ptvsd_client.get_session_id();
-        std::string tmp_folder = get_tmp_prefix() + "/tmp_id";
-        std::string mk_tmp_folder = "mkdir " + tmp_folder;
-        std::system(mk_tmp_folder.c_str());
+        std::string tmp_folder =  get_tmp_prefix();
+        xeus::create_directory(tmp_folder);
     }
 
     void debugger::stop()
