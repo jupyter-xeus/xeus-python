@@ -69,9 +69,16 @@ namespace xpyt
         return bufferlist;
     }
 
-    std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::list& bufferlist)
+    std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::object& bufferlist)
     {
         std::vector<zmq::message_t> buffers;
+
+        // Cannot iterate over NoneType, returning immediately with an empty vector
+        if (bufferlist.is_none())
+        {
+            return buffers;
+        }
+
         for (py::handle buffer : bufferlist)
         {
             if (py::isinstance<py::memoryview>(buffer))
