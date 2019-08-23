@@ -56,12 +56,7 @@ namespace xpyt
 
     void exec(const py::object& code, const py::object& scope = py::globals());
 
-    // TODO: move these functions to xeus
     std::string get_tmp_prefix();
-    std::string get_tmp_file(const std::string& prefix,
-                             //const std::string& session_id,
-                             int execution_count,
-                             const std::string& extension);
 }
 
 namespace nlohmann

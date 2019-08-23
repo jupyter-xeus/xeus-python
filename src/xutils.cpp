@@ -16,6 +16,7 @@
 #include "nlohmann/json.hpp"
 
 #include "xeus/xcomm.hpp"
+#include "xeus/xsystem.hpp"
 
 #include "pybind11/pybind11.h"
 #include "pybind11/eval.h"
@@ -55,7 +56,7 @@ namespace xpyt
 #else
         PyString_AsStringAndSize(bytes.ptr(), &buffer, &length);
 #endif
-        return zmq::message_t(buffer, length);
+        return zmq::message_t(buffer, static_cast<std::size_t>(length));
     }
 
     py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers)
@@ -129,42 +130,12 @@ namespace xpyt
         py::exec(XPYT_EXEC_COMMAND, py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
     }
 
-    // TODO: move these functions to xeus
-    std::string get_tmp_prefix_impl()
-    {
-#ifdef WIN32
-        std::string tmp_prefix;
-        char char_path[MAX_PATH];
-        if(GetTempPathA(MAX_PATH, char_path))
-        {
-            tmp_prefix = char_path;
-        }
-        return tmp_prefix;
-#else
-        const char* tmpdir = std::getenv("TMPDIR");
-        const char* tmp = std::getenv("TMP");
-        const char* tempdir = std::getenv("TEMPDIR");
-        const char* temp = std::getenv("TEMP");
-        if(tmpdir != nullptr) return tmpdir;
-        else if(tmp != nullptr) return tmp;
-        else if(tempdir != nullptr) return tempdir;
-        else if(temp != nullptr) return temp;
-        else return "/tmp";
-#endif
-    }
-
     std::string get_tmp_prefix()
     {
-        static std::string tmp_prefix = get_tmp_prefix_impl();
+        static std::string tmp_prefix = xeus::get_temp_directory_path()
+                                      + "/xpython_"
+                                      + std::to_string(xeus::get_current_pid());
         return tmp_prefix;
-    }
-
-    std::string get_tmp_file(const std::string& prefix,
-                             //const std::string& session_id,
-                             int execution_count,
-                             const std::string& extension)
-    {
-        return prefix + "/[" + std::to_string(execution_count) + "]" + extension;
     }
 }
 

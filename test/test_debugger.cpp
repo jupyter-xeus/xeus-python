@@ -12,6 +12,8 @@
 #include <fstream>
 #include <thread>
 
+#include "xeus/xsystem.hpp"
+
 #include "gtest/gtest.h"
 #include "xeus_client.hpp"
 
@@ -32,7 +34,9 @@
 std::string get_current_working_directory()
 {
     char buff[FILENAME_MAX];
-    getcwd(buff, FILENAME_MAX);
+    char* r = getcwd(buff, FILENAME_MAX);
+    // Avoids warning
+    (void*)r;
     std::string current_dir(buff);
     //current_dir += '/';
 #ifdef WIN32
@@ -524,17 +528,9 @@ void dump_connection_file()
     }
 }
 
-int start_kernel()
+void start_kernel()
 {
     dump_connection_file();
-    static bool dir_created = false;
-    int ret = 0;
-    if(!dir_created)
-    {
-        std::string mkdir = "mkdir xpython_debug_logs";
-        ret = std::system(mkdir.c_str());
-        dir_created = true;
-    }
     std::thread kernel([]()
     {
 #if WIN32
@@ -546,7 +542,6 @@ int start_kernel()
     });
     std::this_thread::sleep_for(2s);
     kernel.detach();
-    return ret;
 }
 
 TEST(debugger, init)
@@ -644,7 +639,6 @@ TEST(debugger, set_breakpoints)
     }
 }
 
-
 TEST(debugger, next_continue)
 {
     start_kernel();
@@ -658,3 +652,4 @@ TEST(debugger, next_continue)
     }
 }
 #endif
+

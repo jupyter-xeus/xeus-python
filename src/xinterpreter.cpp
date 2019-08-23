@@ -17,6 +17,7 @@
 #include "nlohmann/json.hpp"
 
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xsystem.hpp"
 
 #include "pybind11/functional.h"
 
@@ -121,9 +122,8 @@ namespace xpyt
             py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
             py::list expressions = code_ast.attr("body");
 
-            //std::string filename = "[" + std::to_string(execution_count) + "]";
-            std::string filename = get_tmp_file(get_tmp_prefix(), execution_count, ".py");
-                    
+            std::string filename = xeus::get_cell_tmp_file(get_tmp_prefix(), execution_count, ".py");
+            
             // If the last statement is an expression, we compile it seperately
             // in an interactive mode (This will trigger the display hook)
             py::object last_stmt = expressions[py::len(expressions) - 1];
@@ -305,7 +305,16 @@ namespace xpyt
         }
         catch (py::error_already_set& e)
         {
+            xerror error = extract_error(e, std::vector<std::string>());
+
+            publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+            error.m_traceback.resize(1);
+            error.m_traceback[0] = code;
+ 
             reply["status"] = "error";
+            reply["ename"] = error.m_ename;
+            reply["evalue"] = error.m_evalue;
+            reply["traceback"] = error.m_traceback;
         }
         return reply;
     }
