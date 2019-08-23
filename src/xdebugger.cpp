@@ -155,6 +155,19 @@ namespace xpyt
         nl::json json_code;
         json_code["code"] = code;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
+        std::string status = rep["status"].get<std::string>();
+        if(status != "ok")
+        {
+            std::string ename = rep["ename"].get<std::string>();
+            std::string evalue = rep["evalue"].get<std::string>();
+            std::vector<std::string> traceback = rep["traceback"].get<std::vector<std::string>>();
+            std::clog << "Exception raised when trying to import ptvsd" << std::endl;
+            for(std::size_t i = 0; i < traceback.size(); ++i)
+            {
+                std::clog << traceback[i] << std::endl;
+            }
+            std::clog << ename << " - " << evalue << std::endl;
+        }
 
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");

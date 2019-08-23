@@ -305,7 +305,16 @@ namespace xpyt
         }
         catch (py::error_already_set& e)
         {
+            xerror error = extract_error(e, std::vector<std::string>());
+
+            publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+            error.m_traceback.resize(1);
+            error.m_traceback[0] = code;
+ 
             reply["status"] = "error";
+            reply["ename"] = error.m_ename;
+            reply["evalue"] = error.m_evalue;
+            reply["traceback"] = error.m_traceback;
         }
         return reply;
     }
