@@ -14,36 +14,36 @@ Launch the Jupyter notebook with `jupyter notebook` or Jupyter lab with `jupyter
 
 **Code execution and variable display**:
 
-![Basic code execution](code_exec.gif)
+![Basic code execution](docs/source/code_exec.gif)
 
 **Output streams**:
 
-![Streams](streams.gif)
+![Streams](docs/source/streams.gif)
 
 **Input streams**:
 
-![Input](input.gif)
+![Input](docs/source/input.gif)
 
 **Error handling**:
 
-![Erro handling](error.gif)
+![Erro handling](docs/source/error.gif)
 
 **Inspect**:
 
-![Inspect](inspect.gif)
+![Inspect](docs/source/inspect.gif)
 
 **Code completion**:
 
-![Completion](code_completion.gif)
+![Completion](docs/source/code_completion.gif)
 
 **Rich display**:
 
-![Rich display](rich_disp.gif)
+![Rich display](docs/source/rich_disp.gif)
 
 **And of course widgets**:
 
-![Widgets](widgets.gif)
-![Widgets binary](binary.gif)
+![Widgets](docs/source/widgets.gif)
+![Widgets binary](docs/source/binary.gif)
 
 
 ## Installation

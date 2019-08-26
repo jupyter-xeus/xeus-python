@@ -8,11 +8,12 @@
 .. image:: xeus-python.svg
    :alt: xeus-python
 
-xeus-python is a Jupyter kernel for Python based on the C++ implementation of the Jupyter protocol xeus.
 
 Introduction
 ------------
 
+``xeus-python`` is a Jupyter kernel for Python based on the native implementation of the Jupyter protocol 
+xeus_.
 
 Licensing
 ---------
@@ -28,3 +29,11 @@ This software is licensed under the BSD-3-Clause license. See the LICENSE file f
    :maxdepth: 2
 
    installation
+
+.. toctree::
+   :caption: USAGE
+   :maxdepth: 2
+
+   usage
+
+.. _xeus: https://github.com/QuantStack/xeus
