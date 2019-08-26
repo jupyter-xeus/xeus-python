@@ -98,6 +98,18 @@ namespace xpyt
         ASSERT_TRUE(j.empty());
     }
 
+    TEST(pyobject_tojson, widget)
+    {
+        set_pythonhome();
+        py::scoped_interpreter guard;
+        py::object text = py::module::import("ipywidgets").attr("Text")("Hello");
+        nl::json j = text.attr("get_state")();
+
+        std::cout << j.dump() << std::endl;
+
+        ASSERT_TRUE(true);
+    }
+
     TEST(pyobject_tojson, tuple)
     {
         set_pythonhome();
