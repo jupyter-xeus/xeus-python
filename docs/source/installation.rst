@@ -38,6 +38,18 @@ The safest usage is to create an environment named `xeus-python` with your minic
     conda create -n xeus-python
     conda activate xeus-python # Or `source activate xeus-python` for conda < 4.6
 
+Then you can install in this freshly created environment `xeus-python` and its dependencies
+
+.. code::
+
+    conda install xeus-python notebook -c conda-forge
+
+or, if you prefer to use JupyterLab_
+
+.. code::
+
+    conda install xeus-python jupyterlab -c conda-forge
+
 From Source
 -----------
 
@@ -62,3 +74,4 @@ On Windows platforms, from the source directory:
 
 .. _miniconda: https://conda.io/miniconda.html
 .. _anaconda: https://www.anaconda.com
+.. _JupyterLab: https://jupyterlab.readthedocs.io
