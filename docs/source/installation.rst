@@ -21,8 +21,25 @@
 Installation
 ============
 
-From source with cmake
-----------------------
+With Conda
+----------
+
+`xeus-python` has been packaged for the conda package manager.
+
+To ensure that the installation works, it is preferable to install `xeus-python` in a fresh conda environment.
+It is also needed to use a miniconda_ installation because with the full anaconda_ you may have a conflict with
+the `zeromq` library which is already installed in the anaconda distribution.
+
+
+The safest usage is to create an environment named `xeus-python` with your miniconda installation
+
+.. code::
+
+    conda create -n xeus-python
+    conda activate xeus-python # Or `source activate xeus-python` for conda < 4.6
+
+From Source
+-----------
 
 You can install ``xeus-python`` from source with cmake. This requires that you have all the dependencies installed in the same prefix.
 
@@ -42,3 +59,6 @@ On Windows platforms, from the source directory:
     cmake -G "NMake Makefiles" -DCMAKE_INSTALL_PREFIX=/path/to/prefix ..
     nmake
     nmake install
+
+.. _miniconda: https://conda.io/miniconda.html
+.. _anaconda: https://www.anaconda.com
