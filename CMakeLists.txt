@@ -100,6 +100,8 @@ set(XEUS_PYTHON_SRC
     src/xinterpreter.cpp
     src/xis_complete.cpp
     src/xis_complete.hpp
+    src/xlinecache.cpp
+    src/xlinecache.hpp
     src/xptvsd_client.cpp
     src/xptvsd_client.hpp
     src/xpythonhome.cpp

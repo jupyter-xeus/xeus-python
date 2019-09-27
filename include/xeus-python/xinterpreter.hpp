@@ -17,7 +17,6 @@
 
 #include <string>
 #include <memory>
-#include <vector>
 
 #include "nlohmann/json.hpp"
 
@@ -70,7 +69,6 @@ namespace xpyt
         void redirect_display();
 
         py::object m_displayhook;
-        std::vector<std::string> m_inputs;
 
         // The interpreter has the same scope as a `gil_scoped_release` instance
         // so that the GIL is not held by default, it will only be held when the

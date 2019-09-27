@@ -7,26 +7,17 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_TRACEBACK_HPP
-#define XPYT_TRACEBACK_HPP
-
-#include <vector>
-#include <string>
+#ifndef XPYT_LINECACHE_HPP
+#define XPYT_LINECACHE_HPP
 
 #include "pybind11/pybind11.h"
+#include "pybind11/functional.h"
 
 namespace py = pybind11;
 
 namespace xpyt
 {
-    struct xerror
-    {
-        std::string m_ename;
-        std::string m_evalue;
-        std::vector<std::string> m_traceback;
-    };
-
-    xerror extract_error(py::error_already_set& error);
+    py::module get_linecache_module();
 }
 
 #endif

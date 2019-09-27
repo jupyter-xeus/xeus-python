@@ -29,6 +29,7 @@
 #include "xinput.hpp"
 #include "xinspect.hpp"
 #include "xis_complete.hpp"
+#include "xlinecache.hpp"
 #include "xstream.hpp"
 #include "xtraceback.hpp"
 #include "xutils.hpp"
@@ -59,16 +60,20 @@ namespace xpyt
         redirect_display();
 
         py::module sys = py::module::import("sys");
-        py::module kernel_module = get_kernel_module();
 
         // Monkey patching "from ipykernel.comm import Comm"
-        sys.attr("modules")["ipykernel.comm"] = kernel_module;
+        sys.attr("modules")["ipykernel.comm"] = get_kernel_module();
 
         // Monkey patching "from IPython.display import display"
         sys.attr("modules")["IPython.display"] = get_display_module();
 
         // Monkey patching "from IPython import get_ipython"
-        sys.attr("modules")["IPython.core.getipython"] = kernel_module;
+        sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
+
+        // Monkey patching "import linecache". This monkey patch does not work with Python2.
+#if PY_MAJOR_VERSION >= 3
+        sys.attr("modules")["linecache"] = get_linecache_module();
+#endif
     }
 
     interpreter::~interpreter()
@@ -84,7 +89,6 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
-        m_inputs.push_back(code);
 
         if (code.size() >= 2 && code[0] == '?')
         {
@@ -123,8 +127,14 @@ namespace xpyt
             py::list expressions = code_ast.attr("body");
 
             std::string filename = xeus::get_cell_tmp_file(get_tmp_prefix(), execution_count, ".py");
-            
-            // If the last statement is an expression, we compile it seperately
+
+            // Caching the input code
+#if PY_MAJOR_VERSION >= 3
+            py::module linecache = py::module::import("linecache");
+            linecache.attr("xupdatecache")(code, filename);
+#endif
+
+            // If the last statement is an expression, we compile it separately
             // in an interactive mode (This will trigger the display hook)
             py::object last_stmt = expressions[py::len(expressions) - 1];
             if (py::isinstance(last_stmt, ast.attr("Expr")))
@@ -156,7 +166,7 @@ namespace xpyt
         }
         catch (py::error_already_set& e)
         {
-            xerror error = extract_error(e, m_inputs);
+            xerror error = extract_error(e);
 
             if (!silent)
             {
@@ -296,7 +306,7 @@ namespace xpyt
 
             // Parse code to AST
             py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
-            
+
             std::string filename = "debug_this_thread";
             py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
             exec(compiled_code);
@@ -305,12 +315,12 @@ namespace xpyt
         }
         catch (py::error_already_set& e)
         {
-            xerror error = extract_error(e, std::vector<std::string>());
+            xerror error = extract_error(e);
 
             publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
- 
+
             reply["status"] = "error";
             reply["ename"] = error.m_ename;
             reply["evalue"] = error.m_evalue;
