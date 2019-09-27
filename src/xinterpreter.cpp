@@ -8,6 +8,7 @@
 ****************************************************************************/
 
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -50,6 +51,10 @@ namespace xpyt
         jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
             jedi.attr("api").attr("environment").attr("SameEnvironment")();
         });
+
+        // Creating the tmp folder
+        std::string tmp_folder =  get_tmp_prefix();
+        xeus::create_directory(tmp_folder);
     }
 
     interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
@@ -123,7 +128,13 @@ namespace xpyt
             py::list expressions = code_ast.attr("body");
 
             std::string filename = xeus::get_cell_tmp_file(get_tmp_prefix(), execution_count, ".py");
-            
+
+            // Saving the code in a temporary file (this is needed for the `inspect` module to retrieve the source code)
+            std::ofstream out;
+            out.open(filename, std::ofstream::out | std::ofstream::trunc);
+            out << code << std::endl;
+            out.close();
+
             // If the last statement is an expression, we compile it seperately
             // in an interactive mode (This will trigger the display hook)
             py::object last_stmt = expressions[py::len(expressions) - 1];
@@ -296,7 +307,7 @@ namespace xpyt
 
             // Parse code to AST
             py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
-            
+
             std::string filename = "debug_this_thread";
             py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
             exec(compiled_code);
@@ -310,7 +321,7 @@ namespace xpyt
             publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
- 
+
             reply["status"] = "error";
             reply["ename"] = error.m_ename;
             reply["evalue"] = error.m_evalue;

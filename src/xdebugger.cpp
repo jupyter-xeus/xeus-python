@@ -126,9 +126,11 @@ namespace xpyt
         std::string next_file_name = xeus::get_cell_tmp_file(get_tmp_prefix(), next_id, ".py");
         std::clog << "debugger filename = " << next_file_name << std::endl;
 
-        std::ofstream out(next_file_name);
+        std::ofstream out;
+        out.open(next_file_name, std::ofstream::out | std::ofstream::trunc);
         out << code << std::endl;
-        
+        out.close();
+
         nl::json reply = {
             {"type", "response"},
             {"request_seq", message["seq"]},
@@ -184,15 +186,12 @@ namespace xpyt
                            controller_end_point,
                            controller_header_end_point);
         client.detach();
-        
+
         m_ptvsd_socket.send(zmq::message_t("REQ", 3));
         zmq::message_t ack;
         m_ptvsd_socket.recv(&ack);
 
         m_is_started = true;
-
-        std::string tmp_folder =  get_tmp_prefix();
-        xeus::create_directory(tmp_folder);
     }
 
     void debugger::stop()
@@ -203,7 +202,7 @@ namespace xpyt
         m_ptvsd_header.unbind(controller_header_end_point);
         m_is_started = false;
     }
-    
+
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,
