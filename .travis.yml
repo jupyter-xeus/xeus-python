@@ -74,4 +74,6 @@ script:
       fi
     - cd test
     - ./test_xeus_python
-    - cd ../../test && py.test .
+    - if [[ "$PY" == "3" ]]; then
+        cd ../../test && py.test .;
+      fi
