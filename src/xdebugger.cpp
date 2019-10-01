@@ -128,7 +128,7 @@ namespace xpyt
 
         std::ofstream out(next_file_name);
         out << code << std::endl;
-        
+
         nl::json reply = {
             {"type", "response"},
             {"request_seq", message["seq"]},
@@ -184,7 +184,7 @@ namespace xpyt
                            controller_end_point,
                            controller_header_end_point);
         client.detach();
-        
+
         m_ptvsd_socket.send(zmq::message_t("REQ", 3));
         zmq::message_t ack;
         m_ptvsd_socket.recv(&ack);
@@ -203,7 +203,7 @@ namespace xpyt
         m_ptvsd_header.unbind(controller_header_end_point);
         m_is_started = false;
     }
-    
+
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,

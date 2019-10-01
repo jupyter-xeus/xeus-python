@@ -60,7 +60,7 @@ namespace xpyt
         return line;
     }
 
-    xerror extract_error(py::error_already_set& error, const std::vector<std::string>& inputs)
+    xerror extract_error(py::error_already_set& error)
     {
         xerror out;
 
@@ -132,9 +132,7 @@ namespace xpyt
                     file_prefix = "In  ";
                     auto pos = filename.find_last_of('[');
                     auto last_pos = filename.find_first_of(']', pos);
-                    int exec_count = std::stoi(filename.substr(pos+1, last_pos - pos - 1));
                     filename = filename.substr(pos, last_pos - pos + 1);
-                    line = extract_line(inputs.at(exec_count - 1), std::stoi(lineno));
                 }
                 else
                 {
