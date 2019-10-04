@@ -68,9 +68,9 @@ namespace xpyt
             // client responds with ACK message
             m_ptvsd_header.recv(&raw_header);
 
-            if(message["command"] == "updateCell")
+            if(message["command"] == "dumpCell")
             {
-                reply = update_cell_request(message);
+                reply = dump_cell_request(message);
             }
             else
             {
@@ -104,14 +104,11 @@ namespace xpyt
         return nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
     }
 
-    nl::json debugger::update_cell_request(const nl::json& message)
+    nl::json debugger::dump_cell_request(const nl::json& message)
     {
-        //int current_id = message["arguments"]["currentId"];
-        int next_id = 0;
         std::string code;
         try
         {
-            next_id = message["arguments"]["nextId"];
             code = message["arguments"]["code"];
         }
         catch(nl::json::type_error& e)
