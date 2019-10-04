@@ -7,6 +7,7 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <map>
 #include <vector>
 #include <sstream>
 #include <string>
@@ -58,6 +59,19 @@ namespace xpyt
         }
 
         return line;
+    }
+
+    using filename_map = std::map<std::string, int>;
+
+    filename_map& get_filename_map()
+    {
+        static filename_map fnm;
+        return fnm;
+    }
+
+    void register_filename_mapping(const std::string& filename, int execution_count)
+    {
+        get_filename_map()[filename] = execution_count;
     }
 
     xerror extract_error(py::error_already_set& error)
@@ -130,9 +144,11 @@ namespace xpyt
                 if(!filename.empty() && !filename.compare(0, prefix.size(), prefix.c_str(), prefix.size()))
                 {
                     file_prefix = "In  ";
-                    auto pos = filename.find_last_of('[');
-                    auto last_pos = filename.find_first_of(']', pos);
-                    filename = filename.substr(pos, last_pos - pos + 1);
+                    auto it = get_filename_map().find(filename);
+                    if(it != get_filename_map().end())
+                    {
+                        filename = '[' + std::to_string(it->second) + ']';
+                    }
                 }
                 else
                 {

@@ -57,6 +57,7 @@ namespace xpyt
     void exec(const py::object& code, const py::object& scope = py::globals());
 
     std::string get_tmp_prefix();
+    std::string get_cell_tmp_file(const std::string& content);
 }
 
 namespace nlohmann

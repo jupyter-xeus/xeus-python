@@ -26,6 +26,7 @@ namespace xpyt
         std::vector<std::string> m_traceback;
     };
 
+    void register_filename_mapping(const std::string& filename, int execution_count);
     xerror extract_error(py::error_already_set& error);
 }
 

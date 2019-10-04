@@ -126,7 +126,8 @@ namespace xpyt
             py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
             py::list expressions = code_ast.attr("body");
 
-            std::string filename = xeus::get_cell_tmp_file(get_tmp_prefix(), execution_count, ".py");
+            std::string filename = get_cell_tmp_file(code);
+            register_filename_mapping(filename, execution_count);
 
             // Caching the input code
 #if PY_MAJOR_VERSION >= 3

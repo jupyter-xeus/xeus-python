@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <functional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -136,6 +137,12 @@ namespace xpyt
                                       + "/xpython_"
                                       + std::to_string(xeus::get_current_pid());
         return tmp_prefix;
+    }
+
+    std::string get_cell_tmp_file(const std::string& content)
+    {
+        std::string id = std::to_string(std::hash<std::string>()(content));
+        return get_tmp_prefix() + '/' + id + ".py";
     }
 }
 
