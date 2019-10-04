@@ -226,15 +226,13 @@ nl::json make_execute_request(const std::string& code)
     return req;
 }
 
-nl::json make_update_cell_request(int seq, int cell_id, int next_id, const std::string& code)
+nl::json make_dump_cell_request(int seq, const std::string& code)
 {
     nl::json req = {
         {"type", "request"},
         {"seq", seq},
-        {"command", "updateCell"},
+        {"command", "dumpCell"},
         {"arguments", {
-            {"currentId", cell_id},
-            {"nextId", next_id},
             {"code", code}
         }}
     };
@@ -456,7 +454,7 @@ nl::json debugger_client::set_external_breakpoints()
 
 nl::json debugger_client::set_breakpoints()
 {
-    m_client.send_on_control("debug_request", make_update_cell_request(4, 0, 1, make_code()));
+    m_client.send_on_control("debug_request", make_dump_cell_request(4, make_code()));
     nl::json res = m_client.receive_on_control();
     std::string path = res["content"]["body"]["sourcePath"].get<std::string>();
     m_client.send_on_control("debug_request", make_breakpoint_request(4, path, 2, 4));

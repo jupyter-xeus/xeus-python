@@ -36,7 +36,7 @@ namespace xpyt
                                               const nl::json& message);
 
         nl::json forward_message(const nl::json& message);
-        nl::json update_cell_request(const nl::json& message);
+        nl::json dump_cell_request(const nl::json& message);
 
         void start();
         void stop();
