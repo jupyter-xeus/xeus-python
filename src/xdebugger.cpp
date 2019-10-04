@@ -123,7 +123,7 @@ namespace xpyt
             std::clog << "Unknown issue" << std::endl;
         }
 
-        std::string next_file_name = xeus::get_cell_tmp_file(get_tmp_prefix(), next_id, ".py");
+        std::string next_file_name = get_cell_tmp_file(code);
         std::clog << "debugger filename = " << next_file_name << std::endl;
 
         std::ofstream out(next_file_name);
