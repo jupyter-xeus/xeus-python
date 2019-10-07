@@ -239,6 +239,19 @@ nl::json make_dump_cell_request(int seq, const std::string& code)
     return req;
 }
 
+nl::json make_stepin_request(int seq, int thread_id)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "stepIn"},
+        {"arguments", {
+            {"threadId", thread_id}
+        }}
+    };
+    return req;
+}
+
 /*******************
  * debugger_client *
  *******************/
@@ -258,6 +271,7 @@ public:
     bool test_external_next_continue();
     bool test_set_breakpoints();
     bool test_next_continue();
+    bool test_step_in();
     void shutdown();
 
 private:
@@ -324,6 +338,13 @@ bool debugger_client::print_code_variable(const std::string& expected, int& seq)
     m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
     ++seq;
     nl::json json1 = m_client.receive_on_control();
+
+    if(json1["content"]["body"]["stackFrames"].empty())
+    {
+        m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+        ++seq;
+        json1 = m_client.receive_on_control();
+    }
     
     int frame_id = json1["content"]["body"]["stackFrames"][0]["id"].get<int>();
     m_client.send_on_control("debug_request", make_scopes_request(seq, frame_id));
@@ -425,6 +446,55 @@ bool debugger_client::test_next_continue()
 
     m_client.send_on_shell("execute_request", make_execute_request(make_code()));
     return next_continue_common();
+}
+
+bool debugger_client::test_step_in()
+{
+    attach();
+
+    m_client.send_on_control("debug_request", make_dump_cell_request(4, make_external_invoker_code()));
+    nl::json dump_res = m_client.receive_on_control();
+    std::string path = dump_res["content"]["body"]["sourcePath"].get<std::string>();
+    m_client.send_on_control("debug_request", make_breakpoint_request(4, path, 1, 2));
+    m_client.receive_on_control();
+
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
+    m_client.send_on_shell("execute_request", make_execute_request(make_external_code()));
+    m_client.receive_on_shell();
+
+    m_client.send_on_shell("execute_request", make_execute_request(make_external_invoker_code()));
+
+    nl::json ev = m_client.wait_for_debug_event("stopped");
+    int seq = ev["content"]["seq"].get<int>();
+    // Code should have stopped line 1
+    std::cout << "Thread hit a breakpoint line 1" << std::endl;
+    continue_exec(seq);
+    m_client.wait_for_debug_event("stopped");
+
+    // Code should have stopped line 2
+    std::cout << "Thread hit a breakpoint line 2" << std::endl;
+    m_client.send_on_control("debug_request", make_stepin_request(seq, 1));
+    m_client.receive_on_control();
+    m_client.wait_for_debug_event("stopped");
+    seq = ev["content"]["seq"].get<int>();
+    std::cout << "Thread has stepped in" << std::endl;
+    next(seq);
+    m_client.wait_for_debug_event("stopped");
+
+    bool res = print_code_variable("4", seq);
+    next(seq);
+    m_client.wait_for_debug_event("stopped");
+    
+    res = print_code_variable("8", seq) && res;
+
+    continue_exec(seq);
+
+    nl::json rep = m_client.receive_on_shell();
+    res = rep["content"]["status"] == "ok" && res;
+
+    return res;
 }
 
 void debugger_client::shutdown()
@@ -647,5 +717,19 @@ TEST(debugger, next_continue)
         EXPECT_TRUE(res);
     }
 }
+
+TEST(debugger, stepin)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_stepin.log");
+        bool res = deb.test_step_in();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
 #endif
 
