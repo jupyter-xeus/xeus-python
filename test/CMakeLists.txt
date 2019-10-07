@@ -78,7 +78,6 @@ include_directories(${GTEST_INCLUDE_DIRS} SYSTEM)
 
 set(XEUS_PYTHON_TESTS
     ../src/xpythonhome.cpp
-    test_xutils.cpp
     ../src/xutils.cpp
     test_debugger.cpp
     xeus_client.hpp
