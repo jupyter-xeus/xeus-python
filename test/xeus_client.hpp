@@ -7,6 +7,7 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <condition_variable>
 #include <mutex>
 #include <queue>
 #include <string>
@@ -108,6 +109,8 @@ public:
     std::size_t iopub_queue_size() const;
     nl::json pop_iopub_message();
 
+    nl::json wait_for_debug_event(const std::string& event);
+
 private:
 
     using base_type = xeus_client_base;
@@ -119,5 +122,7 @@ private:
     std::queue<nl::json> m_message_queue;
     std::mutex m_file_mutex;
     mutable std::mutex m_queue_mutex;
+    std::mutex m_notify_mutex;
+    std::condition_variable m_notify_cond;
 };
 
