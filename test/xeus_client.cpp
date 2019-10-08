@@ -236,14 +236,41 @@ nl::json xeus_logger_client::pop_iopub_message()
     return res;
 }
 
+nl::json xeus_logger_client::wait_for_debug_event(const std::string& event)
+{
+    bool event_found = false;
+    nl::json msg;
+    while(!event_found)
+    {
+        std::size_t s = iopub_queue_size();
+        if(s != 0)
+        {
+            msg = pop_iopub_message();
+            if(msg["topic"] == "debug_event" && msg["content"]["event"] == event)
+            {
+                event_found = true;
+            }
+        }
+        else
+        {
+            std::unique_lock<std::mutex> lk(m_notify_mutex);
+            m_notify_cond.wait(lk);
+        }
+    }
+    return msg;
+}
+
 void xeus_logger_client::poll_iopub()
 {
     while(true)
     {
         nl::json msg = base_type::receive_on_iopub();
         {
+            std::unique_lock<std::mutex> lk(m_notify_mutex);
             std::lock_guard<std::mutex> guard(m_queue_mutex);
             m_message_queue.push(msg);
+            lk.unlock();
+            m_notify_cond.notify_one();
         }
         std::string topic = msg["topic"];
         std::size_t topic_size = topic.size();

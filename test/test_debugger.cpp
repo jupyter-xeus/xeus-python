@@ -376,24 +376,22 @@ void debugger_client::continue_exec(int& seq)
 
 bool debugger_client::next_continue_common()
 {
-    // TODO: remove this, handle events
-    std::this_thread::sleep_for(1s);
+    nl::json ev = m_client.wait_for_debug_event("stopped");
 
     // Code should have stopped line 3
-    int seq = 6;
+    int seq = ev["content"]["seq"].get<int>();
     std::cout << "Thread hit a breakpoint line 3" << std::endl;
     bool res = print_code_variable("4", seq);
 
     next(seq);
+    m_client.wait_for_debug_event("stopped");
 
-    // TODO: remove this, handle events
-    std::this_thread::sleep_for(1s);
-    
     // Code should have stopped line 4
     std::cout << "Thread is stopped line 4" << std::endl;
     res = print_code_variable("8", seq) && res;
 
     continue_exec(seq);
+    m_client.wait_for_debug_event("stopped");
 
     // Code should have stopped line 5
     std::cout << "Thread hit a breakpoint line 5" << std::endl;
