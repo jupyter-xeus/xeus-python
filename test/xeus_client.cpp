@@ -7,6 +7,7 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <thread>
@@ -254,6 +255,10 @@ nl::json xeus_logger_client::wait_for_debug_event(const std::string& event)
         else
         {
             std::unique_lock<std::mutex> lk(m_notify_mutex);
+            if(iopub_queue_size())
+            {
+                continue;
+            }
             m_notify_cond.wait(lk);
         }
     }
@@ -267,8 +272,9 @@ void xeus_logger_client::poll_iopub()
         nl::json msg = base_type::receive_on_iopub();
         {
             std::unique_lock<std::mutex> lk(m_notify_mutex);
-            std::lock_guard<std::mutex> guard(m_queue_mutex);
+            std::unique_lock<std::mutex> guard(m_queue_mutex);
             m_message_queue.push(msg);
+            guard.unlock();
             lk.unlock();
             m_notify_cond.notify_one();
         }
