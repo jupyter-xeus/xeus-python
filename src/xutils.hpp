@@ -60,14 +60,4 @@ namespace xpyt
     std::string get_cell_tmp_file(const std::string& content);
 }
 
-namespace nlohmann
-{
-    template <>
-    struct adl_serializer<py::object>
-    {
-        static py::object from_json(const json& j);
-        static void to_json(json& j, const py::object& obj);
-    };
-}
-
 #endif

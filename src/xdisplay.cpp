@@ -13,6 +13,8 @@
 
 #include "xeus/xinterpreter.hpp"
 
+#include "pybind11_json/pybind11_json.hpp"
+
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
 
@@ -214,7 +216,7 @@ namespace xpyt
               py::arg("update") = true,
               py::arg("raw") = false);
 
-        display_module.def("clear_output", 
+        display_module.def("clear_output",
               xclear,
               py::arg("wait") = false);
 
