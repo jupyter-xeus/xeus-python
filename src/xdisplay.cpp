@@ -140,7 +140,7 @@ namespace xpyt
      * xdisplay implementation *
      ***************************/
 
-    void xdisplay(const py::object& obj, const py::object display_id, bool update, bool raw)
+    void xdisplay(const py::object& obj, const py::object& metadata, const py::object& transient, const py::object& display_id, bool update, bool raw)
     {
         auto& interp = xeus::get_interpreter();
 
@@ -152,29 +152,26 @@ namespace xpyt
                 return;
             }
 
-            nl::json pub_data;
-            if (raw)
-            {
-                pub_data = obj;
-            }
-            else
-            {
-                pub_data = mime_bundle_repr(obj);
-            }
+            nl::json pub_data = raw ? nl::json(obj) : mime_bundle_repr(obj);
+            nl::json cpp_transient = transient.is_none() ? nl::json::object() : nl::json(transient);
+            nl::json cpp_metadata = metadata.is_none() ? nl::json::object() : nl::json(metadata);
 
-            nl::json transient = nl::json::object();
             if (!display_id.is_none())
             {
-                transient["display_id"] = display_id;
+                cpp_transient["display_id"] = display_id;
             }
+
             if (update)
             {
                 interp.update_display_data(
-                    std::move(pub_data), nl::json::object(), std::move(transient));
+                    std::move(pub_data), std::move(cpp_metadata), std::move(cpp_transient)
+                );
             }
             else
             {
-                interp.display_data(std::move(pub_data), nl::json::object(), std::move(transient));
+                interp.display_data(
+                    std::move(pub_data), std::move(cpp_metadata), std::move(cpp_transient)
+                );
             }
         }
     }
@@ -205,6 +202,8 @@ namespace xpyt
         display_module.def("display",
               xdisplay,
               py::arg("obj"),
+              py::arg("metadata") = py::none(),
+              py::arg("transient") = py::none(),
               py::arg("display_id") = py::none(),
               py::arg("update") = false,
               py::arg("raw") = false);
@@ -212,7 +211,9 @@ namespace xpyt
         display_module.def("update_display",
               xdisplay,
               py::arg("obj"),
-              py::arg("display_id"),
+              py::arg("metadata") = py::none(),
+              py::arg("transient") = py::none(),
+              py::arg("display_id") = py::none(),
               py::arg("update") = true,
               py::arg("raw") = false);
 
