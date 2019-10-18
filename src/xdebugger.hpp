@@ -10,6 +10,8 @@
 #ifndef XPYT_DEBUGGER_HPP
 #define XPYT_DEBUGGER_HPP
 
+#include <map>
+
 #include "zmq.hpp"
 #include "nlohmann/json.hpp"
 #include "xeus/xdebugger.hpp"
@@ -19,6 +21,7 @@
 
 namespace xpyt
 {
+
     class XEUS_PYTHON_API debugger : public xeus::xdebugger
     {
     public:
@@ -37,6 +40,8 @@ namespace xpyt
 
         nl::json forward_message(const nl::json& message);
         nl::json dump_cell_request(const nl::json& message);
+        nl::json set_breakpoints_request(const nl::json& message);
+        nl::json debug_info_request(const nl::json& message);
 
         void start();
         void stop();
@@ -47,7 +52,10 @@ namespace xpyt
         // PTVSD cannot be started on different ports in a same process
         // so we need to remember the port once it has be found.
         std::string m_ptvsd_port;
+        using breakpoint_list_t = std::map<std::string, std::vector<int>>;
+        breakpoint_list_t m_breakpoint_list;
         bool m_is_started;
+        
     };
 
     XEUS_PYTHON_API

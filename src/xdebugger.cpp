@@ -72,11 +72,19 @@ namespace xpyt
             {
                 reply = dump_cell_request(message);
             }
+            else if(message["command"] == "setBreakpoints")
+            {
+                reply = set_breakpoints_request(message);
+            }
+            else if(message["command"] == "debugInfo")
+            {
+                reply = debug_info_request(message);
+            }
             else
             {
                 reply = forward_message(message);
             }
-       }
+        }
 
         if(message["command"] == "disconnect")
         {
@@ -133,6 +141,45 @@ namespace xpyt
             {"command", message["command"]},
             {"body", {
                 {"sourcePath", next_file_name}
+            }}
+        };
+        return reply;
+    }
+
+    nl::json debugger::set_breakpoints_request(const nl::json& message)
+    {
+        std::string source = message["arguments"]["source"]["path"];
+        m_breakpoint_list.erase(source);
+        nl::json bp_json = message["arguments"]["breakpoints"];
+        std::vector<int> bp(bp_json.size());
+        std::transform(bp_json.begin(), bp_json.end(), bp.begin(), [](const auto& b) { return b["line"]; });
+        m_breakpoint_list.insert(std::make_pair(std::move(source), std::move(bp)));
+        return forward_message(message);
+    }
+
+    nl::json debugger::debug_info_request(const nl::json& message)
+    {
+        nl::json breakpoint_list = nl::json::array();
+
+        if(m_is_started)
+        {
+            for(auto it = m_breakpoint_list.cbegin(); it != m_breakpoint_list.cend(); ++it)
+            {
+                breakpoint_list.push_back({{"source", it->first},
+                                           {"lines", it->second}});
+            }
+        }
+
+        nl::json reply = {
+            {"type", "response"},
+            {"request_seq", message["seq"]},
+            {"success", true},
+            {"command", message["command"]},
+            {"body", {
+                {"isStarted", m_is_started},
+                {"hashMethod", "Murmur2"},
+                {"hashSeed", 1},
+                {"breakpoints", breakpoint_list}
             }}
         };
         return reply;

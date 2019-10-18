@@ -252,6 +252,16 @@ nl::json make_stepin_request(int seq, int thread_id)
     return req;
 }
 
+nl::json make_debug_info_request(int seq)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "debugInfo"}
+    };
+    return req;
+}
+
 /*******************
  * debugger_client *
  *******************/
@@ -272,6 +282,7 @@ public:
     bool test_set_breakpoints();
     bool test_next_continue();
     bool test_step_in();
+    bool test_debug_info();
     void shutdown();
 
 private:
@@ -495,6 +506,26 @@ bool debugger_client::test_step_in()
     res = rep["content"]["status"] == "ok" && res;
 
     return res;
+}
+
+bool debugger_client::test_debug_info()
+{
+    attach();
+
+    m_client.send_on_control("debug_request", make_debug_info_request(4));
+    nl::json rep1 = m_client.receive_on_control();
+
+    bool res = rep1["content"]["body"]["breakpoints"].size() == 0;
+    set_breakpoints();
+    set_external_breakpoints();
+
+    m_client.send_on_control("debug_request", make_debug_info_request(12));
+    nl::json rep2 = m_client.receive_on_control();
+
+    nl::json bp_list = rep2["content"]["body"]["breakpoints"];
+    res = res && bp_list.size() == 2;
+    res = res && bp_list[0]["lines"].size() == 2 && bp_list[1]["lines"].size() == 2;
+    return true;
 }
 
 void debugger_client::shutdown()
@@ -725,6 +756,19 @@ TEST(debugger, stepin)
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_stepin.log");
         bool res = deb.test_step_in();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
+TEST(debugger, debug_info)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        bool res = deb.test_debug_info();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
