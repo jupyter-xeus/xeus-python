@@ -178,7 +178,7 @@ namespace xpyt
             {"body", {
                 {"isStarted", m_is_started},
                 {"hashMethod", "Murmur2"},
-                {"hashSeed", 1},
+                {"hashSeed", get_hash_seed()},
                 {"breakpoints", breakpoint_list}
             }}
         };

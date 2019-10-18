@@ -24,6 +24,8 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/eval.h"
 
+#include "xtl/xhash.hpp"
+
 #include "xutils.hpp"
 
 #ifdef WIN32
@@ -133,6 +135,11 @@ namespace xpyt
         py::exec(XPYT_EXEC_COMMAND, py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
     }
 
+    std::size_t get_hash_seed()
+    {
+        return static_cast<std::size_t>(0xc70f6907UL);
+    }
+
     std::string get_tmp_prefix()
     {
         static std::string tmp_prefix = xeus::get_temp_directory_path()
@@ -143,7 +150,8 @@ namespace xpyt
 
     std::string get_cell_tmp_file(const std::string& content)
     {
-        std::string id = std::to_string(std::hash<std::string>()(content));
+        std::size_t seed = get_hash_seed();
+        std::string id = std::to_string(xtl::hash_bytes(content.data(), content.size(), seed));
         return get_tmp_prefix() + '/' + id + ".py";
     }
 }
