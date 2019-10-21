@@ -76,17 +76,17 @@ namespace xpyt
             {
                 reply = set_breakpoints_request(message);
             }
-            else if(message["command"] == "debugInfo")
-            {
-                reply = debug_info_request(message);
-            }
             else
             {
                 reply = forward_message(message);
             }
         }
 
-        if(message["command"] == "disconnect")
+        if(message["command"] == "debugInfo")
+        {
+            reply = debug_info_request(message);
+        }
+        else if(message["command"] == "disconnect")
         {
             stop();
             std::cout << "XEUS-PYTHON: the debugger has stopped" << std::endl;
