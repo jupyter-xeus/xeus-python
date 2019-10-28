@@ -131,8 +131,13 @@ namespace xpyt
         std::string next_file_name = get_cell_tmp_file(code);
         std::clog << "debugger filename = " << next_file_name << std::endl;
 
-        std::ofstream out(next_file_name);
-        out << code << std::endl;
+        std::fstream fs(next_file_name, std::ios::in);
+        if(!fs.is_open())
+        {
+            fs.clear();
+            fs.open(next_file_name, std::ios::out);
+            fs << code << std::endl;
+        }
 
         nl::json reply = {
             {"type", "response"},
