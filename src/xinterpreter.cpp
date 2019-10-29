@@ -281,6 +281,7 @@ namespace xpyt
               "  Python ";
         banner.append(PY_VERSION);
         result["banner"] = banner;
+        result["debugger"] = true;
 
         result["language_info"]["name"] = "python";
         result["language_info"]["version"] = PY_VERSION;
