@@ -24,6 +24,9 @@ namespace xpyt
 
     inline void set_pythonhome()
     {
+#ifdef _WIN32
+        return;
+#endif
         static const char* ph = get_pythonhome();
 #if PY_MAJOR_VERSION == 2
         Py_SetPythonHome(const_cast<char*>(ph));
