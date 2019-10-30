@@ -262,6 +262,16 @@ nl::json make_debug_info_request(int seq)
     return req;
 }
 
+nl::json make_inspect_variables_request(int seq)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "inspectVariables"}
+    };
+    return req;
+}
+
 /*******************
  * debugger_client *
  *******************/
@@ -283,6 +293,7 @@ public:
     bool test_next_continue();
     bool test_step_in();
     bool test_debug_info();
+    bool test_inspect_variables();
     void shutdown();
 
 private:
@@ -525,7 +536,21 @@ bool debugger_client::test_debug_info()
     nl::json bp_list = rep2["content"]["body"]["breakpoints"];
     res = res && bp_list.size() == 2;
     res = res && bp_list[0]["lines"].size() == 2 && bp_list[1]["lines"].size() == 2;
-    return true;
+    return res;
+}
+
+bool debugger_client::test_inspect_variables()
+{
+    std::string code = "i=4\nj=i+4\nk=j-3\n";
+    m_client.send_on_shell("execute_request", make_execute_request(code));
+    m_client.receive_on_shell();
+
+    m_client.send_on_control("debug_request", make_inspect_variables_request(0));
+    nl::json rep = m_client.receive_on_control();
+
+    nl::json var = rep["content"]["body"]["variables"];
+    bool res = var["i"] == 4 && var["j"] == 8 && var["k"] == 5;
+    return res;
 }
 
 void debugger_client::shutdown()
@@ -769,6 +794,19 @@ TEST(debugger, debug_info)
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
         bool res = deb.test_debug_info();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
+TEST(debugger, inspect_variables)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        bool res = deb.test_inspect_variables();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);

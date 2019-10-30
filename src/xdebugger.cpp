@@ -17,6 +17,8 @@
 // because of the redefinition of snprintf
 #include "nlohmann/json.hpp"
 
+#include "pybind11_json/pybind11_json.hpp"
+
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
@@ -85,6 +87,10 @@ namespace xpyt
         if(message["command"] == "debugInfo")
         {
             reply = debug_info_request(message);
+        }
+        else if(message["command"] == "inspectVariables")
+        {
+            reply = inspect_variables_request(message);
         }
         else if(message["command"] == "disconnect")
         {
@@ -187,6 +193,38 @@ namespace xpyt
                 {"breakpoints", breakpoint_list}
             }}
         };
+        return reply;
+    }
+
+    nl::json debugger::inspect_variables_request(const nl::json& message)
+    {
+        py::gil_scoped_acquire acquire;
+        py::object variables = py::globals();
+        
+        nl::json json_var = nl::json::object();
+        for (const py::handle& key : variables)
+        {
+            std::string k = py::str(key).cast<std::string>();
+            try
+            {
+                json_var[k] = nl::detail::to_json_impl(variables[key]);
+            }
+            catch(std::exception&)
+            {
+                json_var[k] = nl::detail::to_json_impl(py::repr(variables[key]));
+            }
+        }
+        
+        nl::json reply = {
+            {"type", "response"},
+            {"request_seq", message["seq"]},
+            {"success", true},
+            {"command", message["command"]},
+            {"body", {
+                {"variables", json_var}
+            }}
+        };
+
         return reply;
     }
 
