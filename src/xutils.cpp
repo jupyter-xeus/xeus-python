@@ -150,8 +150,8 @@ namespace xpyt
 
     std::string get_cell_tmp_file(const std::string& content)
     {
-        std::size_t seed = get_hash_seed();
-        std::string id = std::to_string(xtl::hash_bytes(content.data(), content.size(), seed));
+        std::uint32_t seed = static_cast<uint32_t>(get_hash_seed());
+        std::string id = std::to_string(xtl::murmur2_x86(content.data(), content.size(), seed));
         return get_tmp_prefix() + '/' + id + ".py";
     }
 }
