@@ -190,6 +190,8 @@ namespace xpyt
                 {"isStarted", m_is_started},
                 {"hashMethod", "Murmur2"},
                 {"hashSeed", get_hash_seed()},
+                {"tmp_file_prefix", get_tmp_prefix()},
+                {"tmp_file_suffix", get_tmp_suffix()},
                 {"breakpoints", breakpoint_list}
             }}
         };

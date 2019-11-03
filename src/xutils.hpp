@@ -58,6 +58,7 @@ namespace xpyt
 
     size_t get_hash_seed();
     std::string get_tmp_prefix();
+    std::string get_tmp_suffix();
     std::string get_cell_tmp_file(const std::string& content);
 }
 
