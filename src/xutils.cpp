@@ -144,7 +144,8 @@ namespace xpyt
     {
         static std::string tmp_prefix = xeus::get_temp_directory_path()
                                       + "/xpython_"
-                                      + std::to_string(xeus::get_current_pid());
+                                      + std::to_string(xeus::get_current_pid())
+                                      + '/';
         return tmp_prefix;
     }
 
@@ -157,6 +158,6 @@ namespace xpyt
     {
         std::uint32_t seed = static_cast<uint32_t>(get_hash_seed());
         std::string id = std::to_string(xtl::murmur2_x86(content.data(), content.size(), seed));
-        return get_tmp_prefix() + '/' + id + get_tmp_suffix();
+        return get_tmp_prefix() + id + get_tmp_suffix();
     }
 }
