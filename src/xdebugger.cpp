@@ -58,8 +58,15 @@ namespace xpyt
 
         if(message["command"] == "initialize")
         {
-            start();
-            std::cout << "XEUS-PYTHON: the debugger has started" << std::endl;
+            if(m_is_started)
+            {
+                std::clog << "XEUS-PYTHON: the debugger has already started" << std::endl;
+            }
+            else
+            {
+                start();
+                std::cout << "XEUS-PYTHON: the debugger has started" << std::endl;
+            }
         }
 
         if(m_is_started)
@@ -95,7 +102,7 @@ namespace xpyt
         else if(message["command"] == "disconnect")
         {
             stop();
-            std::cout << "XEUS-PYTHON: the debugger has stopped" << std::endl;
+            std::clog << "XEUS-PYTHON: the debugger has stopped" << std::endl;
         }
 
         return reply;
