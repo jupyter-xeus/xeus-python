@@ -535,7 +535,7 @@ bool debugger_client::test_debug_info()
 
     nl::json bp_list = rep2["content"]["body"]["breakpoints"];
     res = res && bp_list.size() == 2;
-    res = res && bp_list[0]["lines"].size() == 2 && bp_list[1]["lines"].size() == 2;
+    res = res && bp_list[0]["breakpoints"].size() == 2 && bp_list[1]["breakpoints"].size() == 2;
     return res;
 }
 
