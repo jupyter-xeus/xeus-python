@@ -65,7 +65,7 @@ namespace xpyt
             else
             {
                 start();
-                std::cout << "XEUS-PYTHON: the debugger has started" << std::endl;
+                std::clog << "XEUS-PYTHON: the debugger has started" << std::endl;
             }
         }
 
@@ -138,11 +138,11 @@ namespace xpyt
         }
         catch(...)
         {
-            std::clog << "Unknown issue" << std::endl;
+            std::clog << "XEUS-PYTHON: Unknown issue" << std::endl;
         }
 
         std::string next_file_name = get_cell_tmp_file(code);
-        std::clog << "debugger filename = " << next_file_name << std::endl;
+        std::clog << "XEUS-PYTHON: dumped " << next_file_name << std::endl;
 
         std::fstream fs(next_file_name, std::ios::in);
         if(!fs.is_open())
@@ -168,11 +168,11 @@ namespace xpyt
     {
         std::string source = message["arguments"]["source"]["path"];
         m_breakpoint_list.erase(source);
-        nl::json bp_json = message["arguments"]["breakpoints"];
-        std::vector<int> bp(bp_json.size());
-        std::transform(bp_json.begin(), bp_json.end(), bp.begin(), [](const auto& b) { return b["line"]; });
-        m_breakpoint_list.insert(std::make_pair(std::move(source), std::move(bp)));
-        return forward_message(message);
+        nl::json breakpoint_reply = forward_message(message);
+        nl::json bp_json = breakpoint_reply["body"]["breakpoints"];
+        std::vector<nl::json> bp_list(bp_json.begin(), bp_json.end());
+        m_breakpoint_list.insert(std::make_pair(std::move(source), std::move(bp_list)));
+        return breakpoint_reply;
     }
 
     nl::json debugger::debug_info_request(const nl::json& message)
@@ -184,7 +184,7 @@ namespace xpyt
             for(auto it = m_breakpoint_list.cbegin(); it != m_breakpoint_list.cend(); ++it)
             {
                 breakpoint_list.push_back({{"source", it->first},
-                                           {"lines", it->second}});
+                                           {"breakpoints", it->second}});
             }
         }
 

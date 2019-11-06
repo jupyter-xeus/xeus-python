@@ -53,7 +53,7 @@ namespace xpyt
         // PTVSD cannot be started on different ports in a same process
         // so we need to remember the port once it has be found.
         std::string m_ptvsd_port;
-        using breakpoint_list_t = std::map<std::string, std::vector<int>>;
+        using breakpoint_list_t = std::map<std::string, std::vector<nl::json>>;
         breakpoint_list_t m_breakpoint_list;
         bool m_is_started;
         
