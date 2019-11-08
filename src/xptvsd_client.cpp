@@ -24,7 +24,8 @@ namespace xpyt
                                  const xeus::xconfiguration& config,
                                  int socket_linger,
                                  const std::string& user_name,
-                                 const std::string& session_id)
+                                 const std::string& session_id,
+                                 const event_callback& cb)
         : m_ptvsd_socket(context, zmq::socket_type::stream)
         , m_id_size(256)
         , m_publisher(context, zmq::socket_type::pub)
@@ -32,6 +33,7 @@ namespace xpyt
         , m_controller_header(context, zmq::socket_type::rep)
         , m_user_name(user_name)
         , m_session_id(session_id)
+        , m_event_callback(cb)
         , p_auth(xeus::make_xauthentication(config.m_signature_scheme, config.m_key))
         , m_parent_header("")
         , m_request_stop(false)
@@ -106,6 +108,7 @@ namespace xpyt
             // message is either an event or a response
             if(message["type"] == "event")
             {
+                m_event_callback(message);
                 zmq::multipart_t wire_msg;
                 nl::json header = xeus::make_header("debug_event", m_user_name, m_session_id);
                 nl::json parent_header = m_parent_header.empty() ? nl::json::object() : nl::json::parse(m_parent_header);

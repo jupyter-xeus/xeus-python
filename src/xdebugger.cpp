@@ -33,6 +33,7 @@ namespace nl = nlohmann;
 namespace py = pybind11;
 
 using namespace pybind11::literals;
+using namespace std::placeholders;
 
 namespace xpyt
 {
@@ -40,7 +41,8 @@ namespace xpyt
                        const xeus::xconfiguration& config,
                        const std::string& user_name,
                        const std::string& session_id)
-        : m_ptvsd_client(context, config, xeus::get_socket_linger(), user_name, session_id)
+        : m_ptvsd_client(context, config, xeus::get_socket_linger(), user_name, session_id,
+                         std::bind(&debugger::handle_event, this, _1))
         , m_ptvsd_socket(context, zmq::socket_type::req)
         , m_ptvsd_header(context, zmq::socket_type::req)
         , m_ptvsd_port("")
@@ -188,6 +190,7 @@ namespace xpyt
             }
         }
 
+        std::lock_guard<std::mutex> lock(m_stopped_mutex);
         nl::json reply = {
             {"type", "response"},
             {"request_seq", message["seq"]},
@@ -199,7 +202,8 @@ namespace xpyt
                 {"hashSeed", get_hash_seed()},
                 {"tmp_file_prefix", get_tmp_prefix()},
                 {"tmp_file_suffix", get_tmp_suffix()},
-                {"breakpoints", breakpoint_list}
+                {"breakpoints", breakpoint_list},
+                {"stopped_threads", m_stopped_threads}
             }}
         };
         return reply;
@@ -297,9 +301,28 @@ namespace xpyt
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
         m_ptvsd_socket.unbind(controller_end_point);
         m_ptvsd_header.unbind(controller_header_end_point);
+        m_breakpoint_list.clear();
+        m_stopped_threads.clear();
         m_is_started = false;
     }
 
+    void debugger::handle_event(const nl::json& message)
+    {
+        std::string event = message["event"];
+        if(event == "stopped")
+        {
+            std::lock_guard<std::mutex> lock(m_stopped_mutex);
+            int id = message["body"]["threadId"];
+            m_stopped_threads.insert(id);
+        }
+        else if(event == "continued")
+        {
+            std::lock_guard<std::mutex> lock(m_stopped_mutex);
+            int id = message["body"]["threadId"];
+            m_stopped_threads.erase(id);
+        }
+    }
+    
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,

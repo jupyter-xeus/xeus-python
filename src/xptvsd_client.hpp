@@ -10,10 +10,13 @@
 #ifndef XPYT_PTVSD_CLIENT_HPP
 #define XPYT_PTVSD_CLIENT_HPP
 
-#include <string>
+#include <functional>
 #include <queue>
+#include <string>
 
 #include "zmq.hpp"
+
+#include "nlohmann/json.hpp"
 
 #include "xeus/xauthentication.hpp"
 #include "xeus/xkernel_configuration.hpp"
@@ -29,11 +32,14 @@ namespace xpyt
         static constexpr const char* SEPARATOR = "\r\n\r\n";
         static constexpr size_t SEPARATOR_LENGTH = 4;
 
+        using event_callback = std::function<void(const nl::json&)>;
+
         xptvsd_client(zmq::context_t& context,
                       const xeus::xconfiguration& config,
                       int socket_linger,
                       const std::string& user_name,
-                      const std::string& session_id);
+                      const std::string& session_id,
+                      const event_callback& cb);
 
 
         ~xptvsd_client() = default;
@@ -61,6 +67,8 @@ namespace xpyt
 
         std::string m_user_name;
         std::string m_session_id;
+
+        event_callback m_event_callback;
 
         using authentication_ptr = std::unique_ptr<xeus::xauthentication>;
         authentication_ptr p_auth;
