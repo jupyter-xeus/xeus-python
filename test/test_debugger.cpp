@@ -530,13 +530,38 @@ bool debugger_client::test_debug_info()
     set_breakpoints();
     set_external_breakpoints();
 
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
     m_client.send_on_control("debug_request", make_debug_info_request(12));
     nl::json rep2 = m_client.receive_on_control();
 
     nl::json bp_list = rep2["content"]["body"]["breakpoints"];
     res = res && bp_list.size() == 2;
     res = res && bp_list[0]["breakpoints"].size() == 2 && bp_list[1]["breakpoints"].size() == 2;
-    return res;
+
+    nl::json stopped_list = rep2["content"]["body"]["stopped_threads"];
+    res = res && stopped_list.size() == 0;
+
+    m_client.send_on_shell("execute_request", make_execute_request(make_code()));
+    m_client.wait_for_debug_event("stopped");
+    m_client.send_on_control("debug_request", make_debug_info_request(14));
+    nl::json rep3 = m_client.receive_on_control();
+
+    nl::json stopped_list2 = rep3["content"]["body"]["stopped_threads"];
+
+    int seq = 15;
+    next(seq);
+    m_client.wait_for_debug_event("stopped");
+
+    continue_exec(seq);
+    m_client.wait_for_debug_event("stopped");
+
+    continue_exec(seq);
+
+    nl::json rep4 = m_client.receive_on_shell();
+    bool res2 = rep4["content"]["status"] == "ok";
+    return res && res2 && stopped_list2[0] == 1;
 }
 
 bool debugger_client::test_inspect_variables()

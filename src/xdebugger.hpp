@@ -11,6 +11,8 @@
 #define XPYT_DEBUGGER_HPP
 
 #include <map>
+#include <mutex>
+#include <set>
 
 #include "zmq.hpp"
 #include "nlohmann/json.hpp"
@@ -46,6 +48,7 @@ namespace xpyt
 
         void start();
         void stop();
+        void handle_event(const nl::json& message);
 
         xptvsd_client m_ptvsd_client;
         zmq::socket_t m_ptvsd_socket;
@@ -55,6 +58,8 @@ namespace xpyt
         std::string m_ptvsd_port;
         using breakpoint_list_t = std::map<std::string, std::vector<nl::json>>;
         breakpoint_list_t m_breakpoint_list;
+        std::set<int> m_stopped_threads;
+        std::mutex m_stopped_mutex;
         bool m_is_started;
         
     };
