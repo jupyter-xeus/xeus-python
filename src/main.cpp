@@ -8,6 +8,7 @@
 ****************************************************************************/
 
 #include <cstdlib>
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -20,7 +21,6 @@
 #include "pybind11/pybind11.h"
 
 #include "xeus-python/xinterpreter.hpp"
-#include "xeus-python/xpythonhome.hpp"
 #include "xdebugger.hpp"
 
 namespace py = pybind11;
@@ -44,25 +44,19 @@ std::string extract_filename(int& argc, char* argv[])
     return res;
 }
 
-void print_python_home()
-{
-#if PY_MAJOR_VERSION == 2
-    char* mbstr = Py_GetPythonHome();
-#else
-    std::setlocale(LC_ALL, "en_US.utf8");
-    wchar_t* ph = Py_GetPythonHome();
-    
-    char mbstr[1024];
-    std::wcstombs(mbstr, ph, 1024);
-#endif
-    std::clog << "PYTHONHOME set to " << mbstr << std::endl;
-}
-
 int main(int argc, char* argv[])
 {
-    std::string file_name = extract_filename(argc, argv);
-    xpyt::set_pythonhome();
-    print_python_home();
+    std::string filename = extract_filename(argc, argv);
+
+#if PY_MAJOR_VERSION == 2
+    char progname[FILENAME_MAX + 1];
+    strcpy(progname, argv[0], strlen(argv[0]) + 1);
+    Py_SetProgramName(progname);
+#else
+    wchar_t progname[FILENAME_MAX + 1];
+    mbstowcs(progname, argv[0], strlen(argv[0]) + 1);
+    Py_SetProgramName(progname);
+#endif
 
     py::scoped_interpreter guard;
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
@@ -71,9 +65,9 @@ int main(int argc, char* argv[])
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
 
-    if (!file_name.empty())
+    if (!filename.empty())
     {
-        xeus::xconfiguration config = xeus::load_configuration(file_name);
+        xeus::xconfiguration config = xeus::load_configuration(filename);
 
         xeus::xkernel kernel(config,
                              xeus::get_user_name(),
@@ -87,7 +81,7 @@ int main(int argc, char* argv[])
         std::clog <<
             "Starting xeus-python kernel...\n\n"
             "If you want to connect to this kernel from an other client, you can use"
-            " the " + file_name + " file."
+            " the " + filename + " file."
             << std::endl;
 
         kernel.start();

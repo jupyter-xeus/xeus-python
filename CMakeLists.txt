@@ -106,7 +106,6 @@ set(XEUS_PYTHON_SRC
     src/xlinecache.hpp
     src/xptvsd_client.cpp
     src/xptvsd_client.hpp
-    src/xpythonhome.cpp
     src/xstream.cpp
     src/xstream.hpp
     src/xtraceback.cpp
@@ -118,7 +117,6 @@ set(XEUS_PYTHON_SRC
 set(XEUS_PYTHON_HEADERS
     include/xeus-python/xinterpreter.hpp
     include/xeus-python/xeus_python_config.hpp
-    include/xeus-python/xpythonhome.hpp
 )
 
 # xeus-python is the target for the library
