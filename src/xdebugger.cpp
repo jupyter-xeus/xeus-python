@@ -200,10 +200,10 @@ namespace xpyt
                 {"isStarted", m_is_started},
                 {"hashMethod", "Murmur2"},
                 {"hashSeed", get_hash_seed()},
-                {"tmp_file_prefix", get_tmp_prefix()},
-                {"tmp_file_suffix", get_tmp_suffix()},
+                {"tmpFilePrefix", get_tmp_prefix()},
+                {"tmpFileSuffix", get_tmp_suffix()},
                 {"breakpoints", breakpoint_list},
-                {"stopped_threads", m_stopped_threads}
+                {"stoppedThreads", m_stopped_threads}
             }}
         };
         return reply;
@@ -213,7 +213,7 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
         py::object variables = py::globals();
-        
+
         nl::json json_var = nl::json::object();
         for (const py::handle& key : variables)
         {
@@ -227,7 +227,7 @@ namespace xpyt
                 json_var[k] = nl::detail::to_json_impl(py::repr(variables[key]));
             }
         }
-        
+
         nl::json reply = {
             {"type", "response"},
             {"request_seq", message["seq"]},
@@ -322,7 +322,7 @@ namespace xpyt
             m_stopped_threads.erase(id);
         }
     }
-    
+
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,
