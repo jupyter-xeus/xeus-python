@@ -294,6 +294,7 @@ public:
     bool test_step_in();
     bool test_debug_info();
     bool test_inspect_variables();
+    bool test_next();
     void shutdown();
 
 private:
@@ -578,6 +579,47 @@ bool debugger_client::test_inspect_variables()
     return res;
 }
 
+bool debugger_client::test_next()
+{
+    attach();
+    {
+        m_client.send_on_control("debug_request", make_dump_cell_request(4, make_code()));
+        nl::json res = m_client.receive_on_control();
+        std::string path = res["content"]["body"]["sourcePath"].get<std::string>();
+        m_client.send_on_control("debug_request", make_breakpoint_request(4, path, 2, 3));
+        m_client.receive_on_control();
+    }
+
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
+    for(int j = 0; j < 3; ++j)
+    {
+        m_client.send_on_shell("execute_request", make_execute_request(make_code()));
+
+        int seq = 6;
+        int nb_next = 3;
+
+        for(int i = 0; i < nb_next; ++i)
+        {
+            nl::json ev = m_client.wait_for_debug_event("stopped");
+            m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+            ++seq;
+            nl::json json = m_client.receive_on_control();
+            next(seq);
+        }
+    
+        m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+        ++seq;
+        nl::json json = m_client.receive_on_control();
+
+        nl::json rep = m_client.receive_on_shell();
+        bool res = rep["content"]["status"] == "ok";
+    }
+
+    return true;
+}
+
 void debugger_client::shutdown()
 {
     m_client.send_on_control("shutdown_request", make_shutdown_request());
@@ -628,7 +670,7 @@ void debugger_client::dump_external_file()
 
 std::string debugger_client::make_code() const
 {
-    return "i=4\ni+=4\ni+=3\ni";
+    return "i=4\ni+=4\ni+=3\ni-=1";
 }
 
 std::string debugger_client::make_external_code() const
@@ -832,6 +874,19 @@ TEST(debugger, inspect_variables)
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
         bool res = deb.test_inspect_variables();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
+TEST(debugger, next)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        bool res = deb.test_next();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);

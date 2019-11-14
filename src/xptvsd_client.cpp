@@ -85,7 +85,7 @@ namespace xpyt
 
             if(items[2].revents & ZMQ_POLLIN)
             {
-                handle_ptvsd_socket();
+                handle_ptvsd_socket(m_message_queue);
             }
 
             process_message_queue();
@@ -108,18 +108,7 @@ namespace xpyt
             // message is either an event or a response
             if(message["type"] == "event")
             {
-                m_event_callback(message);
-                zmq::multipart_t wire_msg;
-                nl::json header = xeus::make_header("debug_event", m_user_name, m_session_id);
-                nl::json parent_header = m_parent_header.empty() ? nl::json::object() : nl::json::parse(m_parent_header);
-                xeus::xpub_message msg("debug_event",
-                                       std::move(header),
-                                       std::move(parent_header),
-                                       nl::json::object(),
-                                       std::move(message),
-                                       xeus::buffer_sequence());
-                std::move(msg).serialize(wire_msg, *p_auth);
-                wire_msg.send(m_publisher);
+                handle_event(std::move(message));
             }
             else
             {
@@ -142,7 +131,7 @@ namespace xpyt
         m_controller_header.send(zmq::message_t("ACK", 3));
     }
 
-    void xptvsd_client::handle_ptvsd_socket()
+    void xptvsd_client::handle_ptvsd_socket(queue_type& message_queue)
     {
         using size_type = std::string::size_type;
         
@@ -182,7 +171,7 @@ namespace xpyt
             // The end of the buffer contains a full message
             if(buffer.size() - msg_pos == msg_size)
             {
-                m_message_queue.push(buffer.substr(msg_pos));
+                message_queue.push(buffer.substr(msg_pos));
                 messages_received = true;
             }
             else
@@ -191,7 +180,7 @@ namespace xpyt
                 // and the beginning of a new one. We push the first
                 // one in the queue, and loop again to get the next
                 // one.
-                m_message_queue.push(buffer.substr(msg_pos, msg_size));
+                message_queue.push(buffer.substr(msg_pos, msg_size));
                 hint = msg_pos + msg_size;
                 header_pos = buffer.find(HEADER, hint);
                 separator_pos = std::string::npos;
@@ -220,6 +209,136 @@ namespace xpyt
         m_ptvsd_socket.recv(&content);
 
         buffer += std::string(content.data<const char>(), content.size());
+    }
+
+    void xptvsd_client::handle_event(nl::json message)
+    {
+        bool wait_cond = message["event"] == "stopped" && message["body"]["reason"] == "step";
+        while(wait_cond)
+        {
+            int thread_id = message["body"]["threadId"];
+            int seq = message["seq"];
+            nl::json frames = get_stack_frames(thread_id, seq);
+            if(frames.size() == 1 && frames[0]["source"]["path"]=="<string>")
+            {
+                message = wait_next(thread_id, seq);
+            }
+            else
+            {
+                wait_cond = false;
+            }
+        }
+        forward_event(std::move(message));
+    }
+
+    void xptvsd_client::forward_event(nl::json message)
+    {
+        m_event_callback(message);
+        zmq::multipart_t wire_msg;
+        nl::json header = xeus::make_header("debug_event", m_user_name, m_session_id);
+        nl::json parent_header = m_parent_header.empty() ? nl::json::object() : nl::json::parse(m_parent_header);
+        xeus::xpub_message msg("debug_event",
+                                std::move(header),
+                                std::move(parent_header),
+                                nl::json::object(),
+                                std::move(message),
+                                xeus::buffer_sequence());
+        std::move(msg).serialize(wire_msg, *p_auth);
+        wire_msg.send(m_publisher);
+    }
+
+    nl::json xptvsd_client::get_stack_frames(int thread_id, int seq)
+    {
+        nl::json request = {
+            {"type", "request"},
+            {"seq", seq},
+            {"command", "stackTrace"},
+            {"arguments", {
+                {"threadId", thread_id}
+            }}
+        };
+
+        send_ptvsd_request(std::move(request));
+
+        bool wait_for_stack_frame = true;
+        nl::json reply;
+        while(wait_for_stack_frame)
+        {
+            handle_ptvsd_socket(m_stopped_queue);
+            while(!m_stopped_queue.empty())
+            {
+                const std::string& raw_message = m_stopped_queue.front();
+                nl::json message = nl::json::parse(raw_message);
+                if(message["type"] == "response" && message["command"] == "stackTrace")
+                {
+                    reply = std::move(message);
+                    wait_for_stack_frame = false;
+                }
+                else
+                {
+                    m_message_queue.push(raw_message);
+                }
+                m_stopped_queue.pop();
+            }
+        }
+        return reply["body"]["stackFrames"];
+    }
+
+    nl::json xptvsd_client::wait_next(int thread_id, int seq)
+    {
+        nl::json request = {
+            {"type", "request"},
+            {"seq", seq},
+            {"command", "next"},
+            {"arguments", {
+                {"threadId", thread_id}
+            }}
+        };
+
+        send_ptvsd_request(std::move(request));
+        
+        nl::json reply;
+        bool wait_cond = true;
+        while(wait_cond)
+        {
+            handle_ptvsd_socket(m_stopped_queue);
+
+            while(!m_stopped_queue.empty())
+            {
+                const std::string& raw_message = m_stopped_queue.front();
+                nl::json message = nl::json::parse(raw_message);
+                std::string msg_type = message["type"];
+                if(msg_type == "event")
+                {
+                    std::string evt_type = message["event"];
+                    if((evt_type == "continued" || evt_type == "stopped") && message["body"]["threadId"] != thread_id)
+                    {
+                        m_message_queue.push(raw_message);
+                    }
+                    else if(evt_type == "stopped" && message["body"]["threadId"] == thread_id)
+                    {
+                        wait_cond = false;
+                        reply = std::move(message);
+                    }
+                }
+                m_stopped_queue.pop();
+            }
+        }
+        return reply;
+    }
+
+    void xptvsd_client::send_ptvsd_request(nl::json message)
+    {
+        std::string content = message.dump();
+        size_t content_length = content.length();
+        std::string buffer = xptvsd_client::HEADER
+                           + std::to_string(content_length)
+                           + xptvsd_client::SEPARATOR
+                           + content;
+        zmq::message_t raw_message(buffer.c_str(), buffer.length());
+
+        m_ptvsd_socket.send(zmq::message_t(m_socket_id, m_id_size), ZMQ_SNDMORE);
+        m_ptvsd_socket.send(raw_message);
     }
 }
 
