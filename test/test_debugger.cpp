@@ -433,7 +433,7 @@ bool debugger_client::test_source()
     nl::json rep = m_client.receive_on_control();
 
     nl::json source = rep["content"]["body"]["content"];
-    bool res = source == code + '\n';
+    bool res = source == code;
     return res;
 }
 
