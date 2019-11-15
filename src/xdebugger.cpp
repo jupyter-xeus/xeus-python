@@ -155,7 +155,7 @@ namespace xpyt
         {
             fs.clear();
             fs.open(next_file_name, std::ios::out);
-            fs << code << std::endl;
+            fs << code;
         }
 
         nl::json reply = {
