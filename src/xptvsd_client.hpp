@@ -51,11 +51,18 @@ namespace xpyt
  
     private:
 
+        using queue_type = std::queue<std::string>;
+
         void process_message_queue();
         void handle_header_socket();
-        void handle_ptvsd_socket();
+        void handle_ptvsd_socket(queue_type& message_queue);
         void handle_control_socket();
         void append_tcp_message(std::string& buffer);
+        void handle_event(nl::json message);
+        void forward_event(nl::json message);
+        nl::json get_stack_frames(int thread_id, int seq);
+        nl::json wait_next(int thread_id, int seq);
+        void send_ptvsd_request(nl::json message);
         
         zmq::socket_t m_ptvsd_socket;
         std::size_t m_id_size;
@@ -77,7 +84,8 @@ namespace xpyt
 
         bool m_request_stop;
 
-        std::queue<std::string> m_message_queue;
+        queue_type m_message_queue;
+        queue_type m_stopped_queue;
     };
 }
 
