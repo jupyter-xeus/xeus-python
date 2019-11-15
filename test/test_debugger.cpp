@@ -120,7 +120,7 @@ nl::json make_breakpoint_request(int seq, const std::string& path, int line_numb
             {"source", {
                 {"path", path}
             }},
-            {"breakpoints", 
+            {"breakpoints",
                 nl::json::array({nl::json::object({{"line", line_number1}}), nl::json::object({{"line", line_number2}})})
             },
             {"lines", {line_number1, line_number2}},
@@ -301,7 +301,7 @@ private:
     nl::json attach();
     nl::json set_external_breakpoints();
     nl::json set_breakpoints();
-    
+
     std::string get_external_path();
     void dump_external_file();
 
@@ -367,7 +367,7 @@ bool debugger_client::print_code_variable(const std::string& expected, int& seq)
         ++seq;
         json1 = m_client.receive_on_control();
     }
-    
+
     int frame_id = json1["content"]["body"]["stackFrames"][0]["id"].get<int>();
     m_client.send_on_control("debug_request", make_scopes_request(seq, frame_id));
     ++seq;
@@ -508,7 +508,7 @@ bool debugger_client::test_step_in()
     bool res = print_code_variable("4", seq);
     next(seq);
     m_client.wait_for_debug_event("stopped");
-    
+
     res = print_code_variable("8", seq) && res;
 
     continue_exec(seq);
@@ -540,7 +540,7 @@ bool debugger_client::test_debug_info()
     res = res && bp_list.size() == 2;
     res = res && bp_list[0]["breakpoints"].size() == 2 && bp_list[1]["breakpoints"].size() == 2;
 
-    nl::json stopped_list = rep2["content"]["body"]["stopped_threads"];
+    nl::json stopped_list = rep2["content"]["body"]["stoppedThreads"];
     res = res && stopped_list.size() == 0;
 
     m_client.send_on_shell("execute_request", make_execute_request(make_code()));
@@ -548,7 +548,7 @@ bool debugger_client::test_debug_info()
     m_client.send_on_control("debug_request", make_debug_info_request(14));
     nl::json rep3 = m_client.receive_on_control();
 
-    nl::json stopped_list2 = rep3["content"]["body"]["stopped_threads"];
+    nl::json stopped_list2 = rep3["content"]["body"]["stoppedThreads"];
 
     int seq = 15;
     next(seq);
