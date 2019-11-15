@@ -239,6 +239,21 @@ nl::json make_dump_cell_request(int seq, const std::string& code)
     return req;
 }
 
+nl::json make_source_request(int seq, const std::string& path)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "source"},
+        {"arguments", {
+            {"source", {
+                {"path", path}
+            }}
+        }}
+    };
+    return req;
+}
+
 nl::json make_stepin_request(int seq, int thread_id)
 {
     nl::json req = {
@@ -290,6 +305,7 @@ public:
     bool test_external_set_breakpoints();
     bool test_external_next_continue();
     bool test_set_breakpoints();
+    bool test_source();
     bool test_next_continue();
     bool test_step_in();
     bool test_debug_info();
@@ -402,6 +418,23 @@ bool debugger_client::test_set_breakpoints()
     attach();
     nl::json rep = set_breakpoints();
     return rep["content"]["body"].size() != 0;
+}
+
+bool debugger_client::test_source()
+{
+    attach();
+
+    std::string code = make_code();
+    m_client.send_on_control("debug_request", make_dump_cell_request(4, code));
+    nl::json reply = m_client.receive_on_control();
+    std::string path = reply["content"]["body"]["sourcePath"].get<std::string>();
+
+    m_client.send_on_control("debug_request", make_source_request(5, path));
+    nl::json rep = m_client.receive_on_control();
+
+    nl::json source = rep["content"]["body"]["content"];
+    bool res = source == code + '\n';
+    return res;
 }
 
 void debugger_client::next(int& seq)
@@ -822,6 +855,19 @@ TEST(debugger, set_breakpoints)
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_set_breakpoints.log");
         bool res = deb.test_set_breakpoints();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
+TEST(debugger, source)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_source.log");
+        bool res = deb.test_source();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);

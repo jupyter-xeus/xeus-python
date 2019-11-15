@@ -43,6 +43,7 @@ namespace xpyt
         nl::json forward_message(const nl::json& message);
         nl::json dump_cell_request(const nl::json& message);
         nl::json set_breakpoints_request(const nl::json& message);
+        nl::json source_request(const nl::json& message);
         nl::json debug_info_request(const nl::json& message);
         nl::json inspect_variables_request(const nl::json& message);
 
@@ -61,7 +62,7 @@ namespace xpyt
         std::set<int> m_stopped_threads;
         std::mutex m_stopped_mutex;
         bool m_is_started;
-        
+
     };
 
     XEUS_PYTHON_API

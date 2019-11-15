@@ -87,6 +87,10 @@ namespace xpyt
             {
                 reply = set_breakpoints_request(message);
             }
+            else if(message["command"] == "source")
+            {
+                reply = source_request(message);
+            }
             else
             {
                 reply = forward_message(message);
@@ -238,6 +242,50 @@ namespace xpyt
             }}
         };
 
+        return reply;
+    }
+
+    nl::json debugger::source_request(const nl::json& message)
+    {
+        std::string sourcePath;
+        try
+        {
+            sourcePath = message["arguments"]["source"]["path"];
+        }
+        catch(nl::json::type_error& e)
+        {
+            std::clog << e.what() << std::endl;
+        }
+        catch(...)
+        {
+            std::clog << "XEUS-PYTHON: Unknown issue" << std::endl;
+        }
+
+        std::ifstream ifs(sourcePath, std::ios::in);
+        if(!ifs.is_open())
+        {
+            nl::json reply = {
+                {"type", "response"},
+                {"request_seq", message["seq"]},
+                {"success", false},
+                {"command", message["command"]},
+                {"message", "source unavailable"},
+                {"body", {{}}}
+            };
+            return reply;
+        }
+
+        std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
+        nl::json reply = {
+            {"type", "response"},
+            {"request_seq", message["seq"]},
+            {"success", true},
+            {"command", message["command"]},
+            {"body", {
+                {"content", content}
+            }}
+        };
         return reply;
     }
 
