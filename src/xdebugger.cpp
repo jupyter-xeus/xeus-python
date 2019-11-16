@@ -91,6 +91,10 @@ namespace xpyt
             {
                 reply = source_request(message);
             }
+            else if(message["command"] == "stackTrace")
+            {
+                reply = stack_trace_request(message);
+            }
             else
             {
                 reply = forward_message(message);
@@ -181,6 +185,65 @@ namespace xpyt
         return breakpoint_reply;
     }
 
+    nl::json debugger::source_request(const nl::json& message)
+    {
+        std::string sourcePath;
+        try
+        {
+            sourcePath = message["arguments"]["source"]["path"];
+        }
+        catch(nl::json::type_error& e)
+        {
+            std::clog << e.what() << std::endl;
+        }
+        catch(...)
+        {
+            std::clog << "XEUS-PYTHON: Unknown issue" << std::endl;
+        }
+
+        std::ifstream ifs(sourcePath, std::ios::in);
+        if(!ifs.is_open())
+        {
+            nl::json reply = {
+                {"type", "response"},
+                {"request_seq", message["seq"]},
+                {"success", false},
+                {"command", message["command"]},
+                {"message", "source unavailable"},
+                {"body", {{}}}
+            };
+            return reply;
+        }
+
+        std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
+        nl::json reply = {
+            {"type", "response"},
+            {"request_seq", message["seq"]},
+            {"success", true},
+            {"command", message["command"]},
+            {"body", {
+                {"content", content}
+            }}
+        };
+        return reply;
+    }
+
+    nl::json debugger::stack_trace_request(const nl::json& message)
+    {
+        nl::json reply = forward_message(message);
+        size_t size = reply["body"]["stackFrames"].size();
+        for(size_t i = 0; i < size; ++i)
+        {
+            if(reply["body"]["stackFrames"][i]["source"]["path"] == "<string>")
+            {
+                reply["body"]["stackFrames"].erase(i);
+                break;
+            }
+        }
+        return reply;
+    }
+
     nl::json debugger::debug_info_request(const nl::json& message)
     {
         nl::json breakpoint_list = nl::json::array();
@@ -242,50 +305,6 @@ namespace xpyt
             }}
         };
 
-        return reply;
-    }
-
-    nl::json debugger::source_request(const nl::json& message)
-    {
-        std::string sourcePath;
-        try
-        {
-            sourcePath = message["arguments"]["source"]["path"];
-        }
-        catch(nl::json::type_error& e)
-        {
-            std::clog << e.what() << std::endl;
-        }
-        catch(...)
-        {
-            std::clog << "XEUS-PYTHON: Unknown issue" << std::endl;
-        }
-
-        std::ifstream ifs(sourcePath, std::ios::in);
-        if(!ifs.is_open())
-        {
-            nl::json reply = {
-                {"type", "response"},
-                {"request_seq", message["seq"]},
-                {"success", false},
-                {"command", message["command"]},
-                {"message", "source unavailable"},
-                {"body", {{}}}
-            };
-            return reply;
-        }
-
-        std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-
-        nl::json reply = {
-            {"type", "response"},
-            {"request_seq", message["seq"]},
-            {"success", true},
-            {"command", message["command"]},
-            {"body", {
-                {"content", content}
-            }}
-        };
         return reply;
     }
 

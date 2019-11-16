@@ -308,6 +308,7 @@ public:
     bool test_source();
     bool test_next_continue();
     bool test_step_in();
+    bool test_stack_trace();
     bool test_debug_info();
     bool test_inspect_variables();
     bool test_next();
@@ -553,6 +554,29 @@ bool debugger_client::test_step_in()
     return res;
 }
 
+bool debugger_client::test_stack_trace()
+{
+    attach();
+    // We set 2 breakpoints on line 2 and 4 of the first cell
+    set_breakpoints();
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
+    m_client.send_on_shell("execute_request", make_execute_request(make_code()));
+    nl::json ev = m_client.wait_for_debug_event("stopped");
+    
+    int seq = 6;
+    m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+    ++seq;
+    nl::json stackframes = m_client.receive_on_control();
+
+    bool res = stackframes["content"]["body"]["stackFrames"].size() == 1;
+    continue_exec(seq);
+    m_client.wait_for_debug_event("stopped");
+    continue_exec(seq);
+    return res;
+}
+
 bool debugger_client::test_debug_info()
 {
     attach();
@@ -766,7 +790,7 @@ void start_kernel()
     kernel.detach();
 }
 
-TEST(debugger, init)
+/*TEST(debugger, init)
 {
     start_kernel();
     zmq::context_t context;
@@ -819,10 +843,10 @@ TEST(debugger, attach)
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
     }
-}
+}*/
 
 #if PY_MAJOR_VERSION == 3
-TEST(debugger, set_external_breakpoints)
+/*TEST(debugger, set_external_breakpoints)
 {
     start_kernel();
     zmq::context_t context;
@@ -898,9 +922,23 @@ TEST(debugger, stepin)
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
     }
+}*/
+
+TEST(debugger, stack_trace)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        bool res = deb.test_stack_trace();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
 }
 
-TEST(debugger, debug_info)
+
+/*TEST(debugger, debug_info)
 {
     start_kernel();
     zmq::context_t context;
@@ -937,7 +975,7 @@ TEST(debugger, next)
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
     }
-}
+}*/
 
 #endif
 
