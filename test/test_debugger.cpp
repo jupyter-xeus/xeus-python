@@ -790,7 +790,7 @@ void start_kernel()
     kernel.detach();
 }
 
-/*TEST(debugger, init)
+TEST(debugger, init)
 {
     start_kernel();
     zmq::context_t context;
@@ -843,10 +843,10 @@ TEST(debugger, attach)
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
     }
-}*/
+}
 
 #if PY_MAJOR_VERSION == 3
-/*TEST(debugger, set_external_breakpoints)
+TEST(debugger, set_external_breakpoints)
 {
     start_kernel();
     zmq::context_t context;
@@ -922,7 +922,7 @@ TEST(debugger, stepin)
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
     }
-}*/
+}
 
 TEST(debugger, stack_trace)
 {
@@ -937,8 +937,7 @@ TEST(debugger, stack_trace)
     }
 }
 
-
-/*TEST(debugger, debug_info)
+TEST(debugger, debug_info)
 {
     start_kernel();
     zmq::context_t context;
@@ -975,7 +974,7 @@ TEST(debugger, next)
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
     }
-}*/
+}
 
 #endif
 

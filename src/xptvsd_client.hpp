@@ -61,7 +61,7 @@ namespace xpyt
         void handle_event(nl::json message);
         void forward_event(nl::json message);
         nl::json get_stack_frames(int thread_id, int seq);
-        nl::json wait_next(int thread_id, int seq);
+        void wait_next(int thread_id, int seq);
         void send_ptvsd_request(nl::json message);
         
         zmq::socket_t m_ptvsd_socket;
