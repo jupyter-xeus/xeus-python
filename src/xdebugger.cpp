@@ -26,7 +26,8 @@
 #include "xeus/xmiddleware.hpp"
 #include "xeus/xsystem.hpp"
 
-#include "xdebugger.hpp"
+#include "xeus-python/xdebugger.hpp"
+#include "xptvsd_client.hpp"
 #include "xutils.hpp"
 
 namespace nl = nlohmann;
@@ -41,8 +42,8 @@ namespace xpyt
                        const xeus::xconfiguration& config,
                        const std::string& user_name,
                        const std::string& session_id)
-        : m_ptvsd_client(context, config, xeus::get_socket_linger(), user_name, session_id,
-                         std::bind(&debugger::handle_event, this, _1))
+        : p_ptvsd_client(new xptvsd_client(context, config, xeus::get_socket_linger(), user_name, session_id,
+                                           std::bind(&debugger::handle_event, this, _1)))
         , m_ptvsd_socket(context, zmq::socket_type::req)
         , m_ptvsd_header(context, zmq::socket_type::req)
         , m_ptvsd_port("")
@@ -51,6 +52,12 @@ namespace xpyt
         m_ptvsd_socket.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
         m_ptvsd_header.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
         m_ptvsd_port = xeus::find_free_port(100, 5678, 5900);
+    }
+
+    debugger::~debugger()
+    {
+        delete p_ptvsd_client;
+        p_ptvsd_client = nullptr;
     }
 
     nl::json debugger::process_request_impl(const nl::json& header,
@@ -345,7 +352,7 @@ namespace xpyt
 
         std::string ptvsd_end_point = "tcp://" + host + ':' + m_ptvsd_port;
         std::thread client(&xptvsd_client::start_debugger,
-                           &m_ptvsd_client,
+                           p_ptvsd_client,
                            ptvsd_end_point,
                            publisher_end_point,
                            controller_end_point,

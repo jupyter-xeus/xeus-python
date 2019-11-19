@@ -91,7 +91,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${
 set(XEUS_PYTHON_SRC
     src/xcomm.cpp
     src/xcomm.hpp
-    src/xdebugger.hpp
     src/xdebugger.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
@@ -116,8 +115,9 @@ set(XEUS_PYTHON_SRC
 )
 
 set(XEUS_PYTHON_HEADERS
-    include/xeus-python/xinterpreter.hpp
+    include/xeus-python/xdebugger.hpp
     include/xeus-python/xeus_python_config.hpp
+    include/xeus-python/xinterpreter.hpp
     include/xeus-python/xpythonhome.hpp
 )
 
