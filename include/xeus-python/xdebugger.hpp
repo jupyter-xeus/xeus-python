@@ -17,12 +17,13 @@
 #include "zmq.hpp"
 #include "nlohmann/json.hpp"
 #include "xeus/xdebugger.hpp"
-#include "xptvsd_client.hpp"
 
-#include "xeus-python/xeus_python_config.hpp"
+#include "xeus_python_config.hpp"
 
 namespace xpyt
 {
+
+    class xptvsd_client;
 
     class XEUS_PYTHON_API debugger : public xeus::xdebugger
     {
@@ -33,7 +34,7 @@ namespace xpyt
                  const std::string& user_name,
                  const std::string& session_id);
 
-        virtual ~debugger() = default;
+        virtual ~debugger();
 
     private:
 
@@ -52,7 +53,7 @@ namespace xpyt
         void stop();
         void handle_event(const nl::json& message);
 
-        xptvsd_client m_ptvsd_client;
+        xptvsd_client* p_ptvsd_client;
         zmq::socket_t m_ptvsd_socket;
         zmq::socket_t m_ptvsd_header;
         // PTVSD cannot be started on different ports in a same process

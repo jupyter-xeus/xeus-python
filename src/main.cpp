@@ -21,7 +21,7 @@
 
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xpythonhome.hpp"
-#include "xdebugger.hpp"
+#include "xeus-python/xdebugger.hpp"
 
 namespace py = pybind11;
 
