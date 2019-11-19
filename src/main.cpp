@@ -20,8 +20,9 @@
 #include "pybind11/pybind11.h"
 
 #include "xeus-python/xinterpreter.hpp"
-#include "xeus-python/xpythonhome.hpp"
 #include "xeus-python/xdebugger.hpp"
+
+#include "xpythonhome.hpp"
 
 namespace py = pybind11;
 

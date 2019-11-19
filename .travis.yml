@@ -64,13 +64,14 @@ install:
     # Build and install xeus-python
     - mkdir build
     - cd build
-    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D XEUS_PYTHONHOME="$HOME/miniconda" -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
+    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
     - make -j2 install
 script:
     # For Python 2, activate the kernel_test Python3 environment
     - if [[ "$PY" == "2" ]]; then
         source activate kernel_test;
         jupyter kernelspec install --sys-prefix ../share/jupyter/kernels/xpython;
+        source activate root;
       fi
     - cd test
     - ./test_xeus_python
