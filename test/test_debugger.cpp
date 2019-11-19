@@ -779,11 +779,7 @@ void start_kernel()
     dump_connection_file();
     std::thread kernel([]()
     {
-#if WIN32
-        std::string cmd = ".\\..\\xpython -f " + KERNEL_JSON + "&";
-#else
-        std::string cmd = "./../xpython -f " + KERNEL_JSON + "&";
-#endif
+        std::string cmd = "xpython -f " + KERNEL_JSON + "&";
         int ret2 = std::system(cmd.c_str());
     });
     std::this_thread::sleep_for(2s);

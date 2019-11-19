@@ -105,7 +105,6 @@ set(XEUS_PYTHON_SRC
     src/xlinecache.hpp
     src/xptvsd_client.cpp
     src/xptvsd_client.hpp
-    src/xpythonhome.cpp
     src/xstream.cpp
     src/xstream.hpp
     src/xtraceback.cpp
@@ -118,14 +117,21 @@ set(XEUS_PYTHON_HEADERS
     include/xeus-python/xdebugger.hpp
     include/xeus-python/xeus_python_config.hpp
     include/xeus-python/xinterpreter.hpp
-    include/xeus-python/xpythonhome.hpp
+)
+
+set(XPYTHON_SRC
+    src/main.cpp
+    src/xpythonhome.hpp
+    src/xpythonhome.cpp
+    src/xpaths.hpp
+    src/xpaths.cpp
 )
 
 # xeus-python is the target for the library
 add_library(xeus-python SHARED ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
 
 # xpython is the target for the kernel executable
-add_executable(xpython src/main.cpp)
+add_executable(xpython ${XPYTHON_SRC})
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
 target_link_libraries(xpython PRIVATE pybind11::pybind11 xeus-python INTERFACE pybind11_json)
 
@@ -158,7 +164,11 @@ set_target_properties(xeus-python PROPERTIES
                       SOVERSION ${XPYT_VERSION_MAJOR}
                       OUTPUT_NAME "libxeus-python")
 
-target_compile_definitions(xeus-python PUBLIC "XEUS_PYTHON_EXPORTS" XEUS_PYTHONHOME="${PYTHON_PREFIX}")
+target_compile_definitions(xeus-python PUBLIC "XEUS_PYTHON_EXPORTS")
+
+if (XEUS_PYTHONHOME_RELPATH)
+    target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
+endif()
 
 #########
 # Tests #

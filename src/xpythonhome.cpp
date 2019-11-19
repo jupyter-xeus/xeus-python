@@ -7,22 +7,33 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include "xeus-python/xpythonhome.hpp"
+#include "pybind11/pybind11.h"
+
+#include <iostream>
+#include <string>
+
+#include "xeus-python/xeus_python_config.hpp"
+
+#include "xpythonhome.hpp"
+#include "xpaths.hpp"
 
 namespace xpyt
 {
-    // This functino must not be inlined in the header.
-    // get_pythonhome and set_pythonhome must remain
-    // in different compilation units to avoid compiler
-    // optimization in set_pythonhome that results
-    // in a relocation issue with conda.
-    const char* get_pythonhome()
+    void set_pythonhome()
     {
-#ifdef XEUS_PYTHONHOME
-        return XEUS_PYTHONHOME;
+// The XEUS_PYTHONHOME_RELPATH compile-time definition can be used.
+// To specify the PYTHONHOME location as a relative path to the PREFIX.
+#if defined(XEUS_PYTHONHOME_RELPATH)
+        static const std::string pythonhome = prefix_path() + XPYT_STRINGIFY(XEUS_PYTHONHOME_RELPATH);
 #else
-        return "";
+        static const std::string pythonhome = prefix_path();
+#endif
+
+#if PY_MAJOR_VERSION == 2
+        Py_SetPythonHome(const_cast<char*>(pythonhome.c_str()));
+#else
+        static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
+        Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
 #endif
     }
 }
-
