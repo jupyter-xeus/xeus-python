@@ -213,22 +213,24 @@ namespace xpyt
 
     void xptvsd_client::handle_event(nl::json message)
     {
-        bool wait_cond = message["event"] == "stopped" && message["body"]["reason"] == "step";
-        while(wait_cond)
+        if(message["event"] == "stopped" && message["body"]["reason"] == "step")
         {
             int thread_id = message["body"]["threadId"];
             int seq = message["seq"];
             nl::json frames = get_stack_frames(thread_id, seq);
             if(frames.size() == 1 && frames[0]["source"]["path"]=="<string>")
             {
-                message = wait_next(thread_id, seq);
+                wait_next(thread_id, seq);
             }
             else
             {
-                wait_cond = false;
+                forward_event(std::move(message));
             }
         }
-        forward_event(std::move(message));
+        else
+        {
+            forward_event(std::move(message));
+        }
     }
 
     void xptvsd_client::forward_event(nl::json message)
@@ -284,7 +286,7 @@ namespace xpyt
         return reply["body"]["stackFrames"];
     }
 
-    nl::json xptvsd_client::wait_next(int thread_id, int seq)
+    void xptvsd_client::wait_next(int thread_id, int seq)
     {
         nl::json request = {
             {"type", "request"},
@@ -297,9 +299,9 @@ namespace xpyt
 
         send_ptvsd_request(std::move(request));
         
-        nl::json reply;
-        bool wait_cond = true;
-        while(wait_cond)
+        bool wait_reply = true;
+        bool wait_event = true;
+        while(wait_reply && wait_event)
         {
             handle_ptvsd_socket(m_stopped_queue);
 
@@ -308,23 +310,21 @@ namespace xpyt
                 const std::string& raw_message = m_stopped_queue.front();
                 nl::json message = nl::json::parse(raw_message);
                 std::string msg_type = message["type"];
-                if(msg_type == "event")
+                if(msg_type == "event" && message["event"] == "continued" && message["body"]["threadId"] == thread_id)
                 {
-                    std::string evt_type = message["event"];
-                    if((evt_type == "continued" || evt_type == "stopped") && message["body"]["threadId"] != thread_id)
-                    {
-                        m_message_queue.push(raw_message);
-                    }
-                    else if(evt_type == "stopped" && message["body"]["threadId"] == thread_id)
-                    {
-                        wait_cond = false;
-                        reply = std::move(message);
-                    }
+                    wait_event = false;
+                }
+                else if(msg_type == "response" && message["command"] == "next")
+                {
+                    wait_reply = false;
+                }
+                else
+                {
+                    m_message_queue.push(raw_message);
                 }
                 m_stopped_queue.pop();
             }
         }
-        return reply;
     }
 
     void xptvsd_client::send_ptvsd_request(nl::json message)
