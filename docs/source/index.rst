@@ -36,4 +36,10 @@ This software is licensed under the BSD-3-Clause license. See the LICENSE file f
 
    usage
 
+.. toctree::
+   :caption: DEVELOPER ZONE
+   :maxdepth: 2
+
+   dev-build-options
+
 .. _xeus: https://github.com/QuantStack/xeus
