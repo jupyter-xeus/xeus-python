@@ -15,12 +15,10 @@ init:
   - "ECHO %MINICONDA%"
   - if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2015" set VCVARPATH="C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
   - if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2015" set VCARGUMENT=%PLATFORM%
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" if "%PLATFORM%" == "x64" set VCVARPATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" if "%PLATFORM%" == "x86" set VCVARPATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat"
+  - if "%APPVEYOR_BUILD_WORKER_IMAGE%" == "Visual Studio 2017" set VCVARPATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
   - echo "%VCVARPATH% %VCARGUMENT%"
   - "%VCVARPATH% %VCARGUMENT%"
-  - ps: if($env:Platform -eq "x64"){Start-FileDownload 'http://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe' C:\Miniconda.exe; echo "Done"}
-  - ps: if($env:Platform -eq "x86"){Start-FileDownload 'http://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86.exe' C:\Miniconda.exe; echo "Done"}
+  - ps: Start-FileDownload 'http://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe' C:\Miniconda.exe
   - cmd: C:\Miniconda.exe /S /D=C:\xeus-conda
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%MINICONDA%\\Library\\bin;%PATH%"
 
@@ -29,7 +27,7 @@ install:
   - conda update -q conda
   - conda info -a
   # Host dependencies
-  - conda install xeus=0.23.2 nlohmann_json cppzmq xtl pybind11=2.2.4 pybind11_json=0.2.2 jedi=0.15.1 pygments=2.3.1 gtest=1.8.0 ptvsd -c conda-forge
+  - conda install xeus=0.23.3 nlohmann_json cppzmq xtl pybind11=2.2.4 pybind11_json=0.2.2 jedi=0.15.1 pygments=2.3.1 gtest=1.8.0 ptvsd -c conda-forge
   # Build dependencies
   - conda install cmake -c conda-forge
   # Build and install xeus-python
@@ -39,7 +37,7 @@ install:
   - nmake
   - nmake install
   # Install test dependencies
-  - conda install pytest jupyter_kernel_test pyzmq=18.0.2 -c conda-forge
+  - conda install pytest jupyter_kernel_test -c conda-forge
 
 build_script:
   - cd test
