@@ -134,6 +134,10 @@ xeus-python does not cover 100% of the features of ipykernel. For examples, IPyt
 |  0.5.0       |  >=0.23.0,<0.24 |  >=0.6.5,<0.7   | ~4.3.0   | >=3.6.1,<4.0    | >=2.2.4,<3.0   |                   | >=0.13.3,<0.14.0  | >=2.3.1,<3.0.0    |
 
 
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) to know how to contribute and set up a development environment.
+
 ## License
 
 We use a shared copyright model that enables all contributors to maintain the
