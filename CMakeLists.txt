@@ -133,7 +133,7 @@ add_library(xeus-python SHARED ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
 # xpython is the target for the kernel executable
 add_executable(xpython ${XPYTHON_SRC})
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
-target_link_libraries(xpython PRIVATE pybind11::pybind11 xeus-python INTERFACE pybind11_json)
+target_link_libraries(xpython PRIVATE pybind11::embed xeus-python)
 
 if (APPLE)
     set_target_properties(xpython xeus-python PROPERTIES
@@ -155,7 +155,13 @@ target_include_directories(xeus-python
                            ${PYTHON_INCLUDE_DIRS}
                            $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
                            $<INSTALL_INTERFACE:include>)
-target_link_libraries(xeus-python PUBLIC pybind11::embed xeus INTERFACE pybind11_json)
+target_link_libraries(xeus-python PUBLIC pybind11::pybind11 xeus PRIVATE pybind11_json)
+
+if(WIN32 OR CYGWIN)
+  target_link_libraries(xeus-python PRIVATE ${PYTHON_LIBRARIES})
+elseif(APPLE)
+  target_link_libraries(xeus-python PRIVATE "-undefined dynamic_lookup")
+endif()
 
 set_target_properties(xeus-python PROPERTIES
                       PUBLIC_HEADER "${XEUS_PYTHON_HEADERS}"
