@@ -98,7 +98,7 @@ public:
                        const xeus::xconfiguration& config,
                        const std::string& file_name);
 
-    virtual ~xeus_logger_client() = default;
+    virtual ~xeus_logger_client();
 
     void send_on_shell(const std::string& msg_type, nl::json content);
     void send_on_control(const std::string& msg_type, nl::json content);
@@ -119,6 +119,7 @@ private:
     void log_message(nl::json msg);
 
     std::string m_file_name;
+    bool m_iopub_stopped;
     std::queue<nl::json> m_message_queue;
     std::mutex m_file_mutex;
     mutable std::mutex m_queue_mutex;
