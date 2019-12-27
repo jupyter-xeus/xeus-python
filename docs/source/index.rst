@@ -1,4 +1,4 @@
-.. Copyright (c) 2017, Martin Renou, Johan Mabille, Sylvain Corlay and
+.. Copyright (c) 2017, Martin Renou, Johan Mabille, Sylvain Corlay, and
    Wolf Vollprecht
 
    Distributed under the terms of the BSD 3-Clause License.
@@ -42,4 +42,4 @@ This software is licensed under the BSD-3-Clause license. See the LICENSE file f
 
    dev-build-options
 
-.. _xeus: https://github.com/QuantStack/xeus
+.. _xeus: https://github.com/jupyter-xeus/xeus
