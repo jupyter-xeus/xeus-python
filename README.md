@@ -6,7 +6,7 @@
 [![Binder](https://img.shields.io/badge/launch-binder-brightgreen.svg)](https://mybinder.org/v2/gh/QuantStack/xeus-python/stable?filepath=notebooks/xeus-python.ipynb)
 [![Join the Gitter Chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/QuantStack/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-`xeus-python` is a Jupyter kernel for Python based on the native implementation of the Jupyter protocol [xeus](https://github.com/QuantStack/xeus).
+`xeus-python` is a Jupyter kernel for Python based on the native implementation of the Jupyter protocol [xeus](https://github.com/jupyter-xeus/xeus).
 
 ## Usage
 
@@ -109,8 +109,8 @@ xeus-python does not cover 100% of the features of ipykernel. For examples, IPyt
 
 ``xeus-python`` depends on
 
- - [xeus](https://github.com/QuantStack/xeus)
- - [xtl](https://github.com/QuantStack/xtl)
+ - [xeus](https://github.com/jupyter-xeus/xeus)
+ - [xtl](https://github.com/xtensor-stack/xtl)
  - [pybind11](https://github.com/pybind/pybind11)
  - [pybind11_json](https://github.com/pybind/pybind11_json)
  - [nlohmann_json](https://github.com/nlohmann/json)
