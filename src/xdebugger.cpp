@@ -320,7 +320,7 @@ namespace xpyt
     {
         std::string host = "127.0.0.1";
         std::string temp_dir = xeus::get_temp_directory_path();
-        std::string log_dir = temp_dir + "/" + "xpython_debug_logs";
+        std::string log_dir = temp_dir + "/" + "xpython_debug_logs_" + std::to_string(xeus::get_current_pid());
 
         xeus::create_directory(log_dir);
 
