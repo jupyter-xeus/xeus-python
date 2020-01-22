@@ -25,7 +25,7 @@ namespace xpyt
     {
         py::module jedi = py::module::import("jedi");
 
-        py::str py_code = code.substr(0, cursor_pos + 1);
+        py::str py_code = code.substr(0, cursor_pos);
 
         py::int_ line = 1;
         py::int_ column = 0;
