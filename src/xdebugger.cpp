@@ -294,6 +294,7 @@ namespace xpyt
         {
             nl::json json_var = nl::json::object();
             json_var["name"] = py::str(key).cast<std::string>();
+            json_var["variablesReference"] = 0;
             try
             {
                 json_var["value"] = nl::detail::to_json_impl(variables[key]);
