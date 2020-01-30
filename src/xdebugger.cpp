@@ -289,18 +289,20 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
         py::object variables = py::globals();
 
-        nl::json json_var = nl::json::object();
+        nl::json json_vars = nl::json::array();
         for (const py::handle& key : variables)
         {
-            std::string k = py::str(key).cast<std::string>();
+            nl::json json_var = nl::json::object();
+            json_var["name"] = py::str(key).cast<std::string>();
             try
             {
-                json_var[k] = nl::detail::to_json_impl(variables[key]);
+                json_var["value"] = nl::detail::to_json_impl(variables[key]);
             }
             catch(std::exception&)
             {
-                json_var[k] = nl::detail::to_json_impl(py::repr(variables[key]));
+                json_var["value"] = nl::detail::to_json_impl(py::repr(variables[key]));
             }
+            json_vars.push_back(json_var);
         }
 
         nl::json reply = {
@@ -309,7 +311,7 @@ namespace xpyt
             {"success", true},
             {"command", message["command"]},
             {"body", {
-                {"variables", json_var}
+                {"variables", json_vars}
             }}
         };
 

@@ -565,7 +565,7 @@ bool debugger_client::test_stack_trace()
 
     m_client.send_on_shell("execute_request", make_execute_request(make_code()));
     nl::json ev = m_client.wait_for_debug_event("stopped");
-    
+
     int seq = 6;
     m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
     ++seq;
@@ -632,8 +632,14 @@ bool debugger_client::test_inspect_variables()
     m_client.send_on_control("debug_request", make_inspect_variables_request(0));
     nl::json rep = m_client.receive_on_control();
 
-    nl::json var = rep["content"]["body"]["variables"];
-    bool res = var["i"] == 4 && var["j"] == 8 && var["k"] == 5;
+    nl::json vars = rep["content"]["body"]["variables"];
+    std::cout << vars << std::endl;
+    std::cout << vars.size() << std::endl;
+    size_t size = vars.size();
+    bool res = size >= 3;
+    res = res && vars[size-3]["name"] == "i" && vars[size-3]["value"] == 4;
+    res = res && vars[size-2]["name"] == "j" && vars[size-2]["value"] == 8;
+    res = res && vars[size-1]["name"] == "k" && vars[size-1]["value"] == 5;
     return res;
 }
 
@@ -666,7 +672,7 @@ bool debugger_client::test_next()
             nl::json json = m_client.receive_on_control();
             next(seq);
         }
-    
+
         m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
         ++seq;
         nl::json json = m_client.receive_on_control();
