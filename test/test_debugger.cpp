@@ -8,6 +8,7 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
@@ -633,13 +634,19 @@ bool debugger_client::test_inspect_variables()
     nl::json rep = m_client.receive_on_control();
 
     nl::json vars = rep["content"]["body"]["variables"];
-    std::cout << vars << std::endl;
-    std::cout << vars.size() << std::endl;
-    size_t size = vars.size();
-    bool res = size >= 3;
-    res = res && vars[size-3]["name"] == "i" && vars[size-3]["value"] == 4;
-    res = res && vars[size-2]["name"] == "j" && vars[size-2]["value"] == 8;
-    res = res && vars[size-1]["name"] == "k" && vars[size-1]["value"] == 5;
+
+    auto check_var = [&vars](const std::string& name, int value) {
+        auto x = std::find_if(vars.begin(), vars.end(), [&name](const nl::json& var) {
+            return var.is_object() && var.value("name", "") == name;
+        });
+        if (x == vars.end()) {
+            return false;
+        }
+        nl::json var = *x;
+        return var["value"] == value && var["variablesReference"] == 0;
+    };
+
+    bool res = check_var("i", 4) && check_var("j", 8) && check_var("k", 5);
     return res;
 }
 
