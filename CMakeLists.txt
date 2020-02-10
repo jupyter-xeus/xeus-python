@@ -46,10 +46,18 @@ set(cppzmq_REQUIRED_VERSION 4.3.0)
 set(pybind11_REQUIRED_VERSION 2.2.4)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
 
+if(NOT TARGET xeus)
 find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
+endif()
+if(NOT TARGET cppzmq)
 find_package(cppzmq ${cppzmq_REQUIRED_VERSION} REQUIRED)
+endif()
+if(NOT TARGET pybind11)
 find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
+endif()
+if(NOT TARGET pybind11_json)
 find_package(pybind11_json ${pybind11_json_REQUIRED_VERSION} REQUIRED)
+endif()
 
 #########
 # flags #
@@ -156,7 +164,7 @@ target_include_directories(xeus-python
                            ${PYTHON_INCLUDE_DIRS}
                            $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
                            $<INSTALL_INTERFACE:include>)
-target_link_libraries(xeus-python PUBLIC pybind11::pybind11 xeus PRIVATE pybind11_json)
+target_link_libraries(xeus-python PUBLIC xeus PRIVATE pybind11::pybind11 pybind11_json)
 
 if(WIN32 OR CYGWIN)
   target_link_libraries(xeus-python PRIVATE ${PYTHON_LIBRARIES})
