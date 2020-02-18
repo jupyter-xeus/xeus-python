@@ -144,6 +144,10 @@ add_executable(xpython ${XPYTHON_SRC})
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
 target_link_libraries(xpython PRIVATE pybind11::embed xeus-python)
 
+if(CMAKE_DL_LIBS)
+    target_link_libraries(xpython PRIVATE ${CMAKE_DL_LIBS} util)
+endif()
+
 if (APPLE)
     set_target_properties(xpython xeus-python PROPERTIES
         MACOSX_RPATH ON
