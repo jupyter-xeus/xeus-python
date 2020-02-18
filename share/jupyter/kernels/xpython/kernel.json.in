@@ -1,7 +1,7 @@
 {
   "display_name": "xpython",
   "argv": [
-      "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@/xpython",
+      "@XPYTHON_KERNELSPEC_PATH@xpython",
       "-f",
       "{connection_file}"
   ],
