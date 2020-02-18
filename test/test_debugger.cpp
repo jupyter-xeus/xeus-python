@@ -8,6 +8,7 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
@@ -565,7 +566,7 @@ bool debugger_client::test_stack_trace()
 
     m_client.send_on_shell("execute_request", make_execute_request(make_code()));
     nl::json ev = m_client.wait_for_debug_event("stopped");
-    
+
     int seq = 6;
     m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
     ++seq;
@@ -632,8 +633,20 @@ bool debugger_client::test_inspect_variables()
     m_client.send_on_control("debug_request", make_inspect_variables_request(0));
     nl::json rep = m_client.receive_on_control();
 
-    nl::json var = rep["content"]["body"]["variables"];
-    bool res = var["i"] == 4 && var["j"] == 8 && var["k"] == 5;
+    nl::json vars = rep["content"]["body"]["variables"];
+
+    auto check_var = [&vars](const std::string& name, int value) {
+        auto x = std::find_if(vars.begin(), vars.end(), [&name](const nl::json& var) {
+            return var.is_object() && var.value("name", "") == name;
+        });
+        if (x == vars.end()) {
+            return false;
+        }
+        nl::json var = *x;
+        return var["value"] == value && var["variablesReference"] == 0;
+    };
+
+    bool res = check_var("i", 4) && check_var("j", 8) && check_var("k", 5);
     return res;
 }
 
@@ -666,7 +679,7 @@ bool debugger_client::test_next()
             nl::json json = m_client.receive_on_control();
             next(seq);
         }
-    
+
         m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
         ++seq;
         nl::json json = m_client.receive_on_control();
