@@ -143,6 +143,13 @@ set(XPYTHON_SRC
 # xeus-python is the target for the library
 add_library(xeus-python SHARED ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
 
+OPTION(XEUS_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
+
+if(XEUS_ENABLE_PYPI_WARNING)
+    message(STATUS "Enabling PyPI warning.")
+    target_compile_definitions(xeus-python PRIVATE XEUS_PYTHON_PYPI_WARNING)
+endif()
+
 # xpython is the target for the kernel executable
 add_executable(xpython ${XPYTHON_SRC})
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)

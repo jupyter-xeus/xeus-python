@@ -277,6 +277,13 @@ namespace xpyt
               "  xeus-python: a Jupyter kernel for Python\n"
               "  Python ";
         banner.append(PY_VERSION);
+#ifdef XEUS_PYTHON_PYPI_WARNING
+        banner.append("\n"
+              "\n"
+              "WARNING: this instance of xeus-python has been installed from a PyPI wheel.\n"
+              "We recommend using a general-purpose package manager instead, such as Conda/Mamba."
+              "\n");
+#endif
         result["banner"] = banner;
         result["debugger"] = true;
 

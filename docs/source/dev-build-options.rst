@@ -17,6 +17,7 @@ Build
 - ``DOWNLOAD_GTEST``: downloads ``gtest`` and builds it locally instead of using a binary installation.
 - ``GTEST_SRC_DIR``: indicates where to find the ``gtest`` sources instead of downloading them.
 - ``XEUS_PYTHONHOME_RELPATH``: indicates the relative path of the PYTHONHOME with respect to the installation prefix.
+- ``ENABLE_PYPI_WARNING``: we enable this option when building PyPI wheel to show a warning.
 
 The ``BUILD_TESTS`` and ``DOWNLOAD_GTEST`` options are disabled by default. Enabling ``DOWNLOAD_GTEST`` or
 setting ``GTEST_SRC_DIR`` enables ``BUILD_TESTS``. If the ``BUILD_TESTS`` option is enabled, the `xtest` target is made available, which builds and run the test suite.
