@@ -83,9 +83,9 @@ namespace xpyt
         {
             std::string header_buffer = header.dump();
             zmq::message_t raw_header(header_buffer.c_str(), header_buffer.length());
-            m_ptvsd_header.send(raw_header);
+            m_ptvsd_header.send(raw_header, zmq::send_flags::none);
             // client responds with ACK message
-            m_ptvsd_header.recv(&raw_header);
+            m_ptvsd_header.recv(raw_header);
 
             if(message["command"] == "dumpCell")
             {
@@ -135,10 +135,10 @@ namespace xpyt
                            + xptvsd_client::SEPARATOR
                            + content;
         zmq::message_t raw_message(buffer.c_str(), buffer.length());
-        m_ptvsd_socket.send(raw_message);
+        m_ptvsd_socket.send(raw_message, zmq::send_flags::none);
 
         zmq::message_t raw_reply;
-        m_ptvsd_socket.recv(&raw_reply);
+        m_ptvsd_socket.recv(raw_reply);
 
         return nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
     }
@@ -363,9 +363,9 @@ namespace xpyt
                            controller_header_end_point);
         client.detach();
 
-        m_ptvsd_socket.send(zmq::message_t("REQ", 3));
+        m_ptvsd_socket.send(zmq::message_t("REQ", 3), zmq::send_flags::none);
         zmq::message_t ack;
-        m_ptvsd_socket.recv(&ack);
+        m_ptvsd_socket.recv(ack);
 
         m_is_started = true;
 

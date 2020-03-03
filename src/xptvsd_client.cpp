@@ -60,8 +60,8 @@ namespace xpyt
         // Tells the controller that the connection with
         // ptvsd has been established
         zmq::message_t req;
-        m_controller.recv(&req);
-        m_controller.send(zmq::message_t("ACK", 3));
+        m_controller.recv(req);
+        m_controller.send(zmq::message_t("ACK", 3), zmq::send_flags::none);
         
         zmq::pollitem_t items[] = {
             { m_controller_header, 0, ZMQ_POLLIN, 0 },
@@ -118,7 +118,7 @@ namespace xpyt
                     m_request_stop = true;
                 }
                 zmq::message_t reply(raw_message.c_str(), raw_message.size());
-                m_controller.send(reply);
+                m_controller.send(reply, zmq::send_flags::none);
             }
             m_message_queue.pop();
         }
@@ -127,9 +127,9 @@ namespace xpyt
     void xptvsd_client::handle_header_socket()
     {
         zmq::message_t message;
-        m_controller_header.recv(&message);
+        m_controller_header.recv(message);
         m_parent_header = std::string(message.data<const char>(), message.size());
-        m_controller_header.send(zmq::message_t("ACK", 3));
+        m_controller_header.send(zmq::message_t("ACK", 3), zmq::send_flags::none);
     }
 
     void xptvsd_client::handle_ptvsd_socket(queue_type& message_queue)
@@ -192,22 +192,22 @@ namespace xpyt
     void xptvsd_client::handle_control_socket()
     {
         zmq::message_t message;
-        m_controller.recv(&message);
+        m_controller.recv(message);
 
         // Sends a ZMQ header (required for stream socket) and forwards
         // the message
-        m_ptvsd_socket.send(zmq::message_t(m_socket_id, m_id_size), ZMQ_SNDMORE);
-        m_ptvsd_socket.send(message);
+        m_ptvsd_socket.send(zmq::message_t(m_socket_id, m_id_size), zmq::send_flags::sndmore);
+        m_ptvsd_socket.send(message, zmq::send_flags::none);
     }
 
     void xptvsd_client::append_tcp_message(std::string& buffer)
     {
         // First message is a ZMQ header that we discard
         zmq::message_t header;
-        m_ptvsd_socket.recv(&header);
+        m_ptvsd_socket.recv(header);
 
         zmq::message_t content;
-        m_ptvsd_socket.recv(&content);
+        m_ptvsd_socket.recv(content);
 
         buffer += std::string(content.data<const char>(), content.size());
     }
@@ -338,8 +338,8 @@ namespace xpyt
                            + content;
         zmq::message_t raw_message(buffer.c_str(), buffer.length());
 
-        m_ptvsd_socket.send(zmq::message_t(m_socket_id, m_id_size), ZMQ_SNDMORE);
-        m_ptvsd_socket.send(raw_message);
+        m_ptvsd_socket.send(zmq::message_t(m_socket_id, m_id_size), zmq::send_flags::sndmore);
+        m_ptvsd_socket.send(raw_message, zmq::send_flags::none);
     }
 }
 
