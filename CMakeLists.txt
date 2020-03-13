@@ -45,7 +45,7 @@ configure_file (
 # Dependencies #
 ################
 
-set(xeus_REQUIRED_VERSION 0.23.6)
+set(xeus_REQUIRED_VERSION 0.23.7)
 set(cppzmq_REQUIRED_VERSION 4.4.1)
 set(pybind11_REQUIRED_VERSION 2.2.4)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
