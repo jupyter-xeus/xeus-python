@@ -18,11 +18,19 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+      env: PY=3 XPYT_BUILD_STATIC=1
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
       env: PY=2
     - os: osx
       osx_image: xcode10
       compiler: clang
       env: PY=3
+  allow_failures:
+    - env: PY=3 XPYT_BUILD_STATIC=1
 install:
     # Define the version of miniconda to download
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -64,7 +72,11 @@ install:
     # Build and install xeus-python
     - mkdir build
     - cd build
-    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..
+    - if [[ "$XPYT_BUILD_STATIC" == 1 ]]; then
+        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DXPYT_BUILD_STATIC=ON ..;
+      else
+        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..;
+      fi
     - make -j2 install
 script:
     # For Python 2, activate the kernel_test Python3 environment
