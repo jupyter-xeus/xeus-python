@@ -42,8 +42,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
     set(CMAKE_EXE_LINKER_FLAGS /MANIFEST:NO)
 endif()
 
-if(DOWNLOAD_GTEST OR GTEST_SRC_DIR)
-    if(DOWNLOAD_GTEST)
+if(XPYT_DOWNLOAD_GTEST OR GTEST_SRC_DIR)
+    if(XPYT_DOWNLOAD_GTEST)
         # Download and unpack googletest at configure time
         configure_file(downloadGTest.cmake.in googletest-download/CMakeLists.txt)
     else()
@@ -86,7 +86,7 @@ set(XEUS_PYTHON_TESTS
 )
 
 add_executable(test_xeus_python ${XEUS_PYTHON_TESTS})
-if(DOWNLOAD_GTEST OR GTEST_SRC_DIR)
+if(XPYT_DOWNLOAD_GTEST OR GTEST_SRC_DIR)
     add_dependencies(test_xeus_python gtest_main)
 endif()
 
