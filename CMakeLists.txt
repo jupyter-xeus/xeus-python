@@ -57,12 +57,12 @@ OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 # Dependencies
 # ============
 
-set(xeus_REQUIRED_VERSION 0.23.7)
+set(xeus_REQUIRED_VERSION 0.23.8)
 set(cppzmq_REQUIRED_VERSION 4.4.1)
 set(pybind11_REQUIRED_VERSION 2.2.4)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
 
-if(NOT TARGET xeus AND NOT TARGET xeus_static)
+if(NOT TARGET xeus AND NOT TARGET xeus-static)
 find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 endif()
 if(NOT TARGET cppzmq AND NOT TARGET cppzmq-static)
@@ -152,7 +152,7 @@ set(XPYTHON_SRC
 
 if (XPYT_STATIC_DEPENDENCIES)
 
-    #TODO: add Threads as a dependence of xeus_static?
+    #TODO: add Threads as a dependence of xeus-static?
     find_package(Threads)
 
     add_executable(xpython ${XPYTHON_SRC} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
@@ -163,7 +163,7 @@ if (XPYT_STATIC_DEPENDENCIES)
     endif()
 
     set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
-    target_link_libraries(xpython PRIVATE pybind11::embed pybind11_json xeus_static Threads::Threads)
+    target_link_libraries(xpython PRIVATE pybind11::embed pybind11_json xeus-static Threads::Threads)
 
     if (APPLE)
         set_target_properties(xpython PROPERTIES MACOSX_RPATH ON)
