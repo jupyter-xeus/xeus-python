@@ -18,11 +18,11 @@ set(XEUS_PYTHON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 file(STRINGS "${XEUS_PYTHON_INCLUDE_DIR}/xeus-python/xeus_python_config.hpp" xpyt_version_defines
      REGEX "#define XPYT_VERSION_(MAJOR|MINOR|PATCH)")
-foreach(ver ${xpyt_version_defines})
-    if(ver MATCHES "#define XPYT_VERSION_(MAJOR|MINOR|PATCH) +([^ ]+)$")
+foreach (ver ${xpyt_version_defines})
+    if (ver MATCHES "#define XPYT_VERSION_(MAJOR|MINOR|PATCH) +([^ ]+)$")
         set(XPYT_VERSION_${CMAKE_MATCH_1} "${CMAKE_MATCH_2}" CACHE INTERNAL "")
-    endif()
-endforeach()
+    endif ()
+endforeach ()
 set(${PROJECT_NAME}_VERSION
     ${XPYT_VERSION_MAJOR}.${XPYT_VERSION_MINOR}.${XPYT_VERSION_PATCH})
 message(STATUS "Building xeus-python v${${PROJECT_NAME}_VERSION}")
@@ -34,7 +34,7 @@ include(GNUInstallDirs)
 
 if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
     set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
-endif()
+endif ()
 
 configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
@@ -47,6 +47,7 @@ configure_file (
 # Compilation options
 OPTION(XPYT_DISABLE_ARCH_NATIVE "disable -march=native flag" OFF)
 OPTION(XPYT_DISABLE_TUNE_GENERIC "disable -mtune=generic flag" OFF)
+option(XPYT_BUILD_STATIC_LIBS "Build xeus-python static library" ON)
 OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
 OPTION(XPYT_STATIC_DEPENDENCIES "Link statically with xeus and do not create shared library xeus-python" OFF)
 
@@ -62,18 +63,18 @@ set(cppzmq_REQUIRED_VERSION 4.4.1)
 set(pybind11_REQUIRED_VERSION 2.2.4)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
 
-if(NOT TARGET xeus AND NOT TARGET xeus-static)
-find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
-endif()
-if(NOT TARGET cppzmq AND NOT TARGET cppzmq-static)
-find_package(cppzmq ${cppzmq_REQUIRED_VERSION} REQUIRED)
-endif()
-if(NOT TARGET pybind11)
-find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
-endif()
-if(NOT TARGET pybind11_json)
-find_package(pybind11_json ${pybind11_json_REQUIRED_VERSION} REQUIRED)
-endif()
+if (NOT TARGET xeus AND NOT TARGET xeus-static)
+    find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
+endif ()
+if (NOT TARGET cppzmq AND NOT TARGET cppzmq-static)
+    find_package(cppzmq ${cppzmq_REQUIRED_VERSION} REQUIRED)
+endif ()
+if (NOT TARGET pybind11)
+    find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
+endif ()
+if (NOT TARGET pybind11_json)
+    find_package(pybind11_json ${pybind11_json_REQUIRED_VERSION} REQUIRED)
+endif ()
 
 # flags
 # =====
@@ -82,10 +83,10 @@ include(CheckCXXCompilerFlag)
 
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 
-if(MSVC)
+if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251 /wd4141")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4018 /wd4267 /wd4715 /wd4146 /wd4129")
-endif()
+endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder")
@@ -93,23 +94,21 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=generic")
     elseif (XPYT_DISABLE_TUNE_GENERIC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    else()
+    else ()
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-    endif()
+    endif ()
 
     CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
 
     if (HAS_CPP14_FLAG)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    else()
+    else ()
         message(FATAL_ERROR "Unsupported compiler -- xeus requires C++14 support!")
-    endif()
-endif()
+    endif ()
+endif ()
 
-# Target and link
-# ===============
-
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+# Source files
+# ============
 
 set(XEUS_PYTHON_SRC
     src/xcomm.cpp
@@ -150,7 +149,106 @@ set(XPYTHON_SRC
     src/xpaths.cpp
 )
 
-if (XPYT_STATIC_DEPENDENCIES)
+# Targets and link
+# ================
+
+include(CheckCXXCompilerFlag)
+
+string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+
+# Common macro for shared and static library xeus-python
+macro(xpyt_create_target target_name linkage output_name)
+    string(TOUPPER "${linkage}" linkage_upper)
+
+    if (NOT ${linkage_upper} MATCHES "^(SHARED|STATIC)$")
+        message(FATAL_ERROR "Invalid library linkage: ${linkage}")
+    endif ()
+
+    add_library(${target_name} ${linkage_upper} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
+
+    if (APPLE)
+        set_target_properties(${target_name} PROPERTIES
+            MACOSX_RPATH ON
+        )
+    else ()
+        set_target_properties(${target_name} PROPERTIES
+            BUILD_WITH_INSTALL_RPATH 1
+            SKIP_BUILD_RPATH FALSE
+        )
+    endif ()
+    set_target_properties(${target_name} PROPERTIES
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+    )
+
+    set_target_properties(${target_name} PROPERTIES
+                          PUBLIC_HEADER "${XEUS_PYTHON_HEADERS}"
+                          PREFIX ""
+                          VERSION ${${PROJECT_NAME}_VERSION}
+                          SOVERSION ${XPYT_VERSION_MAJOR}
+                          OUTPUT_NAME "lib${output_name}")
+
+    target_compile_definitions(${target_name} PUBLIC "XEUS_PYTHON_EXPORTS")
+
+    target_include_directories(${target_name}
+                               PUBLIC
+                               ${PYTHON_INCLUDE_DIRS}
+                               $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
+                               $<INSTALL_INTERFACE:include>)
+
+
+    target_link_libraries(${target_name} PUBLIC xeus PRIVATE pybind11::pybind11 pybind11_json)
+    if (WIN32 OR CYGWIN)
+        target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
+    elseif (APPLE)
+        target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
+    endif ()
+endmacro ()
+
+if (NOT XPYT_STATIC_DEPENDENCIES)
+
+    set(xeus_python_targets "")
+
+    # Build libraries
+    xpyt_create_target(xeus-python SHARED xeus-python)
+    list(APPEND xeus_python_targets xeus-python)
+
+    if (XPYT_BUILD_STATIC_LIBS)
+        # On Windows, a static library should use a different output name
+        # to avoid the conflict with the import library of a shared one.
+        if (CMAKE_HOST_WIN32)
+            xpyt_create_target(xeus-python-static STATIC xeus-python-static)
+        else ()
+            xpyt_create_target(xeus-python-static STATIC xeus-python)
+        endif ()
+        list(APPEND xeus_python_targets xeus-python-static)
+    endif ()
+
+    # Build xpython
+    add_executable(xpython ${XPYTHON_SRC})
+
+    set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
+    if (APPLE)
+        set_target_properties(xpython PROPERTIES
+            MACOSX_RPATH ON
+        )
+    else()
+        set_target_properties(xpython PROPERTIES
+            BUILD_WITH_INSTALL_RPATH 1
+            SKIP_BUILD_RPATH FALSE
+        )
+    endif()
+    set_target_properties(xpython PROPERTIES
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+    )
+
+    target_link_libraries(xpython PRIVATE pybind11::embed xeus-python)
+    if(CMAKE_DL_LIBS)
+        target_link_libraries(xpython PRIVATE ${CMAKE_DL_LIBS} util)
+    endif()
+
+else () #XPYT_STATIC_DEPENDENCIES
 
     #TODO: add Threads as a dependence of xeus-static?
     find_package(Threads)
@@ -186,64 +284,7 @@ if (XPYT_STATIC_DEPENDENCIES)
     elseif(APPLE)
         target_link_libraries(xpython PRIVATE "-undefined dynamic_lookup")
     endif()
-
-else ()
-
-    # xeus-python is the target for the library
-    add_library(xeus-python SHARED ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
-
-    if(XPYT_ENABLE_PYPI_WARNING)
-        message(STATUS "Enabling PyPI warning.")
-        target_compile_definitions(xeus-python PRIVATE XEUS_PYTHON_PYPI_WARNING)
-    endif()
-
-    # xpython is the target for the kernel executable
-    add_executable(xpython ${XPYTHON_SRC})
-    set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
-    target_link_libraries(xpython PRIVATE pybind11::embed xeus-python)
-
-    if(CMAKE_DL_LIBS)
-        target_link_libraries(xpython PRIVATE ${CMAKE_DL_LIBS} util)
-    endif()
-
-    if (APPLE)
-        set_target_properties(xpython xeus-python PROPERTIES
-            MACOSX_RPATH ON
-        )
-    else()
-        set_target_properties(xpython xeus-python PROPERTIES
-            BUILD_WITH_INSTALL_RPATH 1
-            SKIP_BUILD_RPATH FALSE
-        )
-    endif()
-
-    set_target_properties(xpython xeus-python PROPERTIES
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-    )
-
-    target_include_directories(xeus-python
-                               PUBLIC
-                               ${PYTHON_INCLUDE_DIRS}
-                               $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
-                               $<INSTALL_INTERFACE:include>)
-    target_link_libraries(xeus-python PUBLIC xeus PRIVATE pybind11::pybind11 pybind11_json)
-
-    if(WIN32 OR CYGWIN)
-      target_link_libraries(xeus-python PRIVATE ${PYTHON_LIBRARIES})
-    elseif(APPLE)
-      target_link_libraries(xeus-python PRIVATE "-undefined dynamic_lookup")
-    endif()
-
-    set_target_properties(xeus-python PROPERTIES
-                          PUBLIC_HEADER "${XEUS_PYTHON_HEADERS}"
-                          PREFIX ""
-                          VERSION ${${PROJECT_NAME}_VERSION}
-                          SOVERSION ${XPYT_VERSION_MAJOR}
-                          OUTPUT_NAME "libxeus-python")
-
-    target_compile_definitions(xeus-python PUBLIC "XEUS_PYTHON_EXPORTS")
-
-endif ()
+endif()
 
 if (XEUS_PYTHONHOME_RELPATH)
     target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
@@ -269,12 +310,16 @@ set(XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT
 
 # Install xeus-python and xpython
 if (NOT XPYT_STATIC_DEPENDENCIES)
-    install(TARGETS xeus-python
+    install(TARGETS ${xeus_python_targets}
             EXPORT ${PROJECT_NAME}-targets
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/xeus-python)
+
+    # Makes the project importable from the build directory
+    export(EXPORT ${PROJECT_NAME}-targets
+           FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
 endif ()
 
 install(TARGETS xpython
@@ -295,12 +340,6 @@ if (XEXTRA_JUPYTER_DATA_DIR)
             DESTINATION ${XEXTRA_JUPYTER_DATA_DIR}
             PATTERN "*.in" EXCLUDE)
 endif(XEXTRA_JUPYTER_DATA_DIR)
-
-if (NOT XPYT_STATIC_DEPENDENCIES)
-    # Makes the project importable from the build directory
-    export(EXPORT ${PROJECT_NAME}-targets
-           FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
-endif ()
 
 # Configure 'xeus-pythonConfig.cmake' for a build tree
 set(XEUS_PYTHON_CONFIG_CODE "####### Expanded from \@XEUS_PYTHON_CONFIG_CODE\@ #######\n")
