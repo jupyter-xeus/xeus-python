@@ -291,6 +291,13 @@ namespace xpyt
         result["language_info"]["version"] = PY_VERSION;
         result["language_info"]["mimetype"] = "text/x-python";
         result["language_info"]["file_extension"] = ".py";
+
+        result["help_links"] = nl::json::array();
+        result["help_links"][0] = nl::json::object({
+            {"text", "Xeus-Python Reference"},
+            {"url", "https://xeus-python.readthedocs.io"}
+        });
+
         result["status"] = "ok";
         return result;
     }
