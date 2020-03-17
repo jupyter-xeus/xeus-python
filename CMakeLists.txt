@@ -158,6 +158,61 @@ string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
+macro(xpyt_set_compile_options target_name)
+    if (MSVC)
+        target_compile_options(${target_name} PUBLIC /wd4251 /wd4141)
+        target_compile_options(${target_name} PUBLIC /wd4018 /wd4267 /wd4715 /wd4146 /wd4129)
+    endif ()
+
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
+        CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
+        CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+
+        target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
+    
+        if (XPYT_DISABLE_ARCH_NATIVE AND NOT XPYT_DISABLE_TUNE_GENERIC)
+            target_compile_options(${target_name} PUBLIC -mtune=generic)
+        elseif (XPYT_DISABLE_TUNE_GENERIC)
+        else ()
+            target_compile_options(${target_name} PUBLIC -march=native)
+        endif ()
+
+        CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
+        if (HAS_CPP14_FLAG)
+            target_compile_features(${target_name} PRIVATE cxx_std_14)
+        else ()
+            message(FATAL_ERROR "Unsupported compiler -- xeus-python requires C++14 support!")
+        endif ()
+
+        # Enable link time optimization and set the default symbol
+        # visibility to hidden (very important to obtain small binaries)
+        if (NOT ${U_CMAKE_BUILD_TYPE} MATCHES DEBUG)
+            # Check for Link Time Optimization support
+            # (GCC/Clang)
+            CHECK_CXX_COMPILER_FLAG("-flto" HAS_LTO_FLAG)
+            if (HAS_LTO_FLAG)
+                target_compile_options(${target_name} PUBLIC -flto)
+            endif ()
+
+            # Avoids removing symbols from the static library
+            CHECK_CXX_COMPILER_FLAG("-ffat-lto-objects" HAS_FATLTO_FLAG)
+            if (${linkage_upper} MATCHES "STATIC" AND  HAS_FATLTO_FLAG)
+                message(STATUS "ENABLE FAT LTO OBJECTS")
+                target_compile_options(${target_name} PUBLIC -ffat-lto-objects)
+            endif ()
+
+            # Intel equivalent to LTO is called IPO
+            if (CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+                CHECK_CXX_COMPILER_FLAG("-ipo" HAS_IPO_FLAG)
+                if (HAS_IPO_FLAG)
+                    target_compile_options(${target_name} PUBLIC -ipo)
+                endif ()
+            endif ()
+        endif ()
+
+    endif ()
+endmacro()
+
 # Common macro for shared and static library xeus-python
 macro(xpyt_create_target target_name linkage output_name)
     string(TOUPPER "${linkage}" linkage_upper)
@@ -167,6 +222,7 @@ macro(xpyt_create_target target_name linkage output_name)
     endif ()
 
     add_library(${target_name} ${linkage_upper} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
+    xpyt_set_compile_options(${target_name})
 
     if (APPLE)
         set_target_properties(${target_name} PROPERTIES
@@ -204,7 +260,7 @@ macro(xpyt_create_target target_name linkage output_name)
     elseif (APPLE)
         target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
     endif ()
-endmacro ()
+endmacro()
 
 if (NOT XPYT_STATIC_DEPENDENCIES)
 
@@ -227,6 +283,7 @@ if (NOT XPYT_STATIC_DEPENDENCIES)
 
     # Build xpython
     add_executable(xpython ${XPYTHON_SRC})
+    xpyt_set_compile_options(xpython)
 
     set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
     if (APPLE)
@@ -254,6 +311,7 @@ else () #XPYT_STATIC_DEPENDENCIES
     find_package(Threads)
 
     add_executable(xpython ${XPYTHON_SRC} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
+    xpyt_set_compile_options(xpython)
     
     if(XPYT_ENABLE_PYPI_WARNING)
         message(STATUS "Enabling PyPI warning.")
