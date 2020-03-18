@@ -72,6 +72,19 @@ On Windows platforms, from the source directory:
     nmake
     nmake install
 
+Installing the Kernel Spec
+==========================
+
+When installing xeus-python in a given installation prefix, the corresponding Jupyter kernelspecs are installed in the same environment and are automatically picked up by Jupyter if it is installed in the same prefix. 
+
+However, if Jupyter is installed in a different location, it will not pick up the new kernel. The xeus-python can be registered with the following command:
+
+.. code::
+
+   jupyter kernelspec install PREFIX/share/jupyter/xpython --sys-prefix
+
+For more information on the ``jupyter kernelspec`` command, please consult the ``jupyter_client`` documentation.
+
 .. _miniconda: https://conda.io/miniconda.html
 .. _anaconda: https://www.anaconda.com
 .. _JupyterLab: https://jupyterlab.readthedocs.io
