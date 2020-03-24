@@ -36,7 +36,7 @@
 #ifdef __GNUC__
 void handler(int sig)
 {
-    void *array[10];
+    void* array[10];
 
     // get void*'s for all entries on the stack
     size_t size = backtrace(array, 10);
