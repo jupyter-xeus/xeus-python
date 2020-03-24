@@ -11,30 +11,31 @@
 #include "pybind11/pybind11.h"
 
 #include <iostream>
+#include <regex>
 #include <string>
 
 #include "xeus-python/xeus_python_config.hpp"
 
-#include "xpythonhome.hpp"
+#include "xsyspath.hpp"
 #include "xpaths.hpp"
 
 namespace xpyt
 {
-    void set_pythonhome()
+    void set_syspath()
     {
-// The XEUS_PYTHONHOME_RELPATH compile-time definition can be used.
-// to specify the PYTHONHOME location as a relative path to the PREFIX.
-#if defined(XEUS_PYTHONHOME_RELPATH)
-        static const std::string pythonhome = prefix_path() + XPYT_STRINGIFY(XEUS_PYTHONHOME_RELPATH);
-#else
-        static const std::string pythonhome = prefix_path();
-#endif
-
+// The XEUS_PYTHON_SYSPATH compile-time definition can be used.
+// to specify the syspath locations as relative paths to the PREFIX.
+#if defined(XEUS_PYTHON_SYSPATH)
+        static const std::string syspath = std::regex_replace(
+            XPYT_STRINGIFY(XEUS_PYTHON_SYSPATH),
+            std::regex("\\{PREFIX\\}"),
+            prefix_path());
 #if PY_MAJOR_VERSION == 2
-        Py_SetPythonHome(const_cast<char*>(pythonhome.c_str()));
+        Py_SetPath(const_cast<char*>(syspath.c_str()));
 #else
-        static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
-        Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
+        static const std::wstring wstr(syspath.cbegin(), syspath.cend());;
+        Py_SetPath(const_cast<wchar_t*>(wstr.c_str()));
+#endif
 #endif
     }
 }
