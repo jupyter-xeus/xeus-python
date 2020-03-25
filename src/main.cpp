@@ -32,6 +32,7 @@
 #include "xeus-python/xdebugger.hpp"
 
 #include "xpythonhome.hpp"
+#include "xsyspath.hpp"
 
 #ifdef __GNUC__
 void handler(int sig)
@@ -69,7 +70,7 @@ std::string extract_filename(int& argc, char* argv[])
     return res;
 }
 
-void print_python_home()
+void print_pythonhome()
 {
 #if PY_MAJOR_VERSION == 2
     char* mbstr = Py_GetPythonHome();
@@ -83,6 +84,20 @@ void print_python_home()
     std::clog << "PYTHONHOME set to " << mbstr << std::endl;
 }
 
+void print_syspath()
+{
+#if PY_MAJOR_VERSION == 2
+    char* mbstr = Py_GetPath();
+#else
+    std::setlocale(LC_ALL, "en_US.utf8");
+    wchar_t* ph = Py_GetPath();
+    
+    char mbstr[1024];
+    std::wcstombs(mbstr, ph, 1024);
+#endif
+    std::clog << "Python sys.path set to " << mbstr << std::endl;
+}
+
 int main(int argc, char* argv[])
 {
 #ifdef __GNUC__
@@ -91,7 +106,10 @@ int main(int argc, char* argv[])
 #endif
     std::string file_name = extract_filename(argc, argv);
     xpyt::set_pythonhome();
-    print_python_home();
+    print_pythonhome();
+
+    xpyt::set_syspath();
+    print_syspath();
 
     py::scoped_interpreter guard;
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;

@@ -143,10 +143,12 @@ set(XEUS_PYTHON_HEADERS
 
 set(XPYTHON_SRC
     src/main.cpp
-    src/xpythonhome.hpp
-    src/xpythonhome.cpp
     src/xpaths.hpp
     src/xpaths.cpp
+    src/xpythonhome.hpp
+    src/xpythonhome.cpp
+    src/xsyspath.hpp
+    src/xsyspath.cpp
 )
 
 # Targets and link
@@ -316,6 +318,11 @@ else () #XPYT_STATIC_DEPENDENCIES
     if(XPYT_ENABLE_PYPI_WARNING)
         message(STATUS "Enabling PyPI warning.")
         target_compile_definitions(xpython PRIVATE XEUS_PYTHON_PYPI_WARNING)
+    endif()
+
+    if(XPYT_SYSPATH)
+        message(STATUS "Specifying sys.path.")
+        target_compile_definitions(xpython PRIVATE XEUS_PYTHON_SYSPATH=${XPYT_SYSPATH})
     endif()
 
     set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
