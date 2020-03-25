@@ -60,7 +60,7 @@ conda create -n xeus-python
 conda activate xeus-python # Or `source activate xeus-python` for conda < 4.6
 ```
 
-### Installation directly from conda
+### Installing from conda
 
 Then you can install in this environment `xeus-python` and its dependencies
 
@@ -68,7 +68,22 @@ Then you can install in this environment `xeus-python` and its dependencies
 conda install xeus-python notebook -c conda-forge
 ```
 
-### Installation from source
+### Installing from PyPI
+
+Depending on the platform, PyPI wheels may be available for xeus-python.
+
+```bash
+pip install xeus-python notebook
+```
+
+However, the wheels uploaded on PyPI are **experimental**.
+
+In general we strongly recommend using a package manager instead. We maintain the conda-forge package,
+and nothing prevents you from creating a package your favorite Linux distribution or FreeBSD.
+
+The ongoing effort to package xeus-python for pip takes place in the [xeus-python-wheel](https://github.com/jupyter-xeus/xeus-python-wheel) repository.
+
+### Installing from source
 
 Or you can install it from the sources, you will first need to install dependencies
 
