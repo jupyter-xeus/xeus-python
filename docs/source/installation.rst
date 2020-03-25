@@ -50,6 +50,22 @@ or, if you prefer to use JupyterLab_
 
     conda install xeus-python jupyterlab -c conda-forge
 
+From PyPI
+---------
+
+Depending on the platform, PyPI wheels may be available for xeus-python.
+
+.. code::
+
+    pip install xeus-python notebook
+
+However, the wheels uploaded on PyPI are **experimental**.
+
+In general we strongly recommend using a package manager instead. We maintain the conda-forge package,
+and nothing prevents you from creating a package your favorite Linux distribution or FreeBSD.
+
+The ongoing effort to package xeus-python for pip takes place in the `xeus-python-wheel`_ repository.
+
 From Source
 -----------
 
@@ -88,3 +104,4 @@ For more information on the ``jupyter kernelspec`` command, please consult the `
 .. _miniconda: https://conda.io/miniconda.html
 .. _anaconda: https://www.anaconda.com
 .. _JupyterLab: https://jupyterlab.readthedocs.io
+.. _xeus-python-wheel: https://github.com/jupyter-xeus/xeus-python-wheel
