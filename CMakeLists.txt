@@ -315,6 +315,10 @@ else () #XPYT_STATIC_DEPENDENCIES
     add_executable(xpython ${XPYTHON_SRC} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
     xpyt_set_compile_options(xpython)
     
+    if(CMAKE_TARGET_SYSTEM MATCHES "Linux")
+        set_target_properties(xpython PROPERTIES LINK_FLAGS "-Wl,--exclude-libs=ALL")
+    endif()
+
     if(XPYT_ENABLE_PYPI_WARNING)
         message(STATUS "Enabling PyPI warning.")
         target_compile_definitions(xpython PRIVATE XEUS_PYTHON_PYPI_WARNING)
