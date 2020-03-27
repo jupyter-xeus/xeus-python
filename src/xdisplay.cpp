@@ -27,7 +27,7 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
-    nl::json mime_bundle_repr(const py::object& obj)
+    nl::json mime_bundle_repr(const py::object& obj, const py::object& include = py::none(), const py::object& exclude = py::none())
     {
         py::module py_json = py::module::import("json");
         py::module builtins = py::module::import(XPYT_BUILTINS);
@@ -35,7 +35,7 @@ namespace xpyt
 
         if (hasattr(obj, "_repr_mimebundle_"))
         {
-            pub_data = obj.attr("_repr_mimebundle_")();
+            pub_data = obj.attr("_repr_mimebundle_")(include, exclude);
         }
         else
         {
@@ -141,7 +141,9 @@ namespace xpyt
      * xdisplay implementation *
      ***************************/
 
-    void xdisplay(const py::object& obj, const py::object& metadata, const py::object& transient, const py::object& display_id, bool update, bool raw)
+    void xdisplay(const py::object& obj, const py::object& include, const py::object& exclude,
+                  const py::object& metadata, const py::object& transient, const py::object& display_id,
+                  bool update, bool raw)
     {
         auto& interp = xeus::get_interpreter();
 
@@ -153,7 +155,7 @@ namespace xpyt
                 return;
             }
 
-            nl::json pub_data = raw ? nl::json(obj) : mime_bundle_repr(obj);
+            nl::json pub_data = raw ? nl::json(obj) : mime_bundle_repr(obj, include, exclude);
             nl::json cpp_transient = transient.is_none() ? nl::json::object() : nl::json(transient);
             nl::json cpp_metadata = metadata.is_none() ? nl::json::object() : nl::json(metadata);
 
@@ -203,6 +205,8 @@ namespace xpyt
         display_module.def("display",
               xdisplay,
               py::arg("obj"),
+              py::arg("include") = py::none(),
+              py::arg("exclude") = py::none(),
               py::arg("metadata") = py::none(),
               py::arg("transient") = py::none(),
               py::arg("display_id") = py::none(),
@@ -212,6 +216,8 @@ namespace xpyt
         display_module.def("update_display",
               xdisplay,
               py::arg("obj"),
+              py::arg("include") = py::none(),
+              py::arg("exclude") = py::none(),
               py::arg("metadata") = py::none(),
               py::arg("transient") = py::none(),
               py::arg("display_id") = py::none(),
