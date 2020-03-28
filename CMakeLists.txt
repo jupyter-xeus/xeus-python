@@ -59,15 +59,11 @@ OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 # ============
 
 set(xeus_REQUIRED_VERSION 0.23.9)
-set(cppzmq_REQUIRED_VERSION 4.4.1)
 set(pybind11_REQUIRED_VERSION 2.2.4)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
 
 if (NOT TARGET xeus AND NOT TARGET xeus-static)
     find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
-endif ()
-if (NOT TARGET cppzmq AND NOT TARGET cppzmq-static)
-    find_package(cppzmq ${cppzmq_REQUIRED_VERSION} REQUIRED)
 endif ()
 if (NOT TARGET pybind11)
     find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
