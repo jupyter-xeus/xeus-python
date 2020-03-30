@@ -50,7 +50,8 @@ OPTION(XPYT_DISABLE_TUNE_GENERIC "disable -mtune=generic flag" OFF)
 OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
 option(XPYT_BUILD_STATIC "Build xeus-python static library" ON)
 OPTION(XPYT_BUILD_SHARED "Split build into executable and library" ON)
-OPTION(XPYT_SPLIT_XPYTHON "Split xpython build into library and executable" ON)
+OPTION(XPYT_USE_SHARED_XEUS "Link xpython with the xeus shared library (instead of the static library)" ON)
+OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython with the xeus-python shared library (instead of the static library)" ON)
 
 # Test options
 OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
@@ -252,8 +253,13 @@ macro(xpyt_create_target target_name linkage output_name)
                                $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>)
 
+    if (XPYT_USE_SHARED_XEUS)
+        set(XPYT_XEUS_TARGET xeus)
+    else ()
+        set(XPYT_XEUS_TARGET xeus-static)
+    endif ()
 
-    target_link_libraries(${target_name} PUBLIC xeus PRIVATE pybind11::pybind11 pybind11_json)
+    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} PRIVATE pybind11::pybind11 pybind11_json)
     if (WIN32 OR CYGWIN)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)
@@ -305,7 +311,7 @@ set_target_properties(xpython PROPERTIES
 
 target_link_libraries(xpython PRIVATE pybind11::embed)
 
-if (XPYT_SPLIT_XPYTHON)
+if (XPYT_USE_SHARED_XEUS_PYTHON)
     target_link_libraries(xpython PRIVATE xeus-python)
 
     if(CMAKE_DL_LIBS)
