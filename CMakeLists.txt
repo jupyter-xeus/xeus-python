@@ -313,9 +313,6 @@ if (XPYT_SPLIT_XPYTHON)
     endif()
 else ()
     target_link_libraries(xpython PRIVATE xeus-python-static)
-
-    find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
-    target_link_libraries(xpython PRIVATE Threads::Threads)
 endif()
 
 if(XPYT_ENABLE_PYPI_WARNING)
