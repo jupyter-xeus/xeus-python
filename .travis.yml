@@ -18,17 +18,19 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-      env: PY=3 XPYT_BUILD_STATIC=1
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
       env: PY=2
     - os: osx
       osx_image: xcode10
       compiler: clang
       env: PY=3
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+      env: PY=3 XPYT_SPLIT_XPYTHON=0
+  allow_failures:
+    - env: PY=3 XPYT_SPLIT_XPYTHON=0
 install:
     # Define the version of miniconda to download
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -70,8 +72,8 @@ install:
     # Build and install xeus-python
     - mkdir build
     - cd build
-    - if [[ "$XPYT_BUILD_STATIC" == 1 ]]; then
-        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DXPYT_BUILD_STATIC=ON ..;
+    - if [[ "$XPYT_SPLIT_XPYTHON" == 0 ]]; then
+        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DXPYT_SPLIT_XPYTHON=OFF -DXPYT_BUILD_SHARED=OFF -DXPYT_BUILD_STATIC=OFF ..;
       else
         cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..;
       fi

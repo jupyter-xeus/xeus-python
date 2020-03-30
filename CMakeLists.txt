@@ -47,9 +47,10 @@ configure_file (
 # Compilation options
 OPTION(XPYT_DISABLE_ARCH_NATIVE "disable -march=native flag" OFF)
 OPTION(XPYT_DISABLE_TUNE_GENERIC "disable -mtune=generic flag" OFF)
-option(XPYT_BUILD_STATIC_LIBS "Build xeus-python static library" ON)
 OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
-OPTION(XPYT_STATIC_DEPENDENCIES "Link statically with xeus and do not create shared library xeus-python" OFF)
+option(XPYT_BUILD_STATIC "Build xeus-python static library" ON)
+OPTION(XPYT_BUILD_SHARED "Split build into executable and library" ON)
+OPTION(XPYT_SPLIT_XPYTHON "Split xpython build into library and executable" ON)
 
 # Test options
 OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
@@ -260,26 +261,28 @@ macro(xpyt_create_target target_name linkage output_name)
     endif ()
 endmacro()
 
-if (NOT XPYT_STATIC_DEPENDENCIES)
+set(xeus_python_targets "")
 
-    set(xeus_python_targets "")
-
+if (XPYT_BUILD_SHARED)
     # Build libraries
     xpyt_create_target(xeus-python SHARED xeus-python)
     list(APPEND xeus_python_targets xeus-python)
+endif ()
 
-    if (XPYT_BUILD_STATIC_LIBS)
-        # On Windows, a static library should use a different output name
-        # to avoid the conflict with the import library of a shared one.
-        if (CMAKE_HOST_WIN32)
-            xpyt_create_target(xeus-python-static STATIC xeus-python-static)
-        else ()
-            xpyt_create_target(xeus-python-static STATIC xeus-python)
-        endif ()
-        list(APPEND xeus_python_targets xeus-python-static)
+if (XPYT_BUILD_STATIC)
+    # On Windows, a static library should use a different output name
+    # to avoid the conflict with the import library of a shared one.
+    if (CMAKE_HOST_WIN32)
+        xpyt_create_target(xeus-python-static STATIC xeus-python-static)
+    else ()
+        xpyt_create_target(xeus-python-static STATIC xeus-python)
     endif ()
+    list(APPEND xeus_python_targets xeus-python-static)
+endif ()
 
-    # Build xpython
+# Build xpython
+
+if (XPYT_SPLIT_XPYTHON)
     add_executable(xpython ${XPYTHON_SRC})
     xpyt_set_compile_options(xpython)
 
@@ -302,28 +305,11 @@ if (NOT XPYT_STATIC_DEPENDENCIES)
     if(CMAKE_DL_LIBS)
         target_link_libraries(xpython PRIVATE ${CMAKE_DL_LIBS} util)
     endif()
-
-else () #XPYT_STATIC_DEPENDENCIES
-
-    #TODO: add Threads as a dependence of xeus-static?
-    find_package(Threads)
-
+else ()
     add_executable(xpython ${XPYTHON_SRC} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
     xpyt_set_compile_options(xpython)
-    
-    if(XPYT_ENABLE_PYPI_WARNING)
-        message(STATUS "Enabling PyPI warning.")
-        target_compile_definitions(xpython PRIVATE XEUS_PYTHON_PYPI_WARNING)
-    endif()
-
-    if(XPYT_SYSPATH)
-        message(STATUS "Specifying sys.path.")
-        target_compile_definitions(xpython PRIVATE XEUS_PYTHON_SYSPATH=${XPYT_SYSPATH})
-    endif()
 
     set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
-    target_link_libraries(xpython PRIVATE pybind11::embed pybind11_json xeus-static Threads::Threads)
-
     if (APPLE)
         set_target_properties(xpython PROPERTIES MACOSX_RPATH ON)
     else()
@@ -332,8 +318,13 @@ else () #XPYT_STATIC_DEPENDENCIES
             SKIP_BUILD_RPATH FALSE
         )
     endif()
+    set_target_properties(xpython PROPERTIES 
+        INSTALL_RPATH_USE_LINK_PATH TRUE
+    )
 
-    set_target_properties(xpython PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+    #TODO: add Threads as a dependence of xeus-static?
+    find_package(Threads)
+    target_link_libraries(xpython PRIVATE pybind11::embed pybind11_json xeus-static Threads::Threads)
 
     target_include_directories(xpython
                                PUBLIC
@@ -345,6 +336,16 @@ else () #XPYT_STATIC_DEPENDENCIES
     elseif(APPLE)
         target_link_libraries(xpython PRIVATE "-undefined dynamic_lookup")
     endif()
+endif()
+
+if(XPYT_ENABLE_PYPI_WARNING)
+    message(STATUS "Enabling PyPI warning.")
+    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_PYPI_WARNING)
+endif()
+
+if(XPYT_SYSPATH)
+    message(STATUS "Specifying sys.path.")
+    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_SYSPATH=${XPYT_SYSPATH})
 endif()
 
 if (XEUS_PYTHONHOME_RELPATH)
@@ -370,7 +371,7 @@ include(CMakePackageConfigHelpers)
 set(XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for xeus-pythonConfig.cmake")
 
 # Install xeus-python and xpython
-if (NOT XPYT_STATIC_DEPENDENCIES)
+if (XPYT_BUILD_SHARED)
     install(TARGETS ${xeus_python_targets}
             EXPORT ${PROJECT_NAME}-targets
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -422,7 +423,7 @@ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Conf
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
               DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
-if (NOT XPYT_STATIC_DEPENDENCIES)
+if (XPYT_BUILD_SHARED)
     install(EXPORT ${PROJECT_NAME}-targets
             FILE ${PROJECT_NAME}Targets.cmake
             DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
