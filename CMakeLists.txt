@@ -286,12 +286,7 @@ endif ()
 # xpython
 # =======
 
-if (XPYT_SPLIT_XPYTHON)
-    add_executable(xpython ${XPYTHON_SRC})
-else ()
-    add_executable(xpython ${XPYTHON_SRC} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
-endif ()
-
+add_executable(xpython ${XPYTHON_SRC})
 xpyt_set_compile_options(xpython)
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
 if (APPLE)
@@ -311,24 +306,16 @@ set_target_properties(xpython PROPERTIES
 target_link_libraries(xpython PRIVATE pybind11::embed)
 
 if (XPYT_SPLIT_XPYTHON)
+    target_link_libraries(xpython PRIVATE xeus-python)
+
     if(CMAKE_DL_LIBS)
         target_link_libraries(xpython PRIVATE ${CMAKE_DL_LIBS} util)
     endif()
-    target_link_libraries(xpython PRIVATE xeus-python)
 else ()
-    find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
-    target_link_libraries(xpython PRIVATE pybind11_json xeus-static Threads::Threads)
+    target_link_libraries(xpython PRIVATE xeus-python-static)
 
-    target_include_directories(xpython
-                               PUBLIC
-                               ${PYTHON_INCLUDE_DIRS}
-                               $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
-                               $<INSTALL_INTERFACE:include>)
-    if(WIN32 OR CYGWIN)
-        target_link_libraries(xpython PRIVATE ${PYTHON_LIBRARIES})
-    elseif(APPLE)
-        target_link_libraries(xpython PRIVATE "-undefined dynamic_lookup")
-    endif()
+    find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
+    target_link_libraries(xpython PRIVATE Threads::Threads)
 endif()
 
 if(XPYT_ENABLE_PYPI_WARNING)
