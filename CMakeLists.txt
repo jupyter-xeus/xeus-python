@@ -148,8 +148,8 @@ set(XPYTHON_SRC
     src/xsyspath.cpp
 )
 
-# Targets and link
-# ================
+# Targets and link - Macros
+# =========================
 
 include(CheckCXXCompilerFlag)
 
@@ -261,6 +261,9 @@ macro(xpyt_create_target target_name linkage output_name)
     endif ()
 endmacro()
 
+# xeus-python
+# ===========
+
 set(xeus_python_targets "")
 
 if (XPYT_BUILD_SHARED)
@@ -280,51 +283,41 @@ if (XPYT_BUILD_STATIC)
     list(APPEND xeus_python_targets xeus-python-static)
 endif ()
 
-# Build xpython
+# xpython
+# =======
 
 if (XPYT_SPLIT_XPYTHON)
     add_executable(xpython ${XPYTHON_SRC})
-    xpyt_set_compile_options(xpython)
+else ()
+    add_executable(xpython ${XPYTHON_SRC} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
+endif ()
 
-    set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
-    if (APPLE)
-        set_target_properties(xpython PROPERTIES
-            MACOSX_RPATH ON
-        )
-    else()
-        set_target_properties(xpython PROPERTIES
-            BUILD_WITH_INSTALL_RPATH 1
-            SKIP_BUILD_RPATH FALSE
-        )
-    endif()
+xpyt_set_compile_options(xpython)
+set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
+if (APPLE)
     set_target_properties(xpython PROPERTIES
-        INSTALL_RPATH_USE_LINK_PATH TRUE
+        MACOSX_RPATH ON
     )
+else()
+    set_target_properties(xpython PROPERTIES
+        BUILD_WITH_INSTALL_RPATH 1
+        SKIP_BUILD_RPATH FALSE
+    )
+endif()
+set_target_properties(xpython PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH TRUE
+)
 
-    target_link_libraries(xpython PRIVATE pybind11::embed xeus-python)
+target_link_libraries(xpython PRIVATE pybind11::embed)
+
+if (XPYT_SPLIT_XPYTHON)
     if(CMAKE_DL_LIBS)
         target_link_libraries(xpython PRIVATE ${CMAKE_DL_LIBS} util)
     endif()
+    target_link_libraries(xpython PRIVATE xeus-python)
 else ()
-    add_executable(xpython ${XPYTHON_SRC} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
-    xpyt_set_compile_options(xpython)
-
-    set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
-    if (APPLE)
-        set_target_properties(xpython PROPERTIES MACOSX_RPATH ON)
-    else()
-        set_target_properties(xpython PROPERTIES
-            BUILD_WITH_INSTALL_RPATH 1
-            SKIP_BUILD_RPATH FALSE
-        )
-    endif()
-    set_target_properties(xpython PROPERTIES 
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-    )
-
-    #TODO: add Threads as a dependence of xeus-static?
-    find_package(Threads)
-    target_link_libraries(xpython PRIVATE pybind11::embed pybind11_json xeus-static Threads::Threads)
+    find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
+    target_link_libraries(xpython PRIVATE pybind11_json xeus-static Threads::Threads)
 
     target_include_directories(xpython
                                PUBLIC
