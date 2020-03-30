@@ -29,8 +29,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
       env: PY=3 XPYT_SPLIT_XPYTHON=0
-  allow_failures:
-    - env: PY=3 XPYT_SPLIT_XPYTHON=0
 install:
     # Define the version of miniconda to download
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -73,9 +71,9 @@ install:
     - mkdir build
     - cd build
     - if [[ "$XPYT_SPLIT_XPYTHON" == 0 ]]; then
-        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DXPYT_SPLIT_XPYTHON=OFF -DXPYT_BUILD_SHARED=OFF -DXPYT_BUILD_STATIC=OFF ..;
+        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DXPYT_SPLIT_XPYTHON=OFF -DXPYT_BUILD_SHARED=OFF -DXPYT_BUILD_STATIC=ON ..;
       else
-        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..;
+        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DXPYT_SPLIT_XPYTHON=ON ..;
       fi
     - make -j2 install
 script:
