@@ -29,8 +29,9 @@ By default, ``XEUS_PYTHONHOME_RELPATH`` is unset and the PYTHONHOME is set to th
 
 By default, ``XPYT_BUILD_SHARED`` and ``XPYT_BUILD_STATIC`` are enabled by default.
 
-- ``XPYT_SPLIT_XPYTHON``: Split xpython build into library and executable.
+- ``XPYT_USE_SHARED_XEUS``: Link xpython with the xeus shared library (instead of the static library).
+- ``XPYT_USE_SHARED_XEUS_PYTHON``: Link xpython with the xeus-python shared library (instead of the static library).
 
-By default, ``XPYT_SPLIT_XPYTHON`` is enabled.
+By default, ``XPYT_USE_SHARED_XEUS`` and ``XPYT_USE_SHARED_XEUS_PYTHON`` are set to ``ON``.
 
 - ``ENABLE_PYPI_WARNING``: we enable this option when building PyPI wheel to show a warning.
