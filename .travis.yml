@@ -28,9 +28,21 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-      env: PY=3 XPYT_USE_SHARED=0
+      env: PY=3 XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=1
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+      env: PY=3 XPYT_USE_SHARED_XEUS=1 XPYT_USE_SHARED_XEUS_PYTHON=0
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+      env: PY=3 XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=0
   allow_failures:
-    - env: PY=3 XPYT_USE_SHARED=0
+    - env: PY=3 XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=0
 install:
     # Define the version of miniconda to download
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -72,11 +84,13 @@ install:
     # Build and install xeus-python
     - mkdir build
     - cd build
-    - if [[ "$XPYT_USE_SHARED" == 0 ]]; then
-        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF -DXPYT_USE_SHARED_XEUS=OFF ..;
-      else
-        cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ..;
+    - if [[ "$XPYT_USE_SHARED_XEUS_PYTHON" == 0 ]]; then
+        CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF";
       fi
+    - if [[ "$XPYT_USE_SHARED_XEUS" == 0 ]]; then
+        CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_USE_SHARED_XEUS=OFF";
+      fi
+    - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX ${CMAKE_EXTRA_ARGS} ..
     - make -j2 install
 script:
     # For Python 2, activate the kernel_test Python3 environment

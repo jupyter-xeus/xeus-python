@@ -265,6 +265,9 @@ macro(xpyt_create_target target_name linkage output_name)
     elseif (APPLE)
         target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
     endif ()
+
+    find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
+    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 endmacro()
 
 # xeus-python
@@ -321,8 +324,9 @@ else ()
     target_link_libraries(xpython PRIVATE xeus-python-static)
 
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
-    target_link_libraries(xpython PRIVATE Threads::Threads)
 endif()
+
+target_link_libraries(xpython PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 if(XPYT_ENABLE_PYPI_WARNING)
     message(STATUS "Enabling PyPI warning.")
