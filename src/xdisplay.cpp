@@ -9,6 +9,7 @@
 ****************************************************************************/
 
 #include <string>
+#include <iostream>
 
 #include "nlohmann/json.hpp"
 
@@ -20,6 +21,7 @@
 #include "pybind11/functional.h"
 
 #include "xdisplay.hpp"
+#include "xmatplotlib.hpp"
 #include "xutils.hpp"
 
 namespace py = pybind11;
@@ -32,6 +34,23 @@ namespace xpyt
         py::module py_json = py::module::import("json");
         py::module builtins = py::module::import(XPYT_BUILTINS);
         nl::json pub_data;
+
+        // Ugly Matplotlib special case. Matplotlib should implement _repr_mimebundle_ itself
+        // try
+        // {
+            py::module figure = py::module::import("matplotlib.figure");
+            py::module backend_inline = get_matplotlib_inline_module();
+
+            if (py::isinstance(obj, figure.attr("Figure")))
+            {
+                // TODO Support more image types? Reading the current type from the config
+                pub_data["image/png"] = backend_inline.attr("print_figure")(obj, "png");
+            }
+        // }
+        // catch (py::error_already_set&)
+        // {
+            // Ignore any error
+        // }
 
         if (hasattr(obj, "_repr_mimebundle_"))
         {

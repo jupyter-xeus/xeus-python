@@ -122,6 +122,8 @@ set(XEUS_PYTHON_SRC
     src/xis_complete.hpp
     src/xlinecache.cpp
     src/xlinecache.hpp
+    src/xmatplotlib.cpp
+    src/xmatplotlib.hpp
     src/xptvsd_client.cpp
     src/xptvsd_client.hpp
     src/xstream.cpp
@@ -168,7 +170,7 @@ macro(xpyt_set_compile_options target_name)
         CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 
         target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
-    
+
         if (XPYT_DISABLE_ARCH_NATIVE AND NOT XPYT_DISABLE_TUNE_GENERIC)
             target_compile_options(${target_name} PUBLIC -mtune=generic)
         elseif (XPYT_DISABLE_TUNE_GENERIC)

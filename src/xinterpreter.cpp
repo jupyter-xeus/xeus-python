@@ -30,6 +30,7 @@
 #include "xinput.hpp"
 #include "xinspect.hpp"
 #include "xis_complete.hpp"
+#include "xmatplotlib.hpp"
 #include "xlinecache.hpp"
 #include "xstream.hpp"
 #include "xtraceback.hpp"
@@ -75,6 +76,32 @@ namespace xpyt
 #if PY_MAJOR_VERSION >= 3
         sys.attr("modules")["linecache"] = get_linecache_module();
 #endif
+
+        // try
+        // {
+            py::module matplotlib = py::module::import("matplotlib");
+
+            std::string inline_backend = "module://ipykernel.pylab.backend_inline";
+
+            // Monkey patch ipykernel inline backend
+            sys.attr("modules")["ipykernel.pylab.backend_inline"] = get_matplotlib_inline_module();
+
+            matplotlib.attr("interactive")(true);
+            matplotlib.attr("rcParams")["backend"] = inline_backend;
+
+            py::module plt = py::module::import("matplotlib.pyplot");
+
+            plt.attr("switch_backend")(inline_backend);
+            plt.attr("show").attr("_needmain") = false;
+
+            // Is this needed?
+            // from IPython.utils.decorators import flag_calls
+            // plt.draw_if_interactive = flag_calls(plt.draw_if_interactive)
+        // }
+        // catch (py::error_already_set&)
+        // {
+            // Ignore any error here, it certainly is because Matplotlib is not installed
+        // }
     }
 
     interpreter::~interpreter()
@@ -260,11 +287,11 @@ namespace xpyt
         result["implementation_version"] = XPYT_VERSION;
 
         /* The jupyter-console banner for xeus-python is the following:
-          __  _____ _   _ ___ 
+          __  _____ _   _ ___
           \ \/ / _ \ | | / __|
            >  <  __/ |_| \__ \
           /_/\_\___|\__,_|___/
-                     
+
           xeus-python: a Jupyter lernel for Python
         */
 
