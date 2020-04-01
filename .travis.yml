@@ -18,6 +18,12 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+      env: PY=3 XPYT_DYNAMIC_SYSPATH=1
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
       env: PY=2
     - os: osx
       osx_image: xcode10
@@ -89,6 +95,9 @@ install:
       fi
     - if [[ "$XPYT_USE_SHARED_XEUS" == 0 ]]; then
         CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_USE_SHARED_XEUS=OFF";
+      fi
+    - if [[ "$XPYT_DYNAMIC_SYSPATH" == 1 ]]; then
+        CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_DYNAMIC_SYSPATH=ON";
       fi
     - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX ${CMAKE_EXTRA_ARGS} ..
     - make -j2 install

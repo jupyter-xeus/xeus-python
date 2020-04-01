@@ -120,8 +120,11 @@ int main(int argc, char* argv[])
     xpyt::set_pythonhome();
     print_pythonhome();
 
+#ifdef XPYT_DYNAMIC_SYSPATH
+    // Setting initial sys.path
     xpyt::set_syspath();
     print_syspath();
+#endif
 
     // Instanciating the Python interpreter
     py::scoped_interpreter guard;

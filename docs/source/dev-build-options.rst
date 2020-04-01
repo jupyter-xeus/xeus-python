@@ -35,3 +35,7 @@ setting ``XPYT_GTEST_SRC_DIR`` enables ``XPYT_BUILD_TESTS``. If the ``XPYT_BUILD
   By default, ``XPYT_USE_SHARED_XEUS`` and ``XPYT_USE_SHARED_XEUS_PYTHON`` are set to ``ON``.
 
 - ``XPYT_ENABLE_PYPI_WARNING``: We enable this option when building PyPI wheel to show a warning.
+- ``XPYT_DYNAMIC_SYSPATH``: Collect sys.path dynamically from host Python.
+- ``XPYT_DROP_PREFIX_PATH``: Drop prefix path in generated kernelspec, and host Python path.
+
+  By default, ``XPYT_DYNAMIC_SYSPATH`` and ``XPYT_DROP_PREFIX_PATH`` are set to ``OFF``.

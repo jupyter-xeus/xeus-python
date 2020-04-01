@@ -27,20 +27,6 @@ set(${PROJECT_NAME}_VERSION
     ${XPYT_VERSION_MAJOR}.${XPYT_VERSION_MINOR}.${XPYT_VERSION_PATCH})
 message(STATUS "Building xeus-python v${${PROJECT_NAME}_VERSION}")
 
-# Configuration
-# =============
-
-include(GNUInstallDirs)
-
-if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
-    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
-endif ()
-
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
-)
-
 # Build options
 # =============
 
@@ -56,6 +42,10 @@ OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython with the xeus-python shared lib
 # Test options
 OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
+
+# Other options
+OPTION(XPYT_DYNAMIC_SYSPATH "Collect sys.path from host Python interpreter" OFF)
+OPTION(XPYT_DROP_PREFIX_PATH "Drop prefix path in generated kernelspec, and host Python interpreter" OFF)
 
 # Dependencies
 # ============
@@ -333,11 +323,6 @@ if(XPYT_ENABLE_PYPI_WARNING)
     target_compile_definitions(xpython PRIVATE XEUS_PYTHON_PYPI_WARNING)
 endif()
 
-if(XPYT_SYSPATH)
-    message(STATUS "Specifying sys.path.")
-    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_SYSPATH=${XPYT_SYSPATH})
-endif()
-
 if (XEUS_PYTHONHOME_RELPATH)
     target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
 endif()
@@ -352,6 +337,44 @@ endif()
 if(XPYT_BUILD_TESTS)
     add_subdirectory(test)
 endif()
+
+# Configuration
+# =============
+
+include(GNUInstallDirs)
+
+# Kernelspec
+# ----------
+
+if (NOT XPYT_DROP_PREFIX_PATH)
+    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
+endif ()
+
+configure_file (
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
+)
+
+# Host Python executable path
+# ---------------------------
+
+if (XPYT_DYNAMIC_SYSPATH)
+    # Resolve symlinks to the real full path (pythonX.X instead of python)
+    get_filename_component(XPYTHON_FULL_EXECUTABLE ${PYTHON_EXECUTABLE} REALPATH)
+    message(STATUS "Python full executable: " ${XPYTHON_FULL_EXECUTABLE})
+    if (NOT XPYT_DROP_PREFIX_PATH)
+        set(XPYTHON_PYTHON_EXECUTABLE "${XPYTHON_FULL_EXECUTABLE}")
+    else ()
+        get_filename_component(XPYTHON_PYTHON_EXECUTABLE ${XPYTHON_FULL_EXECUTABLE} NAME)
+    endif ()
+
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/xeus-python/host.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/xeus-python/host"
+    )
+
+    target_compile_definitions(xpython PRIVATE XPYT_DYNAMIC_SYSPATH)
+endif ()
 
 # Installation
 # ============
@@ -377,10 +400,16 @@ endif ()
 install(TARGETS xpython
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# Configuration and data directories for jupyter and xeus-python
-set(XJUPYTER_DATA_DIR "share/jupyter"    CACHE STRING "Jupyter data directory")
+# Install xeus-python host file
+if (XPYT_DYNAMIC_SYSPATH)
+    set(XPYT_DATA_DIR "share/xeus-python" CACHE STRING "xeus-python data directory")
+    set(XPYT_HOST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/share/xeus-python)
+    install(FILES ${XPYT_HOST_DIR}/host
+            DESTINATION ${XPYT_DATA_DIR})
+endif ()
 
 # Install Jupyter kernelspecs
+set(XJUPYTER_DATA_DIR "share/jupyter" CACHE STRING "Jupyter data directory")
 set(XPYT_KERNELSPEC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels)
 install(DIRECTORY ${XPYT_KERNELSPEC_DIR}
         DESTINATION ${XJUPYTER_DATA_DIR}

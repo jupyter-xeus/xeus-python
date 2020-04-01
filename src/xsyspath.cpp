@@ -8,34 +8,69 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include "pybind11/pybind11.h"
-
-#include <iostream>
-#include <regex>
+#include <array>
+#include <cstdio>
 #include <string>
+#include <fstream>
+#include <memory>
+#include <stdexcept>
+
+#include "pybind11/pybind11.h"
 
 #include "xeus-python/xeus_python_config.hpp"
 
 #include "xsyspath.hpp"
 #include "xpaths.hpp"
 
+#ifdef _WIN32
+#define XPYT_POPEN _popen
+#define XPYT_PCLOSE _pclose
+#else
+#define XPYT_POPEN popen
+#define XPYT_PCLOSE pclose
+#endif
+
+
+namespace py = pybind11;
+
 namespace xpyt
 {
+    std::string exec(const std::string& command)
+    {
+        std::array<char, 128> buffer;
+        std::string result;
+        std::unique_ptr<FILE, decltype(&XPYT_PCLOSE)> pipe(XPYT_POPEN(command.c_str(), "r"), XPYT_PCLOSE);
+        if (!pipe)
+        {
+            throw std::runtime_error("popen() failed!");
+        }
+        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+        {
+            result += buffer.data();
+        }
+        return result;
+    }
+
+    std::string get_host_python()
+    {
+        std::ifstream host_file(prefix_path() + "/share/xeus-python/host");
+        std::string host_python((std::istreambuf_iterator<char>(host_file)),
+                                (std::istreambuf_iterator<char>()));
+        host_python.pop_back(); // remove newline
+        return host_python;
+    }
+
     void set_syspath()
     {
-// The XEUS_PYTHON_SYSPATH compile-time definition can be used.
-// to specify the syspath locations as relative paths to the PREFIX.
-#if defined(XEUS_PYTHON_SYSPATH)
-        static const std::string syspath = std::regex_replace(
-            XPYT_STRINGIFY(XEUS_PYTHON_SYSPATH),
-            std::regex("\\{PREFIX\\}"),
-            prefix_path());
+        // Called before Py_Initialize
+        // Python is called with the -S option
+        const std::string syspath = exec(get_host_python() + " -c \"import sys; print(':'.join(sys.path[1:]))\"");
 #if PY_MAJOR_VERSION == 2
-        Py_SetPath(const_cast<char*>(syspath.c_str()));
+        // Py_SetPath is Python 3 only
+        // Py_SetPath(const_cast<char*>(syspath.c_str()));
 #else
-        static const std::wstring wstr(syspath.cbegin(), syspath.cend());;
+        const std::wstring wstr(syspath.cbegin(), syspath.cend());;
         Py_SetPath(const_cast<wchar_t*>(wstr.c_str()));
-#endif
 #endif
     }
 }
