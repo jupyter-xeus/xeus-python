@@ -100,6 +100,16 @@ void print_syspath()
 
 int main(int argc, char* argv[])
 {
+    // If we are called from the Jupyter launcher, silence all logging. This
+    // is important for a JupyterHub configured with cleanup_servers = False:
+    // Upon restart, spawned single-user servers keep running but without the
+    // std* streams. When a user then tries to start a new kernel, xpython
+    // will get a SIGPIPE and exit.
+    if (std::getenv("JPY_PARENT_PID") != NULL)
+    {
+        std::clog.setstate(std::ios_base::failbit);
+    }
+
 #ifdef __GNUC__
     std::clog << "registering handler for SIGSEGV" << std::endl;
     signal(SIGSEGV, handler);
