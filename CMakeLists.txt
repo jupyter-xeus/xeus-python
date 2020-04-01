@@ -259,7 +259,14 @@ macro(xpyt_create_target target_name linkage output_name)
         set(XPYT_XEUS_TARGET xeus-static)
     endif ()
 
-    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} PRIVATE pybind11::pybind11 pybind11_json)
+    if (${linkage_upper} EQUAL "SHARED")
+        target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} PRIVATE pybind11::pybind11 pybind11_json)
+    else ()
+        # cf. https://gitlab.kitware.com/cmake/cmake/issues/17357
+        #     https://gitlab.kitware.com/cmake/cmake/issues/15415    
+        target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} pybind11::pybind11 pybind11_json)
+    endif ()
+
     if (WIN32 OR CYGWIN)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)
