@@ -345,7 +345,7 @@ endif()
 # Tests
 # =====
 
-if(XPYT_DOWNLOAD_GTEST OR GTEST_SRC_DIR)
+if(XPYT_DOWNLOAD_GTEST OR XPYT_GTEST_SRC_DIR)
     set(XPYT_BUILD_TESTS ON)
 endif()
 
@@ -391,7 +391,7 @@ if (XEXTRA_JUPYTER_DATA_DIR)
     install(DIRECTORY ${XPYT_KERNELSPEC_DIR}
             DESTINATION ${XEXTRA_JUPYTER_DATA_DIR}
             PATTERN "*.in" EXCLUDE)
-endif(XEXTRA_JUPYTER_DATA_DIR)
+endif ()
 
 # Configure 'xeus-pythonConfig.cmake' for a build tree
 set(XEUS_PYTHON_CONFIG_CODE "####### Expanded from \@XEUS_PYTHON_CONFIG_CODE\@ #######\n")
