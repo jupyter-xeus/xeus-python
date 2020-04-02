@@ -110,27 +110,34 @@ int main(int argc, char* argv[])
         std::clog.setstate(std::ios_base::failbit);
     }
 
+    // Registering SIGSEGV handler
 #ifdef __GNUC__
     std::clog << "registering handler for SIGSEGV" << std::endl;
     signal(SIGSEGV, handler);
 #endif
-    std::string file_name = extract_filename(argc, argv);
+
+    // Setting PYTHONHOME
     xpyt::set_pythonhome();
     print_pythonhome();
 
     xpyt::set_syspath();
     print_syspath();
 
+    // Instanciating the Python interpreter
     py::scoped_interpreter guard;
+
+    // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
 
-    if (!file_name.empty())
+    std::string connection_filename = extract_filename(argc, argv);
+
+    if (!connection_filename.empty())
     {
-        xeus::xconfiguration config = xeus::load_configuration(file_name);
+        xeus::xconfiguration config = xeus::load_configuration(connection_filename);
 
         xeus::xkernel kernel(config,
                              xeus::get_user_name(),
@@ -144,7 +151,7 @@ int main(int argc, char* argv[])
         std::clog <<
             "Starting xeus-python kernel...\n\n"
             "If you want to connect to this kernel from an other client, you can use"
-            " the " + file_name + " file."
+            " the " + connection_filename + " file."
             << std::endl;
 
         kernel.start();
