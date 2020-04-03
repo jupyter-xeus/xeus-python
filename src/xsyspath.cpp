@@ -64,12 +64,13 @@ namespace xpyt
     {
         // Called before Py_Initialize
         // Python is called with the -S option
-        const std::string syspath = exec(get_host_python() + " -c \"import sys; print(':'.join(sys.path[1:]))\"");
+        std::string syspath = exec(get_host_python() + " -c \"import sys; print(':'.join(sys.path[1:]))\"");
+        syspath.pop_back(); // remove newline
 #if PY_MAJOR_VERSION == 2
         // Py_SetPath is Python 3 only
         // Py_SetPath(const_cast<char*>(syspath.c_str()));
 #else
-        const std::wstring wstr(syspath.cbegin(), syspath.cend());;
+        std::wstring wstr(syspath.cbegin(), syspath.cend());;
         Py_SetPath(const_cast<wchar_t*>(wstr.c_str()));
 #endif
     }
