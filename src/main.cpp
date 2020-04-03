@@ -126,7 +126,7 @@ int main(int argc, char* argv[])
 
 #ifdef XPYT_DYNAMIC_SYSPATH
     // Setting initial sys.path
-    xpyt::set_syspath();
+    // xpyt::set_syspath();
     print_syspath();
 #endif
 
