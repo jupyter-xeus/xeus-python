@@ -31,6 +31,7 @@
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xdebugger.hpp"
 
+#include "xprogramname.hpp"
 #include "xpythonhome.hpp"
 #include "xsyspath.hpp"
 
@@ -115,6 +116,9 @@ int main(int argc, char* argv[])
     std::clog << "registering handler for SIGSEGV" << std::endl;
     signal(SIGSEGV, handler);
 #endif
+
+    // Setting program name
+    xpyt::set_programname();
 
     // Setting PYTHONHOME
     xpyt::set_pythonhome();

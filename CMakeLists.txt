@@ -64,7 +64,7 @@ if (NOT TARGET pybind11_json)
     find_package(pybind11_json ${pybind11_json_REQUIRED_VERSION} REQUIRED)
 endif ()
 
-# flags
+# Flags
 # =====
 
 include(CheckCXXCompilerFlag)
@@ -133,6 +133,8 @@ set(XPYTHON_SRC
     src/main.cpp
     src/xpaths.hpp
     src/xpaths.cpp
+    src/xprogramname.hpp
+    src/xprogramname.cpp
     src/xpythonhome.hpp
     src/xpythonhome.cpp
     src/xsyspath.hpp
@@ -288,6 +290,7 @@ endif ()
 add_executable(xpython ${XPYTHON_SRC})
 xpyt_set_compile_options(xpython)
 set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
+
 if (APPLE)
     set_target_properties(xpython PROPERTIES
         MACOSX_RPATH ON
@@ -298,6 +301,7 @@ else()
         SKIP_BUILD_RPATH FALSE
     )
 endif()
+
 set_target_properties(xpython PROPERTIES
     INSTALL_RPATH_USE_LINK_PATH TRUE
 )
@@ -326,6 +330,14 @@ endif()
 if (XEUS_PYTHONHOME_RELPATH)
     target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
 endif()
+
+# Retrive Python program path by resolving symlinks (so that we get "pythonX.X" instead of to "python")
+get_filename_component(XPYTHON_FULL_EXECUTABLE ${PYTHON_EXECUTABLE} REALPATH)
+message(STATUS "Python full executable: " ${XPYTHON_FULL_EXECUTABLE})
+
+# Retrieve filename component from Python program path
+get_filename_component(XPYTHON_PROGRAM_NAME ${XPYTHON_FULL_EXECUTABLE} NAME)
+target_compile_definitions(xpython PRIVATE XPYTHON_PROGRAM_NAME=${XPYTHON_PROGRAM_NAME})
 
 # Tests
 # =====
@@ -359,13 +371,10 @@ configure_file (
 # ---------------------------
 
 if (XPYT_DYNAMIC_SYSPATH)
-    # Resolve symlinks to the real full path (pythonX.X instead of python)
-    get_filename_component(XPYTHON_FULL_EXECUTABLE ${PYTHON_EXECUTABLE} REALPATH)
-    message(STATUS "Python full executable: " ${XPYTHON_FULL_EXECUTABLE})
     if (NOT XPYT_DROP_PREFIX_PATH)
         set(XPYTHON_PYTHON_EXECUTABLE "${XPYTHON_FULL_EXECUTABLE}")
     else ()
-        get_filename_component(XPYTHON_PYTHON_EXECUTABLE ${XPYTHON_FULL_EXECUTABLE} NAME)
+        set(XPYTHON_PYTHON_EXECUTABLE "${XPYTHON_PROGRAM_NAME}")
     endif ()
 
     configure_file (

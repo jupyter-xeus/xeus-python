@@ -63,7 +63,6 @@ namespace xpyt
     void set_syspath()
     {
         // Called before Py_Initialize
-        // Python is called with the -S option
         std::string syspath = exec(get_host_python() + " -c \"import sys; print(':'.join(sys.path[1:]))\"");
         syspath.pop_back(); // remove newline
 #if PY_MAJOR_VERSION == 2
