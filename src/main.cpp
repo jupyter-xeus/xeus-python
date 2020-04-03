@@ -129,6 +129,8 @@ int main(int argc, char* argv[])
     // Instanciating the Python interpreter
     py::scoped_interpreter guard;
 
+    print_syspath();
+
     // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));
