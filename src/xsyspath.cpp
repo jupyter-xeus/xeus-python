@@ -63,7 +63,7 @@ namespace xpyt
     void set_syspath()
     {
         // Called before Py_Initialize
-        std::string syspath = exec(get_host_python() + " -c \"import sys; print(':'.join(sys.path[1:]))\"");
+        std::string syspath = exec(get_host_python() + " -c \"import sys; print(':'.join(sys.path))\"");
         syspath.pop_back(); // remove newline
 #if PY_MAJOR_VERSION == 2
         // Py_SetPath is Python 3 only
