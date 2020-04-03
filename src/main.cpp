@@ -130,6 +130,7 @@ int main(int argc, char* argv[])
     py::scoped_interpreter guard;
 
     print_syspath();
+    py::exec("import sys; print('sys.path: ', sys.path)");
 
     // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
