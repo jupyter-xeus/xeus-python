@@ -16,6 +16,9 @@
 
 #include "xprogramname.hpp"
 
+// DEBUG
+#include <iostream>
+
 namespace py = pybind11;
 
 namespace xpyt
@@ -24,10 +27,11 @@ namespace xpyt
     {
 #if defined(XPYTHON_PROGRAM_NAME)
         static const std::string programname = XPYT_STRINGIFY(XPYTHON_PROGRAM_NAME);
+        std::cout <<  "Program Name: " << programname << std::endl; 
 #if PY_MAJOR_VERSION == 2
         Py_SetProgramName(const_cast<char*>(programname.c_str()));
 #else
-        std::wstring wstr(programname.cbegin(), programname.cend());;
+        static const std::wstring wstr(programname.cbegin(), programname.cend());;
         Py_SetProgramName(const_cast<wchar_t*>(wstr.c_str()));
 #endif
 #endif
