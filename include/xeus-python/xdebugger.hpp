@@ -47,6 +47,7 @@ namespace xpyt
         nl::json set_breakpoints_request(const nl::json& message);
         nl::json source_request(const nl::json& message);
         nl::json stack_trace_request(const nl::json& message);
+        nl::json variables_request(const nl::json& message);
         nl::json debug_info_request(const nl::json& message);
         nl::json inspect_variables_request(const nl::json& message);
 

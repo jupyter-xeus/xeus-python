@@ -112,6 +112,27 @@ nl::json make_shutdown_request()
     return req;
 }
 
+nl::json make_breakpoint_request(int seq, const std::string& path, int line_number)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "setBreakpoints"},
+        {"arguments", {
+            {"source", {
+                {"path", path}
+            }},
+            {"breakpoints",
+                nl::json::array({nl::json::object({{"line", line_number}})})
+            },
+            {"lines", {line_number}},
+            {"sourceModified", false}
+        }}
+    };
+    return req;
+
+}
+
 nl::json make_breakpoint_request(int seq, const std::string& path, int line_number1, int line_number2)
 {
     nl::json req = {
@@ -207,14 +228,16 @@ nl::json make_scopes_request(int seq, int frame_id)
     return req;
 }
 
-nl::json make_variables_request(int seq, int var_ref)
+nl::json make_variables_request(int seq, int var_ref, int start = 0, int count = 0)
 {
     nl::json req = {
         {"type", "request"},
         {"seq", seq},
         {"command", "variables"},
         {"arguments", {
-            {"variablesReference", var_ref}
+            {"variablesReference", var_ref},
+            {"start", start},
+            {"count", count}
         }}
     };
     return req;
@@ -313,6 +336,7 @@ public:
     bool test_stack_trace();
     bool test_debug_info();
     bool test_inspect_variables();
+    bool test_variables();
     bool test_next();
     void shutdown();
 
@@ -650,6 +674,55 @@ bool debugger_client::test_inspect_variables()
     return res;
 }
 
+bool debugger_client::test_variables()
+{
+    std::string code = "i=4\nj=i+4\nk=j-3\ni=k+2\n";
+    attach();
+    {
+        m_client.send_on_control("debug_request", make_dump_cell_request(4, code));
+        nl::json res = m_client.receive_on_control();
+        std::string path = res["content"]["body"]["sourcePath"].get<std::string>();
+        m_client.send_on_control("debug_request", make_breakpoint_request(4, path, 4));
+        m_client.receive_on_control();
+    }
+
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
+    m_client.send_on_shell("execute_request", make_execute_request(code));
+    nl::json ev = m_client.wait_for_debug_event("stopped");
+    int seq = ev["content"]["seq"].get<int>();
+
+    m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+    ++seq;
+    nl::json json1 = m_client.receive_on_control();
+
+    if(json1["content"]["body"]["stackFrames"].empty())
+    {
+        m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+        ++seq;
+        json1 = m_client.receive_on_control();
+    }
+
+    int frame_id = json1["content"]["body"]["stackFrames"][0]["id"].get<int>();
+    m_client.send_on_control("debug_request", make_scopes_request(seq, frame_id));
+    ++seq;
+    nl::json json2 = m_client.receive_on_control();
+
+    int variable_ref = json2["content"]["body"]["scopes"][0]["variablesReference"].get<int>();
+    m_client.send_on_control("debug_request", make_variables_request(seq, variable_ref, 1, 1));
+    ++seq;
+    nl::json json3 = m_client.receive_on_control();
+
+    const auto& ar = json3["content"]["body"]["variables"];
+    bool res = ar.size() == 1u;
+
+    m_client.send_on_control("debug_request", make_continue_request(seq, 1));
+    m_client.receive_on_control();
+
+    return res;
+}
+
 bool debugger_client::test_next()
 {
     attach();
@@ -967,6 +1040,19 @@ TEST(debugger, inspect_variables)
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
         bool res = deb.test_inspect_variables();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+    }
+}
+
+TEST(debugger, variables)
+{
+    start_kernel();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        bool res = deb.test_variables();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
