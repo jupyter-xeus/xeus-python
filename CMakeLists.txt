@@ -60,7 +60,7 @@ OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 # Dependencies
 # ============
 
-set(xeus_REQUIRED_VERSION 0.23.9)
+set(xeus_REQUIRED_VERSION 0.23.11)
 set(pybind11_REQUIRED_VERSION 2.2.4)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
 

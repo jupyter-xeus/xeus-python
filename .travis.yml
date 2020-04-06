@@ -61,7 +61,7 @@ install:
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     # Host dependencies
-    - conda install xeus=0.23.9 nlohmann_json cppzmq xtl pybind11=2.2.4 pybind11_json=0.2.2 jedi=0.15.1 pygments=2.3.1 ptvsd -c conda-forge
+    - conda install xeus=0.23.11 nlohmann_json cppzmq xtl pybind11=2.2.4 pybind11_json=0.2.2 jedi=0.15.1 pygments=2.3.1 ptvsd -c conda-forge
     # Build dependencies
     - conda install cmake -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
