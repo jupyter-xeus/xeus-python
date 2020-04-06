@@ -135,6 +135,13 @@ int main(int argc, char* argv[])
 
     std::string connection_filename = extract_filename(argc, argv);
 
+#ifdef XEUS_PYTHON_PYPI_WARNING
+    std::clog <<
+        "WARNING: this instance of xeus-python has been installed from a PyPI wheel.\n"
+        "We recommend using a general-purpose package manager instead, such as Conda/Mamba.\n"
+        << std::endl;
+#endif
+
     if (!connection_filename.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
@@ -181,7 +188,8 @@ int main(int argc, char* argv[])
             "    \"hb_port\": " + config.m_hb_port + ",\n"
             "    \"signature_scheme\": \"" + config.m_signature_scheme + "\",\n"
             "    \"key\": \"" + config.m_key + "\"\n"
-            "}\n```\n";
+            "}\n```"
+            << std::endl;
 
         kernel.start();
     }
