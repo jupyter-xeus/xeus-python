@@ -113,6 +113,11 @@ namespace xpyt
         return py_msg;
     }
 
+    bool is_pyobject_true(const py::object& obj)
+    {
+        return PyObject_IsTrue(obj.ptr());
+    }
+
 #if PY_MAJOR_VERSION == 2
     bool holding_gil()
     {

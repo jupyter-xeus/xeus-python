@@ -42,6 +42,8 @@ namespace xpyt
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
 
+    bool is_pyobject_true(const py::object& obj);
+
     bool holding_gil();
 
 #define XPYT_HOLDING_GIL(func)           \
