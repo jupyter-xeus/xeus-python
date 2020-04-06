@@ -74,7 +74,7 @@ if (NOT TARGET pybind11_json)
     find_package(pybind11_json ${pybind11_json_REQUIRED_VERSION} REQUIRED)
 endif ()
 
-# flags
+# Flags
 # =====
 
 include(CheckCXXCompilerFlag)
