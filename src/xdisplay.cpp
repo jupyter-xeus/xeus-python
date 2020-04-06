@@ -728,6 +728,52 @@ namespace xpyt
         return data_and_metadata();
     }
 
+    /******************
+     * xgeojson class *
+     ******************/
+
+    class xgeojson : public xjson
+    {
+    public:
+
+        xgeojson(
+            const py::object& data, const py::object& url, const py::object& filename,
+            const py::bool_& expanded, const py::object& metadata, const py::str& root,
+            const py::dict& layer_options, const py::str& url_template
+        );
+        virtual ~xgeojson();
+
+        void ipython_display();
+
+    private:
+
+        py::dict m_layer_options;
+        py::str m_url_template;
+    };
+
+    xgeojson::xgeojson(
+            const py::object& data, const py::object& url, const py::object& filename,
+            const py::bool_& expanded, const py::object& metadata, const py::str& root,
+            const py::dict& layer_options, const py::str& url_template)
+        : xjson(data, url, filename, expanded, metadata, root), m_layer_options(layer_options), m_url_template(url_template)
+    {
+        const py::dict& p_metadata = get_metadata();
+        p_metadata["layer_options"] = m_layer_options;
+        p_metadata["url_template"] = m_url_template;
+    }
+
+    xgeojson::~xgeojson()
+    {
+    }
+
+    void xgeojson::ipython_display()
+    {
+        py::dict bundle = py::dict("application/geo+json"_a=get_data(), "text/plain"_a="<IPython.display.GeoJSON object>");
+        py::dict metadata = py::dict("application/geo+json"_a=get_metadata());
+
+        xdisplay(bundle, {}, {}, metadata, py::none(), py::none(), false, true);
+    }
+
     /**********************
      * xprogressbar class *
      **********************/
@@ -987,6 +1033,14 @@ namespace xpyt
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(),
                 py::arg("expanded") = false, py::arg("metadata") = py::none(), py::arg("root") = "root")
             .def("_repr_json_", &xjson::repr_json);
+
+        py::class_<xgeojson, xjson>(display_module, "GeoJSON")
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::bool_&, const py::object&, const py::str&, const py::dict&, const py::str&>(),
+                py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(),
+                py::arg("expanded") = false, py::arg("metadata") = py::none(), py::arg("root") = "root",
+                py::arg("layer_options") = py::dict(), py::arg("url_template") = py::str())
+            .def("_ipython_display_", &xgeojson::ipython_display);
 
         py::class_<xprogressbar>(display_module, "ProgressBar")
             .def(py::init<std::ptrdiff_t>(), py::arg("total"))
