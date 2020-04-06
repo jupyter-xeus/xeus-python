@@ -34,6 +34,7 @@
 
 namespace py = pybind11;
 namespace nl = nlohmann;
+using namespace pybind11::literals;
 
 namespace xpyt
 {
@@ -62,24 +63,38 @@ namespace xpyt
         return exclude.size() != 0 && std::find(exclude.cbegin(), exclude.cend(), mimetype) != exclude.end();
     }
 
-    void compute_repr(const py::object& obj, const std::string& repr_method, const std::string& mimetype, const std::vector<std::string>& include, const std::vector<std::string>& exclude, nl::json& pub_data)
+    void compute_repr(
+        const py::object& obj, const std::string& repr_method, const std::string& mimetype,
+        const std::vector<std::string>& include, const std::vector<std::string>& exclude,
+        py::dict& pub_data, py::dict& pub_metadata)
     {
         if (hasattr(obj, repr_method.c_str()) && should_include(mimetype, include) && !should_exclude(mimetype, exclude))
         {
-            const auto& repr = obj.attr(repr_method.c_str())();
+            const py::object& repr = obj.attr(repr_method.c_str())();
 
             if (!repr.is_none())
             {
-                pub_data[mimetype] = py::str(repr);
+                if (py::isinstance<py::tuple>(repr))
+                {
+                    py::tuple repr_tuple = repr;
+
+                    pub_data[mimetype.c_str()] = repr_tuple[0];
+                    pub_metadata[mimetype.c_str()] = repr_tuple[1];
+                }
+                else
+                {
+                    pub_data[mimetype.c_str()] = repr;
+                }
             }
         }
     }
 
-    nl::json mime_bundle_repr(const py::object& obj, const std::vector<std::string>& include = {}, const std::vector<std::string>& exclude = {})
+    py::tuple mime_bundle_repr(const py::object& obj, const std::vector<std::string>& include = {}, const std::vector<std::string>& exclude = {})
     {
         py::module py_json = py::module::import("json");
         py::module builtins = py::module::import(XPYT_BUILTINS);
-        nl::json pub_data;
+        py::dict pub_data;
+        py::dict pub_metadata;
 
         if (hasattr(obj, "_repr_mimebundle_"))
         {
@@ -87,23 +102,20 @@ namespace xpyt
         }
         else
         {
-            compute_repr(obj, "_repr_html_", "text/html", include, exclude, pub_data);
-            compute_repr(obj, "_repr_markdown_", "text/markdown", include, exclude, pub_data);
-            compute_repr(obj, "_repr_svg_", "image/svg+xml", include, exclude, pub_data);
-            compute_repr(obj, "_repr_png_", "image/png", include, exclude, pub_data);
-            compute_repr(obj, "_repr_jpeg_", "image/jpeg", include, exclude, pub_data);
-            compute_repr(obj, "_repr_latex_", "text/latex", include, exclude, pub_data);
-            compute_repr(obj, "_repr_json_", "application/json", include, exclude, pub_data);
-            compute_repr(obj, "_repr_javascript_", "application/javascript", include, exclude, pub_data);
-            compute_repr(obj, "_repr_pdf_", "application/pdf", include, exclude, pub_data);
+            compute_repr(obj, "_repr_html_", "text/html", include, exclude, pub_data, pub_metadata);
+            compute_repr(obj, "_repr_markdown_", "text/markdown", include, exclude, pub_data, pub_metadata);
+            compute_repr(obj, "_repr_svg_", "image/svg+xml", include, exclude, pub_data, pub_metadata);
+            compute_repr(obj, "_repr_png_", "image/png", include, exclude, pub_data, pub_metadata);
+            compute_repr(obj, "_repr_jpeg_", "image/jpeg", include, exclude, pub_data, pub_metadata);
+            compute_repr(obj, "_repr_latex_", "text/latex", include, exclude, pub_data, pub_metadata);
+            compute_repr(obj, "_repr_json_", "application/json", include, exclude, pub_data, pub_metadata);
+            compute_repr(obj, "_repr_javascript_", "application/javascript", include, exclude, pub_data, pub_metadata);
+            compute_repr(obj, "_repr_pdf_", "application/pdf", include, exclude, pub_data, pub_metadata);
         }
 
-        if (pub_data.size() == 0)
-        {
-            pub_data["text/plain"] = py::str(builtins.attr("repr")(obj));
-        }
+        pub_data["text/plain"] = py::str(builtins.attr("repr")(obj));
 
-        return pub_data;
+        return py::make_tuple(pub_data, pub_metadata);
     }
 
     /****************************
@@ -155,21 +167,20 @@ namespace xpyt
                 return;
             }
 
-            nl::json pub_data;
+            py::object pub_data;
+            py::object pub_metadata;
             if (raw)
             {
                 pub_data = obj;
             }
             else
             {
-                pub_data = mime_bundle_repr(obj);
+                const py::tuple& repr = mime_bundle_repr(obj);
+                pub_data = repr[0];
+                pub_metadata = repr[1];
             }
 
-            interp.publish_execution_result(
-                m_execution_count,
-                std::move(pub_data),
-                nl::json::object()
-            );
+            interp.publish_execution_result(m_execution_count, nl::json(pub_data), nl::json(pub_metadata));
         }
     }
 
@@ -179,7 +190,7 @@ namespace xpyt
 
     void xdisplay(const py::object& obj,
                   const std::vector<std::string>& include, const std::vector<std::string>& exclude,
-                  const py::object& metadata, const py::object& transient, const py::object& display_id,
+                  const py::dict& metadata, const py::object& transient, const py::object& display_id,
                   bool update, bool raw)
     {
         auto& interp = xeus::get_interpreter();
@@ -192,9 +203,21 @@ namespace xpyt
                 return;
             }
 
-            nl::json pub_data = raw ? nl::json(obj) : mime_bundle_repr(obj, include, exclude);
+            py::object pub_data;
+            py::object pub_metadata = py::dict();
+            if (raw)
+            {
+                pub_data = obj;
+            }
+            else
+            {
+                const py::tuple& repr = mime_bundle_repr(obj, include, exclude);
+                pub_data = repr[0];
+                pub_metadata = repr[1];
+            }
+            pub_metadata.attr("update")(metadata);
+
             nl::json cpp_transient = transient.is_none() ? nl::json::object() : nl::json(transient);
-            nl::json cpp_metadata = metadata.is_none() ? nl::json::object() : nl::json(metadata);
 
             if (!display_id.is_none())
             {
@@ -203,15 +226,11 @@ namespace xpyt
 
             if (update)
             {
-                interp.update_display_data(
-                    std::move(pub_data), std::move(cpp_metadata), std::move(cpp_transient)
-                );
+                interp.update_display_data(std::move(pub_data), std::move(pub_metadata), std::move(cpp_transient));
             }
             else
             {
-                interp.display_data(
-                    std::move(pub_data), std::move(cpp_metadata), std::move(cpp_transient)
-                );
+                interp.display_data(std::move(pub_data), nl::json(pub_metadata), nl::json(cpp_transient));
             }
         }
     }
@@ -311,6 +330,7 @@ namespace xpyt
         py::object data_and_metadata() const;
 
         py::object get_metadata();
+        virtual void set_metadata(const py::object& data);
         py::object get_data();
         virtual void set_data(const py::object& data);
 
@@ -379,6 +399,11 @@ namespace xpyt
     py::object xdisplay_object::get_metadata()
     {
         return m_metadata;
+    }
+
+    void xdisplay_object::set_metadata(const py::object& data)
+    {
+        m_metadata = data;
     }
 
     py::object xdisplay_object::get_data()
@@ -636,6 +661,73 @@ namespace xpyt
         return data_and_metadata();
     }
 
+    /***************
+     * xjson class *
+     ***************/
+
+    class xjson : public xdisplay_object
+    {
+    public:
+
+        xjson(
+            const py::object& data, const py::object& url, const py::object& filename,
+            const py::bool_& expanded, const py::object& metadata, const py::str& root
+        );
+        virtual ~xjson();
+
+        py::object repr_json() const;
+
+    protected:
+
+        void set_data(const py::object& data) override;
+
+    };
+
+    xjson::xjson(
+            const py::object& data, const py::object& url, const py::object& filename,
+            const py::bool_& expanded, const py::object& metadata, const py::str& root)
+        : xdisplay_object(data, url, filename, metadata)
+    {
+        if (get_metadata().is_none())
+        {
+            set_metadata(py::dict("expanded"_a=expanded, "root"_a=root));
+        }
+        else
+        {
+            get_metadata().attr("update")(py::dict("expanded"_a=expanded, "root"_a=root));
+        }
+    }
+
+    xjson::~xjson()
+    {
+    }
+
+    void xjson::set_data(const py::object& data)
+    {
+        py::module pathlib = py::module::import("pathlib");
+
+        if (py::isinstance(data, py::make_tuple(pathlib.attr("Path"), pathlib.attr("PurePath"))))
+        {
+            xdisplay_object::set_data(py::str(data));
+            return;
+        }
+
+        if (py::isinstance<py::str>(data))
+        {
+            py::module json = py::module::import("json");
+
+            xdisplay_object::set_data(json.attr("loads")(data));
+            return;
+        }
+
+        xdisplay_object::set_data(data);
+    }
+
+    py::object xjson::repr_json() const
+    {
+        return data_and_metadata();
+    }
+
     /**********************
      * xprogressbar class *
      **********************/
@@ -783,7 +875,7 @@ namespace xpyt
               py::arg("obj"),
               py::arg("include") = py::list(),
               py::arg("exclude") = py::list(),
-              py::arg("metadata") = py::none(),
+              py::arg("metadata") = py::dict(),
               py::arg("transient") = py::none(),
               py::arg("display_id") = py::none(),
               py::arg("update") = false,
@@ -794,7 +886,7 @@ namespace xpyt
               py::arg("obj"),
               py::arg("include") = py::list(),
               py::arg("exclude") = py::list(),
-              py::arg("metadata") = py::none(),
+              py::arg("metadata") = py::dict(),
               py::arg("transient") = py::none(),
               py::arg("display_id") = py::none(),
               py::arg("update") = true,
@@ -888,6 +980,13 @@ namespace xpyt
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_svg_", &xsvg::repr_svg);
+
+        py::class_<xjson>(display_module, "JSON")
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::bool_&, const py::object&, const py::str&>(),
+                py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(),
+                py::arg("expanded") = false, py::arg("metadata") = py::none(), py::arg("root") = "root")
+            .def("_repr_json_", &xjson::repr_json);
 
         py::class_<xprogressbar>(display_module, "ProgressBar")
             .def(py::init<std::ptrdiff_t>(), py::arg("total"))
