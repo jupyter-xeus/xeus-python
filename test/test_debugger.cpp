@@ -869,7 +869,8 @@ void start_kernel()
         std::string cmd = "xpython -f " + KERNEL_JSON + "&";
         int ret2 = std::system(cmd.c_str());
     });
-    std::this_thread::sleep_for(2s);
+    std::this_thread::sleep_for(10s);
+    std::cout << "Kernel ready" << std::endl;
     kernel.detach();
 }
 
