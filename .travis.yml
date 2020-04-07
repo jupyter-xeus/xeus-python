@@ -41,8 +41,6 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
       env: PY=3 XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=0
-  allow_failures:
-    - env: PY=3 XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=0
 install:
     # Define the version of miniconda to download
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -90,6 +88,8 @@ install:
     - if [[ "$XPYT_USE_SHARED_XEUS" == 0 ]]; then
         CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_USE_SHARED_XEUS=OFF";
       fi
+    # The xeus conda package is built with CMAKE_CXX_STANDARD=17
+    - CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DCMAKE_CXX_STANDARD=17";
     - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX ${CMAKE_EXTRA_ARGS} ..
     - make -j2 install
 script:
