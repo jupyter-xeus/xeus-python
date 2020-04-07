@@ -65,8 +65,8 @@ namespace xpyt
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = get_kernel_module();
 
-        // Monkey patching "from IPython.display import display"
-        sys.attr("modules")["IPython.display"] = get_display_module();
+        // Monkey patching "import IPython.core.display"
+        sys.attr("modules")["IPython.core.display"] = get_display_module();
 
         // Monkey patching "from IPython import get_ipython"
         sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
@@ -260,11 +260,11 @@ namespace xpyt
         result["implementation_version"] = XPYT_VERSION;
 
         /* The jupyter-console banner for xeus-python is the following:
-          __  _____ _   _ ___ 
+          __  _____ _   _ ___
           \ \/ / _ \ | | / __|
            >  <  __/ |_| \__ \
           /_/\_\___|\__,_|___/
-                     
+
           xeus-python: a Jupyter lernel for Python
         */
 

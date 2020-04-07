@@ -235,6 +235,13 @@ namespace xpyt
         }
     }
 
+    void xpublish_display_data(const py::object& data, const py::object& metadata, const py::str& /*source*/, const py::object& transient)
+    {
+        auto& interp = xeus::get_interpreter();
+
+        interp.display_data(nl::json(data), nl::json(metadata), nl::json(transient));
+    }
+
     void xdisplay_mimetype(const std::string& mimetype, const py::object& obj, bool raw, const py::object& metadata)
     {
         py::object p_metadata = py::dict();
@@ -315,6 +322,7 @@ namespace xpyt
     {
     public:
 
+        xdisplay_object(const py::object& data, const py::object& url, const py::object& filename, const py::object& metadata, const std::string& read_flag = "r");
         virtual ~xdisplay_object();
 
         xdisplay_object (const xdisplay_object&) = delete;
@@ -323,16 +331,16 @@ namespace xpyt
         xdisplay_object& operator=(const xdisplay_object&) = delete;
         xdisplay_object& operator=(xdisplay_object&&) = delete;
 
-    protected:
-
-        xdisplay_object(const py::object& data, const py::object& url, const py::object& filename, const py::object& metadata, const std::string& read_flag = "r");
-
-        py::object data_and_metadata() const;
+        void reload();
 
         py::object get_metadata();
         virtual void set_metadata(const py::object& data);
         py::object get_data();
         virtual void set_data(const py::object& data);
+
+    protected:
+
+        py::object data_and_metadata() const;
 
     private:
 
@@ -341,8 +349,6 @@ namespace xpyt
         py::object m_filename = py::none();
         py::object m_metadata = py::none();
         py::str m_read_flag;
-
-        void reload();
     };
 
     /**********************************
@@ -470,6 +476,28 @@ namespace xpyt
                 set_data(py::none());
             }
         }
+    }
+
+    /******************************
+     * xtext_display_object class *
+     ******************************/
+
+    class xtext_display_object : public xdisplay_object
+    {
+    public:
+
+        xtext_display_object(const py::object& data, const py::object& url, const py::object& filename, const py::object& metadata);
+        virtual ~xtext_display_object();
+
+    };
+
+    xtext_display_object::xtext_display_object(const py::object& data, const py::object& url, const py::object& filename, const py::object& metadata)
+        : xdisplay_object(data, url, filename, metadata)
+    {
+    }
+
+    xtext_display_object::~xtext_display_object()
+    {
     }
 
     /***************
@@ -938,6 +966,13 @@ namespace xpyt
               py::arg("update") = true,
               py::arg("raw") = false);
 
+        display_module.def("publish_display_data",
+            xpublish_display_data,
+            py::arg("data"),
+            py::arg("metadata") = py::dict(),
+            py::arg("source") = py::str(),
+            py::arg("transient") = py::dict());
+
         display_module.def("clear_output",
               xclear,
               py::arg("wait") = false);
@@ -996,32 +1031,45 @@ namespace xpyt
             py::arg("raw") = false,
             py::arg("metadata") = py::none());
 
-        py::class_<xhtml>(display_module, "HTML")
+        py::class_<xdisplay_object>(display_module, "DisplayObject")
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
+                py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
+            .def("reload", &xdisplay_object::reload)
+            .def_property("data", &xdisplay_object::get_data, &xdisplay_object::set_data)
+            .def_property("metadata", &xdisplay_object::get_metadata, &xdisplay_object::set_metadata);
+
+        py::class_<xtext_display_object, xdisplay_object>(display_module, "TextDisplayObject")
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
+                py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none());
+
+        py::class_<xhtml, xdisplay_object>(display_module, "HTML")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_html_", &xhtml::repr_html)
             .def("__html__", &xhtml::html);
 
-        py::class_<xmarkdown>(display_module, "Markdown")
+        py::class_<xmarkdown, xdisplay_object>(display_module, "Markdown")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_markdown_", &xmarkdown::repr_markdown);
 
-        py::class_<xmath>(display_module, "Math")
+        py::class_<xmath, xdisplay_object>(display_module, "Math")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_latex_", &xmath::repr_latex);
 
-        py::class_<xlatex>(display_module, "Latex")
+        py::class_<xlatex, xdisplay_object>(display_module, "Latex")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_latex_", &xlatex::repr_latex);
 
-        py::class_<xsvg>(display_module, "SVG")
+        py::class_<xsvg, xdisplay_object>(display_module, "SVG")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
