@@ -1012,6 +1012,16 @@ namespace xpyt
         }
     }
 
+    py::object pngxy(const py::object& data)
+    {
+        py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module struct_module = py::module::import("struct");
+
+        std::size_t ihdr = data.attr("index")(builtins.attr("bytes")("IHDR", "UTF8")).cast<std::size_t>();
+
+        return struct_module.attr("unpack")(">ii", data[builtins.attr("slice")(ihdr + 4, ihdr + 12)]);
+    }
+
     /******************
      * display module *
      ******************/
@@ -1185,6 +1195,8 @@ namespace xpyt
             .def("__next__", &xprogressbar::next)
             .def_property("progress", &xprogressbar::get_progress, &xprogressbar::set_progress)
             .def_property("total", &xprogressbar::get_total, &xprogressbar::set_total);
+
+        display_module.def("_pngxy", &pngxy);
 
         return display_module;
     }
