@@ -237,7 +237,7 @@ namespace xpyt
 
     void xdisplay_mimetype(const std::string& mimetype, const py::object& obj, bool raw, const py::object& metadata)
     {
-        py::object p_metadata = py::none();
+        py::object p_metadata = py::dict();
         if (!metadata.is_none())
         {
             p_metadata = py::dict(py::arg(mimetype.c_str()) = metadata);
