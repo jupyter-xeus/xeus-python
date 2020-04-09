@@ -235,6 +235,13 @@ namespace xpyt
         }
     }
 
+    void xpublish_display_data(const py::object& data, const py::object& metadata, const py::str& /*source*/, const py::object& transient)
+    {
+        auto& interp = xeus::get_interpreter();
+
+        interp.display_data(nl::json(data), nl::json(metadata), nl::json(transient));
+    }
+
     void xdisplay_mimetype(const std::string& mimetype, const py::object& obj, bool raw, const py::object& metadata)
     {
         py::object p_metadata = py::dict();
@@ -315,6 +322,7 @@ namespace xpyt
     {
     public:
 
+        xdisplay_object(const py::object& data, const py::object& url, const py::object& filename, const py::object& metadata = py::dict(), const std::string& read_flag = "r");
         virtual ~xdisplay_object();
 
         xdisplay_object (const xdisplay_object&) = delete;
@@ -323,16 +331,16 @@ namespace xpyt
         xdisplay_object& operator=(const xdisplay_object&) = delete;
         xdisplay_object& operator=(xdisplay_object&&) = delete;
 
-    protected:
-
-        xdisplay_object(const py::object& data, const py::object& url, const py::object& filename, const py::object& metadata, const std::string& read_flag = "r");
-
-        py::object data_and_metadata() const;
+        void reload();
 
         py::object get_metadata();
         virtual void set_metadata(const py::object& data);
         py::object get_data();
         virtual void set_data(const py::object& data);
+
+    protected:
+
+        py::object data_and_metadata() const;
 
     private:
 
@@ -341,8 +349,6 @@ namespace xpyt
         py::object m_filename = py::none();
         py::object m_metadata = py::none();
         py::str m_read_flag;
-
-        void reload();
     };
 
     /**********************************
@@ -472,6 +478,28 @@ namespace xpyt
         }
     }
 
+    /******************************
+     * xtext_display_object class *
+     ******************************/
+
+    class xtext_display_object : public xdisplay_object
+    {
+    public:
+
+        xtext_display_object(const py::object& data, const py::object& url, const py::object& filename, const py::object& metadata = py::dict());
+        virtual ~xtext_display_object();
+
+    };
+
+    xtext_display_object::xtext_display_object(const py::object& data, const py::object& url, const py::object& filename, const py::object& metadata)
+        : xdisplay_object(data, url, filename, metadata)
+    {
+    }
+
+    xtext_display_object::~xtext_display_object()
+    {
+    }
+
     /***************
      * xhtml class *
      ***************/
@@ -505,6 +533,87 @@ namespace xpyt
     py::object xhtml::html() const
     {
         return repr_html();
+    }
+
+    /*********************
+     * xjavascript class *
+     *********************/
+
+    class xjavascript : public xtext_display_object
+    {
+    public:
+
+        xjavascript(const py::object& data, const py::object& url, const py::object& filename, const py::object& lib, const py::object& css);
+        virtual ~xjavascript();
+
+        py::object repr_javascript();
+
+    private:
+
+        py::list m_lib;
+        py::list m_css;
+    };
+
+    xjavascript::xjavascript(const py::object& data, const py::object& url, const py::object& filename, const py::object& lib, const py::object& css)
+        : xtext_display_object(data, url, filename)
+    {
+        if (py::isinstance<py::str>(lib))
+        {
+            m_lib = py::list({lib});
+        }
+        else if (lib.is_none())
+        {
+            m_lib = py::list();
+        }
+        else
+        {
+            m_lib = lib;
+        }
+
+        if (py::isinstance<py::str>(css))
+        {
+            m_css = py::list({css});
+        }
+        else if (css.is_none())
+        {
+            m_css = py::list();
+        }
+        else
+        {
+            m_css = css;
+        }
+    }
+
+    xjavascript::~xjavascript()
+    {
+    }
+
+    py::object xjavascript::repr_javascript()
+    {
+        std::ostringstream string_stream;
+
+        for (py::handle css : m_css)
+        {
+            string_stream << R"($("head").append($("<link/>").attr({rel:  "stylesheet", type: "text/css", href: ")";
+            string_stream << css.cast<std::string>();
+            string_stream << R"("})))";
+        }
+
+        for (py::handle lib : m_lib)
+        {
+            string_stream << R"($.getScript(")";
+            string_stream << lib.cast<std::string>();
+            string_stream << R"(", function () {)";
+        }
+
+        string_stream << get_data().cast<std::string>();
+
+        for (std::size_t i = 0; i < py::len(m_lib); i++)
+        {
+            string_stream << "});";
+        }
+
+        return py::str(string_stream.str());
     }
 
     /*******************
@@ -903,6 +1012,16 @@ namespace xpyt
         }
     }
 
+    py::object pngxy(const py::object& data)
+    {
+        py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module struct_module = py::module::import("struct");
+
+        std::size_t ihdr = data.attr("index")(builtins.attr("bytes")("IHDR", "UTF8")).cast<std::size_t>();
+
+        return struct_module.attr("unpack")(">ii", data[builtins.attr("slice")(ihdr + 4, ihdr + 12)]);
+    }
+
     /******************
      * display module *
      ******************/
@@ -937,6 +1056,13 @@ namespace xpyt
               py::arg("display_id") = py::none(),
               py::arg("update") = true,
               py::arg("raw") = false);
+
+        display_module.def("publish_display_data",
+            xpublish_display_data,
+            py::arg("data"),
+            py::arg("metadata") = py::dict(),
+            py::arg("source") = py::str(),
+            py::arg("transient") = py::dict());
 
         display_module.def("clear_output",
               xclear,
@@ -996,32 +1122,51 @@ namespace xpyt
             py::arg("raw") = false,
             py::arg("metadata") = py::none());
 
-        py::class_<xhtml>(display_module, "HTML")
+        py::class_<xdisplay_object>(display_module, "DisplayObject")
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
+                py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
+            .def("reload", &xdisplay_object::reload)
+            .def_property("data", &xdisplay_object::get_data, &xdisplay_object::set_data)
+            .def_property("metadata", &xdisplay_object::get_metadata, &xdisplay_object::set_metadata);
+
+        py::class_<xtext_display_object, xdisplay_object>(display_module, "TextDisplayObject")
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
+                py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none());
+
+        py::class_<xhtml, xdisplay_object>(display_module, "HTML")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_html_", &xhtml::repr_html)
             .def("__html__", &xhtml::html);
 
-        py::class_<xmarkdown>(display_module, "Markdown")
+        py::class_<xjavascript, xtext_display_object>(display_module, "Javascript")
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::object&, const py::object&>(),
+                py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("lib") = py::none(), py::arg("css") = py::none())
+            .def("_repr_javascript_", &xjavascript::repr_javascript);
+
+        py::class_<xmarkdown, xdisplay_object>(display_module, "Markdown")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_markdown_", &xmarkdown::repr_markdown);
 
-        py::class_<xmath>(display_module, "Math")
+        py::class_<xmath, xdisplay_object>(display_module, "Math")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_latex_", &xmath::repr_latex);
 
-        py::class_<xlatex>(display_module, "Latex")
+        py::class_<xlatex, xdisplay_object>(display_module, "Latex")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
             .def("_repr_latex_", &xlatex::repr_latex);
 
-        py::class_<xsvg>(display_module, "SVG")
+        py::class_<xsvg, xdisplay_object>(display_module, "SVG")
             .def(
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&>(),
                 py::arg("data") = py::none(), py::arg("url") = py::none(), py::arg("filename") = py::none(), py::arg("metadata") = py::none())
@@ -1050,6 +1195,8 @@ namespace xpyt
             .def("__next__", &xprogressbar::next)
             .def_property("progress", &xprogressbar::get_progress, &xprogressbar::set_progress)
             .def_property("total", &xprogressbar::get_total, &xprogressbar::set_total);
+
+        display_module.def("_pngxy", &pngxy);
 
         return display_module;
     }
