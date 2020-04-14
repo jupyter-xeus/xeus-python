@@ -12,35 +12,27 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-      env: PY=3
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-      env: PY=2
     - os: osx
       osx_image: xcode10
       compiler: clang
-      env: PY=3
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-      env: PY=3 XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=1
+      env: XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=1
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-      env: PY=3 XPYT_USE_SHARED_XEUS=1 XPYT_USE_SHARED_XEUS_PYTHON=0
+      env: XPYT_USE_SHARED_XEUS=1 XPYT_USE_SHARED_XEUS_PYTHON=0
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-      env: PY=3 XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=0
+      env: XPYT_USE_SHARED_XEUS=0 XPYT_USE_SHARED_XEUS_PYTHON=0
 install:
     # Define the version of miniconda to download
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
@@ -48,32 +40,21 @@ install:
       elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         MINCONDA_OS=$MINCONDA_OSX;
       fi
-    - if [[ "$PY" == "3" ]]; then
-          wget "http://repo.continuum.io/miniconda/Miniconda3-$MINCONDA_VERSION-$MINCONDA_OS.sh" -O miniconda.sh;
-      else
-          wget "http://repo.continuum.io/miniconda/Miniconda2-$MINCONDA_VERSION-$MINCONDA_OS.sh" -O miniconda.sh;
-      fi
+    - wget "http://repo.continuum.io/miniconda/Miniconda3-$MINCONDA_VERSION-$MINCONDA_OS.sh" -O miniconda.sh;
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda update -q conda
     # Host dependencies
-    - conda install xeus=0.23.12 nlohmann_json cppzmq xtl pybind11=2.2.4 pybind11_json=0.2.2 jedi=0.15.1 pygments=2.3.1 ptvsd -c conda-forge
+    - conda install xeus=0.23.12 nlohmann_json cppzmq xtl pybind11=2.2.4 pybind11_json=0.2.6 jedi=0.15.1 pygments=2.3.1 ptvsd -c conda-forge
     # Build dependencies
     - conda install cmake -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         conda install gxx_linux-64 libgcc -c conda-forge;
       fi
     # Test dependencies
-    # jupyter_kernel_test is Python3 only.
-    # With Python2, we first create a Python3 environment for jupyter_kernel_test
-    - if [[ "$PY" == "3" ]]; then
-        conda install pytest jupyter_kernel_test -c conda-forge;
-      else
-        conda create --name=kernel_test python=3 pytest jupyter_kernel_test -c conda-forge;
-        source activate kernel_test;
-      fi
+    - conda install pytest jupyter_kernel_test -c conda-forge;
     # Activate root environment
     - source activate root
     # For debugging
@@ -93,14 +74,6 @@ install:
     - cmake -D CMAKE_INSTALL_PREFIX=$HOME/miniconda -D XPYT_DOWNLOAD_GTEST=ON -D PYTHON_EXECUTABLE=`which python` -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX ${CMAKE_EXTRA_ARGS} ..
     - make -j2 install
 script:
-    # For Python 2, activate the kernel_test Python3 environment
-    - if [[ "$PY" == "2" ]]; then
-        source activate kernel_test;
-        jupyter kernelspec install --sys-prefix ../share/jupyter/kernels/xpython;
-        source activate root;
-      fi
     - cd test
     - ./test_xeus_python
-    - if [[ "$PY" == "3" ]]; then
-        cd ../../test && py.test . -v;
-      fi
+    - cd ../../test && py.test . -v;

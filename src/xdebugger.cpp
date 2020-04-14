@@ -323,15 +323,15 @@ namespace xpyt
         for (const py::handle& key : variables)
         {
             nl::json json_var = nl::json::object();
-            json_var["name"] = py::str(key).cast<std::string>();
+            json_var["name"] = py::str(key);
             json_var["variablesReference"] = 0;
             try
             {
-                json_var["value"] = nl::detail::to_json_impl(variables[key]);
+                json_var["value"] = variables[key];
             }
             catch(std::exception&)
             {
-                json_var["value"] = nl::detail::to_json_impl(py::repr(variables[key]));
+                json_var["value"] = py::repr(variables[key]);
             }
             json_vars.push_back(json_var);
         }

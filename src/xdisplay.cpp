@@ -180,7 +180,7 @@ namespace xpyt
                 pub_metadata = repr[1];
             }
 
-            interp.publish_execution_result(m_execution_count, nl::json(pub_data), nl::json(pub_metadata));
+            interp.publish_execution_result(m_execution_count, pub_data, pub_metadata);
         }
     }
 
@@ -226,11 +226,11 @@ namespace xpyt
 
             if (update)
             {
-                interp.update_display_data(std::move(pub_data), std::move(pub_metadata), std::move(cpp_transient));
+                interp.update_display_data(pub_data, pub_metadata, std::move(cpp_transient));
             }
             else
             {
-                interp.display_data(std::move(pub_data), nl::json(pub_metadata), nl::json(cpp_transient));
+                interp.display_data(pub_data, pub_metadata, std::move(cpp_transient));
             }
         }
     }
@@ -239,7 +239,7 @@ namespace xpyt
     {
         auto& interp = xeus::get_interpreter();
 
-        interp.display_data(nl::json(data), nl::json(metadata), nl::json(transient));
+        interp.display_data(data, metadata, transient);
     }
 
     void xdisplay_mimetype(const std::string& mimetype, const py::object& obj, bool raw, const py::object& metadata)
