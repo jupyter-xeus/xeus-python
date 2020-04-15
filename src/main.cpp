@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 
     // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
-    interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter(argc, argv));
+    interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter());
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
