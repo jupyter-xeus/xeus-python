@@ -48,10 +48,14 @@ configure_file (
 OPTION(XPYT_DISABLE_ARCH_NATIVE "disable -march=native flag" OFF)
 OPTION(XPYT_DISABLE_TUNE_GENERIC "disable -mtune=generic flag" OFF)
 OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
+
 option(XPYT_BUILD_STATIC "Build xeus-python static library" ON)
-OPTION(XPYT_BUILD_SHARED "Split build into executable and library" ON)
-OPTION(XPYT_USE_SHARED_XEUS "Link xpython with the xeus shared library (instead of the static library)" ON)
-OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython with the xeus-python shared library (instead of the static library)" ON)
+OPTION(XPYT_BUILD_SHARED "Split xpython build into executable and library" ON)
+OPTION(XPYT_BUILD_XPYTHON_EXECUTABLE "Build the xpython executable" ON)
+OPTION(XPYT_BUILD_XPYTHON_EXTENSION "Build the xpython extension module" OFF)
+
+OPTION(XPYT_USE_SHARED_XEUS "Link xpython or xpython_extension with the xeus shared library (instead of the static library)" ON)
+OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the xeus-python shared library (instead of the static library)" ON)
 
 # Test options
 OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
@@ -149,6 +153,10 @@ set(XPYTHON_SRC
     src/xsyspath.cpp
 )
 
+set(XPYTHON_EXTENSION_SRC
+    src/xpython_extension.cpp
+)
+
 # Targets and link - Macros
 # =========================
 
@@ -230,6 +238,27 @@ macro(xpyt_set_common_options target_name)
     )
 endmacro()
 
+# Common macro kernels (xpython and xpython_extension)
+macro(xpyt_set_kernel_options target_name)
+    if(XPYT_ENABLE_PYPI_WARNING)
+        message(STATUS "Enabling PyPI warning for target: " ${target_name})
+        target_compile_definitions(${target_name} PRIVATE XEUS_PYTHON_PYPI_WARNING)
+    endif()
+
+    if (XPYT_USE_SHARED_XEUS_PYTHON)
+        target_link_libraries(${target_name} PRIVATE xeus-python)
+
+        if(CMAKE_DL_LIBS)
+            target_link_libraries(${target_name} PRIVATE ${CMAKE_DL_LIBS} util)
+        endif()
+    else ()
+        target_link_libraries(${target_name} PRIVATE xeus-python-static)
+    endif()
+
+    find_package(Threads) # TODO: add Threads as a dependence of xeus or xeus-static?
+    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+endmacro()
+
 # Common macro for shared and static library xeus-python
 macro(xpyt_create_target target_name linkage output_name)
     string(TOUPPER "${linkage}" linkage_upper)
@@ -276,12 +305,12 @@ endmacro()
 # xeus-python
 # ===========
 
-set(xeus_python_targets "")
+set(XEUS_PYTHON_TARGETS "")
 
 if (XPYT_BUILD_SHARED)
     # Build libraries
     xpyt_create_target(xeus-python SHARED xeus-python)
-    list(APPEND xeus_python_targets xeus-python)
+    list(APPEND XEUS_PYTHON_TARGETS xeus-python)
 endif ()
 
 if (XPYT_BUILD_STATIC)
@@ -292,43 +321,37 @@ if (XPYT_BUILD_STATIC)
     else ()
         xpyt_create_target(xeus-python-static STATIC xeus-python)
     endif ()
-    list(APPEND xeus_python_targets xeus-python-static)
+    list(APPEND XEUS_PYTHON_TARGETS xeus-python-static)
 endif ()
 
 # xpython
 # =======
 
-add_executable(xpython ${XPYTHON_SRC})
-xpyt_set_common_options(xpython)
+if (XPYT_BUILD_XPYTHON_EXECUTABLE)
+    add_executable(xpython ${XPYTHON_SRC})
+    target_link_libraries(xpython PRIVATE pybind11::embed)
 
-target_link_libraries(xpython PRIVATE pybind11::embed)
+    xpyt_set_common_options(xpython)
+    xpyt_set_kernel_options(xpython)
 
-if (XPYT_USE_SHARED_XEUS_PYTHON)
-    target_link_libraries(xpython PRIVATE xeus-python)
-
-    if(CMAKE_DL_LIBS)
-        target_link_libraries(xpython PRIVATE ${CMAKE_DL_LIBS} util)
+    if(XPYT_SYSPATH)  # TODO: remove sys.path specification?
+        message(STATUS "Specifying sys.path.")
+        target_compile_definitions(xpython PRIVATE XEUS_PYTHON_SYSPATH=${XPYT_SYSPATH})
     endif()
-else ()
-    target_link_libraries(xpython PRIVATE xeus-python-static)
 
-    find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
+    if (XEUS_PYTHONHOME_RELPATH)
+        target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
+    endif()
 endif()
 
-target_link_libraries(xpython PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+# xpython_extension
+# =================
 
-if(XPYT_ENABLE_PYPI_WARNING)
-    message(STATUS "Enabling PyPI warning.")
-    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_PYPI_WARNING)
-endif()
+if (XPYT_BUILD_XPYTHON_EXTENSION)
+    pybind11_add_module(xpython_extension ${XPYTHON_EXTENSION_SRC})
 
-if(XPYT_SYSPATH)
-    message(STATUS "Specifying sys.path.")
-    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_SYSPATH=${XPYT_SYSPATH})
-endif()
-
-if (XEUS_PYTHONHOME_RELPATH)
-    target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
+    xpyt_set_common_options(xpython_extension)
+    xpyt_set_kernel_options(xpython_extension)
 endif()
 
 # Tests
@@ -350,8 +373,8 @@ include(CMakePackageConfigHelpers)
 set(XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for xeus-pythonConfig.cmake")
 
 # Install xeus-python and xeus-python-static
-if (xeus_python_targets)
-    install(TARGETS ${xeus_python_targets}
+if (XEUS_PYTHON_TARGETS)
+    install(TARGETS ${XEUS_PYTHON_TARGETS}
             EXPORT ${PROJECT_NAME}-targets
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -364,23 +387,33 @@ if (xeus_python_targets)
 endif ()
 
 # Install xpython
-install(TARGETS xpython
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+if (XPYT_BUILD_XPYTHON_EXECUTABLE)
+    install(TARGETS xpython
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# Configuration and data directories for jupyter and xeus-python
-set(XJUPYTER_DATA_DIR "share/jupyter"    CACHE STRING "Jupyter data directory")
+    # Configuration and data directories for jupyter and xeus-python
+    set(XJUPYTER_DATA_DIR "share/jupyter"    CACHE STRING "Jupyter data directory")
 
-# Install Jupyter kernelspecs
-set(XPYT_KERNELSPEC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels)
-install(DIRECTORY ${XPYT_KERNELSPEC_DIR}
-        DESTINATION ${XJUPYTER_DATA_DIR}
-        PATTERN "*.in" EXCLUDE)
-
-# Extra path for installing Jupyter kernelspec
-if (XEXTRA_JUPYTER_DATA_DIR)
+    # Install xpython Jupyter kernelspec
+    set(XPYT_KERNELSPEC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels)
     install(DIRECTORY ${XPYT_KERNELSPEC_DIR}
-            DESTINATION ${XEXTRA_JUPYTER_DATA_DIR}
+            DESTINATION ${XJUPYTER_DATA_DIR}
             PATTERN "*.in" EXCLUDE)
+
+    # Extra path for installing Jupyter kernelspec
+    if (XEXTRA_JUPYTER_DATA_DIR)
+        install(DIRECTORY ${XPYT_KERNELSPEC_DIR}
+                DESTINATION ${XEXTRA_JUPYTER_DATA_DIR}
+                PATTERN "*.in" EXCLUDE)
+    endif ()
+endif ()
+
+# Install xpython_extension
+if (XPYT_BUILD_XPYTHON_EXTENSION)
+    install(TARGETS xpython_extension
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif ()
 
 # Configure 'xeus-pythonConfig.cmake' for a build tree
@@ -404,7 +437,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
               DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
 
-if (XPYT_BUILD_SHARED)
+if (XEUS_PYTHON_TARGETS)
     install(EXPORT ${PROJECT_NAME}-targets
             FILE ${PROJECT_NAME}Targets.cmake
             DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
