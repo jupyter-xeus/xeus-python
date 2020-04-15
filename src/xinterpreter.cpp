@@ -54,7 +54,7 @@ namespace xpyt
         });
     }
 
-    interpreter::interpreter(int /*argc*/, const char* const* /*argv*/)
+    interpreter::interpreter()
     {
         xeus::register_interpreter(this);
         redirect_output();

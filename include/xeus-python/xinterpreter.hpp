@@ -38,7 +38,7 @@ namespace xpyt
 
         using gil_scoped_release_ptr = std::unique_ptr<py::gil_scoped_release>;
 
-        interpreter(int argc, const char* const* argv);
+        interpreter();
         virtual ~interpreter();
 
     protected:

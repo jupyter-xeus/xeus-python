@@ -158,7 +158,7 @@ string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 
-macro(xpyt_set_compile_options target_name)
+macro(xpyt_set_common_options target_name)
     if (MSVC)
         target_compile_options(${target_name} PUBLIC /wd4251 /wd4141)
         target_compile_options(${target_name} PUBLIC /wd4018 /wd4267 /wd4715 /wd4146 /wd4129)
@@ -170,6 +170,7 @@ macro(xpyt_set_compile_options target_name)
 
         target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
     
+        # Mtune generic/native
         if (XPYT_DISABLE_ARCH_NATIVE AND NOT XPYT_DISABLE_TUNE_GENERIC)
             target_compile_options(${target_name} PUBLIC -mtune=generic)
         elseif (XPYT_DISABLE_TUNE_GENERIC)
@@ -177,6 +178,7 @@ macro(xpyt_set_compile_options target_name)
             target_compile_options(${target_name} PUBLIC -march=native)
         endif ()
 
+        # C++14 flag
         CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
         if (HAS_CPP14_FLAG)
             target_compile_features(${target_name} PRIVATE cxx_std_14)
@@ -211,18 +213,6 @@ macro(xpyt_set_compile_options target_name)
         endif ()
 
     endif ()
-endmacro()
-
-# Common macro for shared and static library xeus-python
-macro(xpyt_create_target target_name linkage output_name)
-    string(TOUPPER "${linkage}" linkage_upper)
-
-    if (NOT ${linkage_upper} MATCHES "^(SHARED|STATIC)$")
-        message(FATAL_ERROR "Invalid library linkage: ${linkage}")
-    endif ()
-
-    add_library(${target_name} ${linkage_upper} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
-    xpyt_set_compile_options(${target_name})
 
     if (APPLE)
         set_target_properties(${target_name} PROPERTIES
@@ -234,9 +224,22 @@ macro(xpyt_create_target target_name linkage output_name)
             SKIP_BUILD_RPATH FALSE
         )
     endif ()
+
     set_target_properties(${target_name} PROPERTIES
         INSTALL_RPATH_USE_LINK_PATH TRUE
     )
+endmacro()
+
+# Common macro for shared and static library xeus-python
+macro(xpyt_create_target target_name linkage output_name)
+    string(TOUPPER "${linkage}" linkage_upper)
+
+    if (NOT ${linkage_upper} MATCHES "^(SHARED|STATIC)$")
+        message(FATAL_ERROR "Invalid library linkage: ${linkage}")
+    endif ()
+
+    add_library(${target_name} ${linkage_upper} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
+    xpyt_set_common_options(${target_name})
 
     set_target_properties(${target_name} PROPERTIES
                           PUBLIC_HEADER "${XEUS_PYTHON_HEADERS}"
@@ -296,21 +299,7 @@ endif ()
 # =======
 
 add_executable(xpython ${XPYTHON_SRC})
-xpyt_set_compile_options(xpython)
-set_target_properties(xpython PROPERTIES ENABLE_EXPORTS 1)
-if (APPLE)
-    set_target_properties(xpython PROPERTIES
-        MACOSX_RPATH ON
-    )
-else()
-    set_target_properties(xpython PROPERTIES
-        BUILD_WITH_INSTALL_RPATH 1
-        SKIP_BUILD_RPATH FALSE
-    )
-endif()
-set_target_properties(xpython PROPERTIES
-    INSTALL_RPATH_USE_LINK_PATH TRUE
-)
+xpyt_set_common_options(xpython)
 
 target_link_libraries(xpython PRIVATE pybind11::embed)
 
@@ -360,8 +349,8 @@ include(CMakePackageConfigHelpers)
 
 set(XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for xeus-pythonConfig.cmake")
 
-# Install xeus-python and xpython
-if (XPYT_BUILD_SHARED)
+# Install xeus-python and xeus-python-static
+if (xeus_python_targets)
     install(TARGETS ${xeus_python_targets}
             EXPORT ${PROJECT_NAME}-targets
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -374,6 +363,7 @@ if (XPYT_BUILD_SHARED)
            FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
 endif ()
 
+# Install xpython
 install(TARGETS xpython
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
@@ -413,6 +403,7 @@ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Conf
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
               DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
+
 if (XPYT_BUILD_SHARED)
     install(EXPORT ${PROJECT_NAME}-targets
             FILE ${PROJECT_NAME}Targets.cmake
