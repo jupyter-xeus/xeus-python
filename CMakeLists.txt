@@ -373,7 +373,7 @@ include(CMakePackageConfigHelpers)
 set(XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for xeus-pythonConfig.cmake")
 
 # Install xeus-python and xeus-python-static
-if (XEUS_PYTHON_TARGETS)
+if (XPYT_BUILD_SHARED)
     install(TARGETS ${XEUS_PYTHON_TARGETS}
             EXPORT ${PROJECT_NAME}-targets
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -437,7 +437,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${PROJECT_NAME}Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
               DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
 
-if (XEUS_PYTHON_TARGETS)
+if (XPYT_BUILD_SHARED)
     install(EXPORT ${PROJECT_NAME}-targets
             FILE ${PROJECT_NAME}Targets.cmake
             DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
