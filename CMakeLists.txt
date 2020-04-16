@@ -27,20 +27,6 @@ set(${PROJECT_NAME}_VERSION
     ${XPYT_VERSION_MAJOR}.${XPYT_VERSION_MINOR}.${XPYT_VERSION_PATCH})
 message(STATUS "Building xeus-python v${${PROJECT_NAME}_VERSION}")
 
-# Configuration
-# =============
-
-include(GNUInstallDirs)
-
-if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
-    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
-endif ()
-
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
-)
-
 # Build options
 # =============
 
@@ -302,6 +288,12 @@ macro(xpyt_create_target target_name linkage output_name)
     target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 endmacro()
 
+# Retrieve Python executable path by resolving symlinks (so that we get "pythonX.X" instead of to "python")
+get_filename_component(XPYT_PYTHON_EXECUTABLE_PATH ${PYTHON_EXECUTABLE} REALPATH)
+message(STATUS "Python full executable path: " ${XPYT_PYTHON_EXECUTABLE_PATH})
+get_filename_component(XPYT_PYTHON_EXECUTABLE_NAME ${XPYT_PYTHON_EXECUTABLE_PATH} NAME)
+message(STATUS "Python executable name: " ${XPYT_PYTHON_EXECUTABLE_NAME})
+
 # xeus-python
 # ===========
 
@@ -365,6 +357,22 @@ if(XPYT_BUILD_TESTS)
     add_subdirectory(test)
 endif()
 
+# Configuration
+# =============
+
+include(GNUInstallDirs)
+
+if (XPYT_BUILD_XPYTHON_EXECUTABLE)
+    if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
+        set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
+    endif ()
+
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
+    )
+endif ()
+
 # Installation
 # ============
 
@@ -392,7 +400,7 @@ if (XPYT_BUILD_XPYTHON_EXECUTABLE)
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     # Configuration and data directories for jupyter and xeus-python
-    set(XJUPYTER_DATA_DIR "share/jupyter"    CACHE STRING "Jupyter data directory")
+    set(XJUPYTER_DATA_DIR "share/jupyter" CACHE STRING "Jupyter data directory")
 
     # Install xpython Jupyter kernelspec
     set(XPYT_KERNELSPEC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels)
