@@ -32,7 +32,6 @@
 #include "xeus-python/xdebugger.hpp"
 
 #include "xpythonhome.hpp"
-#include "xsyspath.hpp"
 
 #ifdef __GNUC__
 void handler(int sig)
@@ -84,20 +83,6 @@ void print_pythonhome()
     std::clog << "PYTHONHOME set to " << mbstr << std::endl;
 }
 
-void print_syspath()
-{
-#if PY_MAJOR_VERSION == 2
-    char* mbstr = Py_GetPath();
-#else
-    std::setlocale(LC_ALL, "en_US.utf8");
-    wchar_t* ph = Py_GetPath();
-    
-    char mbstr[1024];
-    std::wcstombs(mbstr, ph, 1024);
-#endif
-    std::clog << "Python sys.path set to " << mbstr << std::endl;
-}
-
 int main(int argc, char* argv[])
 {
     // If we are called from the Jupyter launcher, silence all logging. This
@@ -119,9 +104,6 @@ int main(int argc, char* argv[])
     // Setting PYTHONHOME
     xpyt::set_pythonhome();
     print_pythonhome();
-
-    xpyt::set_syspath();
-    print_syspath();
 
     // Instanciating the Python interpreter
     py::scoped_interpreter guard;
