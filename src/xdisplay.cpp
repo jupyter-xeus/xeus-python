@@ -238,6 +238,54 @@ namespace xpyt
         interp.clear_output(wait);
     }
 
+    /*******************************
+     * xdisplay_handle declaration *
+     *******************************/
+
+    class xdisplay_handle
+    {
+    public:
+
+        xdisplay_handle(const py::object& display_id);
+
+        void display(const py::object& obj, py::kwargs kwargs);
+        void update(const py::object& obj, py::kwargs kwargs);
+
+    private:
+
+        py::object m_display_id;
+    };
+
+    /**********************************
+     * xdisplay_handle implementation *
+     **********************************/
+
+    xdisplay_handle::xdisplay_handle(const py::object& display_id)
+    {
+        if (display_id.is_none())
+        {
+            m_display_id = py::str(xeus::new_xguid());
+        }
+        else
+        {
+            m_display_id = display_id;
+        }
+    }
+
+    void xdisplay_handle::display(const py::object& obj, py::kwargs kwargs)
+    {
+        py::module display_module = get_display_module();
+
+        display_module.attr("display")(obj, "display_id"_a=m_display_id, **kwargs);
+    }
+
+    void xdisplay_handle::update(const py::object& obj, py::kwargs kwargs)
+    {
+        py::module display_module = get_display_module();
+
+        display_module.attr("update_display")(obj, "display_id"_a=m_display_id, **kwargs);
+    }
+
     /******************
      * display module *
      ******************/
@@ -283,6 +331,11 @@ namespace xpyt
         display_module.def("clear_output",
               xclear,
               py::arg("wait") = false);
+
+        py::class_<xdisplay_handle>(display_module, "DisplayHandle")
+            .def(py::init<const py::object&>(), py::arg("display_id") = py::none())
+            .def("display", &xdisplay_handle::display)
+            .def("update", &xdisplay_handle::update);
 
         return display_module;
     }
