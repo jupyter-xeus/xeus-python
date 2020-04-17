@@ -149,8 +149,6 @@ set(XPYTHON_SRC
     src/xpaths.cpp
     src/xpythonhome.hpp
     src/xpythonhome.cpp
-    src/xsyspath.hpp
-    src/xsyspath.cpp
 )
 
 set(XPYTHON_EXTENSION_SRC
@@ -334,11 +332,6 @@ if (XPYT_BUILD_XPYTHON_EXECUTABLE)
     xpyt_set_common_options(xpython)
     xpyt_set_kernel_options(xpython)
 
-    if(XPYT_SYSPATH)  # TODO: remove sys.path specification?
-        message(STATUS "Specifying sys.path.")
-        target_compile_definitions(xpython PRIVATE XEUS_PYTHON_SYSPATH=${XPYT_SYSPATH})
-    endif()
-
     if (XEUS_PYTHONHOME_RELPATH)
         target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
     endif()
@@ -406,14 +399,6 @@ if (XPYT_BUILD_XPYTHON_EXECUTABLE)
                 DESTINATION ${XEXTRA_JUPYTER_DATA_DIR}
                 PATTERN "*.in" EXCLUDE)
     endif ()
-endif ()
-
-# Install xpython_extension
-if (XPYT_BUILD_XPYTHON_EXTENSION)
-    install(TARGETS xpython_extension
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif ()
 
 # Configure 'xeus-pythonConfig.cmake' for a build tree
