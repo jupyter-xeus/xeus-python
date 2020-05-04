@@ -38,7 +38,13 @@ namespace xpyt
 
         using gil_scoped_release_ptr = std::unique_ptr<py::gil_scoped_release>;
 
-        interpreter();
+        // If redirect_output_enabled is true (default) then this interpreter will
+        // capture outputs and send them using publish_stream.
+        // Disable this if your interpreter uses custom output redirection.
+        // If redirect_display_enabled is true (default) then this interpreter will
+        // overwrite sys.displayhook and send execution results using publish_execution_result.
+        // Disable this if your interpreter uses custom display hook.
+        interpreter(bool redirect_output_enabled=true, bool redirect_display_enabled = true);
         virtual ~interpreter();
 
     protected:
@@ -67,7 +73,7 @@ namespace xpyt
         nl::json internal_request_impl(const nl::json& content) override;
 
         void redirect_output();
-        void redirect_display();
+        void redirect_display(bool install_hook=true);
 
         py::object m_displayhook;
 
