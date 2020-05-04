@@ -71,7 +71,7 @@ namespace xpyt
         for (const zmq::message_t& buffer : buffers)
         {
             const char* buf = buffer.data<const char>();
-            bufferlist.attr("append")(py::bytes(buf));
+            bufferlist.attr("append")(py::memoryview(py::bytes(buf)));
         }
         return bufferlist;
     }
