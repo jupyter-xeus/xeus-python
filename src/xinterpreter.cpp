@@ -54,11 +54,14 @@ namespace xpyt
         });
     }
 
-    interpreter::interpreter()
+    interpreter::interpreter(bool redirect_output_enabled/*=true*/, bool redirect_display_enabled/*=true*/)
     {
         xeus::register_interpreter(this);
-        redirect_output();
-        redirect_display();
+        if (redirect_output_enabled)
+        {
+            redirect_output();
+        }
+        redirect_display(redirect_display_enabled);
 
         py::module sys = py::module::import("sys");
 
@@ -151,7 +154,10 @@ namespace xpyt
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
                 py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, filename, "single");
 
-                m_displayhook.attr("set_execution_count")(execution_count);
+                if (m_displayhook != nullptr)
+                {
+                    m_displayhook.attr("set_execution_count")(execution_count);
+                }
 
                 exec(compiled_code);
                 exec(compiled_interactive_code);
@@ -351,14 +357,15 @@ namespace xpyt
         sys.attr("stderr") = stream_module.attr("Stream")("stderr");
     }
 
-    void interpreter::redirect_display()
+    void interpreter::redirect_display(bool install_hook/*=true*/)
     {
-        py::module sys = py::module::import("sys");
         py::module display_module = get_display_module();
-
         m_displayhook = display_module.attr("DisplayHook")();
-
-        sys.attr("displayhook") = m_displayhook;
+        if (install_hook)
+        {
+            py::module sys = py::module::import("sys");
+            sys.attr("displayhook") = m_displayhook;
+        }
         py::globals()["display"] = display_module.attr("display");
     }
 }
