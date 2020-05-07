@@ -154,7 +154,7 @@ namespace xpyt
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
                 py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, filename, "single");
 
-                if (m_displayhook != nullptr)
+                if (m_displayhook.ptr() != nullptr)
                 {
                     m_displayhook.attr("set_execution_count")(execution_count);
                 }
