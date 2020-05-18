@@ -116,6 +116,52 @@ namespace xpyt
             return kernel_res;
         }
 
+        if (code.size() >= 2 && code[0] == '%')
+        {   
+            py::list magics_line = py::str(code.substr(1)).attr("split")(" ");
+            auto magics_name = py::cast<std::string>(magics_line[0]);
+            std::string magics_arg;
+            if (py::len(magics_line) > 1) 
+                magics_arg = py::cast<std::string>(magics_line[1]);
+            else
+                magics_arg = "";
+
+            py::module kernel = get_kernel_module();
+            try {
+                py::object output = kernel.attr("run_line_magic")(magics_name, magics_arg);
+
+
+                kernel_res["status"] = "ok";
+                kernel_res["payload"] = nl::json::array();
+                kernel_res["payload"][0] = nl::json::object({
+                    //{"data", {
+                    //    {"text/plain", output_str}
+                    //}},
+                    {"source", "page"},
+                    {"start", 0}
+                });
+                kernel_res["user_expressions"] = nl::json::object();
+
+            } catch (py::error_already_set & e)
+            {
+
+                std::string evalue = e.what();
+                std::string ename = py::str(e.type().attr("__name__"));
+                publish_execution_error(ename, evalue, {evalue});
+                //if (!silent)
+                //{
+                //}
+
+                kernel_res["status"] = "error";
+                kernel_res["ename"] = ename;
+                kernel_res["evalue"] = evalue;
+            }
+
+            
+            return kernel_res;
+
+        }
+
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(allow_stdin);

@@ -26,7 +26,7 @@
 
 namespace py = pybind11;
 namespace nl = nlohmann;
-
+using namespace pybind11::literals;
 namespace xpyt
 {
     /*********************
@@ -171,7 +171,6 @@ namespace xpyt
     struct xmock_kernel
     {
         xmock_kernel() {}
-
         inline py::object parent_header() const
         {
             return py::dict(py::arg("header")=xeus::get_interpreter().parent_header().get<py::object>());
@@ -203,6 +202,23 @@ namespace xpyt
         kernel_module.def("register_post_execute", [](py::args, py::kwargs) {});
         kernel_module.def("enable_gui", [](py::args, py::kwargs) {});
         kernel_module.def("showtraceback", [](py::args, py::kwargs) {});
+        kernel_module.def("run_line_magic", [kernel_module](std::string name, std::string arg) {
+            if (name == "cd") {
+                py::module magics = py::module::import("IPython.core.magics.osm");
+                py::object osm = magics.attr("OSMagics")();
+                py::object shell = kernel_module.attr("_Mock");
+                shell.attr("db") = py::dict();
+                shell.attr("user_ns") = py::dict("_dh"_a=py::list());
+                osm.attr("shell") = shell;
+                auto result = osm.attr("cd")(arg);
+                return result;
+            }
+            PyErr_SetString(PyExc_ValueError, "magics not found");
+
+            throw py::error_already_set();
+
+    
+            });
 
         kernel_module.def("get_ipython", [kernel_module]() {
             py::object kernel = kernel_module.attr("mock_kernel")();
