@@ -155,6 +155,7 @@ namespace xpyt
                 kernel_res["status"] = "error";
                 kernel_res["ename"] = ename;
                 kernel_res["evalue"] = evalue;
+                kernel_res["traceback"] = {evalue};
             }
 
             

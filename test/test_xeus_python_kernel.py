@@ -33,6 +33,10 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
     code_inspect_sample = "open"
 
+    def test_xeus_python_missing_magic(self):
+        reply, output_msgs = self.execute_helper(code="%missing_magic")
+        self.assertRegex(output_msgs[0]['content']['evalue'], "magics not found")
+
     def test_xeus_python_stdout(self):
         reply, output_msgs = self.execute_helper(code='print(3)')
         self.assertEqual(output_msgs[0]['msg_type'], 'stream')
@@ -50,7 +54,7 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
             traceback[0]
         )
         self.assertEqual(
-            "In  \033[0;34m[3]\033[0m:\nLine \033[0;34m1\033[0m:     a = []; a.push_back(\x1b[34m3\x1b[39;49;00m)\n",
+            "In  \033[0;34m[4]\033[0m:\nLine \033[0;34m1\033[0m:     a = []; a.push_back(\x1b[34m3\x1b[39;49;00m)\n",
             traceback[1]
         )
         self.assertEqual(

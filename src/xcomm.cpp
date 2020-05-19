@@ -23,6 +23,7 @@
 
 #include "xcomm.hpp"
 #include "xutils.hpp"
+#include "xdisplay.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;
@@ -198,24 +199,38 @@ namespace xpyt
             .def(py::init<>())
             .def_property_readonly("_parent_header", &xmock_kernel::parent_header);
 
+        //py::class_<detail::xmock_object> shell(kernel_module, "_Shell");
+        py::object shell = _Mock;
+        shell.attr("db") = py::dict();
+        shell.attr("user_ns") = py::dict("_dh"_a=py::list());
+        py::module magic_core = py::module::import("IPython.core.magic");
+        py::module magics_module = py::module::import("IPython.core.magics");
+
+        py::object magics_manager = magic_core.attr("MagicsManager")();
+        shell.attr("magics_manager") = magics_manager;
+
+        py::object osm_magics_inst =  magics_module.attr("OSMagics")();
+        py::object basic_magics_inst =  magics_module.attr("BasicMagics")();
+        osm_magics_inst.attr("shell") = shell;
+        basic_magics_inst.attr("shell") = shell;
+        magics_manager.attr("register")(osm_magics_inst);
+        magics_manager.attr("register")(basic_magics_inst);
+
         kernel_module.def("register_target", &register_target);
         kernel_module.def("register_post_execute", [](py::args, py::kwargs) {});
         kernel_module.def("enable_gui", [](py::args, py::kwargs) {});
         kernel_module.def("showtraceback", [](py::args, py::kwargs) {});
-        kernel_module.def("run_line_magic", [kernel_module](std::string name, std::string arg) {
-            if ((name == "cd") || (name == "pwd") || (name == "env") || (name == "set_env")) {
-                py::module magics = py::module::import("IPython.core.magics.osm");
-                py::object osm = magics.attr("OSMagics")();
-                py::object shell = kernel_module.attr("_Mock");
-                shell.attr("db") = py::dict();
-                shell.attr("user_ns") = py::dict("_dh"_a=py::list());
-                osm.attr("shell") = shell;
-                auto result = osm.attr(py::str(name))(arg);
-                return result;
-            }
-            PyErr_SetString(PyExc_ValueError, "magics not found");
+        kernel_module.def("run_line_magic", [magics_manager](std::string name, std::string arg) {
 
-            throw py::error_already_set();
+            py::object magic_method = magics_manager.attr("magics")["line"].attr("get")(name);
+
+            if (magic_method.is_none()) {
+                PyErr_SetString(PyExc_ValueError, "magics not found");
+                throw py::error_already_set();
+            }
+
+            auto result = magic_method(arg);
+            return result;
 
     
             });
