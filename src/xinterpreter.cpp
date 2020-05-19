@@ -134,9 +134,9 @@ namespace xpyt
                 kernel_res["status"] = "ok";
                 kernel_res["payload"] = nl::json::array();
                 kernel_res["payload"][0] = nl::json::object({
-                    //{"data", {
-                    //    {"text/plain", output_str}
-                    //}},
+                    {"data", {
+                        {"text/plain", py::str(output)}
+                    }},
                     {"source", "page"},
                     {"start", 0}
                 });

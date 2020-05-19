@@ -203,14 +203,14 @@ namespace xpyt
         kernel_module.def("enable_gui", [](py::args, py::kwargs) {});
         kernel_module.def("showtraceback", [](py::args, py::kwargs) {});
         kernel_module.def("run_line_magic", [kernel_module](std::string name, std::string arg) {
-            if (name == "cd") {
+            if ((name == "cd") || (name == "pwd") || (name == "env") || (name == "set_env")) {
                 py::module magics = py::module::import("IPython.core.magics.osm");
                 py::object osm = magics.attr("OSMagics")();
                 py::object shell = kernel_module.attr("_Mock");
                 shell.attr("db") = py::dict();
                 shell.attr("user_ns") = py::dict("_dh"_a=py::list());
                 osm.attr("shell") = shell;
-                auto result = osm.attr("cd")(arg);
+                auto result = osm.attr(py::str(name))(arg);
                 return result;
             }
             PyErr_SetString(PyExc_ValueError, "magics not found");
