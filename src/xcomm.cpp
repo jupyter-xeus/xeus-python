@@ -167,6 +167,10 @@ namespace xpyt
         struct xmock_object
         {
         };
+
+        struct shell_object
+        {
+        };
     }
 
     struct xmock_kernel
@@ -199,8 +203,7 @@ namespace xpyt
             .def(py::init<>())
             .def_property_readonly("_parent_header", &xmock_kernel::parent_header);
 
-        //py::class_<detail::xmock_object> shell(kernel_module, "_Shell");
-        py::object shell = _Mock;
+        py::class_<detail::shell_object> shell(kernel_module, "_Shell");
         shell.attr("db") = py::dict();
         shell.attr("user_ns") = py::dict("_dh"_a=py::list());
         py::module magic_core = py::module::import("IPython.core.magic");
@@ -212,7 +215,16 @@ namespace xpyt
         py::object osm_magics_inst =  magics_module.attr("OSMagics")();
         py::object basic_magics_inst =  magics_module.attr("BasicMagics")();
         osm_magics_inst.attr("shell") = shell;
+        osm_magics_inst.attr("magics")["cell"] = py::dict();
+        osm_magics_inst.attr("magics")["line"] = py::dict(
+            "cd"_a=osm_magics_inst.attr("cd"),
+            "env"_a=osm_magics_inst.attr("env"),
+            "set_env"_a=osm_magics_inst.attr("set_env"),
+            "pwd"_a=osm_magics_inst.attr("pwd"));
         basic_magics_inst.attr("shell") = shell;
+        basic_magics_inst.attr("magics")["cell"] = py::dict();
+        basic_magics_inst.attr("magics")["line"] = py::dict(
+            "magic"_a=basic_magics_inst.attr("magic"));
         magics_manager.attr("register")(osm_magics_inst);
         magics_manager.attr("register")(basic_magics_inst);
 
