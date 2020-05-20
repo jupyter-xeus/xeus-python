@@ -162,15 +162,42 @@ namespace xpyt
         );
     }
 
+    auto init_magics(py::object & shell) 
+    {
+        py::module magic_core = py::module::import("IPython.core.magic");
+        py::module magics_module = py::module::import("IPython.core.magics");
+
+        py::object magics_manager = magic_core.attr("MagicsManager")();
+        shell.attr("magics_manager") = magics_manager;
+
+        py::object osm_magics_inst =  magics_module.attr("OSMagics")();
+        py::object basic_magics_inst =  magics_module.attr("BasicMagics")();
+        osm_magics_inst.attr("shell") = shell;
+        osm_magics_inst.attr("magics")["cell"] = py::dict();
+        osm_magics_inst.attr("magics")["line"] = py::dict(
+            "cd"_a=osm_magics_inst.attr("cd"),
+            "env"_a=osm_magics_inst.attr("env"),
+            "set_env"_a=osm_magics_inst.attr("set_env"),
+            "pwd"_a=osm_magics_inst.attr("pwd"));
+        basic_magics_inst.attr("shell") = shell;
+        basic_magics_inst.attr("magics")["cell"] = py::dict();
+        basic_magics_inst.attr("magics")["line"] = py::dict(
+            "magic"_a=basic_magics_inst.attr("magic"));
+        magics_manager.attr("register")(osm_magics_inst);
+        magics_manager.attr("register")(basic_magics_inst);
+    }
+
     namespace detail
     {
         struct xmock_object
         {
         };
 
-        struct shell_object
+        struct hooks_object
         {
+            hooks_object() {}
         };
+
     }
 
     struct xmock_kernel
@@ -202,39 +229,17 @@ namespace xpyt
         py::class_<xmock_kernel>(kernel_module, "mock_kernel", py::dynamic_attr())
             .def(py::init<>())
             .def_property_readonly("_parent_header", &xmock_kernel::parent_header);
+        py::class_<detail::hooks_object> hooks(kernel_module, "Hooks");
 
-        py::class_<detail::shell_object> shell(kernel_module, "_Shell");
-        shell.attr("db") = py::dict();
-        shell.attr("user_ns") = py::dict("_dh"_a=py::list());
-        py::module magic_core = py::module::import("IPython.core.magic");
-        py::module magics_module = py::module::import("IPython.core.magics");
-
-        py::object magics_manager = magic_core.attr("MagicsManager")();
-        shell.attr("magics_manager") = magics_manager;
-
-        py::object osm_magics_inst =  magics_module.attr("OSMagics")();
-        py::object basic_magics_inst =  magics_module.attr("BasicMagics")();
-        osm_magics_inst.attr("shell") = shell;
-        osm_magics_inst.attr("magics")["cell"] = py::dict();
-        osm_magics_inst.attr("magics")["line"] = py::dict(
-            "cd"_a=osm_magics_inst.attr("cd"),
-            "env"_a=osm_magics_inst.attr("env"),
-            "set_env"_a=osm_magics_inst.attr("set_env"),
-            "pwd"_a=osm_magics_inst.attr("pwd"));
-        basic_magics_inst.attr("shell") = shell;
-        basic_magics_inst.attr("magics")["cell"] = py::dict();
-        basic_magics_inst.attr("magics")["line"] = py::dict(
-            "magic"_a=basic_magics_inst.attr("magic"));
-        magics_manager.attr("register")(osm_magics_inst);
-        magics_manager.attr("register")(basic_magics_inst);
 
         kernel_module.def("register_target", &register_target);
         kernel_module.def("register_post_execute", [](py::args, py::kwargs) {});
         kernel_module.def("enable_gui", [](py::args, py::kwargs) {});
         kernel_module.def("showtraceback", [](py::args, py::kwargs) {});
-        kernel_module.def("run_line_magic", [magics_manager](std::string name, std::string arg) {
+        kernel_module.def("show_in_pager", [](py::str data, py::kwargs) {xpyt::xdisplay(py::dict("text/plain"_a=data), {}, {}, py::dict(), py::none(), py::none(), false, true);});
+        kernel_module.def("run_line_magic", [_Mock](std::string name, std::string arg) {
 
-            py::object magic_method = magics_manager.attr("magics")["line"].attr("get")(name);
+            py::object magic_method = _Mock.attr("magics_manager").attr("magics")["line"].attr("get")(name);
 
             if (magic_method.is_none()) {
                 PyErr_SetString(PyExc_ValueError, "magics not found");
@@ -247,17 +252,24 @@ namespace xpyt
     
             });
 
+        hooks.attr("show_in_pager") = kernel_module.attr("show_in_pager");
+
         kernel_module.def("get_ipython", [kernel_module]() {
             py::object kernel = kernel_module.attr("mock_kernel")();
             py::object comm_manager = kernel_module.attr("_Mock");
             comm_manager.attr("register_target") = kernel_module.attr("register_target");
             kernel.attr("comm_manager") = comm_manager;
 
-            py::object xeus_python = kernel_module.attr("_Mock");
+            py::object xeus_python =  kernel_module.attr("_Mock");
             xeus_python.attr("register_post_execute") = kernel_module.attr("register_post_execute");
             xeus_python.attr("enable_gui") = kernel_module.attr("enable_gui");
             xeus_python.attr("showtraceback") = kernel_module.attr("showtraceback");
             xeus_python.attr("kernel") = kernel;
+            xeus_python.attr("db") = py::dict();
+            xeus_python.attr("hooks") = kernel_module.attr("Hooks");
+            xeus_python.attr("user_ns") = py::dict("_dh"_a=py::list());
+            xeus_python.attr("run_line_magic") = kernel_module.attr("run_line_magic");
+            init_magics(xeus_python);
             return xeus_python;
         });
 

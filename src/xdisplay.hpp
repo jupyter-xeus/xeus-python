@@ -19,6 +19,10 @@ namespace py = pybind11;
 namespace xpyt
 {
     py::module get_display_module();
+    void xdisplay(const py::object& obj,
+                  const std::vector<std::string>& include, const std::vector<std::string>& exclude,
+                  const py::dict& metadata, const py::object& transient, const py::object& display_id,
+                  bool update, bool raw);
 }
 
 #endif
