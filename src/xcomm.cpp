@@ -173,7 +173,8 @@ namespace xpyt
         py::object osm_magics_inst =  magics_module.attr("OSMagics")();
         py::object basic_magics_inst =  magics_module.attr("BasicMagics")();
         osm_magics_inst.attr("shell") = shell;
-        osm_magics_inst.attr("magics")["cell"] = py::dict();
+        osm_magics_inst.attr("magics")["cell"] = py::dict(
+            "writefile"_a=osm_magics_inst.attr("writefile"));
         osm_magics_inst.attr("magics")["line"] = py::dict(
             "cd"_a=osm_magics_inst.attr("cd"),
             "env"_a=osm_magics_inst.attr("env"),
@@ -248,9 +249,23 @@ namespace xpyt
 
             auto result = magic_method(arg);
             return result;
-
     
             });
+
+        kernel_module.def("run_cell_magic", [_Mock](std::string name, std::string line, std::string cell) {
+
+            py::object magic_method = _Mock.attr("magics_manager").attr("magics")["cell"].attr("get")(name);
+
+            if (magic_method.is_none()) {
+                PyErr_SetString(PyExc_ValueError, "cell magics not found");
+                throw py::error_already_set();
+            }
+
+            auto result = magic_method(line, cell);
+            return result;
+    
+            });
+
 
         hooks.attr("show_in_pager") = kernel_module.attr("show_in_pager");
 
@@ -269,6 +284,7 @@ namespace xpyt
             xeus_python.attr("hooks") = kernel_module.attr("Hooks");
             xeus_python.attr("user_ns") = py::dict("_dh"_a=py::list());
             xeus_python.attr("run_line_magic") = kernel_module.attr("run_line_magic");
+            xeus_python.attr("run_cell_magic") = kernel_module.attr("run_cell_magic");
             init_magics(xeus_python);
             return xeus_python;
         });
