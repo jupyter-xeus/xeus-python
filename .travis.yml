@@ -56,6 +56,7 @@ install:
       fi
     # Test dependencies
     - conda install pytest jupyter_kernel_test -c conda-forge;
+    - pip install example_magic
     # Activate root environment
     - source activate root
     # For debugging

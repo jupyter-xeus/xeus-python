@@ -65,6 +65,11 @@ namespace xpyt
 
         py::module sys = py::module::import("sys");
 
+        // Monkey patching "import linecache". This monkey patch does not work with Python2.
+#if PY_MAJOR_VERSION >= 3
+        sys.attr("modules")["linecache"] = get_linecache_module();
+#endif
+
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = get_kernel_module();
 
@@ -74,10 +79,6 @@ namespace xpyt
         // Monkey patching "from IPython import get_ipython"
         sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
 
-        // Monkey patching "import linecache". This monkey patch does not work with Python2.
-#if PY_MAJOR_VERSION >= 3
-        sys.attr("modules")["linecache"] = get_linecache_module();
-#endif
 
         // add get_ipython to global namespace
         exec(py::str("from IPython.core.getipython import get_ipython"));
