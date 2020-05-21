@@ -238,6 +238,12 @@ namespace xpyt
         kernel_module.def("enable_gui", [](py::args, py::kwargs) {});
         kernel_module.def("showtraceback", [](py::args, py::kwargs) {});
         kernel_module.def("show_in_pager", [](py::str data, py::kwargs) {xpyt::xdisplay(py::dict("text/plain"_a=data), {}, {}, py::dict(), py::none(), py::none(), false, true);});
+
+        py::module ipy_process = py::module::import("IPython.utils.process");
+        kernel_module.def("system", [ipy_process](py::str cmd) {ipy_process.attr("system")(cmd);});
+        kernel_module.def("getoutput", [ipy_process](py::str cmd){return ipy_process.attr("getoutput")(cmd).attr("splitlines")();});
+
+
         kernel_module.def("run_line_magic", [_Mock](std::string name, std::string arg) {
 
             py::object magic_method = _Mock.attr("magics_manager").attr("magics")["line"].attr("get")(name);
@@ -285,6 +291,8 @@ namespace xpyt
             xeus_python.attr("user_ns") = py::dict("_dh"_a=py::list());
             xeus_python.attr("run_line_magic") = kernel_module.attr("run_line_magic");
             xeus_python.attr("run_cell_magic") = kernel_module.attr("run_cell_magic");
+            xeus_python.attr("system") = kernel_module.attr("system");
+            xeus_python.attr("getoutput") = kernel_module.attr("getoutput");
             init_magics(xeus_python);
             return xeus_python;
         });
