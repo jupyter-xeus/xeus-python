@@ -172,6 +172,8 @@ namespace xpyt
 
         py::object osm_magics_inst =  magics_module.attr("OSMagics")();
         py::object basic_magics_inst =  magics_module.attr("BasicMagics")();
+        py::object user_magics_inst =  magics_module.attr("UserMagics")();
+        magics_manager.attr("user_magics") = user_magics_inst;
         osm_magics_inst.attr("shell") = shell;
         osm_magics_inst.attr("magics")["cell"] = py::dict(
             "writefile"_a=osm_magics_inst.attr("writefile"));
@@ -186,6 +188,7 @@ namespace xpyt
             "magic"_a=basic_magics_inst.attr("magic"));
         magics_manager.attr("register")(osm_magics_inst);
         magics_manager.attr("register")(basic_magics_inst);
+        magics_manager.attr("register")(user_magics_inst);
     }
 
     namespace detail
@@ -275,25 +278,28 @@ namespace xpyt
 
         hooks.attr("show_in_pager") = kernel_module.attr("show_in_pager");
 
-        kernel_module.def("get_ipython", [kernel_module]() {
-            py::object kernel = kernel_module.attr("mock_kernel")();
-            py::object comm_manager = kernel_module.attr("_Mock");
-            comm_manager.attr("register_target") = kernel_module.attr("register_target");
-            kernel.attr("comm_manager") = comm_manager;
 
-            py::object xeus_python =  kernel_module.attr("_Mock");
-            xeus_python.attr("register_post_execute") = kernel_module.attr("register_post_execute");
-            xeus_python.attr("enable_gui") = kernel_module.attr("enable_gui");
-            xeus_python.attr("showtraceback") = kernel_module.attr("showtraceback");
-            xeus_python.attr("kernel") = kernel;
-            xeus_python.attr("db") = py::dict();
-            xeus_python.attr("hooks") = kernel_module.attr("Hooks");
-            xeus_python.attr("user_ns") = py::dict("_dh"_a=py::list());
-            xeus_python.attr("run_line_magic") = kernel_module.attr("run_line_magic");
-            xeus_python.attr("run_cell_magic") = kernel_module.attr("run_cell_magic");
-            xeus_python.attr("system") = kernel_module.attr("system");
-            xeus_python.attr("getoutput") = kernel_module.attr("getoutput");
-            init_magics(xeus_python);
+        py::object kernel = kernel_module.attr("mock_kernel")();
+        py::object comm_manager = kernel_module.attr("_Mock");
+        comm_manager.attr("register_target") = kernel_module.attr("register_target");
+        kernel.attr("comm_manager") = comm_manager;
+
+        py::object xeus_python =  kernel_module.attr("_Mock");
+        xeus_python.attr("register_post_execute") = kernel_module.attr("register_post_execute");
+        xeus_python.attr("enable_gui") = kernel_module.attr("enable_gui");
+        xeus_python.attr("showtraceback") = kernel_module.attr("showtraceback");
+        xeus_python.attr("kernel") = kernel;
+        xeus_python.attr("db") = py::dict();
+        xeus_python.attr("hooks") = kernel_module.attr("Hooks");
+        xeus_python.attr("user_ns") = py::dict("_dh"_a=py::list());
+        xeus_python.attr("run_line_magic") = kernel_module.attr("run_line_magic");
+        xeus_python.attr("run_cell_magic") = kernel_module.attr("run_cell_magic");
+        xeus_python.attr("system") = kernel_module.attr("system");
+        xeus_python.attr("getoutput") = kernel_module.attr("getoutput");
+        init_magics(xeus_python);
+        xeus_python.attr("register_magic_function") = xeus_python.attr("magics_manager").attr("register_function");
+
+        kernel_module.def("get_ipython", [xeus_python]() {
             return xeus_python;
         });
 
