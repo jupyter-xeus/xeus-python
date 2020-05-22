@@ -9,7 +9,6 @@
 #############################################################################
 
 import tempfile
-from textwrap import dedent
 import unittest
 import jupyter_kernel_test
 
@@ -47,7 +46,7 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
     def test_xeus_python_cell_magic(self):
         """Test calling cell magic"""
-        with tempfile.NamedTemporaryFile(dir='/tmp', delete=False) as tmpfile:
+        with tempfile.NamedTemporaryFile(delete=False) as tmpfile:
             temp_filename = tmpfile.name
         reply, output_msgs = self.execute_helper(code="%%writefile {}\ntest file".format(temp_filename))
         # we don't care about the actual function of the magic

@@ -48,7 +48,7 @@ install:
     - conda config --add channels conda-forge
     - conda update -q conda
     # Host dependencies
-    - conda install xeus=0.24.0 nlohmann_json cppzmq xtl pybind11=2.5.0 pybind11_json=0.2.6 jedi=0.15.1 pygments=2.3.1 ptvsd -c conda-forge
+    - conda install xeus=0.24.0 nlohmann_json cppzmq xtl pybind11=2.5.0 pybind11_json=0.2.6 jedi=0.15.1 pygments=2.3.1 ipython=7.14.0 ptvsd -c conda-forge
     # Build dependencies
     - conda install cmake -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
