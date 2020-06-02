@@ -45,13 +45,14 @@ install:
     - export PATH="$HOME/miniconda/bin:$PATH"
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
+    - conda config --add channels conda-forge
     - conda update -q conda
     # Host dependencies
-    - conda install xeus=0.23.12 nlohmann_json cppzmq xtl pybind11=2.2.4 pybind11_json=0.2.6 jedi=0.15.1 pygments=2.3.1 ptvsd -c conda-forge
+    - conda install xeus=0.24.0 nlohmann_json cppzmq xtl pybind11=2.5.0 pybind11_json=0.2.6 jedi=0.15.1 pygments=2.3.1 ptvsd -c conda-forge
     # Build dependencies
     - conda install cmake -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        conda install gxx_linux-64 libgcc -c conda-forge;
+        conda install cxx-compiler -c conda-forge;
       fi
     # Test dependencies
     - conda install pytest jupyter_kernel_test -c conda-forge;
