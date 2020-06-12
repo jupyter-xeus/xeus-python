@@ -122,6 +122,8 @@ set(XEUS_PYTHON_SRC
     src/xinput.hpp
     src/xinspect.cpp
     src/xinspect.hpp
+    src/xinteractiveshell.cpp
+    src/xinteractiveshell.hpp
     src/xinterpreter.cpp
     src/xis_complete.cpp
     src/xis_complete.hpp

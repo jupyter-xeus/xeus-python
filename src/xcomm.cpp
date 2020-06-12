@@ -23,6 +23,7 @@
 
 #include "xcomm.hpp"
 #include "xutils.hpp"
+#include "xinteractiveshell.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;
@@ -187,6 +188,38 @@ namespace xpyt
         py::module kernel_module = py::module("kernel");
 
         py::class_<detail::xmock_object> _Mock(kernel_module, "_Mock");
+        py::class_<xinteractive_shell> xinteractive_shell(
+            kernel_module, "xinteractive_shell", py::dynamic_attr());
+
+        py::class_<hooks_object>(kernel_module, "Hooks")
+            .def_static("show_in_pager", &hooks_object::show_in_pager);
+
+        xinteractive_shell.def(py::init<>())
+            .def_property_readonly("magics_manager", &xinteractive_shell::get_magics_manager)
+            .def_property_readonly("extension_manager", &xinteractive_shell::get_extension_manager)
+            .def_property_readonly("hooks", &xinteractive_shell::get_hooks)
+            .def_property_readonly("db", &xinteractive_shell::get_db)
+            .def_property_readonly("user_ns", &xinteractive_shell::get_user_ns)
+            .def_property_readonly("builtin_trap", &xinteractive_shell::get_builtin_trap)
+            .def_property_readonly("ipython_dir", &xinteractive_shell::get_ipython_dir)
+            .def("run_line_magic", &xinteractive_shell::run_line_magic)
+            .def("run_cell_magic", &xinteractive_shell::run_cell_magic)
+            .def("system", &xinteractive_shell::system)
+            .def("getoutput", &xinteractive_shell::getoutput)
+            .def("register_post_execute", &xinteractive_shell::register_post_execute)
+            .def("enable_gui", &xinteractive_shell::enable_gui)
+            .def("showtraceback", &xinteractive_shell::showtraceback)
+            .def("observe", &xinteractive_shell::observe)
+            .def("register_magic_function",
+                &xinteractive_shell::register_magic_function,
+                "Register magic function",
+                py::arg("func"),
+                py::arg("magic_kind")="line",
+                py::arg("magic_name")=py::none())
+            .def("register_magics", &xinteractive_shell::register_magics);
+
+        py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(xinteractive_shell);
+
         py::class_<xcomm>(kernel_module, "Comm")
             .def(py::init<py::args, py::kwargs>())
             .def("close", &xcomm::close)
@@ -200,21 +233,16 @@ namespace xpyt
             .def_property_readonly("_parent_header", &xmock_kernel::parent_header);
 
         kernel_module.def("register_target", &register_target);
-        kernel_module.def("register_post_execute", [](py::args, py::kwargs) {});
-        kernel_module.def("enable_gui", [](py::args, py::kwargs) {});
-        kernel_module.def("showtraceback", [](py::args, py::kwargs) {});
 
-        kernel_module.def("get_ipython", [kernel_module]() {
-            py::object kernel = kernel_module.attr("mock_kernel")();
-            py::object comm_manager = kernel_module.attr("_Mock");
-            comm_manager.attr("register_target") = kernel_module.attr("register_target");
-            kernel.attr("comm_manager") = comm_manager;
+        py::object kernel = kernel_module.attr("mock_kernel")();
+        py::object comm_manager = kernel_module.attr("_Mock");
+        comm_manager.attr("register_target") = kernel_module.attr("register_target");
+        kernel.attr("comm_manager") = comm_manager;
 
-            py::object xeus_python = kernel_module.attr("_Mock");
-            xeus_python.attr("register_post_execute") = kernel_module.attr("register_post_execute");
-            xeus_python.attr("enable_gui") = kernel_module.attr("enable_gui");
-            xeus_python.attr("showtraceback") = kernel_module.attr("showtraceback");
-            xeus_python.attr("kernel") = kernel;
+        py::object xeus_python =  kernel_module.attr("xinteractive_shell")();
+        xeus_python.attr("kernel") = kernel;
+
+        kernel_module.def("get_ipython", [xeus_python]() {
             return xeus_python;
         });
 

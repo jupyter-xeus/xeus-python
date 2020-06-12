@@ -8,6 +8,7 @@
 # The full license is in the file LICENSE, distributed with this software.  #
 #############################################################################
 
+import tempfile
 import unittest
 import jupyter_kernel_test
 
@@ -33,6 +34,76 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
     code_inspect_sample = "open"
 
+    def test_xeus_python_line_magic(self):
+        reply, output_msgs = self.execute_helper(code="%pwd")
+        self.assertEqual(output_msgs[0]['msg_type'], 'execute_result')
+        self.assertEqual(reply['content']['status'], 'ok')
+
+        # line magic expressions
+        reply, output_msgs = self.execute_helper(code="a = %pwd\nassert a")
+        self.assertEqual(reply['content']['status'], 'ok')
+        self.assertFalse(output_msgs)
+
+    def test_xeus_python_cell_magic(self):
+        """Test calling cell magic"""
+        with tempfile.NamedTemporaryFile(delete=False) as tmpfile:
+            temp_filename = tmpfile.name
+        reply, output_msgs = self.execute_helper(code="%%writefile {}\ntest file".format(temp_filename))
+        # we don't care about the actual function of the magic
+        # only check if execution succeeded
+        self.assertEqual(reply['content']['status'], 'ok')
+
+    def test_xeus_python_shell_magic(self):
+        """Test calling shell escape (! or !!) magic."""
+
+        # the shell command does not exist, but the magic execution should succeed
+        reply, output_msgs = self.execute_helper(code="!does_not_exist -params")
+        self.assertEqual(reply['content']['status'], 'ok')
+
+        reply, output_msgs = self.execute_helper(code="!!does_not_exist -params")
+        self.assertEqual(reply['content']['status'], 'ok')
+
+    def test_xeus_python_user_defined_magics(self):
+        """Test user-defined magic."""
+
+        magic_def_code = """
+        from IPython.core.magic import register_line_magic, register_cell_magic
+        @register_line_magic
+        def lmagic(line):
+            return line
+        @register_cell_magic
+        def cmagic(line, body):
+            return body"""
+
+        reply, output_msgs = self.execute_helper(code=magic_def_code)
+        self.assertEqual(reply['content']['status'], 'ok')
+
+        reply, output_msgs = self.execute_helper(code="%lmagic hello")
+        self.assertEqual(reply['content']['status'], 'ok')
+        self.assertTrue('hello' in output_msgs[0]['content']['data']['text/plain'])
+
+        # cant call cell magic as line magic
+        reply, output_msgs = self.execute_helper(code="%cmagic hello")
+        self.assertEqual(reply['content']['status'], 'error')
+
+        reply, output_msgs = self.execute_helper(code="%%cmagic\nworld")
+        self.assertEqual(reply['content']['status'], 'ok')
+        self.assertTrue('world' in output_msgs[0]['content']['data']['text/plain'])
+
+        # cant call line magic as as cell magic
+        reply, output_msgs = self.execute_helper(code="%%lmagic hello")
+        self.assertEqual(reply['content']['status'], 'error')
+
+    def test_xeus_python_missing_magic(self):
+        reply, output_msgs = self.execute_helper(code="%missing_magic")
+        self.assertRegex(output_msgs[0]['content']['evalue'], "magics not found")
+
+    def test_xeus_python_load_ext_magic(self):
+        """Test loading extensions"""
+        reply, output_msgs = self.execute_helper(code="%load_ext example_magic")
+        reply, output_msgs = self.execute_helper(code="%abra line")
+        self.assertEqual(reply['content']['status'], 'ok')
+
     def test_xeus_python_stdout(self):
         reply, output_msgs = self.execute_helper(code='print(3)')
         self.assertEqual(output_msgs[0]['msg_type'], 'stream')
@@ -49,9 +120,8 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
             "\033[0;31m---------------------------------------------------------------------------\033[0m\n\033[0;31mAttributeError\033[0m                            Traceback (most recent call last)",
             traceback[0]
         )
-        self.assertEqual(
-            "In  \033[0;34m[3]\033[0m:\nLine \033[0;34m1\033[0m:     a = []; a.push_back(\x1b[34m3\x1b[39;49;00m)\n",
-            traceback[1]
+        self.assertTrue(
+            "a = []; a.push_back" in traceback[1]
         )
         self.assertEqual(
             "\033[0;31mAttributeError\033[0m: 'list' object has no attribute 'push_back'\n\033[0;31m---------------------------------------------------------------------------\033[0m",

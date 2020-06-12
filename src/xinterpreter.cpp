@@ -65,6 +65,11 @@ namespace xpyt
 
         py::module sys = py::module::import("sys");
 
+        // Monkey patching "import linecache". This monkey patch does not work with Python2.
+#if PY_MAJOR_VERSION >= 3
+        sys.attr("modules")["linecache"] = get_linecache_module();
+#endif
+
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = get_kernel_module();
 
@@ -74,10 +79,9 @@ namespace xpyt
         // Monkey patching "from IPython import get_ipython"
         sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
 
-        // Monkey patching "import linecache". This monkey patch does not work with Python2.
-#if PY_MAJOR_VERSION >= 3
-        sys.attr("modules")["linecache"] = get_linecache_module();
-#endif
+
+        // add get_ipython to global namespace
+        exec(py::str("from IPython.core.getipython import get_ipython"));
     }
 
     interpreter::~interpreter()
@@ -116,6 +120,10 @@ namespace xpyt
             return kernel_res;
         }
 
+        py::module input_transformers = py::module::import("IPython.core.inputtransformer2");
+        py::object transformer_manager = input_transformers.attr("TransformerManager")();
+        py::str code_copy = transformer_manager.attr("transform_cell")(code);
+
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(allow_stdin);
@@ -127,7 +135,7 @@ namespace xpyt
             py::module builtins = py::module::import(XPYT_BUILTINS);
 
             // Parse code to AST
-            py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
+            py::object code_ast = ast.attr("parse")(code_copy, "<string>", "exec");
             py::list expressions = code_ast.attr("body");
 
             std::string filename = get_cell_tmp_file(code);
