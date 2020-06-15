@@ -42,18 +42,6 @@ using namespace pybind11::literals;
 
 namespace xpyt
 {
-    void interpreter::configure_impl()
-    {
-        // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
-        // will need to acquire the GIL
-        m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
-
-        py::gil_scoped_acquire acquire;
-        py::module jedi = py::module::import("jedi");
-        jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
-            jedi.attr("api").attr("environment").attr("SameEnvironment")();
-        });
-    }
 
     interpreter::interpreter(bool redirect_output_enabled/*=true*/, bool redirect_display_enabled/*=true*/)
     {
@@ -64,12 +52,34 @@ namespace xpyt
         }
         redirect_display(redirect_display_enabled);
 
+        // Monkey patch the IPython modules later in the execution, in the configure_impl
+        // This is needed because the kernel needs to initialize the history_manager before
+        // we can expose it to Python.
+    }
+
+    interpreter::~interpreter()
+    {
+    }
+
+    void interpreter::configure_impl()
+    {
+        // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
+        // will need to acquire the GIL
+        m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
+
+        py::gil_scoped_acquire acquire;
+
         py::module sys = py::module::import("sys");
 
         // Monkey patching "import linecache". This monkey patch does not work with Python2.
 #if PY_MAJOR_VERSION >= 3
         sys.attr("modules")["linecache"] = get_linecache_module();
 #endif
+
+        py::module jedi = py::module::import("jedi");
+        jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
+            jedi.attr("api").attr("environment").attr("SameEnvironment")();
+        });
 
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = get_kernel_module();
@@ -80,13 +90,8 @@ namespace xpyt
         // Monkey patching "from IPython import get_ipython"
         sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
 
-
         // add get_ipython to global namespace
         exec(py::str("from IPython.core.getipython import get_ipython"));
-    }
-
-    interpreter::~interpreter()
-    {
     }
 
     nl::json interpreter::execute_request_impl(int execution_count,

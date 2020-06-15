@@ -169,7 +169,8 @@ namespace xpyt
         {
         };
 
-        struct compiler_object {
+        struct compiler_object
+        {
             py::module builtins;
 
             py::object compile(py::object source, py::str filename, py::str mode, int flags=0)
@@ -219,9 +220,6 @@ namespace xpyt
 
         py::class_<detail::xmock_object> _Mock(kernel_module, "_Mock");
 
-        py::class_<xinteractive_shell> XInteractiveShell(
-            kernel_module, "XInteractiveShell", py::dynamic_attr());
-
         py::class_<hooks_object>(kernel_module, "Hooks")
             .def_static("show_in_pager", &hooks_object::show_in_pager);
         py::class_<xeus::xhistory_manager>(kernel_module, "HistoryManager")
@@ -233,7 +231,7 @@ namespace xpyt
                  py::arg("raw")=true,
                  py::arg("output")=false)
             .def("get_range_by_str",
-                [](xeus::xhistory_manager & me, py::str range_str, bool raw, bool output)
+                [](const xeus::xhistory_manager& me, py::str range_str, bool raw, bool output)
                 {
                     py::list  range_split = range_str.attr("split")("-");
                     int start = std::stoi(py::cast<std::string>(range_split[0]));
@@ -245,7 +243,7 @@ namespace xpyt
                 py::arg("raw")=true,
                 py::arg("output")=false)
             .def("get_tail",
-                [](xeus::xhistory_manager & me, int last_n, bool raw, bool output)
+                [](const xeus::xhistory_manager& me, int last_n, bool raw, bool output)
                 {
                     return me.get_tail(last_n, raw, output)["history"];
                 },
@@ -254,7 +252,7 @@ namespace xpyt
                 py::arg("output")=false
             )
             .def("search",
-                [](xeus::xhistory_manager & me, std::string pattern, bool raw, bool output, py::object py_n, bool unique)
+                [](const xeus::xhistory_manager& me, std::string pattern, bool raw, bool output, py::object py_n, bool unique)
                 {
                     int n = py_n.is_none() ? 1000 : py::cast<int>(py_n);
                     return me.search(pattern, raw, output, n, unique)["history"];
@@ -264,7 +262,18 @@ namespace xpyt
                 py::arg("output")=false,
                 py::arg("n") = py::none(),
                 py::arg("unique")=false);
+        
+        // define compiler class for timeit magic
+        py::class_<detail::compiler_object> Compiler(kernel_module, "Compiler");
+        Compiler.def(py::init<>())
+            .def("__call__", &detail::compiler_object::operator(), py::is_operator())
+            .def("ast_parse", &detail::compiler_object::ast_parse,
+                 py::arg("code"),
+                 py::arg("filename")="<unknown>",
+                 py::arg("symbol")="exec");
 
+        py::class_<xinteractive_shell> XInteractiveShell(
+            kernel_module, "XInteractiveShell", py::dynamic_attr());
         XInteractiveShell.def(py::init<>())
             .def_property_readonly("magics_manager", &xinteractive_shell::get_magics_manager)
             .def_property_readonly("extension_manager", &xinteractive_shell::get_extension_manager)
@@ -304,17 +313,8 @@ namespace xpyt
             .def("register_magics", &xinteractive_shell::register_magics)
             .def("set_next_input", &xinteractive_shell::set_next_input,
                  py::arg("text"),
-                 py::arg("replace")=false);
-
-        // define compiler class for timeit magic
-        py::class_<detail::compiler_object> Compiler(kernel_module, "Compiler");
-        Compiler.def(py::init<>())
-            .def("__call__", &detail::compiler_object::operator(), py::is_operator())
-            .def("ast_parse", &detail::compiler_object::ast_parse,
-                 py::arg("code"),
-                 py::arg("filename")="<unknown>",
-                 py::arg("symbol")="exec");
-        XInteractiveShell.attr("compile") = Compiler();
+                 py::arg("replace")=false)
+            .attr("compile") = Compiler();
 
 
         py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(XInteractiveShell);

@@ -2,8 +2,6 @@
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xhistory_manager.hpp"
 
-#include "nlohmann/json.hpp"
-
 #include "pybind11/eval.h"
 
 #include "xdisplay.hpp"

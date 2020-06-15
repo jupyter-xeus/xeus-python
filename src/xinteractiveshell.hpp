@@ -1,9 +1,9 @@
 #include <vector>
+#include "nlohmann/json.hpp"
 #include "pybind11/pybind11.h"
 #include "xdisplay.hpp"
 
 #include "xeus/xhistory_manager.hpp"
-#include "nlohmann/json.hpp"
 
 #ifdef __GNUC__
     #pragma GCC diagnostic ignored "-Wattributes"
