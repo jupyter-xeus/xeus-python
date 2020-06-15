@@ -14,9 +14,6 @@
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xinput.hpp"
 
-#include "pybind11/functional.h"
-#include "pybind11/pybind11.h"
-
 #include "xinput.hpp"
 #include "xutils.hpp"
 

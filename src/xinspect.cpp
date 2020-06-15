@@ -11,10 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "xutils.hpp"
 #include "xinspect.hpp"
-
-#include "pybind11/pybind11.h"
+#include "xutils.hpp"
 
 namespace py = pybind11;
 using namespace pybind11::literals;

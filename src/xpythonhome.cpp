@@ -8,11 +8,10 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include "pybind11/pybind11.h"
-
 #include <cstdlib>
 #include <string>
 
+#include "xeus-python/xpybind11_include.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 
 #include "xpythonhome.hpp"

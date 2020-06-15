@@ -23,8 +23,7 @@
 
 #include "xeus/xinterpreter.hpp"
 
-#include "pybind11/pybind11.h"
-
+#include "xpybind11_include.hpp"
 #include "xeus_python_config.hpp"
 
 namespace py = pybind11;

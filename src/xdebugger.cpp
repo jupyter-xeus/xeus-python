@@ -20,14 +20,13 @@
 
 #include "pybind11_json/pybind11_json.hpp"
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
-
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xmiddleware.hpp"
 #include "xeus/xsystem.hpp"
 
 #include "xeus-python/xdebugger.hpp"
+#include "xeus-python/xpybind11_include.hpp"
+
 #include "xptvsd_client.hpp"
 #include "xutils.hpp"
 

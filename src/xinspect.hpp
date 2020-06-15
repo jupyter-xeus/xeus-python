@@ -13,7 +13,7 @@
 
 #include <string>
 
-#include "pybind11/pybind11.h"
+#include "xeus-python/xpybind11_include.hpp"
 
 namespace py = pybind11;
 

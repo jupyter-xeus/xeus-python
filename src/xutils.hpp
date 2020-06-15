@@ -18,7 +18,7 @@
 
 #include "xeus/xcomm.hpp"
 
-#include "pybind11/pybind11.h"
+#include "xeus-python/xpybind11_include.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;

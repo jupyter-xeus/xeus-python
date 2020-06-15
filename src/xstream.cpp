@@ -12,9 +12,6 @@
 
 #include "xeus/xinterpreter.hpp"
 
-#include "pybind11/functional.h"
-#include "pybind11/pybind11.h"
-
 #include "xstream.hpp"
 
 namespace py = pybind11;

@@ -1,14 +1,13 @@
 #include <vector>
 #include "nlohmann/json.hpp"
-#include "pybind11/pybind11.h"
-#include "xdisplay.hpp"
-
 #include "xeus/xhistory_manager.hpp"
+
+#include "xeus-python/xpybind11_include.hpp"
+#include "xdisplay.hpp"
 
 #ifdef __GNUC__
     #pragma GCC diagnostic ignored "-Wattributes"
 #endif
-
 
 namespace nl = nlohmann;
 namespace py = pybind11;

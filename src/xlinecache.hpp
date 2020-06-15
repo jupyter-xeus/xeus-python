@@ -11,8 +11,7 @@
 #ifndef XPYT_LINECACHE_HPP
 #define XPYT_LINECACHE_HPP
 
-#include "pybind11/pybind11.h"
-#include "pybind11/functional.h"
+#include "xeus-python/xpybind11_include.hpp"
 
 namespace py = pybind11;
 

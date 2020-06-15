@@ -17,8 +17,7 @@
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus/xserver.hpp"
 
-#include "pybind11/pybind11.h"
-
+#include "xeus-python/xpybind11_include.hpp"
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xdebugger.hpp"
 

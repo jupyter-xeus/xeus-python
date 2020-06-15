@@ -1,10 +1,6 @@
-#include "xinteractiveshell.hpp"
 #include "xeus/xinterpreter.hpp"
-#include "xeus/xhistory_manager.hpp"
 
-#include "pybind11/eval.h"
-
-#include "xdisplay.hpp"
+#include "xinteractiveshell.hpp"
 #include "xutils.hpp"
 #include "xinspect.hpp"
 

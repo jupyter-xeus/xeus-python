@@ -10,9 +10,6 @@
 
 #include "xeus/xinterpreter.hpp"
 
-#include "pybind11/pybind11.h"
-#include "pybind11/functional.h"
-
 #include "xlinecache.hpp"
 #include "xutils.hpp"
 

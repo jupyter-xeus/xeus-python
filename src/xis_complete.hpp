@@ -11,7 +11,7 @@
 #ifndef XPYT_COMPLETION_HPP
 #define XPYT_COMPLETION_HPP
 
-#include "pybind11/pybind11.h"
+#include "xeus-python/xpybind11_include.hpp"
 
 namespace py = pybind11;
 

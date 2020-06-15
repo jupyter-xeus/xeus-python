@@ -11,8 +11,8 @@
 #ifndef XPYT_KERNEL_HPP
 #define XPYT_KERNEL_HPP
 
-#include "pybind11/pybind11.h"
 #include "xeus/xhistory_manager.hpp"
+#include "xeus-python/xpybind11_include.hpp"
 
 namespace py = pybind11;
 

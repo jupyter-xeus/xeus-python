@@ -20,10 +20,6 @@
 
 #include "pybind11_json/pybind11_json.hpp"
 
-#include "pybind11/pybind11.h"
-#include "pybind11/functional.h"
-#include "pybind11/stl.h"
-
 #include "xdisplay.hpp"
 #include "xutils.hpp"
 

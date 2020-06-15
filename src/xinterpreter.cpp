@@ -20,8 +20,6 @@
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xsystem.hpp"
 
-#include "pybind11/functional.h"
-
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 

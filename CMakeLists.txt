@@ -143,6 +143,7 @@ set(XEUS_PYTHON_HEADERS
     include/xeus-python/xdebugger.hpp
     include/xeus-python/xeus_python_config.hpp
     include/xeus-python/xinterpreter.hpp
+    include/xeus-python/xpybind11_include.hpp
 )
 
 set(XPYTHON_SRC

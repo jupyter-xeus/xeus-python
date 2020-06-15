@@ -1,27 +1,23 @@
 /***************************************************************************
 * Copyright (c) 2018, Martin Renou, Johan Mabille, Sylvain Corlay, and     *
 * Wolf Vollprecht                                                          *
-* Copyright (c) 2018, QuantStack                                           *
+* Copyright (c) 2018, QuantStack
 *                                                                          *
 * Distributed under the terms of the BSD 3-Clause License.                 *
 *                                                                          *
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_DISPLAY_HPP
-#define XPYT_DISPLAY_HPP
+#ifndef XPYT_PYBIND11_INCLUDE_HPP
+#define XPYT_PYBIND11_INCLUDE_HPP
 
-#include "xeus-python/xpybind11_include.hpp"
+#include "pybind11/embed.h"
+#include "pybind11/eval.h"
+#include "pybind11/functional.h"
+#include "pybind11/stl.h"
 
-namespace py = pybind11;
-
-namespace xpyt
-{
-    py::module get_display_module();
-    void xdisplay(const py::object& obj,
-                  const std::vector<std::string>& include, const std::vector<std::string>& exclude,
-                  const py::dict& metadata, const py::object& transient, const py::object& display_id,
-                  bool update, bool raw);
-}
+#undef snprintf
+#undef vsnprintf
 
 #endif
+
