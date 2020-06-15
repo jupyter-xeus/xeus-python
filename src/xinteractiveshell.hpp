@@ -1,10 +1,16 @@
+#include <vector>
 #include "pybind11/pybind11.h"
 #include "xdisplay.hpp"
+
+#include "xeus/xhistory_manager.hpp"
+#include "nlohmann/json.hpp"
 
 #ifdef __GNUC__
     #pragma GCC diagnostic ignored "-Wattributes"
 #endif
 
+
+namespace nl = nlohmann;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
@@ -33,7 +39,6 @@ namespace xpyt
         void observe(py::args, py::kwargs) {};
         void showtraceback(py::args, py::kwargs) {};
 
-
         // run system commands
         py::object system(py::str cmd);
         py::object getoutput(py::str cmd); 
@@ -46,6 +51,13 @@ namespace xpyt
         void register_magic_function(py::object func, std::string magic_kind, py::object magic_name);
         void register_magics(py::args args);
 
+        // required by history magics
+        void set_next_input(std::string s, bool replace);
+        void run_cell(py::str code, bool store_history);
+
+        // required by pinfo
+        void inspect(std::string, std::string oname, py::kwargs);
+
         // public getters
         py::object get_magics_manager() const;
         py::object get_extension_manager() const;
@@ -54,6 +66,16 @@ namespace xpyt
         py::object get_builtin_trap() const;
         py::str get_ipython_dir() const;
         hooks_object get_hooks() const;
+
+        py::list get_dir_stack() const { return m_dir_stack;};
+        py::str get_home_dir() const { return m_home_dir;};
+
+        const xeus::xhistory_manager & get_history_manager();
+
+        // payload
+        void clear_payloads();
+        using payload_type = std::vector<nl::json>;
+        const payload_type & get_payloads(); //pure C++ not exposed to Python
 
     private:
         py::module m_ipy_process;
@@ -72,8 +94,20 @@ namespace xpyt
         py::object m_builtin_trap;
         py::str m_ipython_dir;
 
+        // pager, required by %magics
         hooks_object m_hooks;
 
+        // required by pushd
+        py::list m_dir_stack;
+        py::str m_home_dir;
+
         void init_magics();
+
+        // history manager
+        const xeus::xhistory_manager * p_history_manager;
+
+        // store jupyter message protocol payloads
+        payload_type m_payloads;
+
     };
 };

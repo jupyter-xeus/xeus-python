@@ -104,6 +104,10 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
         reply, output_msgs = self.execute_helper(code="%abra line")
         self.assertEqual(reply['content']['status'], 'ok')
 
+    def test_xeus_python_history_manager(self):
+        reply, output_msgs = self.execute_helper(code="assert get_ipython().history_manager is not None")
+        self.assertEqual(reply['content']['status'], 'ok')
+
     def test_xeus_python_stdout(self):
         reply, output_msgs = self.execute_helper(code='print(3)')
         self.assertEqual(output_msgs[0]['msg_type'], 'stream')
