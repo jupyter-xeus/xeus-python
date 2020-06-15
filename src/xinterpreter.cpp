@@ -34,6 +34,7 @@
 #include "xstream.hpp"
 #include "xtraceback.hpp"
 #include "xutils.hpp"
+#include "xinteractiveshell.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;
@@ -41,18 +42,6 @@ using namespace pybind11::literals;
 
 namespace xpyt
 {
-    void interpreter::configure_impl()
-    {
-        // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
-        // will need to acquire the GIL
-        m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
-
-        py::gil_scoped_acquire acquire;
-        py::module jedi = py::module::import("jedi");
-        jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
-            jedi.attr("api").attr("environment").attr("SameEnvironment")();
-        });
-    }
 
     interpreter::interpreter(bool redirect_output_enabled/*=true*/, bool redirect_display_enabled/*=true*/)
     {
@@ -63,12 +52,34 @@ namespace xpyt
         }
         redirect_display(redirect_display_enabled);
 
+        // Monkey patch the IPython modules later in the execution, in the configure_impl
+        // This is needed because the kernel needs to initialize the history_manager before
+        // we can expose it to Python.
+    }
+
+    interpreter::~interpreter()
+    {
+    }
+
+    void interpreter::configure_impl()
+    {
+        // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
+        // will need to acquire the GIL
+        m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
+
+        py::gil_scoped_acquire acquire;
+
         py::module sys = py::module::import("sys");
 
         // Monkey patching "import linecache". This monkey patch does not work with Python2.
 #if PY_MAJOR_VERSION >= 3
         sys.attr("modules")["linecache"] = get_linecache_module();
 #endif
+
+        py::module jedi = py::module::import("jedi");
+        jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
+            jedi.attr("api").attr("environment").attr("SameEnvironment")();
+        });
 
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = get_kernel_module();
@@ -79,13 +90,8 @@ namespace xpyt
         // Monkey patching "from IPython import get_ipython"
         sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
 
-
         // add get_ipython to global namespace
         exec(py::str("from IPython.core.getipython import get_ipython"));
-    }
-
-    interpreter::~interpreter()
-    {
     }
 
     nl::json interpreter::execute_request_impl(int execution_count,
@@ -97,28 +103,6 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
-
-        if (code.size() >= 2 && code[0] == '?')
-        {
-            std::string result = formatted_docstring(code);
-            if (result.empty())
-            {
-                result = "Object " + code.substr(1) + " not found.";
-            }
-
-            kernel_res["status"] = "ok";
-            kernel_res["payload"] = nl::json::array();
-            kernel_res["payload"][0] = nl::json::object({
-                {"data", {
-                    {"text/plain", result}
-                }},
-                {"source", "page"},
-                {"start", 0}
-            });
-            kernel_res["user_expressions"] = nl::json::object();
-
-            return kernel_res;
-        }
 
         py::module input_transformers = py::module::import("IPython.core.inputtransformer2");
         py::object transformer_manager = input_transformers.attr("TransformerManager")();
@@ -160,6 +144,7 @@ namespace xpyt
                 py::object interactive_ast = ast.attr("Interactive")(interactive_nodes);
 
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
+
                 py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, filename, "single");
 
                 if (m_displayhook.ptr() != nullptr)
@@ -176,9 +161,16 @@ namespace xpyt
                 exec(compiled_code);
             }
 
+            xinteractive_shell * xshell = get_kernel_module()
+                .attr("get_ipython")()
+                .cast<xinteractive_shell *>();
+            auto payload = xshell->get_payloads();
+
             kernel_res["status"] = "ok";
-            kernel_res["payload"] = nl::json::array();
+            kernel_res["payload"] = payload;
             kernel_res["user_expressions"] = nl::json::object();
+
+            xshell->clear_payloads();
         }
         catch (py::error_already_set& e)
         {
