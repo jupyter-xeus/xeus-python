@@ -364,27 +364,37 @@ namespace xpyt
             .def("showtraceback", &xmock_ipython::showtraceback);
     }
 
-    py::object init_ipython_instance(const py::module& kernel_module)
+    struct ipython_instance
     {
-        py::object ipython_instance = kernel_module.attr("ipython_instance");
-        if (ipython_instance.is(py::none()))
+        ipython_instance() : m_instance(py::none())
         {
-            // The first import of IPython will throw is IPython has not been installed.
-            // In this case we fallback on the mock_ipython object.
-            try
-            {
-                py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
-                        kernel_module.attr("XInteractiveShell"));
-                ipython_instance = kernel_module.attr("XInteractiveShell")();
-            }
-            catch(...)
-            {
-                ipython_instance = kernel_module.attr("MockIPython");
-            }
-            ipython_instance.attr("kernel") = kernel_module.attr("MockKernel")();
         }
-        return ipython_instance;
-    }
+
+        py::object get_instance(const py::module& kernel_module) const
+        {
+            if (m_instance.is(py::none()))
+            {
+                // The first import of IPython will throw if IPython has not been installed.
+                // In this case we fallback on the mock_ipython object.
+                try
+                {
+                    py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
+                            kernel_module.attr("XInteractiveShell"));
+                    m_instance = kernel_module.attr("XInteractiveShell")();
+                }
+                catch(...)
+                {
+                    m_instance = kernel_module.attr("MockIPython");
+                }
+                m_instance.attr("kernel") = kernel_module.attr("MockKernel")();
+            }
+            return m_instance;
+        }
+
+    private:
+
+        mutable py::object m_instance;
+    };
 
     py::module get_kernel_module_impl()
     {
@@ -404,12 +414,16 @@ namespace xpyt
         // that of IPython instead of that of xeus. Thereafter any call to register_comm
         // will execute that of xeus, where the target has not been registered, resulting
         // in a segmentation fault.
-        // Initializing the xeus_python object as a memoized variable the initialization
+        // Initializing the xeus_python object as a memoized variable ensures the initialization
         // of the interactive shell (which imports a lot of module from IPython) will 
         // occur AFTER IPython.core has been monkey_patched.
-        kernel_module.attr("ipython_instance") = py::none();
-        kernel_module.def("get_ipython", [kernel_module]() {
-            return init_ipython_instance(kernel_module);
+        // Notice that using a static variable in the lambda to achieve the memoization
+        // results in a random crash at kernel shutdown.
+        // Also notice that using an attribute of kernel_module to memoize results
+        // in random segfault in the interpreter.
+        ipython_instance ipyinstance;
+        kernel_module.def("get_ipython", [ipyinstance, kernel_module]() {
+            return ipyinstance.get_instance(kernel_module);
         });
 
         return kernel_module;
