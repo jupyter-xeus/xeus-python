@@ -198,6 +198,38 @@ namespace xpyt
             }
 
         };
+
+        class xinteractive_builder
+        {
+        public:
+
+            xinteractive_builder(const py::module& kernel_module)
+                : m_kernel_module(kernel_module)
+                , m_xeus_python(py::none())
+            {
+            }
+
+            py::object get_xeus_python() const
+            {
+                if (m_xeus_python.is(py::none()))
+                {
+                    py::object kernel = m_kernel_module.attr("mock_kernel")();
+                    py::object comm_manager = m_kernel_module.attr("_Mock");
+                    comm_manager.attr("register_target") = m_kernel_module.attr("register_target");
+                    kernel.attr("comm_manager") = comm_manager;
+                    py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
+                            m_kernel_module.attr("XInteractiveShell"));
+                    m_xeus_python =  m_kernel_module.attr("XInteractiveShell")();
+                    m_xeus_python.attr("kernel") = kernel;
+                }
+                return m_xeus_python;
+            }
+
+        private:
+
+            py::module m_kernel_module;
+            mutable py::object m_xeus_python;
+        };
     }
 
     struct xmock_kernel
@@ -316,9 +348,6 @@ namespace xpyt
                  py::arg("replace")=false)
             .attr("compile") = Compiler();
 
-
-        py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(XInteractiveShell);
-
         py::class_<xcomm>(kernel_module, "Comm")
             .def(py::init<py::args, py::kwargs>())
             .def("close", &xcomm::close)
@@ -333,17 +362,19 @@ namespace xpyt
 
         kernel_module.def("register_target", &register_target);
 
-        py::object kernel = kernel_module.attr("mock_kernel")();
-        py::object comm_manager = kernel_module.attr("_Mock");
-        comm_manager.attr("register_target") = kernel_module.attr("register_target");
-        kernel.attr("comm_manager") = comm_manager;
+        detail::xinteractive_builder builder(kernel_module);
 
-        py::object xeus_python =  kernel_module.attr("XInteractiveShell")();
-
-        xeus_python.attr("kernel") = kernel;
-
-        kernel_module.def("get_ipython", [xeus_python]() {
-            return xeus_python;
+        // To keep ipywidgets working, we must not import any module from IPython
+        // before the kernel module has been defined and IPython.core has been
+        // monkey patched. Otherwise, any call to register_target_comm will execute
+        // that of IPython instead of that of xeus. Thereafter any call to register_comm
+        // will execute that of xeus, where the target has not been registered, resulting
+        // in a segmentation fault.
+        // Initializing the xeus_python object as a memoized variable in a lambda ensures the
+        // intialization of the interactive shell (which imports a lot of module from IPython)
+        // will occur AFTER IPython.core has been monkey_patched.
+        kernel_module.def("get_ipython", [builder]() {
+            return builder.get_xeus_python();
         });
 
         return kernel_module;
