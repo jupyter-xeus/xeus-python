@@ -65,6 +65,13 @@ namespace xpyt
         xeus::xcomm m_comm;
     };
 
+    struct xcomm_manager
+    {
+        xcomm_manager() = default;
+
+        void register_target(const py::str& target_name, const py::object& callback);
+    };
+
     /************************
      * xcomm implementation *
      ************************/
@@ -152,7 +159,7 @@ namespace xpyt
         };
     }
 
-    void register_target(const py::str& target_name, const py::object& callback)
+    void xcomm_manager::register_target(const py::str& target_name, const py::object& callback)
     {
         auto target_callback = [&callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
             XPYT_HOLDING_GIL(callback(xcomm(std::move(comm)), cppmessage_to_pymessage(msg)));
@@ -163,12 +170,12 @@ namespace xpyt
         );
     }
 
+    /****************
+     * mock objects *
+     ****************/
+
     namespace detail
     {
-        struct xmock_object
-        {
-        };
-
         struct compiler_object
         {
             py::module builtins;
@@ -196,67 +203,43 @@ namespace xpyt
                  auto ast =  py::module::import("ast");
                  return compile(source, filename, symbol, py::cast<int>(ast.attr("PyCF_ONLY_AST")));
             }
-
-        };
-
-        class xinteractive_builder
-        {
-        public:
-
-            xinteractive_builder(const py::module& kernel_module)
-                : m_kernel_module(kernel_module)
-                , m_xeus_python(py::none())
-            {
-            }
-
-            py::object get_xeus_python() const
-            {
-                if (m_xeus_python.is(py::none()))
-                {
-                    py::object kernel = m_kernel_module.attr("mock_kernel")();
-                    py::object comm_manager = m_kernel_module.attr("_Mock");
-                    comm_manager.attr("register_target") = m_kernel_module.attr("register_target");
-                    kernel.attr("comm_manager") = comm_manager;
-                    py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
-                            m_kernel_module.attr("XInteractiveShell"));
-                    m_xeus_python =  m_kernel_module.attr("XInteractiveShell")();
-                    m_xeus_python.attr("kernel") = kernel;
-                }
-                return m_xeus_python;
-            }
-
-        private:
-
-            py::module m_kernel_module;
-            mutable py::object m_xeus_python;
         };
     }
 
+    struct xmock_ipython
+    {
+        void register_post_execute(py::args, py::kwargs) {};
+        void enable_gui(py::args, py::kwargs) {};
+        void observe(py::args, py::kwargs) {};
+        void showtraceback(py::args, py::kwargs) {};
+    };
+
     struct xmock_kernel
     {
-        xmock_kernel() {}
+        xmock_kernel() = default;
 
         inline py::object parent_header() const
         {
             return py::dict(py::arg("header")=xeus::get_interpreter().parent_header().get<py::object>());
         }
+
+        xcomm_manager m_comm_manager;
     };
 
     /*****************
      * kernel module *
      *****************/
 
-    py::module get_kernel_module_impl()
+    void bind_history_manager(py::module& kernel_module)
     {
-        py::module kernel_module = py::module("kernel");
-
-        py::class_<detail::xmock_object> _Mock(kernel_module, "_Mock");
-
-        py::class_<hooks_object>(kernel_module, "Hooks")
-            .def_static("show_in_pager", &hooks_object::show_in_pager);
         py::class_<xeus::xhistory_manager>(kernel_module, "HistoryManager")
             .def_property_readonly("session_number", [](xeus::xhistory_manager &){return 0;})
-            .def("get_range", [](xeus::xhistory_manager & me, int session, int start, int stop, bool raw, bool output) {return me.get_range(session, start, stop, raw, output)["history"];},
+            .def("get_range", [](xeus::xhistory_manager & me,
+                                 int session,
+                                 int start,
+                                 int stop,
+                                 bool raw,
+                                 bool output) {return me.get_range(session, start, stop, raw, output)["history"];},
                  py::arg("session")=0,
                  py::arg("start")=0,
                  py::arg("stop")=1000,
@@ -294,7 +277,10 @@ namespace xpyt
                 py::arg("output")=false,
                 py::arg("n") = py::none(),
                 py::arg("unique")=false);
-        
+    }
+
+    void bind_interactive_shell(py::module& kernel_module)
+    {
         // define compiler class for timeit magic
         py::class_<detail::compiler_object> Compiler(kernel_module, "Compiler");
         Compiler.def(py::init<>())
@@ -304,9 +290,8 @@ namespace xpyt
                  py::arg("filename")="<unknown>",
                  py::arg("symbol")="exec");
 
-        py::class_<xinteractive_shell> XInteractiveShell(
-            kernel_module, "XInteractiveShell", py::dynamic_attr());
-        XInteractiveShell.def(py::init<>())
+        py::class_<xinteractive_shell>(kernel_module, "XInteractiveShell", py::dynamic_attr())
+            .def(py::init<>())
             .def_property_readonly("magics_manager", &xinteractive_shell::get_magics_manager)
             .def_property_readonly("extension_manager", &xinteractive_shell::get_extension_manager)
             .def_property_readonly("hooks", &xinteractive_shell::get_hooks)
@@ -347,7 +332,10 @@ namespace xpyt
                  py::arg("text"),
                  py::arg("replace")=false)
             .attr("compile") = Compiler();
+    }
 
+    void bind_comm(py::module& kernel_module)
+    {
         py::class_<xcomm>(kernel_module, "Comm")
             .def(py::init<py::args, py::kwargs>())
             .def("close", &xcomm::close)
@@ -356,13 +344,69 @@ namespace xpyt
             .def("on_close", &xcomm::on_close)
             .def_property_readonly("comm_id", &xcomm::comm_id)
             .def_property_readonly("kernel", &xcomm::kernel);
-        py::class_<xmock_kernel>(kernel_module, "mock_kernel", py::dynamic_attr())
+
+        py::class_<xcomm_manager>(kernel_module, "CommManager")
             .def(py::init<>())
-            .def_property_readonly("_parent_header", &xmock_kernel::parent_header);
+            .def("register_target", &xcomm_manager::register_target);
+    }
 
-        kernel_module.def("register_target", &register_target);
+    void bind_mock_objects(py::module& kernel_module)
+    {
+        py::class_<xmock_kernel>(kernel_module, "MockKernel", py::dynamic_attr())
+            .def(py::init<>())
+            .def_property_readonly("_parent_header", &xmock_kernel::parent_header)
+            .def_readwrite("comm_manager", &xmock_kernel::m_comm_manager);
 
-        detail::xinteractive_builder builder(kernel_module);
+        py::class_<xmock_ipython>(kernel_module, "MockIPython")
+            .def("register_post_execute", &xmock_ipython::register_post_execute)
+            .def("enable_gui", &xmock_ipython::enable_gui)
+            .def("observe", &xmock_ipython::observe)
+            .def("showtraceback", &xmock_ipython::showtraceback);
+    }
+
+    struct ipython_instance
+    {
+        ipython_instance() : m_instance(py::none())
+        {
+        }
+
+        py::object get_instance(const py::module& kernel_module) const
+        {
+            if (m_instance.is(py::none()))
+            {
+                // The first import of IPython will throw if IPython has not been installed.
+                // In this case we fallback on the mock_ipython object.
+                try
+                {
+                    py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
+                            kernel_module.attr("XInteractiveShell"));
+                    m_instance = kernel_module.attr("XInteractiveShell")();
+                }
+                catch(...)
+                {
+                    m_instance = kernel_module.attr("MockIPython");
+                }
+                m_instance.attr("kernel") = kernel_module.attr("MockKernel")();
+            }
+            return m_instance;
+        }
+
+    private:
+
+        mutable py::object m_instance;
+    };
+
+    py::module get_kernel_module_impl()
+    {
+        py::module kernel_module = py::module("kernel");
+
+        py::class_<hooks_object>(kernel_module, "Hooks")
+            .def_static("show_in_pager", &hooks_object::show_in_pager);
+
+        bind_history_manager(kernel_module);
+        bind_interactive_shell(kernel_module);
+        bind_comm(kernel_module);
+        bind_mock_objects(kernel_module);
 
         // To keep ipywidgets working, we must not import any module from IPython
         // before the kernel module has been defined and IPython.core has been
@@ -370,11 +414,16 @@ namespace xpyt
         // that of IPython instead of that of xeus. Thereafter any call to register_comm
         // will execute that of xeus, where the target has not been registered, resulting
         // in a segmentation fault.
-        // Initializing the xeus_python object as a memoized variable in a lambda ensures the
-        // intialization of the interactive shell (which imports a lot of module from IPython)
-        // will occur AFTER IPython.core has been monkey_patched.
-        kernel_module.def("get_ipython", [builder]() {
-            return builder.get_xeus_python();
+        // Initializing the xeus_python object as a memoized variable ensures the initialization
+        // of the interactive shell (which imports a lot of module from IPython) will 
+        // occur AFTER IPython.core has been monkey_patched.
+        // Notice that using a static variable in the lambda to achieve the memoization
+        // results in a random crash at kernel shutdown.
+        // Also notice that using an attribute of kernel_module to memoize results
+        // in random segfault in the interpreter.
+        ipython_instance ipyinstance;
+        kernel_module.def("get_ipython", [ipyinstance, kernel_module]() {
+            return ipyinstance.get_instance(kernel_module);
         });
 
         return kernel_module;
