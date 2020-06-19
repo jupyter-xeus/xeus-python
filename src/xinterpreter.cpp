@@ -90,8 +90,8 @@ namespace xpyt
         // Monkey patching "from IPython import get_ipython"
         sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
 
-        // add get_ipython to global namespace
-        exec(py::str("from IPython.core.getipython import get_ipython"));
+        // Add get_ipython to global namespace
+        py::globals()["get_ipython"] = get_kernel_module().attr("get_ipython");
     }
 
     nl::json interpreter::execute_request_impl(int execution_count,
