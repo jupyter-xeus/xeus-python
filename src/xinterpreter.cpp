@@ -92,6 +92,12 @@ namespace xpyt
 
         // Add get_ipython to global namespace
         py::globals()["get_ipython"] = get_kernel_module().attr("get_ipython");
+        
+        // Initializes get_ipython result
+        get_kernel_module().attr("get_ipython")();
+
+        m_has_ipython = get_kernel_module().attr("has_ipython").cast<bool>();
+        //m_has_ipython = true;
     }
 
     nl::json interpreter::execute_request_impl(int execution_count,
@@ -104,9 +110,17 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
-        py::module input_transformers = py::module::import("IPython.core.inputtransformer2");
-        py::object transformer_manager = input_transformers.attr("TransformerManager")();
-        py::str code_copy = transformer_manager.attr("transform_cell")(code);
+        py::str code_copy;
+        if(m_has_ipython)
+        {
+            py::module input_transformers = py::module::import("IPython.core.inputtransformer2");
+            py::object transformer_manager = input_transformers.attr("TransformerManager")();
+            code_copy = transformer_manager.attr("transform_cell")(code);
+        }
+        else
+        {
+            code_copy = code;
+        }
 
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
@@ -161,16 +175,21 @@ namespace xpyt
                 exec(compiled_code);
             }
 
-            xinteractive_shell * xshell = get_kernel_module()
-                .attr("get_ipython")()
-                .cast<xinteractive_shell *>();
-            auto payload = xshell->get_payloads();
-
             kernel_res["status"] = "ok";
-            kernel_res["payload"] = payload;
             kernel_res["user_expressions"] = nl::json::object();
-
-            xshell->clear_payloads();
+            if (m_has_ipython)
+            {
+                xinteractive_shell* xshell = get_kernel_module()
+                    .attr("get_ipython")()
+                    .cast<xinteractive_shell *>();
+                auto payload = xshell->get_payloads();
+                kernel_res["payload"] = payload;
+                xshell->clear_payloads();
+            }
+            else
+            {
+                kernel_res["payload"] = nl::json::array();
+            }
         }
         catch (py::error_already_set& e)
         {

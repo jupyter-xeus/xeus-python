@@ -83,6 +83,7 @@ namespace xpyt
         // the interpreter will execute Python code it will need to create an
         // `gil_scoped_acquire` instance first.
         gil_scoped_release_ptr m_release_gil = nullptr;
+        bool m_has_ipython;
     };
 }
 
