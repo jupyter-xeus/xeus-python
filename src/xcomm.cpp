@@ -381,10 +381,12 @@ namespace xpyt
                     py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
                             kernel_module.attr("XInteractiveShell"));
                     m_instance = kernel_module.attr("XInteractiveShell")();
+                    kernel_module.attr("has_ipython") = py::bool_(true);
                 }
                 catch(...)
                 {
                     m_instance = kernel_module.attr("MockIPython");
+                    kernel_module.attr("has_ipython") = py::bool_(false);
                 }
                 m_instance.attr("kernel") = kernel_module.attr("MockKernel")();
             }
