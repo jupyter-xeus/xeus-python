@@ -36,6 +36,11 @@ if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
     set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
 endif ()
 
+# Running find_package(PythonInterp) to retrieve the Python version
+# which is not exported by Pybind11's cmake.
+# Cf. https://github.com/pybind/pybind11/issues/2268
+find_package(PythonInterp ${PythonLibsNew_FIND_VERSION} REQUIRED)
+
 configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
@@ -64,7 +69,7 @@ OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 # Dependencies
 # ============
 
-set(xeus_REQUIRED_VERSION 0.23.12)
+set(xeus_REQUIRED_VERSION 0.24.0)
 set(pybind11_REQUIRED_VERSION 2.2.4)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
 
