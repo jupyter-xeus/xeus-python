@@ -60,7 +60,7 @@ namespace xpyt
         // Tells the controller that the connection with
         // ptvsd has been established
         zmq::message_t req;
-        m_controller.recv(req);
+        (void)m_controller.recv(req);
         m_controller.send(zmq::message_t("ACK", 3), zmq::send_flags::none);
         
         zmq::pollitem_t items[] = {
@@ -127,7 +127,7 @@ namespace xpyt
     void xptvsd_client::handle_header_socket()
     {
         zmq::message_t message;
-        m_controller_header.recv(message);
+        (void)m_controller_header.recv(message);
         m_parent_header = std::string(message.data<const char>(), message.size());
         m_controller_header.send(zmq::message_t("ACK", 3), zmq::send_flags::none);
     }
@@ -192,7 +192,7 @@ namespace xpyt
     void xptvsd_client::handle_control_socket()
     {
         zmq::message_t message;
-        m_controller.recv(message);
+        (void)m_controller.recv(message);
 
         // Sends a ZMQ header (required for stream socket) and forwards
         // the message
@@ -204,10 +204,10 @@ namespace xpyt
     {
         // First message is a ZMQ header that we discard
         zmq::message_t header;
-        m_ptvsd_socket.recv(header);
+        (void)m_ptvsd_socket.recv(header);
 
         zmq::message_t content;
-        m_ptvsd_socket.recv(content);
+        (void)m_ptvsd_socket.recv(content);
 
         buffer += std::string(content.data<const char>(), content.size());
     }
