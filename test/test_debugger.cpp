@@ -10,8 +10,10 @@
 
 #include <algorithm>
 #include <chrono>
+#include <condition_variable>
 #include <cstdlib>
 #include <fstream>
+#include <mutex>
 #include <thread>
 
 #include "xeus/xsystem.hpp"
@@ -873,9 +875,40 @@ void start_kernel()
     kernel.detach();
 }
 
+std::condition_variable cv;
+std::mutex mcv;
+bool done = false;
+
+void notify_done()
+{
+    {
+        std::lock_guard<std::mutex> lk(mcv);
+        done = true;
+    }
+    cv.notify_one();
+}
+
+void run_timer()
+{
+    std::unique_lock<std::mutex> lk(mcv);
+    if (!cv.wait_for(lk, std::chrono::seconds(20), []() { return done; }))
+    {
+        std::clog << "Unit test time out !!" << std::endl;
+        std::terminate();
+    }
+}
+
+void start_timer()
+{
+    done = false;
+    std::thread t(run_timer);
+    t.detach();
+}
+
 TEST(debugger, init)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_init.log");
@@ -883,12 +916,14 @@ TEST(debugger, init)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, disconnect)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_disconnect.log");
@@ -896,12 +931,14 @@ TEST(debugger, disconnect)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, multisession)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_multi_session.log");
@@ -912,12 +949,14 @@ TEST(debugger, multisession)
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res1);
         EXPECT_TRUE(res2);
+        notify_done();
     }
 }
 
 TEST(debugger, attach)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_attach.log");
@@ -925,6 +964,7 @@ TEST(debugger, attach)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
@@ -932,6 +972,7 @@ TEST(debugger, attach)
 TEST(debugger, set_external_breakpoints)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_set_external_breakpoints.log");
@@ -939,12 +980,14 @@ TEST(debugger, set_external_breakpoints)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, external_next_continue)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_external_next_continue.log");
@@ -952,12 +995,14 @@ TEST(debugger, external_next_continue)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, set_breakpoints)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_set_breakpoints.log");
@@ -965,12 +1010,14 @@ TEST(debugger, set_breakpoints)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, source)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_source.log");
@@ -978,12 +1025,14 @@ TEST(debugger, source)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, next_continue)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_next_continue.log");
@@ -991,12 +1040,14 @@ TEST(debugger, next_continue)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, stepin)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_stepin.log");
@@ -1004,12 +1055,14 @@ TEST(debugger, stepin)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, stack_trace)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
@@ -1017,12 +1070,14 @@ TEST(debugger, stack_trace)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, debug_info)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
@@ -1030,12 +1085,14 @@ TEST(debugger, debug_info)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, inspect_variables)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
@@ -1043,12 +1100,14 @@ TEST(debugger, inspect_variables)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, variables)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
@@ -1056,12 +1115,14 @@ TEST(debugger, variables)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
 TEST(debugger, next)
 {
     start_kernel();
+    start_timer();
     zmq::context_t context;
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
@@ -1069,6 +1130,7 @@ TEST(debugger, next)
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
+        notify_done();
     }
 }
 
