@@ -119,6 +119,33 @@ namespace xpyt
         }
         else
         {
+            // Special handling of question mark whe IPython is not installed. Otherwise, this
+            // is already implemented in the IPython.core.inputtransformer2 module that we
+            // import. This is a temporary implementation until:
+            // - either we reimplement the parsing logic in xeus-python
+            // - or this logic is extracted from IPython into a dedicated package, that becomes
+            // a dependency of both xeus-python and IPython.
+            if (code.size() >= 2 && code[0] == '?')	
+            {	
+                std::string result = formatted_docstring(code);	
+                if (result.empty())	
+                {	
+                    result = "Object " + code.substr(1) + " not found.";	
+                }	
+
+                kernel_res["status"] = "ok";	
+                kernel_res["payload"] = nl::json::array();	
+                kernel_res["payload"][0] = nl::json::object({	
+                    {"data", {	
+                        {"text/plain", result}	
+                    }},	
+                    {"source", "page"},	
+                    {"start", 0}	
+                });	
+                kernel_res["user_expressions"] = nl::json::object();	
+
+                return kernel_res;	
+            }
             code_copy = code;
         }
 
