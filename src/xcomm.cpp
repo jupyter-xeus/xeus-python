@@ -176,7 +176,7 @@ namespace xpyt
 
     namespace detail
     {
-        struct compiler_object
+        /*struct compiler_object
         {
             py::module builtins;
 
@@ -203,7 +203,7 @@ namespace xpyt
                  auto ast =  py::module::import("ast");
                  return compile(source, filename, symbol, py::cast<int>(ast.attr("PyCF_ONLY_AST")));
             }
-        };
+        };*/
     }
 
     struct xmock_ipython
@@ -282,13 +282,13 @@ namespace xpyt
     void bind_interactive_shell(py::module& kernel_module)
     {
         // define compiler class for timeit magic
-        py::class_<detail::compiler_object> Compiler(kernel_module, "Compiler");
+        /*py::class_<detail::compiler_object> Compiler(kernel_module, "Compiler");
         Compiler.def(py::init<>())
             .def("__call__", &detail::compiler_object::operator(), py::is_operator())
             .def("ast_parse", &detail::compiler_object::ast_parse,
                  py::arg("code"),
                  py::arg("filename")="<unknown>",
-                 py::arg("symbol")="exec");
+                 py::arg("symbol")="exec");*/
 
         py::class_<xinteractive_shell>(kernel_module, "XInteractiveShell", py::dynamic_attr())
             .def(py::init<>())
