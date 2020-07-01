@@ -46,7 +46,8 @@ install:
     - hash -r
     - conda config --set always_yes yes --set changeps1 no
     - conda config --add channels conda-forge
-    - conda update -q conda
+    - conda create --yes -n build_env python=3.6
+    - activate build_env
     # Host dependencies
     - conda install xeus=0.24.1 nlohmann_json cppzmq xtl pybind11=2.5.0 pybind11_json=0.2.6 jedi=0.15.1 pygments=2.3.1 ipython=7.14.0 ptvsd -c conda-forge
     # Build dependencies
