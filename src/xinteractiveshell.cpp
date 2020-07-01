@@ -33,16 +33,16 @@ namespace xpyt
         py::object basic_magics =  m_magics_module.attr("BasicMagics");
         py::object user_magics =  m_magics_module.attr("UserMagics");
         py::object extension_magics =  m_magics_module.attr("ExtensionMagics");
-        py::object history_magics =  m_magics_module.attr("HistoryMagics");
-        py::object ns_magics =  m_magics_module.attr("NamespaceMagics");
-        py::object execution_magics =  m_magics_module.attr("ExecutionMagics");
+        //py::object history_magics =  m_magics_module.attr("HistoryMagics");
+        //py::object ns_magics =  m_magics_module.attr("NamespaceMagics");
+        //py::object execution_magics =  m_magics_module.attr("ExecutionMagics");
         m_magics_manager.attr("register")(osm_magics);
         m_magics_manager.attr("register")(basic_magics);
         m_magics_manager.attr("register")(user_magics);
         m_magics_manager.attr("register")(extension_magics);
-        m_magics_manager.attr("register")(history_magics);
-        m_magics_manager.attr("register")(ns_magics);
-        m_magics_manager.attr("register")(execution_magics);
+        //m_magics_manager.attr("register")(history_magics);
+        //m_magics_manager.attr("register")(ns_magics);
+        //m_magics_manager.attr("register")(execution_magics);
         m_magics_manager.attr("user_magics") = user_magics("shell"_a=this);
 
         //select magics supported by xeus-python
@@ -53,30 +53,30 @@ namespace xpyt
            "env"_a=line_magics["env"],
            "set_env"_a=line_magics["set_env"],
            "pwd"_a=line_magics["pwd"],
-           "magic"_a=line_magics["magic"],
-           "load_ext"_a=line_magics["load_ext"],
-           "pushd"_a=line_magics["pushd"],
-           "popd"_a=line_magics["popd"],
-           "dirs"_a=line_magics["dirs"],
-           "dhist"_a=line_magics["dhist"],
-           "sx"_a=line_magics["sx"],
-           "system"_a=line_magics["system"],
-           "bookmark"_a=line_magics["bookmark"],
+           "magic"_a=line_magics["magic"]//,
+           //"load_ext"_a=line_magics["load_ext"],
+           //"pushd"_a=line_magics["pushd"],
+           //"popd"_a=line_magics["popd"],
+           //"dirs"_a=line_magics["dirs"],
+           //"dhist"_a=line_magics["dhist"],
+           //"sx"_a=line_magics["sx"],
+           //"system"_a=line_magics["system"],
+           //"bookmark"_a=line_magics["bookmark"],
            //history magics
-           "history"_a=line_magics["history"],
-           "recall"_a=line_magics["recall"],
-           "rerun"_a=line_magics["rerun"],
+           //"history"_a=line_magics["history"],
+           //"recall"_a=line_magics["recall"],
+           //"rerun"_a=line_magics["rerun"],
            //namespace magics
-           "pinfo"_a=line_magics["pinfo"],
+           //"pinfo"_a=line_magics["pinfo"],
            //execution magics
-           "timeit"_a=line_magics["timeit"]
+           //"timeit"_a=line_magics["timeit"]
         );
         cell_magics = py::dict(
-            "writefile"_a=cell_magics["writefile"],
+            "writefile"_a=cell_magics["writefile"]/*,
             "sx"_a=cell_magics["sx"],
             "system"_a=cell_magics["system"],
             //execution magics
-            "timeit"_a=cell_magics["timeit"]
+            "timeit"_a=cell_magics["timeit"]*/
             );
 
         m_magics_manager.attr("magics") = py::dict(
@@ -87,14 +87,14 @@ namespace xpyt
 
     xinteractive_shell::xinteractive_shell()
     {
-        p_history_manager = &xeus::get_interpreter().get_history_manager();
+        //p_history_manager = &xeus::get_interpreter().get_history_manager();
         m_hooks = hooks_object();
         m_ipy_process = py::module::import("IPython.utils.process");
-        py::module os_module = py::module::import("os");
+        //py::module os_module = py::module::import("os");
         m_db = py::dict();
         m_user_ns = py::dict("_dh"_a=py::list());
-        m_dir_stack = py::list();
-        m_home_dir = os_module.attr("path").attr("expanduser")("~");
+        //m_dir_stack = py::list();
+        //m_home_dir = os_module.attr("path").attr("expanduser")("~");
         init_magics();
     }
 
@@ -122,7 +122,7 @@ namespace xpyt
         }
 
         // required by timeit magics (which uses user_ns as globals dict)
-        m_user_ns.attr("update")(py::globals());
+        //m_user_ns.attr("update")(py::globals());
 
         return magic_method(arg);
 
@@ -138,7 +138,7 @@ namespace xpyt
         }
 
         // required by timeit magics (which uses user_ns as globals dict)
-        m_user_ns.attr("update")(py::globals());
+        //m_user_ns.attr("update")(py::globals());
 
         return magic_method(arg, body);
     }
@@ -156,7 +156,7 @@ namespace xpyt
 
     // manage payloads
     // payloads are required by recall magic
-    void xinteractive_shell::set_next_input(std::string s, bool replace)
+    /*void xinteractive_shell::set_next_input(std::string s, bool replace)
     {
         nl::json data = nl::json::object({
             {"text", s},
@@ -179,7 +179,7 @@ namespace xpyt
         });
 
         m_payloads.push_back(std::move(data));
-    }
+    }*/
 
     void xinteractive_shell::clear_payloads()
     {
@@ -192,7 +192,7 @@ namespace xpyt
     }
 
     // run_cell required my %rerun magic
-    void xinteractive_shell::run_cell(py::str code, bool)
+    /*void xinteractive_shell::run_cell(py::str code, bool)
     {
         // this is a placeholder for a real implementation
         // it does not handle multiple statements
@@ -204,7 +204,7 @@ namespace xpyt
         // we need to pass user_ns because in a nested interpreter
         // we loose global namespace (results of previous evals)
         exec(compiled_code, m_user_ns);
-    }
+    }*/
 
     // define getters
     py::object xinteractive_shell::get_magics_manager() const

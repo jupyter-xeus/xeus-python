@@ -299,13 +299,13 @@ namespace xpyt
             .def_property_readonly("user_ns", &xinteractive_shell::get_user_ns)
             .def_property_readonly("builtin_trap", &xinteractive_shell::get_builtin_trap)
             .def_property_readonly("ipython_dir", &xinteractive_shell::get_ipython_dir)
-            .def_property_readonly("dir_stack", &xinteractive_shell::get_dir_stack)
-            .def_property_readonly("home_dir", &xinteractive_shell::get_home_dir)
-            .def_property_readonly("history_manager", &xinteractive_shell::get_history_manager)
+            //.def_property_readonly("dir_stack", &xinteractive_shell::get_dir_stack)
+            //.def_property_readonly("home_dir", &xinteractive_shell::get_home_dir)
+            //.def_property_readonly("history_manager", &xinteractive_shell::get_history_manager)
             .def("run_line_magic", &xinteractive_shell::run_line_magic)
             .def("run_cell_magic", &xinteractive_shell::run_cell_magic)
             // magic method is deprecated but some magic functions still use it
-            .def("magic", &xinteractive_shell::run_line_magic, "name"_a, "arg"_a="")
+            //.def("magic", &xinteractive_shell::run_line_magic, "name"_a, "arg"_a="")
             .def("system", &xinteractive_shell::system)
             .def("getoutput", &xinteractive_shell::getoutput)
             .def("register_post_execute", &xinteractive_shell::register_post_execute)
@@ -313,25 +313,25 @@ namespace xpyt
             .def("showtraceback", &xinteractive_shell::showtraceback)
             .def("observe", &xinteractive_shell::observe)
             // for timeit timeit
-            .def("transform_cell", [](xinteractive_shell &, py::str raw_cell){return raw_cell;})
-            .def("transform_ast", [](xinteractive_shell &, py::object ast){return ast;})
+            //.def("transform_cell", [](xinteractive_shell &, py::str raw_cell){return raw_cell;})
+            //.def("transform_ast", [](xinteractive_shell &, py::object ast){return ast;})
             // for pinfo (?magic)
-            .def("_inspect", &xinteractive_shell::inspect)
+            //.def("_inspect", &xinteractive_shell::inspect)
             // generic magics code
-            .def("run_cell",&xinteractive_shell::run_cell,
-                py::arg("code"),
-                py::arg("store_history")=false)
+            //.def("run_cell",&xinteractive_shell::run_cell,
+            //    py::arg("code"),
+            //    py::arg("store_history")=false)
             .def("register_magic_function",
                 &xinteractive_shell::register_magic_function,
                 "Register magic function",
                 py::arg("func"),
                 py::arg("magic_kind")="line",
-                py::arg("magic_name")=py::none())
-            .def("register_magics", &xinteractive_shell::register_magics)
-            .def("set_next_input", &xinteractive_shell::set_next_input,
-                 py::arg("text"),
-                 py::arg("replace")=false)
-            .attr("compile") = Compiler();
+                py::arg("magic_name")=py::none());
+            //.def("register_magics", &xinteractive_shell::register_magics)
+            //.def("set_next_input", &xinteractive_shell::set_next_input,
+            //     py::arg("text"),
+            //     py::arg("replace")=false)
+            //.attr("compile") = Compiler();
     }
 
     void bind_comm(py::module& kernel_module)

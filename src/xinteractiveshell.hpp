@@ -52,11 +52,11 @@ namespace xpyt
         void register_magics(py::args args);
 
         // required by history magics
-        void set_next_input(std::string s, bool replace);
-        void run_cell(py::str code, bool store_history);
+        //void set_next_input(std::string s, bool replace);
+        //void run_cell(py::str code, bool store_history);
 
         // required by pinfo
-        void inspect(std::string, std::string oname, py::kwargs);
+        //void inspect(std::string, std::string oname, py::kwargs);
 
         // public getters
         py::object get_magics_manager() const;
