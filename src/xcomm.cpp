@@ -187,7 +187,7 @@ namespace xpyt
 
             compiler_object()
             {
-               builtins =  py::module::import(XPYT_BUILTINS);
+               builtins = py::module::import(XPYT_BUILTINS);
             }
 
             py::object operator()(py::object source, py::str filename, py::str mode)
@@ -233,8 +233,8 @@ namespace xpyt
     void bind_history_manager(py::module& kernel_module)
     {
         py::class_<xeus::xhistory_manager>(kernel_module, "HistoryManager")
-            .def_property_readonly("session_number", [](xeus::xhistory_manager &){return 0;})
-            .def("get_range", [](xeus::xhistory_manager & me,
+            .def_property_readonly("session_number", [](xeus::xhistory_manager&){return 0;})
+            .def("get_range", [](xeus::xhistory_manager& me,
                                  int session,
                                  int start,
                                  int stop,
@@ -248,7 +248,7 @@ namespace xpyt
             .def("get_range_by_str",
                 [](const xeus::xhistory_manager& me, py::str range_str, bool raw, bool output)
                 {
-                    py::list  range_split = range_str.attr("split")("-");
+                    py::list range_split = range_str.attr("split")("-");
                     int start = std::stoi(py::cast<std::string>(range_split[0]));
                     int stop = (range_split.size() > 1) ? std::stoi(py::cast<std::string>(range_split[1])) : start + 1;
                     int session = 0;

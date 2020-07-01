@@ -665,7 +665,8 @@ bool debugger_client::test_inspect_variables()
         auto x = std::find_if(vars.begin(), vars.end(), [&name](const nl::json& var) {
             return var.is_object() && var.value("name", "") == name;
         });
-        if (x == vars.end()) {
+        if (x == vars.end())
+        {
             return false;
         }
         nl::json var = *x;
