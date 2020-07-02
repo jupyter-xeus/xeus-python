@@ -376,6 +376,7 @@ namespace xpyt
             {
                 auto register_fn = py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register");
                 auto shell = kernel_module.attr("XInteractiveShell");
+                register_fn(shell);
                 // The first import of IPython will throw if IPython has not been installed.
                 // In this case we fallback on the mock_ipython object.
                 /*try
