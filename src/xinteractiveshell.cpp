@@ -95,7 +95,7 @@ namespace xpyt
         m_user_ns = py::dict("_dh"_a=py::list());
         //m_dir_stack = py::list();
         //m_home_dir = os_module.attr("path").attr("expanduser")("~");
-        init_magics();
+        //init_magics();
     }
 
     py::object xinteractive_shell::system(py::str cmd)
