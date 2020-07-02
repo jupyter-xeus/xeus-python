@@ -26,10 +26,10 @@ namespace xpyt
         m_extension_manager = m_extension_module.attr("ExtensionManager")("shell"_a=this);
 
         //shell features required by extension manager
-        m_builtin_trap = py::module::import("contextlib").attr("nullcontext")();
-        m_ipython_dir = "";
+        //m_builtin_trap = py::module::import("contextlib").attr("nullcontext")();
+        //m_ipython_dir = "";
 
-        py::object osm_magics =  m_magics_module.attr("OSMagics");
+        /*py::object osm_magics =  m_magics_module.attr("OSMagics");
         py::object basic_magics =  m_magics_module.attr("BasicMagics");
         py::object user_magics =  m_magics_module.attr("UserMagics");
         py::object extension_magics =  m_magics_module.attr("ExtensionMagics");
@@ -77,11 +77,11 @@ namespace xpyt
             "system"_a=cell_magics["system"],
             //execution magics
             "timeit"_a=cell_magics["timeit"]*/
-            );
+            /*);
 
         m_magics_manager.attr("magics") = py::dict(
            "line"_a=line_magics,
-           "cell"_a=cell_magics);
+           "cell"_a=cell_magics);*/
     }
 
 
@@ -95,7 +95,7 @@ namespace xpyt
         m_user_ns = py::dict("_dh"_a=py::list());
         //m_dir_stack = py::list();
         //m_home_dir = os_module.attr("path").attr("expanduser")("~");
-        //init_magics();
+        init_magics();
     }
 
     py::object xinteractive_shell::system(py::str cmd)
