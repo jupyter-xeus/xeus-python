@@ -26,7 +26,7 @@ namespace xpyt
         m_extension_manager = m_extension_module.attr("ExtensionManager")("shell"_a=this);
 
         //shell features required by extension manager
-        //m_builtin_trap = py::module::import("contextlib").attr("nullcontext")();
+        m_builtin_trap = py::module::import("contextlib").attr("nullcontext")();
         //m_ipython_dir = "";
 
         /*py::object osm_magics =  m_magics_module.attr("OSMagics");
