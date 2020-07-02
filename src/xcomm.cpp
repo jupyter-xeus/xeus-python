@@ -374,13 +374,9 @@ namespace xpyt
         {
             if (m_instance.is(py::none()))
             {
-                auto register_fn = py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register");
-                auto shell = kernel_module.attr("XInteractiveShell");
-                register_fn(shell);
-                m_instance = kernel_module.attr("XInteractiveShell")();
                 // The first import of IPython will throw if IPython has not been installed.
                 // In this case we fallback on the mock_ipython object.
-                /*try
+                try
                 {
                     py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
                             kernel_module.attr("XInteractiveShell"));
@@ -388,10 +384,10 @@ namespace xpyt
                     kernel_module.attr("has_ipython") = py::bool_(true);
                 }
                 catch(...)
-                {*/
+                {
                     m_instance = kernel_module.attr("MockIPython");
                     kernel_module.attr("has_ipython") = py::bool_(false);
-                //}
+                }
                 m_instance.attr("kernel") = kernel_module.attr("MockKernel")();
             }
             return m_instance;
