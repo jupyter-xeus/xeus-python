@@ -374,6 +374,7 @@ namespace xpyt
         {
             if (m_instance.is(py::none()))
             {
+                auto ipython = py::module::import("IPython.core.interactiveshell");
                 // The first import of IPython will throw if IPython has not been installed.
                 // In this case we fallback on the mock_ipython object.
                 /*try
