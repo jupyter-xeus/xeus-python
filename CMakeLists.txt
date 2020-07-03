@@ -134,6 +134,8 @@ set(XEUS_PYTHON_SRC
     src/xis_complete.hpp
     src/xlinecache.cpp
     src/xlinecache.hpp
+    src/xnullcontext.cpp
+    src/xnullcontext.hpp
     src/xptvsd_client.cpp
     src/xptvsd_client.hpp
     src/xstream.cpp
