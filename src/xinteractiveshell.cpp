@@ -1,4 +1,5 @@
 #include "xinteractiveshell.hpp"
+
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xhistory_manager.hpp"
 
@@ -118,7 +119,8 @@ namespace xpyt
             .attr("magics")["line"]
             .attr("get")(name);
 
-        if (magic_method.is_none()) {
+        if (magic_method.is_none())
+        {
             PyErr_SetString(PyExc_ValueError, "magics not found");
             throw py::error_already_set();
         }
@@ -134,7 +136,8 @@ namespace xpyt
     {
         py::object magic_method = m_magics_manager.attr("magics")["cell"].attr("get")(name);
 
-        if (magic_method.is_none()) {
+        if (magic_method.is_none())
+        {
             PyErr_SetString(PyExc_ValueError, "cell magics not found");
             throw py::error_already_set();
         }
@@ -245,7 +248,7 @@ namespace xpyt
         return m_hooks;
     }
 
-    const xeus::xhistory_manager & xinteractive_shell::get_history_manager()
+    const xeus::xhistory_manager& xinteractive_shell::get_history_manager()
     {
         return *p_history_manager;
     }

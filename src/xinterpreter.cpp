@@ -208,7 +208,7 @@ namespace xpyt
             {
                 xinteractive_shell* xshell = get_kernel_module()
                     .attr("get_ipython")()
-                    .cast<xinteractive_shell *>();
+                    .cast<xinteractive_shell*>();
                 auto payload = xshell->get_payloads();
                 kernel_res["payload"] = payload;
                 xshell->clear_payloads();

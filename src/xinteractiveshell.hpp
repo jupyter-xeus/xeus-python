@@ -1,4 +1,5 @@
 #include <vector>
+
 #include "nlohmann/json.hpp"
 #include "pybind11/pybind11.h"
 #include "xdisplay.hpp"
@@ -9,14 +10,12 @@
     #pragma GCC diagnostic ignored "-Wattributes"
 #endif
 
-
 namespace nl = nlohmann;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace xpyt 
 {
-
     struct hooks_object
     {
         static inline void show_in_pager(py::str data, py::kwargs)
@@ -27,7 +26,6 @@ namespace xpyt
 
     class xinteractive_shell
     {
-
     public:
 
         // default constructor
@@ -67,17 +65,18 @@ namespace xpyt
         py::str get_ipython_dir() const;
         hooks_object get_hooks() const;
 
-        py::list get_dir_stack() const { return m_dir_stack;};
-        py::str get_home_dir() const { return m_home_dir;};
+        inline py::list get_dir_stack() const { return m_dir_stack; };
+        inline py::str get_home_dir() const { return m_home_dir; };
 
-        const xeus::xhistory_manager & get_history_manager();
+        const xeus::xhistory_manager& get_history_manager();
 
         // payload
         void clear_payloads();
         using payload_type = std::vector<nl::json>;
-        const payload_type & get_payloads(); //pure C++ not exposed to Python
+        const payload_type& get_payloads(); //pure C++ not exposed to Python
 
     private:
+
         py::module m_ipy_process;
         py::module m_magic_core;
         py::module m_magics_module;
@@ -104,10 +103,9 @@ namespace xpyt
         void init_magics();
 
         // history manager
-        const xeus::xhistory_manager * p_history_manager;
+        const xeus::xhistory_manager* p_history_manager;
 
         // store jupyter message protocol payloads
         payload_type m_payloads;
-
     };
 };
