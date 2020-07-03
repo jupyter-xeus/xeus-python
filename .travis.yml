@@ -7,12 +7,12 @@ env:
 matrix:
   fast_finish: true
   include:
-#    - os: linux
-#      addons:
-#        apt:
-#          sources:
-#            - ubuntu-toolchain-r-test
-#      env: PY_VERSION=3.6
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+      env: PY_VERSION=3.6
     - os: linux
       addons:
         apt:

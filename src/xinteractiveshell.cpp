@@ -7,15 +7,14 @@
 #include "xdisplay.hpp"
 #include "xutils.hpp"
 #include "xinspect.hpp"
+#include "xnullcontext.hpp"
 
 using namespace pybind11::literals;
 namespace py = pybind11;
 namespace nl = nlohmann;
 
-
 namespace xpyt
 {
-
     void xinteractive_shell::init_magics()
     {
         m_magic_core = py::module::import("IPython.core.magic");
@@ -25,8 +24,11 @@ namespace xpyt
         m_magics_manager = m_magic_core.attr("MagicsManager")("shell"_a=this);
         m_extension_manager = m_extension_module.attr("ExtensionManager")("shell"_a=this);
 
-        //shell features required by extension manager
-        m_builtin_trap = py::module::import("contextlib").attr("nullcontext")();
+        // Shell features required by extension manager
+
+        m_builtin_trap = get_nullcontext_module().attr("nullcontext")();
+        // m_builtin_trap = py::module::import("contextlib").attr("nullcontext")();
+
         m_ipython_dir = "";
 
         py::object osm_magics =  m_magics_module.attr("OSMagics");
