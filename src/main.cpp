@@ -101,6 +101,11 @@ int main(int argc, char* argv[])
     signal(SIGSEGV, handler);
 #endif
 
+    // Setting Program Name
+    static const std::string argv0(argv[0]);
+    static const std::wstring wargv0(argv0.cbegin(), argv0.cend());;
+    Py_SetProgramName(const_cast<wchar_t*>(wargv0.c_str()));
+
     // Setting PYTHONHOME
     xpyt::set_pythonhome();
     print_pythonhome();
