@@ -188,51 +188,83 @@ namespace xpyt
      * xdisplay implementation *
      ***************************/
 
-    void xdisplay(const py::object& obj,
-                  const std::vector<std::string>& include, const std::vector<std::string>& exclude,
-                  const py::dict& metadata, const py::object& transient, const py::object& display_id,
-                  bool update, bool raw)
+    void xdisplay_impl(const py::args objs,
+                       const std::vector<std::string>& include,
+                       const std::vector<std::string>& exclude,
+                       const py::dict& metadata,
+                       const py::object& transient,
+                       const py::object& display_id,
+                       bool update,
+                       bool raw)
     {
         auto& interp = xeus::get_interpreter();
 
-        if (!obj.is_none())
+        for (std::size_t i = 0; i < objs.size(); ++i)
         {
-            if (hasattr(obj, "_ipython_display_"))
+            py::object obj = objs[i];
+            if (!obj.is_none())
             {
-                obj.attr("_ipython_display_")();
-                return;
-            }
+                if (hasattr(obj, "_ipython_display_"))
+                {
+                    obj.attr("_ipython_display_")();
+                    return;
+                }
 
-            py::object pub_data;
-            py::object pub_metadata = py::dict();
-            if (raw)
-            {
-                pub_data = obj;
-            }
-            else
-            {
-                const py::tuple& repr = mime_bundle_repr(obj, include, exclude);
-                pub_data = repr[0];
-                pub_metadata = repr[1];
-            }
-            pub_metadata.attr("update")(metadata);
+                py::object pub_data;
+                py::object pub_metadata = py::dict();
+                if (raw)
+                {
+                    pub_data = obj;
+                }
+                else
+                {
+                    const py::tuple& repr = mime_bundle_repr(obj, include, exclude);
+                    pub_data = repr[0];
+                    pub_metadata = repr[1];
+                }
+                pub_metadata.attr("update")(metadata);
 
-            nl::json cpp_transient = transient.is_none() ? nl::json::object() : nl::json(transient);
+                nl::json cpp_transient = transient.is_none() ? nl::json::object() : nl::json(transient);
 
-            if (!display_id.is_none())
-            {
-                cpp_transient["display_id"] = display_id;
-            }
+                if (!display_id.is_none())
+                {
+                    cpp_transient["display_id"] = display_id;
+                }
 
-            if (update)
-            {
-                interp.update_display_data(pub_data, pub_metadata, std::move(cpp_transient));
-            }
-            else
-            {
-                interp.display_data(pub_data, pub_metadata, std::move(cpp_transient));
+                if (update)
+                {
+                    interp.update_display_data(pub_data, pub_metadata, std::move(cpp_transient));
+                }
+                else
+                {
+                    interp.display_data(pub_data, pub_metadata, std::move(cpp_transient));
+                }
             }
         }
+    }
+
+    void xdisplay(py::args objs, py::kwargs kw)
+    {
+        auto raw = kw.contains("raw") ? kw["raw"].cast<bool>() : false;
+        auto include = kw.contains("include") ? kw["include"].cast<std::vector<std::string>>() : std::vector<std::string>();
+        auto exclude = kw.contains("exclude") ? kw["exclude"].cast<std::vector<std::string>>() : std::vector<std::string>({});
+        auto metadata = kw.contains("metadata") ? py::object(kw["metadata"]) : py::dict();
+        auto transient = kw.contains("transient") ? py::object(kw["transient"]) : py::none();
+        auto display_id = kw.contains("display_id") ? py::object(kw["display_id"]) : py::none();
+
+        xdisplay_impl(objs, include, exclude, metadata, transient, display_id, false, raw);
+    }
+
+    void xupdate_display(py::args objs, py::kwargs kw)
+    {
+        auto raw = kw.contains("raw") ? kw["raw"].cast<bool>() : false;
+        auto include = kw.contains("include") ? kw["include"].cast<std::vector<std::string>>() : std::vector<std::string>();
+        auto exclude = kw.contains("exclude") ? kw["exclude"].cast<std::vector<std::string>>() : std::vector<std::string>({});
+        auto metadata = kw.contains("metadata") ? py::object(kw["metadata"]) : py::dict();
+        auto transient = kw.contains("transient") ? py::object(kw["transient"]) : py::none();
+        auto display_id = kw.contains("display_id") ? py::object(kw["display_id"]) : py::none();
+
+        xdisplay_impl(objs, include, exclude, metadata, transient, display_id, true, raw);
     }
 
     void xpublish_display_data(const py::object& data, const py::object& metadata, const py::str& /*source*/, const py::object& transient)
@@ -242,66 +274,70 @@ namespace xpyt
         interp.display_data(data, metadata, transient);
     }
 
-    void xdisplay_mimetype(const std::string& mimetype, const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_mimetype(const std::string& mimetype, py::args objs, py::kwargs kw)
     {
+        bool raw = kw.contains("raw") ? kw["raw"].cast<bool>() : false;
+        py::object metadata = kw.contains("metadata") ? kw["metadata"] : py::dict();
         py::object p_metadata = py::dict();
         if (!metadata.is_none())
         {
             p_metadata = py::dict(py::arg(mimetype.c_str()) = metadata);
         }
 
-        py::object p_obj = obj;
-        if (raw)
+        for (std::size_t i = 0; i < objs.size(); ++i)
         {
-            p_obj = py::dict(py::arg(mimetype.c_str()) = obj);
+            py::object obj = objs[i];
+            if (raw)
+            {
+                objs[i] = py::dict(py::arg(mimetype.c_str()) = obj);
+            }
         }
-
-        xdisplay(p_obj, {mimetype}, {}, p_metadata, py::none(), py::none(), false, raw);
+        xdisplay_impl(objs, {mimetype}, {}, p_metadata, py::none(), py::none(), false, raw);
     }
 
-    void xdisplay_html(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_html(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("text/html", obj, raw, metadata);
+        xdisplay_mimetype("text/html", objs, kw);
     }
 
-    void xdisplay_markdown(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_markdown(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("text/markdown", obj, raw, metadata);
+        xdisplay_mimetype("text/markdown", objs, kw);
     }
 
-    void xdisplay_svg(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_svg(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("image/svg+xml", obj, raw, metadata);
+        xdisplay_mimetype("image/svg+xml", objs, kw);
     }
 
-    void xdisplay_png(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_png(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("image/png", obj, raw, metadata);
+        xdisplay_mimetype("image/png", objs, kw);
     }
 
-    void xdisplay_jpeg(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_jpeg(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("image/jpeg", obj, raw, metadata);
+        xdisplay_mimetype("image/jpeg", objs, kw);
     }
 
-    void xdisplay_latex(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_latex(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("text/latex", obj, raw, metadata);
+        xdisplay_mimetype("text/latex", objs, kw);
     }
 
-    void xdisplay_json(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_json(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("application/json", obj, raw, metadata);
+        xdisplay_mimetype("application/json", objs, kw);
     }
 
-    void xdisplay_javascript(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_javascript(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("application/javascript", obj, raw, metadata);
+        xdisplay_mimetype("application/javascript", objs, kw);
     }
 
-    void xdisplay_pdf(const py::object& obj, bool raw, const py::object& metadata)
+    void xdisplay_pdf(py::args objs, py::kwargs kw)
     {
-        xdisplay_mimetype("application/pdf", obj, raw, metadata);
+        xdisplay_mimetype("application/pdf", objs, kw);
     }
 
     /*************************
@@ -880,7 +916,7 @@ namespace xpyt
         py::dict bundle = py::dict("application/geo+json"_a=get_data(), "text/plain"_a="<IPython.display.GeoJSON object>");
         py::dict metadata = py::dict("application/geo+json"_a=get_metadata());
 
-        xdisplay(bundle, {}, {}, metadata, py::none(), py::none(), false, true);
+        xdisplay(bundle, py::kwargs());
     }
 
     /**********************
@@ -1035,27 +1071,9 @@ namespace xpyt
             .def("set_execution_count", &xdisplayhook::set_execution_count)
             .def("__call__", &xdisplayhook::operator(), py::arg("obj"), py::arg("raw") = false);
 
-        display_module.def("display",
-              xdisplay,
-              py::arg("obj"),
-              py::arg("include") = py::list(),
-              py::arg("exclude") = py::list(),
-              py::arg("metadata") = py::dict(),
-              py::arg("transient") = py::none(),
-              py::arg("display_id") = py::none(),
-              py::arg("update") = false,
-              py::arg("raw") = false);
+        display_module.def("display", xdisplay);
 
-        display_module.def("update_display",
-              xdisplay,
-              py::arg("obj"),
-              py::arg("include") = py::list(),
-              py::arg("exclude") = py::list(),
-              py::arg("metadata") = py::dict(),
-              py::arg("transient") = py::none(),
-              py::arg("display_id") = py::none(),
-              py::arg("update") = true,
-              py::arg("raw") = false);
+        display_module.def("update_display", xupdate_display);
 
         display_module.def("publish_display_data",
             xpublish_display_data,
@@ -1068,59 +1086,23 @@ namespace xpyt
               xclear,
               py::arg("wait") = false);
 
-        display_module.def("display_html",
-            xdisplay_html,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_html", xdisplay_html);
 
-        display_module.def("display_markdown",
-            xdisplay_markdown,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_markdown", xdisplay_markdown);
 
-        display_module.def("display_svg",
-            xdisplay_svg,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_svg", xdisplay_svg);
 
-        display_module.def("display_png",
-            xdisplay_png,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_png", xdisplay_png);
 
-        display_module.def("display_jpeg",
-            xdisplay_jpeg,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_jpeg", xdisplay_jpeg);
 
-        display_module.def("display_latex",
-            xdisplay_latex,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_latex", xdisplay_latex);
 
-        display_module.def("display_json",
-            xdisplay_json,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_json", xdisplay_json);
 
-        display_module.def("display_javascript",
-            xdisplay_javascript,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_javascript", xdisplay_javascript);
 
-        display_module.def("display_pdf",
-            xdisplay_pdf,
-            py::arg("obj"),
-            py::arg("raw") = false,
-            py::arg("metadata") = py::none());
+        display_module.def("display_pdf", xdisplay_pdf);
 
         py::class_<xdisplay_object>(display_module, "DisplayObject")
             .def(

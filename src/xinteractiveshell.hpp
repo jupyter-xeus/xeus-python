@@ -20,7 +20,8 @@ namespace xpyt
     {
         static inline void show_in_pager(py::str data, py::kwargs)
         {
-            xdisplay(py::dict("text/plain"_a=data), {}, {}, py::dict(), py::none(), py::none(), false, true);
+            xdisplay(py::make_tuple(py::dict("text/plain"_a = data)),
+                                    py::dict(py::arg("raw") = true));
         }
     };
 
