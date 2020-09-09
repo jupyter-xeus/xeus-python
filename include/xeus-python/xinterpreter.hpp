@@ -82,7 +82,15 @@ namespace xpyt
         // interpreter wants to execute Python code. This means that whenever
         // the interpreter will execute Python code it will need to create an
         // `gil_scoped_acquire` instance first.
+        //
+        // By default GIL is locked, therefore configure_impl() releases it.
+        // If an application has already released the GIL by the time the interpreter
+        // is started, m_release_gil_at_startup has to be set to false to prevent
+        // releasing it again in configure_impl().
+        //
+        bool m_release_gil_at_startup = true;
         gil_scoped_release_ptr m_release_gil = nullptr;
+
         bool m_has_ipython;
     };
 }
