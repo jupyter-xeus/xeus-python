@@ -190,10 +190,10 @@ namespace xpyt
     {
         std::string source = message["arguments"]["source"]["path"];
         m_breakpoint_list.erase(source);
-        nl::json breakpoint_reply = forward_message(message);
-        nl::json bp_json = breakpoint_reply["body"]["breakpoints"];
+        nl::json bp_json = message["arguments"]["breakpoints"];
         std::vector<nl::json> bp_list(bp_json.begin(), bp_json.end());
         m_breakpoint_list.insert(std::make_pair(std::move(source), std::move(bp_list)));
+        nl::json breakpoint_reply = forward_message(message);
         return breakpoint_reply;
     }
 
