@@ -279,20 +279,21 @@ namespace xpyt
         bool raw = kw.contains("raw") ? kw["raw"].cast<bool>() : false;
         py::object metadata = kw.contains("metadata") ? kw["metadata"] : py::dict();
         py::object p_metadata = py::dict();
+
         if (!metadata.is_none())
         {
             p_metadata = py::dict(py::arg(mimetype.c_str()) = metadata);
         }
 
-        for (std::size_t i = 0; i < objs.size(); ++i)
+        py::list disp_objs = objs;
+        if (raw)
         {
-            py::object obj = objs[i];
-            if (raw)
+            for (std::size_t i = 0; i < objs.size(); ++i)
             {
-                objs[i] = py::dict(py::arg(mimetype.c_str()) = obj);
+                disp_objs[i] = py::dict(py::arg(mimetype.c_str()) = objs[i]);
             }
         }
-        xdisplay_impl(objs, {mimetype}, {}, p_metadata, py::none(), py::none(), false, raw);
+        xdisplay_impl(disp_objs, {mimetype}, {}, p_metadata, py::none(), py::none(), false, raw);
     }
 
     void xdisplay_html(py::args objs, py::kwargs kw)
@@ -1087,21 +1088,13 @@ namespace xpyt
               py::arg("wait") = false);
 
         display_module.def("display_html", xdisplay_html);
-
         display_module.def("display_markdown", xdisplay_markdown);
-
         display_module.def("display_svg", xdisplay_svg);
-
         display_module.def("display_png", xdisplay_png);
-
         display_module.def("display_jpeg", xdisplay_jpeg);
-
         display_module.def("display_latex", xdisplay_latex);
-
         display_module.def("display_json", xdisplay_json);
-
         display_module.def("display_javascript", xdisplay_javascript);
-
         display_module.def("display_pdf", xdisplay_pdf);
 
         py::class_<xdisplay_object>(display_module, "DisplayObject")
