@@ -38,7 +38,8 @@ install:
   - nmake
   - nmake install
   # Install test dependencies
-  - conda install pytest jupyter_kernel_test -c conda-forge
+  - conda install mamba -c conda-forge
+  - mamba install pytest jupyter_kernel_test -c conda-forge
   - pip install example_magic
 
 build_script:
