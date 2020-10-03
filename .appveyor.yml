@@ -28,7 +28,7 @@ install:
   - conda info -a
   # Host dependencies
   - conda install python=3.7 # ptvsd is not available on python 3.8 for windows
-  - conda install xeus=0.24.1 nlohmann_json cppzmq xtl jedi pybind11=2.5.0 pybind11_json=0.2.6 pygments=2.3.1 gtest=1.8.0 ptvsd ipython=7.14.0 -c conda-forge
+  - conda install xeus=0.24.2 nlohmann_json cppzmq xtl jedi pybind11=2.5.0 pybind11_json=0.2.6 pygments=2.3.1 gtest=1.8.0 ptvsd ipython=7.14.0 -c conda-forge
   # Build dependencies
   - conda install cmake -c conda-forge
   # Build and install xeus-python
