@@ -14,7 +14,7 @@
 // Project version
 #define XPYT_VERSION_MAJOR 0
 #define XPYT_VERSION_MINOR 8
-#define XPYT_VERSION_PATCH 4
+#define XPYT_VERSION_PATCH 5
 
 // Composing the version string from major, minor and patch
 #define XPYT_CONCATENATE(A, B) XPYT_CONCATENATE_IMPL(A, B)
