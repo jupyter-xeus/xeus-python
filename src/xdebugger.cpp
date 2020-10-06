@@ -253,6 +253,15 @@ namespace xpyt
                 break;
             }
         }
+#ifdef WIN32
+        size = reply["body"]["stackFrames"].size();
+        for(size_t i = 0; i < size; ++i)
+        {
+            std::string path = reply["body"]["stackFrames"][i]["source"]["path"];
+            std::replace(path.begin(), path.end(), '\\', '/');
+            reply["body"]["stackFrames"][i]["source"]["path"] = path;
+        }
+#endif
         return reply;
     }
 
