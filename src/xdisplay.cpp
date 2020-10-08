@@ -55,7 +55,7 @@ namespace xpyt
 
     bool should_include(const std::string& mimetype, const std::vector<std::string>& include)
     {
-        return include.size() == 0 || std::find(include.cbegin(), include.cend(), mimetype) == include.end();
+        return include.size() == 0 || std::find(include.cbegin(), include.cend(), mimetype) != include.end();
     }
 
     bool should_exclude(const std::string& mimetype, const std::vector<std::string>& exclude)
