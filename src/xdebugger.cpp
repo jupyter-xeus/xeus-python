@@ -28,7 +28,7 @@
 #include "xeus/xsystem.hpp"
 
 #include "xeus-python/xdebugger.hpp"
-#include "xptvsd_client.hpp"
+#include "xdebugpy_client.hpp"
 #include "xutils.hpp"
 
 namespace nl = nlohmann;
@@ -43,22 +43,22 @@ namespace xpyt
                        const xeus::xconfiguration& config,
                        const std::string& user_name,
                        const std::string& session_id)
-        : p_ptvsd_client(new xptvsd_client(context, config, xeus::get_socket_linger(), user_name, session_id,
+        : p_debugpy_client(new xdebugpy_client(context, config, xeus::get_socket_linger(), user_name, session_id,
                                            std::bind(&debugger::handle_event, this, _1)))
-        , m_ptvsd_socket(context, zmq::socket_type::req)
-        , m_ptvsd_header(context, zmq::socket_type::req)
-        , m_ptvsd_port("")
+        , m_debugpy_socket(context, zmq::socket_type::req)
+        , m_debugpy_header(context, zmq::socket_type::req)
+        , m_debugpy_port("")
         , m_is_started(false)
     {
-        m_ptvsd_socket.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
-        m_ptvsd_header.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
-        m_ptvsd_port = xeus::find_free_port(100, 5678, 5900);
+        m_debugpy_socket.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
+        m_debugpy_header.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
+        m_debugpy_port = xeus::find_free_port(100, 5678, 5900);
     }
 
     debugger::~debugger()
     {
-        delete p_ptvsd_client;
-        p_ptvsd_client = nullptr;
+        delete p_debugpy_client;
+        p_debugpy_client = nullptr;
     }
 
     nl::json debugger::process_request_impl(const nl::json& header,
@@ -83,9 +83,9 @@ namespace xpyt
         {
             std::string header_buffer = header.dump();
             zmq::message_t raw_header(header_buffer.c_str(), header_buffer.length());
-            m_ptvsd_header.send(raw_header, zmq::send_flags::none);
+            m_debugpy_header.send(raw_header, zmq::send_flags::none);
             // client responds with ACK message
-            (void)m_ptvsd_header.recv(raw_header);
+            (void)m_debugpy_header.recv(raw_header);
 
             if(message["command"] == "dumpCell")
             {
@@ -134,15 +134,15 @@ namespace xpyt
     {
         std::string content = message.dump();
         size_t content_length = content.length();
-        std::string buffer = xptvsd_client::HEADER
+        std::string buffer = xdebugpy_client::HEADER
                            + std::to_string(content_length)
-                           + xptvsd_client::SEPARATOR
+                           + xdebugpy_client::SEPARATOR
                            + content;
         zmq::message_t raw_message(buffer.c_str(), buffer.length());
-        m_ptvsd_socket.send(raw_message, zmq::send_flags::none);
+        m_debugpy_socket.send(raw_message, zmq::send_flags::none);
 
         zmq::message_t raw_reply;
-        (void)m_ptvsd_socket.recv(raw_reply);
+        (void)m_debugpy_socket.recv(raw_reply);
 
         return nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
     }
@@ -366,8 +366,8 @@ namespace xpyt
 
         xeus::create_directory(log_dir);
 
-        // PTVSD has to be started in the main thread
-        std::string code = "import ptvsd\nptvsd.enable_attach((\'" + host + "\'," + m_ptvsd_port
+        // debugpy has to be started in the main thread
+        std::string code = "import debugpy\ndebugpy.enable_attach((\'" + host + "\'," + m_debugpy_port
                          + "), log_dir=\'" + log_dir + "\')";
         nl::json json_code;
         json_code["code"] = code;
@@ -378,7 +378,7 @@ namespace xpyt
             std::string ename = rep["ename"].get<std::string>();
             std::string evalue = rep["evalue"].get<std::string>();
             std::vector<std::string> traceback = rep["traceback"].get<std::vector<std::string>>();
-            std::clog << "Exception raised when trying to import ptvsd" << std::endl;
+            std::clog << "Exception raised when trying to import debugpy" << std::endl;
             for(std::size_t i = 0; i < traceback.size(); ++i)
             {
                 std::clog << traceback[i] << std::endl;
@@ -390,21 +390,21 @@ namespace xpyt
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
         std::string publisher_end_point = xeus::get_publisher_end_point();
 
-        m_ptvsd_socket.bind(controller_end_point);
-        m_ptvsd_header.bind(controller_header_end_point);
+        m_debugpy_socket.bind(controller_end_point);
+        m_debugpy_header.bind(controller_header_end_point);
 
-        std::string ptvsd_end_point = "tcp://" + host + ':' + m_ptvsd_port;
-        std::thread client(&xptvsd_client::start_debugger,
-                           p_ptvsd_client,
-                           ptvsd_end_point,
+        std::string debugpy_end_point = "tcp://" + host + ':' + m_debugpy_port;
+        std::thread client(&xdebugpy_client::start_debugger,
+                           p_debugpy_client,
+                           debugpy_end_point,
                            publisher_end_point,
                            controller_end_point,
                            controller_header_end_point);
         client.detach();
 
-        m_ptvsd_socket.send(zmq::message_t("REQ", 3), zmq::send_flags::none);
+        m_debugpy_socket.send(zmq::message_t("REQ", 3), zmq::send_flags::none);
         zmq::message_t ack;
-        (void)m_ptvsd_socket.recv(ack);
+        (void)m_debugpy_socket.recv(ack);
 
         m_is_started = true;
 
@@ -416,8 +416,8 @@ namespace xpyt
     {
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
-        m_ptvsd_socket.unbind(controller_end_point);
-        m_ptvsd_header.unbind(controller_header_end_point);
+        m_debugpy_socket.unbind(controller_end_point);
+        m_debugpy_header.unbind(controller_header_end_point);
         m_breakpoint_list.clear();
         m_stopped_threads.clear();
         m_is_started = false;

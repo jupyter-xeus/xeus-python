@@ -24,7 +24,7 @@
 namespace xpyt
 {
 
-    class xptvsd_client;
+    class xdebugpy_client;
 
     class XEUS_PYTHON_API debugger : public xeus::xdebugger
     {
@@ -55,12 +55,12 @@ namespace xpyt
         void stop();
         void handle_event(const nl::json& message);
 
-        xptvsd_client* p_ptvsd_client;
-        zmq::socket_t m_ptvsd_socket;
-        zmq::socket_t m_ptvsd_header;
-        // PTVSD cannot be started on different ports in a same process
+        xdebugpy_client* p_debugpy_client;
+        zmq::socket_t m_debugpy_socket;
+        zmq::socket_t m_debugpy_header;
+        // debugpy cannot be started on different ports in a same process
         // so we need to remember the port once it has be found.
-        std::string m_ptvsd_port;
+        std::string m_debugpy_port;
         using breakpoint_list_t = std::map<std::string, std::vector<nl::json>>;
         breakpoint_list_t m_breakpoint_list;
         std::set<int> m_stopped_threads;

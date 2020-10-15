@@ -8,8 +8,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_PTVSD_CLIENT_HPP
-#define XPYT_PTVSD_CLIENT_HPP
+#ifndef XPYT_DEBUGPY_CLIENT_HPP
+#define XPYT_DEBUGPY_CLIENT_HPP
 
 #include <functional>
 #include <queue>
@@ -24,7 +24,7 @@
 
 namespace xpyt
 {
-    class xptvsd_client
+    class xdebugpy_client
     {
     public:
 
@@ -35,7 +35,7 @@ namespace xpyt
 
         using event_callback = std::function<void(const nl::json&)>;
 
-        xptvsd_client(zmq::context_t& context,
+        xdebugpy_client(zmq::context_t& context,
                       const xeus::xconfiguration& config,
                       int socket_linger,
                       const std::string& user_name,
@@ -43,9 +43,9 @@ namespace xpyt
                       const event_callback& cb);
 
 
-        ~xptvsd_client() = default;
+        ~xdebugpy_client() = default;
 
-        void start_debugger(std::string ptvsd_end_point,
+        void start_debugger(std::string debugpy_end_point,
                             std::string publisher_end_point,
                             std::string controller_end_point,
                             std::string controller_header_end_point);
@@ -56,16 +56,16 @@ namespace xpyt
 
         void process_message_queue();
         void handle_header_socket();
-        void handle_ptvsd_socket(queue_type& message_queue);
+        void handle_debugpy_socket(queue_type& message_queue);
         void handle_control_socket();
         void append_tcp_message(std::string& buffer);
         void handle_event(nl::json message);
         void forward_event(nl::json message);
         nl::json get_stack_frames(int thread_id, int seq);
         void wait_next(int thread_id, int seq);
-        void send_ptvsd_request(nl::json message);
+        void send_debugpy_request(nl::json message);
         
-        zmq::socket_t m_ptvsd_socket;
+        zmq::socket_t m_debugpy_socket;
         std::size_t m_id_size;
         uint8_t m_socket_id[256];
 

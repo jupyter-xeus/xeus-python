@@ -136,8 +136,8 @@ set(XEUS_PYTHON_SRC
     src/xlinecache.hpp
     src/xnullcontext.cpp
     src/xnullcontext.hpp
-    src/xptvsd_client.cpp
-    src/xptvsd_client.hpp
+    src/xdebugpy_client.cpp
+    src/xdebugpy_client.hpp
     src/xstream.cpp
     src/xstream.hpp
     src/xtraceback.cpp
