@@ -367,8 +367,7 @@ namespace xpyt
         xeus::create_directory(log_dir);
 
         // debugpy has to be started in the main thread
-        std::string code = "import debugpy\ndebugpy.enable_attach((\'" + host + "\'," + m_debugpy_port
-                         + "), log_dir=\'" + log_dir + "\')";
+        std::string code = "import debugpy\ndebugpy.listen((\'" + host + "\'," + m_debugpy_port + "))";
         nl::json json_code;
         json_code["code"] = code;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
