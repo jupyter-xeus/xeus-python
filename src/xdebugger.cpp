@@ -47,6 +47,7 @@ namespace xpyt
                                            std::bind(&debugger::handle_event, this, _1)))
         , m_debugpy_socket(context, zmq::socket_type::req)
         , m_debugpy_header(context, zmq::socket_type::req)
+        , m_debugpy_host("127.0.0.1")
         , m_debugpy_port("")
         , m_is_started(false)
     {
@@ -87,6 +88,10 @@ namespace xpyt
             // client responds with ACK message
             (void)m_debugpy_header.recv(raw_header);
 
+            if(message["command"] == "attach")
+            {
+                reply = attach_request(message);
+            }
             if(message["command"] == "dumpCell")
             {
                 reply = dump_cell_request(message);
@@ -145,6 +150,16 @@ namespace xpyt
         (void)m_debugpy_socket.recv(raw_reply);
 
         return nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
+    }
+
+    nl::json debugger::attach_request(const nl::json& message)
+    {
+        nl::json new_message = message;
+        new_message["arguments"]["connect"] = {
+            {"host", m_debugpy_host},
+            {"port", std::stoi(m_debugpy_port)}
+        };
+        return forward_message(new_message);
     }
 
     nl::json debugger::dump_cell_request(const nl::json& message)
@@ -360,14 +375,13 @@ namespace xpyt
 
     void debugger::start()
     {
-        std::string host = "127.0.0.1";
         std::string temp_dir = xeus::get_temp_directory_path();
         std::string log_dir = temp_dir + "/" + "xpython_debug_logs_" + std::to_string(xeus::get_current_pid());
 
         xeus::create_directory(log_dir);
 
         // debugpy has to be started in the main thread
-        std::string code = "import debugpy\ndebugpy.listen((\'" + host + "\'," + m_debugpy_port + "))";
+        std::string code = "import debugpy\ndebugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
         nl::json json_code;
         json_code["code"] = code;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
@@ -392,7 +406,7 @@ namespace xpyt
         m_debugpy_socket.bind(controller_end_point);
         m_debugpy_header.bind(controller_header_end_point);
 
-        std::string debugpy_end_point = "tcp://" + host + ':' + m_debugpy_port;
+        std::string debugpy_end_point = "tcp://" + m_debugpy_host + ':' + m_debugpy_port;
         std::thread client(&xdebugpy_client::start_debugger,
                            p_debugpy_client,
                            debugpy_end_point,

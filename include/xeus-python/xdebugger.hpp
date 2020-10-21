@@ -43,6 +43,7 @@ namespace xpyt
                                               const nl::json& message);
 
         nl::json forward_message(const nl::json& message);
+        nl::json attach_request(const nl::json& message);
         nl::json dump_cell_request(const nl::json& message);
         nl::json set_breakpoints_request(const nl::json& message);
         nl::json source_request(const nl::json& message);
@@ -60,6 +61,7 @@ namespace xpyt
         zmq::socket_t m_debugpy_header;
         // debugpy cannot be started on different ports in a same process
         // so we need to remember the port once it has be found.
+        std::string m_debugpy_host;
         std::string m_debugpy_port;
         using breakpoint_list_t = std::map<std::string, std::vector<nl::json>>;
         breakpoint_list_t m_breakpoint_list;
