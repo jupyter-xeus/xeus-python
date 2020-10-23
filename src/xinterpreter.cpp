@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -101,12 +102,13 @@ namespace xpyt
         get_kernel_module().attr("get_ipython")();
 
         m_has_ipython = get_kernel_module().attr("has_ipython").cast<bool>();
-        //m_has_ipython = true;
 
         // Initialize cached inputs
         py::globals()["_i"] = "";
         py::globals()["_ii"] = "";
         py::globals()["_iii"] = "";
+
+        load_extensions();
     }
 
     nl::json interpreter::execute_request_impl(int execution_count,
@@ -427,5 +429,56 @@ namespace xpyt
             sys.attr("displayhook") = m_displayhook;
         }
         py::globals()["display"] = display_module.attr("display");
+    }
+
+    void interpreter::load_extensions()
+    {
+        if (m_has_ipython)
+        {
+            py::module os = py::module::import("os");
+            py::module path = py::module::import("os.path");
+            py::module sys = py::module::import("sys");
+            py::module fnmatch = py::module::import("fnmatch");
+
+            py::str extensions_path = path.attr("join")(sys.attr("exec_prefix"), "etc", "xeus-python", "extensions");
+
+            if (!is_pyobject_true(path.attr("exists")(extensions_path)))
+            {
+                return;
+            }
+
+            py::list list_files = os.attr("listdir")(extensions_path);
+
+            xinteractive_shell* xshell = get_kernel_module()
+                .attr("get_ipython")()
+                .cast<xinteractive_shell*>();
+            py::object extension_manager = xshell->get_extension_manager();
+
+            for (const py::handle& file : list_files)
+            {
+                if (!is_pyobject_true(fnmatch.attr("fnmatch")(file, "*.json")))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    std::ifstream config_file(py::str(path.attr("join")(extensions_path, file)).cast<std::string>());
+                    nl::json config;
+                    config_file >> config;
+
+                    if (config["enabled"].get<bool>())
+                    {
+                        extension_manager.attr("load_extension")(config["module"].get<std::string>());
+                    }
+                }
+                catch (py::error_already_set& e)
+                {
+                    xerror error = extract_error(e);
+
+                    std::cerr << "Warning: Failed loading extension with: " << error.m_ename << ": " << error.m_evalue << std::endl;
+                }
+            }
+        }
     }
 }

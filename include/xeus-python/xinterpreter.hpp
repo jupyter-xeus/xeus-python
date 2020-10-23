@@ -74,6 +74,7 @@ namespace xpyt
 
         void redirect_output();
         void redirect_display(bool install_hook=true);
+        void load_extensions();
 
         py::object m_displayhook;
 
