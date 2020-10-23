@@ -233,6 +233,11 @@ namespace xpyt
         return m_user_ns;
     }
 
+    py::dict xinteractive_shell::get_user_global_ns() const
+    {
+        return py::globals();
+    }
+
     py::object xinteractive_shell::get_builtin_trap() const
     {
         return m_builtin_trap;

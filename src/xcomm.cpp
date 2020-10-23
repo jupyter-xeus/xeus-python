@@ -297,6 +297,7 @@ namespace xpyt
             .def_property_readonly("hooks", &xinteractive_shell::get_hooks)
             .def_property_readonly("db", &xinteractive_shell::get_db)
             .def_property_readonly("user_ns", &xinteractive_shell::get_user_ns)
+            .def_property_readonly("user_global_ns", &xinteractive_shell::get_user_global_ns)
             .def_property_readonly("builtin_trap", &xinteractive_shell::get_builtin_trap)
             .def_property_readonly("ipython_dir", &xinteractive_shell::get_ipython_dir)
             .def_property_readonly("dir_stack", &xinteractive_shell::get_dir_stack)
@@ -417,7 +418,7 @@ namespace xpyt
         // will execute that of xeus, where the target has not been registered, resulting
         // in a segmentation fault.
         // Initializing the xeus_python object as a memoized variable ensures the initialization
-        // of the interactive shell (which imports a lot of module from IPython) will 
+        // of the interactive shell (which imports a lot of module from IPython) will
         // occur AFTER IPython.core has been monkey_patched.
         // Notice that using a static variable in the lambda to achieve the memoization
         // results in a random crash at kernel shutdown.

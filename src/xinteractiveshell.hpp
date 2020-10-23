@@ -14,7 +14,7 @@ namespace nl = nlohmann;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-namespace xpyt 
+namespace xpyt
 {
     struct hooks_object
     {
@@ -40,12 +40,12 @@ namespace xpyt
 
         // run system commands
         py::object system(py::str cmd);
-        py::object getoutput(py::str cmd); 
+        py::object getoutput(py::str cmd);
 
         // run magics
         py::object run_line_magic(std::string name, std::string arg);
         py::object run_cell_magic(std::string name, std::string arg, std::string body);
-         
+
         // register magics
         void register_magic_function(py::object func, std::string magic_kind, py::object magic_name);
         void register_magics(py::args args);
@@ -62,6 +62,7 @@ namespace xpyt
         py::object get_extension_manager() const;
         py::dict get_db() const;
         py::dict get_user_ns() const;
+        py::dict get_user_global_ns() const;
         py::object get_builtin_trap() const;
         py::str get_ipython_dir() const;
         hooks_object get_hooks() const;

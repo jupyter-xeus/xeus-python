@@ -83,7 +83,7 @@ namespace xpyt
 #endif
         return path;
     }
-    
+
     std::string prefix_path()
     {
         std::string path = executable_path();
