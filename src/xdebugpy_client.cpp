@@ -81,7 +81,9 @@ namespace xpyt
 
             if(items[1].revents & ZMQ_POLLIN)
             {
+                std::cout << "DEBUGPY - Received message on control socket - BEGIN" << std::endl;
                 handle_control_socket();
+                std::cout << "DEBUGPY - Received message on control socket - END" << std::endl;
             }
 
             if(items[2].revents & ZMQ_POLLIN)
@@ -191,13 +193,33 @@ namespace xpyt
 
     void xdebugpy_client::handle_control_socket()
     {
+        std::cout << "DEBUGPY_CLIENT::handle_control_socket() BEGIN" << std::endl;
         zmq::message_t message;
         (void)m_controller.recv(message);
 
+        std::string raw_message = std::string(message.data<const char>(), message.size());
+        std::cout << "raw_message = " << raw_message << std::endl;
+        if (raw_message == "WAIT_ATTACH")
+        {
+            std::cout << "received WAIT_ATTACH msg" << std::endl;
+            std::cout << "DEBUPY_CLIENT::handle_control_socket() END" << std::endl;
+            return;
+        }
+
+        auto pos = raw_message.find(SEPARATOR);
+        std::string to_parse = raw_message.substr(pos+SEPARATOR_LENGTH);
+        nl::json json_message = nl::json::parse(to_parse);
         // Sends a ZMQ header (required for stream socket) and forwards
         // the message
         m_debugpy_socket.send(zmq::message_t(m_socket_id, m_id_size), zmq::send_flags::sndmore);
         m_debugpy_socket.send(message, zmq::send_flags::none);
+
+        std::cout << "json message = " << json_message << std::endl;
+        if (json_message["command"] == "attach")
+        {
+            m_controller.send(zmq::message_t("ACK", 3), zmq::send_flags::none);
+        }
+        std::cout << "DEBUGPY_CLIENT::handle_control_socket() END" << std::endl;
     }
 
     void xdebugpy_client::append_tcp_message(std::string& buffer)

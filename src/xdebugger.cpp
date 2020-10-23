@@ -47,7 +47,7 @@ namespace xpyt
                                            std::bind(&debugger::handle_event, this, _1)))
         , m_debugpy_socket(context, zmq::socket_type::req)
         , m_debugpy_header(context, zmq::socket_type::req)
-        , m_debugpy_host("127.0.0.1")
+        , m_debugpy_host("localhost")
         , m_debugpy_port("")
         , m_is_started(false)
     {
@@ -90,9 +90,11 @@ namespace xpyt
 
             if(message["command"] == "attach")
             {
+                std::cout << "DEBUGGER - received attach request - BEGIN" << std::endl;
                 reply = attach_request(message);
+                std::cout << "DEBUGGER - received attach request - END" << std::endl;
             }
-            if(message["command"] == "dumpCell")
+            else if(message["command"] == "dumpCell")
             {
                 reply = dump_cell_request(message);
             }
@@ -132,6 +134,7 @@ namespace xpyt
             std::clog << "XEUS-PYTHON: the debugger has stopped" << std::endl;
         }
 
+        std::cout << "RETURNING REPLY" << std::endl;
         return reply;
     }
 
@@ -159,7 +162,78 @@ namespace xpyt
             {"host", m_debugpy_host},
             {"port", std::stoi(m_debugpy_port)}
         };
-        return forward_message(new_message);
+        new_message["arguments"]["logToFile"] = true;
+        std::cout << "DEBUGGER - sending ATTACH REQUEST:" << std::endl;
+
+        {
+            std::string content = new_message.dump();
+            size_t content_length = content.length();
+            std::string buffer = xdebugpy_client::HEADER
+                               + std::to_string(content_length)
+                               + xdebugpy_client::SEPARATOR
+                               + content;
+            zmq::message_t raw_message(buffer.c_str(), buffer.length());
+            m_debugpy_socket.send(raw_message, zmq::send_flags::none);
+
+            zmq::message_t raw_reply;
+            (void)m_debugpy_socket.recv(raw_reply);
+            std::cout << "DEBUGGER - received: " << std::string(raw_reply.data<const char>(), raw_reply.size()) << std::endl;
+        }
+
+        {
+            std::cout << "DEBUGGER - SENDING CONFIGURATION DONE" << std::endl;
+            nl::json req =
+            {
+                {"type", "request"},
+                {"seq", message["seq"].get<int>() + 1},
+                {"command", "configurationDone"},
+            };
+            forward_message(req);
+            std::cout << "DEBUGGER - CONFIGURATION DONE SENT" << std::endl;
+        }
+
+        m_debugpy_socket.send(zmq::message_t("WAIT_ATTACH", 11), zmq::send_flags::none);
+
+        {
+            zmq::message_t raw_reply;
+            (void)m_debugpy_socket.recv(raw_reply);
+
+            nl::json rep = nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
+            std::cout << "DEBUGGER - received: " << rep << std::endl;
+            return rep;
+        }
+        /*{
+        std::string content = new_message.dump();
+        size_t content_length = content.length();
+        std::string buffer = xdebugpy_client::HEADER
+                           + std::to_string(content_length)
+                           + xdebugpy_client::SEPARATOR
+                           + content;
+        zmq::message_t raw_message(buffer.c_str(), buffer.length());
+        m_debugpy_socket.send(raw_message, zmq::send_flags::none);
+        }
+
+        {
+            std::cout << "SENDING CONFIGURATION DONE" << std::endl;
+            nl::json req =
+            {
+                {"type", "request"},
+                {"seq", message["seq"].get<int>()},
+                {"command", "configurationDone"},
+            };
+            forward_message(req);
+            std::cout << "CONFIGURATION DONE SENT" << std::endl;
+        }
+        {
+        zmq::message_t raw_reply;
+        (void)m_debugpy_socket.recv(raw_reply);
+
+        nl::json rep = nl::json::parse(std::string(raw_reply.data<const char>(), raw_reply.size()));
+        return rep;
+        }
+        //nl::json rep = forward_message(new_message);
+        //std::cout << rep << std::endl;
+        //return rep;*/
     }
 
     nl::json debugger::dump_cell_request(const nl::json& message)
