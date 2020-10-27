@@ -141,6 +141,16 @@ namespace xpyt
         py::exec(XPYT_EXEC_COMMAND, py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
     }
 
+    py::object eval(const py::object& code, const py::object& scope)
+    {
+        // Workaround for https://github.com/pybind/pybind11/issues/1654
+        if (scope.attr("get")("__builtins__").is_none())
+        {
+            scope["__builtins__"] = py::module::import(XPYT_BUILTINS);
+        }
+        return py::eval(code, scope);
+    }
+
     std::size_t get_hash_seed()
     {
         return static_cast<std::size_t>(0xc70f6907UL);

@@ -26,9 +26,7 @@ namespace xpyt
         m_extension_manager = m_extension_module.attr("ExtensionManager")("shell"_a=this);
 
         // Shell features required by extension manager
-
         m_builtin_trap = get_nullcontext_module().attr("nullcontext")();
-        // m_builtin_trap = py::module::import("contextlib").attr("nullcontext")();
 
         m_ipython_dir = "";
 
@@ -209,6 +207,16 @@ namespace xpyt
         // we need to pass user_ns because in a nested interpreter
         // we loose global namespace (results of previous evals)
         exec(compiled_code, m_user_ns);
+    }
+
+    void xinteractive_shell::ex(py::str cmd)
+    {
+        exec(cmd, m_user_ns);
+    }
+
+    py::object xinteractive_shell::ev(py::str expr)
+    {
+        return eval(expr, m_user_ns);
     }
 
     // define getters

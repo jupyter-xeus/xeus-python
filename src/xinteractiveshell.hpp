@@ -53,6 +53,8 @@ namespace xpyt
         // required by history magics
         void set_next_input(std::string s, bool replace);
         void run_cell(py::str code, bool store_history);
+        void ex(py::str cmd);
+        py::object ev(py::str expr);
 
         // required by pinfo
         void inspect(std::string, std::string oname, py::kwargs);
