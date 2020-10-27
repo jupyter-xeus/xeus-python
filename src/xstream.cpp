@@ -35,6 +35,7 @@ namespace xpyt
 
         void write(const std::string& message);
         void flush();
+        bool isatty();
 
     private:
 
@@ -63,6 +64,11 @@ namespace xpyt
     {
     }
 
+    bool xstream::isatty()
+    {
+        return false;
+    }
+
     /*****************
      * stream module *
      *****************/
@@ -74,7 +80,8 @@ namespace xpyt
         py::class_<xstream>(stream_module, "Stream")
             .def(py::init<std::string>())
             .def("write", &xstream::write)
-            .def("flush", &xstream::flush);
+            .def("flush", &xstream::flush)
+            .def("isatty", &xstream::isatty);
 
         return stream_module;
     }
