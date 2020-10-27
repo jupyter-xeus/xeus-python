@@ -68,7 +68,7 @@ install:
     # Build dependencies
     - conda install cmake -c conda-forge
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        conda install cxx-compiler -c conda-forge;
+        conda install gcc_linux-64=7.5.0 gcc_impl_linux-64=7.5.0 gxx_linux-64=7.5.0 gxx_impl_linux-64 -c conda-forge;
       fi
     # Test dependencies
     - conda install pytest jupyter_kernel_test -c conda-forge;
