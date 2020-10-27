@@ -25,7 +25,7 @@
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 
-#include "xcomm.hpp"
+#include "xpython_kernel.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
 #include "xinspect.hpp"
@@ -96,7 +96,7 @@ namespace xpyt
 
         // Add get_ipython to global namespace
         py::globals()["get_ipython"] = get_kernel_module().attr("get_ipython");
-        
+
         // Initializes get_ipython result
         get_kernel_module().attr("get_ipython")();
 
@@ -129,26 +129,26 @@ namespace xpyt
             // - either we reimplement the parsing logic in xeus-python
             // - or this logic is extracted from IPython into a dedicated package, that becomes
             // a dependency of both xeus-python and IPython.
-            if (code.size() >= 2 && code[0] == '?')	
-            {	
-                std::string result = formatted_docstring(code);	
-                if (result.empty())	
-                {	
-                    result = "Object " + code.substr(1) + " not found.";	
-                }	
+            if (code.size() >= 2 && code[0] == '?')
+            {
+                std::string result = formatted_docstring(code);
+                if (result.empty())
+                {
+                    result = "Object " + code.substr(1) + " not found.";
+                }
 
-                kernel_res["status"] = "ok";	
-                kernel_res["payload"] = nl::json::array();	
-                kernel_res["payload"][0] = nl::json::object({	
-                    {"data", {	
-                        {"text/plain", result}	
-                    }},	
-                    {"source", "page"},	
-                    {"start", 0}	
-                });	
-                kernel_res["user_expressions"] = nl::json::object();	
+                kernel_res["status"] = "ok";
+                kernel_res["payload"] = nl::json::array();
+                kernel_res["payload"][0] = nl::json::object({
+                    {"data", {
+                        {"text/plain", result}
+                    }},
+                    {"source", "page"},
+                    {"start", 0}
+                });
+                kernel_res["user_expressions"] = nl::json::object();
 
-                return kernel_res;	
+                return kernel_res;
             }
             code_copy = code;
         }

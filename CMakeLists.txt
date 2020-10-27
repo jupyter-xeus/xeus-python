@@ -118,8 +118,6 @@ endif ()
 # ============
 
 set(XEUS_PYTHON_SRC
-    src/xcomm.cpp
-    src/xcomm.hpp
     src/xdebugger.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
@@ -138,6 +136,8 @@ set(XEUS_PYTHON_SRC
     src/xnullcontext.hpp
     src/xptvsd_client.cpp
     src/xptvsd_client.hpp
+    src/xpython_kernel.cpp
+    src/xpython_kernel.hpp
     src/xstream.cpp
     src/xstream.hpp
     src/xtraceback.cpp
@@ -184,7 +184,7 @@ macro(xpyt_set_common_options target_name)
         CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 
         target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
-    
+
         # Mtune generic/native
         if (XPYT_DISABLE_ARCH_NATIVE AND NOT XPYT_DISABLE_TUNE_GENERIC)
             target_compile_options(${target_name} PUBLIC -mtune=generic)
