@@ -58,6 +58,7 @@ namespace xpyt
     }
 
     void exec(const py::object& code, const py::object& scope = py::globals());
+    py::object eval(const py::object& code, const py::object& scope = py::globals());
 
     size_t get_hash_seed();
     std::string get_tmp_prefix();
