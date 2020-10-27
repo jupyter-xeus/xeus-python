@@ -25,7 +25,7 @@
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 
-#include "xcomm.hpp"
+#include "xpython_kernel.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
 #include "xinspect.hpp"

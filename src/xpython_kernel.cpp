@@ -22,7 +22,7 @@
 #include "pybind11/functional.h"
 #include "pybind11/eval.h"
 
-#include "xcomm.hpp"
+#include "xpython_kernel.hpp"
 #include "xutils.hpp"
 #include "xinteractiveshell.hpp"
 
