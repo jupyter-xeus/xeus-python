@@ -20,10 +20,10 @@ namespace xpyt
      *******************/
 
     std::string executable_path();
-    
-    /*******************
+
+    /***************
      * prefix_path *
-     *******************/
+     ***************/
 
     std::string prefix_path();
 }
