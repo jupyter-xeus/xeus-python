@@ -319,9 +319,11 @@ namespace xpyt
             // for pinfo (?magic)
             .def("_inspect", &xinteractive_shell::inspect)
             // generic magics code
-            .def("run_cell",&xinteractive_shell::run_cell,
+            .def("run_cell", &xinteractive_shell::run_cell,
                 py::arg("code"),
                 py::arg("store_history")=false)
+            .def("ex", &xinteractive_shell::ex, py::arg("cmd"))
+            .def("ev", &xinteractive_shell::ev, py::arg("expr"))
             .def("register_magic_function",
                 &xinteractive_shell::register_magic_function,
                 "Register magic function",
