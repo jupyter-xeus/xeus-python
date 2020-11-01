@@ -118,6 +118,8 @@ endif ()
 # ============
 
 set(XEUS_PYTHON_SRC
+    src/xdap_tcp_client.cpp
+    src/xdap_tcp_client.hpp
     src/xdebugger.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp

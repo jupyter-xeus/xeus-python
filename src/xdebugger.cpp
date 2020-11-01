@@ -43,7 +43,13 @@ namespace xpyt
                        const xeus::xconfiguration& config,
                        const std::string& user_name,
                        const std::string& session_id)
-        : p_ptvsd_client(new xptvsd_client(context, config, xeus::get_socket_linger(), user_name, session_id,
+        : p_ptvsd_client(new xptvsd_client(context,
+                                           config,
+                                           xeus::get_socket_linger(),
+                                           xdap_tcp_configuration(xeus::dap_tcp_type::client,
+                                                                  xeus::dap_init_type::sequential,
+                                                                  user_name,
+                                                                  session_id),
                                            std::bind(&debugger::handle_event, this, _1)))
         , m_ptvsd_socket(context, zmq::socket_type::req)
         , m_ptvsd_header(context, zmq::socket_type::req)
@@ -134,9 +140,9 @@ namespace xpyt
     {
         std::string content = message.dump();
         size_t content_length = content.length();
-        std::string buffer = xptvsd_client::HEADER
+        std::string buffer = xdap_tcp_client::HEADER
                            + std::to_string(content_length)
-                           + xptvsd_client::SEPARATOR
+                           + xdap_tcp_client::SEPARATOR
                            + content;
         zmq::message_t raw_message(buffer.c_str(), buffer.length());
         m_ptvsd_socket.send(raw_message, zmq::send_flags::none);
@@ -394,7 +400,7 @@ namespace xpyt
         m_ptvsd_header.bind(controller_header_end_point);
 
         std::string ptvsd_end_point = "tcp://" + host + ':' + m_ptvsd_port;
-        std::thread client(&xptvsd_client::start_debugger,
+        std::thread client(&xdap_tcp_client::start_debugger,
                            p_ptvsd_client,
                            ptvsd_end_point,
                            publisher_end_point,
