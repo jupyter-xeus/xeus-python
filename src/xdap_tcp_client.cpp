@@ -39,10 +39,10 @@ namespace xeus
         , m_parent_header("")
         , m_request_stop(false)
     {       
-        m_tcp_socket.setsockopt(ZMQ_LINGER, socket_linger);
-        m_publisher.setsockopt(ZMQ_LINGER, socket_linger);
-        m_controller.setsockopt(ZMQ_LINGER, socket_linger);
-        m_controller_header.setsockopt(ZMQ_LINGER, socket_linger);
+        m_tcp_socket.set(zmq::sockopt::linger, socket_linger);
+        m_publisher.set(zmq::sockopt::linger, socket_linger);
+        m_controller.set(zmq::sockopt::linger, socket_linger);
+        m_controller_header.set(zmq::sockopt::linger, socket_linger);
     }
 
     const std::string& xdap_tcp_client::parent_header() const

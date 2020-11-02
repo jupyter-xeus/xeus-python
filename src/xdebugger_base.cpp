@@ -34,8 +34,8 @@ namespace xeus
         , m_request_socket(context, zmq::socket_type::req)
         , m_is_started(false)
     {
-        m_header_socket.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
-        m_request_socket.setsockopt(ZMQ_LINGER, xeus::get_socket_linger());
+        m_header_socket.set(zmq::sockopt::linger, xeus::get_socket_linger());
+        m_request_socket.set(zmq::sockopt::linger, xeus::get_socket_linger());
 
         register_request_handler("debugInfo", std::bind(&xdebugger_base::debug_info_request, this, _1), false);
         register_request_handler("dumpCell", std::bind(&xdebugger_base::dump_cell_request, this, _1), true);
