@@ -118,7 +118,10 @@ endif ()
 # ============
 
 set(XEUS_PYTHON_SRC
+    src/xdap_tcp_client.cpp
+    src/xdap_tcp_client.hpp
     src/xdebugger.cpp
+    src/xdebugger_base.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
     src/xinput.cpp
@@ -148,6 +151,7 @@ set(XEUS_PYTHON_SRC
 
 set(XEUS_PYTHON_HEADERS
     include/xeus-python/xdebugger.hpp
+    include/xeus-python/xdebugger_base.hpp
     include/xeus-python/xeus_python_config.hpp
     include/xeus-python/xinterpreter.hpp
 )

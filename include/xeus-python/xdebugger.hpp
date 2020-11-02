@@ -19,6 +19,7 @@
 #include "nlohmann/json.hpp"
 #include "xeus/xdebugger.hpp"
 
+#include "xdebugger_base.hpp"
 #include "xeus_python_config.hpp"
 
 namespace xpyt
@@ -26,7 +27,7 @@ namespace xpyt
 
     class xptvsd_client;
 
-    class XEUS_PYTHON_API debugger : public xeus::xdebugger
+    class XEUS_PYTHON_API debugger : public xeus::xdebugger_base
     {
     public:
 
@@ -39,34 +40,19 @@ namespace xpyt
 
     private:
 
-        virtual nl::json process_request_impl(const nl::json& header,
-                                              const nl::json& message);
-
-        nl::json forward_message(const nl::json& message);
-        nl::json dump_cell_request(const nl::json& message);
-        nl::json set_breakpoints_request(const nl::json& message);
-        nl::json source_request(const nl::json& message);
-        nl::json stack_trace_request(const nl::json& message);
-        nl::json variables_request(const nl::json& message);
-        nl::json debug_info_request(const nl::json& message);
         nl::json inspect_variables_request(const nl::json& message);
 
-        void start();
-        void stop();
-        void handle_event(const nl::json& message);
+        void start(zmq::socket_t& header_socket,
+                   zmq::socket_t& request_socket) override;
+        void stop(zmq::socket_t& header_socket,
+                  zmq::socket_t& request_socket) override;
+        xeus::xdebugger_info get_debugger_info() const override;
+        std::string get_cell_temporary_file(const std::string& code) const override;
 
         xptvsd_client* p_ptvsd_client;
-        zmq::socket_t m_ptvsd_socket;
-        zmq::socket_t m_ptvsd_header;
         // PTVSD cannot be started on different ports in a same process
         // so we need to remember the port once it has be found.
         std::string m_ptvsd_port;
-        using breakpoint_list_t = std::map<std::string, std::vector<nl::json>>;
-        breakpoint_list_t m_breakpoint_list;
-        std::set<int> m_stopped_threads;
-        std::mutex m_stopped_mutex;
-        bool m_is_started;
-
     };
 
     XEUS_PYTHON_API
