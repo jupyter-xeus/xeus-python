@@ -122,6 +122,8 @@ set(XEUS_PYTHON_SRC
     src/xdap_tcp_client.hpp
     src/xdebugger.cpp
     src/xdebugger_base.cpp
+    src/xdebugpy_client.hpp
+    src/xdebugpy_client.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
     src/xinput.cpp
@@ -137,8 +139,6 @@ set(XEUS_PYTHON_SRC
     src/xlinecache.hpp
     src/xnullcontext.cpp
     src/xnullcontext.hpp
-    src/xptvsd_client.cpp
-    src/xptvsd_client.hpp
     src/xpython_kernel.cpp
     src/xpython_kernel.hpp
     src/xstream.cpp

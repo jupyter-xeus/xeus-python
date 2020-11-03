@@ -25,7 +25,7 @@
 namespace xpyt
 {
 
-    class xptvsd_client;
+    class xdebugpy_client;
 
     class XEUS_PYTHON_API debugger : public xeus::xdebugger_base
     {
@@ -41,7 +41,10 @@ namespace xpyt
     private:
 
         nl::json inspect_variables_request(const nl::json& message);
+        nl::json attach_request(const nl::json& message);
+        nl::json configuration_done_request(const nl::json& message);
 
+        bool start_debugpy();
         void start(zmq::socket_t& header_socket,
                    zmq::socket_t& request_socket) override;
         void stop(zmq::socket_t& header_socket,
@@ -49,10 +52,9 @@ namespace xpyt
         xeus::xdebugger_info get_debugger_info() const override;
         std::string get_cell_temporary_file(const std::string& code) const override;
 
-        xptvsd_client* p_ptvsd_client;
-        // PTVSD cannot be started on different ports in a same process
-        // so we need to remember the port once it has be found.
-        std::string m_ptvsd_port;
+        xdebugpy_client* p_debugpy_client;
+        std::string m_debugpy_host;
+        std::string m_debugpy_port;
     };
 
     XEUS_PYTHON_API

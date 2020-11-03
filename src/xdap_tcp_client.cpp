@@ -3,6 +3,8 @@
 #include "xeus/xmessage.hpp"
 #include "xdap_tcp_client.hpp"
 
+#include <iostream>
+
 namespace xeus
 {
     /*********************************
@@ -106,10 +108,11 @@ namespace xeus
             while (!m_stopped_queue.empty())
             {
                 const std::string& raw_message = m_stopped_queue.front();
-                message = nl::json::parse(raw_message);
-                if (condition(message))
+                nl::json tmp_message = nl::json::parse(raw_message);
+                if (condition(tmp_message))
                 {
                     wait_cond = false;
+                    message = tmp_message;
                 }
                 else
                 {
