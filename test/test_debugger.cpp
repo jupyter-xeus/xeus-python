@@ -375,7 +375,7 @@ bool debugger_client::test_init()
 {
     m_client.send_on_control("debug_request", make_init_request());
     nl::json rep = m_client.receive_on_control();
-    return rep["content"]["type"] == "response";
+    return rep["content"]["success"].get<bool>();
 }
 
 bool debugger_client::test_disconnect()
@@ -735,7 +735,13 @@ void debugger_client::shutdown()
 nl::json debugger_client::attach()
 {
     m_client.send_on_control("debug_request", make_init_request());
-    m_client.receive_on_control();
+    nl::json rep = m_client.receive_on_control();
+    if (!rep["content"]["success"].get<bool>())
+    {
+        shutdown();
+        std::this_thread::sleep_for(2s);
+        throw std::runtime_error("Could not initialize debugger, exiting");
+    }
     m_client.send_on_control("debug_request", make_attach_request(3));
     return m_client.receive_on_control();
 }

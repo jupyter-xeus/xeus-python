@@ -86,7 +86,7 @@ namespace xeus
         nl::json process_request_impl(const nl::json& header,
                                       const nl::json& message) override;
 
-        virtual void start(zmq::socket_t& header_socket,
+        virtual bool start(zmq::socket_t& header_socket,
                            zmq::socket_t& request_socket) = 0;
         virtual void stop(zmq::socket_t& header_socket,
                           zmq::socket_t& request_socket) = 0;

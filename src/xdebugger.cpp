@@ -52,7 +52,7 @@ namespace xpyt
                                                                       user_name,
                                                                       session_id),
                                                get_event_callback()))
-        , m_debugpy_host("localhost")
+        , m_debugpy_host("127.0.0.1")
         , m_debugpy_port("")
     {
         m_debugpy_port = xeus::find_free_port(100, 5678, 5900);
@@ -149,7 +149,7 @@ namespace xpyt
         return status == "ok";
     }
 
-    void debugger::start(zmq::socket_t& header_socket, zmq::socket_t& request_socket)
+    bool debugger::start(zmq::socket_t& header_socket, zmq::socket_t& request_socket)
     {
         std::string temp_dir = xeus::get_temp_directory_path();
         std::string log_dir = temp_dir + "/" + "xpython_debug_logs_" + std::to_string(xeus::get_current_pid());
@@ -157,6 +157,10 @@ namespace xpyt
         xeus::create_directory(log_dir);
 
         static bool debugpy_started = start_debugpy();
+        if (!debugpy_started)
+        {
+            return false;
+        }
 
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
@@ -180,6 +184,8 @@ namespace xpyt
 
         std::string tmp_folder =  get_tmp_prefix();
         xeus::create_directory(tmp_folder);
+
+        return true;
     }
 
     void debugger::stop(zmq::socket_t& header_socket, zmq::socket_t& request_socket)

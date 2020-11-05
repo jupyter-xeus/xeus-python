@@ -45,7 +45,7 @@ namespace xpyt
         nl::json configuration_done_request(const nl::json& message);
 
         bool start_debugpy();
-        void start(zmq::socket_t& header_socket,
+        bool start(zmq::socket_t& header_socket,
                    zmq::socket_t& request_socket) override;
         void stop(zmq::socket_t& header_socket,
                   zmq::socket_t& request_socket) override;
