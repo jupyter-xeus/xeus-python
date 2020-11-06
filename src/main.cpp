@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
     {
         PyMem_RawFree(argw[i]);
     }
-    delete argw;
+    delete[] argw;
 #endif
 
     // Instantiating the xeus xinterpreter
