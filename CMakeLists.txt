@@ -348,6 +348,8 @@ if (XPYT_BUILD_XPYTHON_EXECUTABLE)
     if (XEUS_PYTHONHOME_RELPATH)
         target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
     endif()
+
+    target_compile_definitions(xpython PRIVATE XEUS_PYTHON_EXECUTABLE="${PYTHON_EXECUTABLE}")
 endif()
 
 # xpython_extension

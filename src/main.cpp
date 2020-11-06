@@ -76,7 +76,7 @@ void print_pythonhome()
 #else
     std::setlocale(LC_ALL, "en_US.utf8");
     wchar_t* ph = Py_GetPythonHome();
-    
+
     char mbstr[1024];
     std::wcstombs(mbstr, ph, 1024);
 #endif
@@ -99,6 +99,15 @@ int main(int argc, char* argv[])
 #ifdef __GNUC__
     std::clog << "registering handler for SIGSEGV" << std::endl;
     signal(SIGSEGV, handler);
+#endif
+
+    // Setting Program Name
+    static const std::string executable(XEUS_PYTHON_EXECUTABLE);
+#if PY_MAJOR_VERSION == 2
+    Py_SetProgramName(const_cast<char*>(executable.c_str()));
+#else
+    static const std::wstring wexecutable(executable.cbegin(), executable.cend());;
+    Py_SetProgramName(const_cast<wchar_t*>(wexecutable.c_str()));
 #endif
 
     // Setting PYTHONHOME
