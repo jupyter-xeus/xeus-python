@@ -17,9 +17,7 @@
 
 #include "zmq.hpp"
 #include "nlohmann/json.hpp"
-#include "xeus/xdebugger.hpp"
-
-#include "xdebugger_base.hpp"
+#include "xeus/xdebugger_base.hpp"
 #include "xeus_python_config.hpp"
 
 namespace xpyt
