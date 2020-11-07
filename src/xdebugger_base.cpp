@@ -315,9 +315,22 @@ namespace xeus
             }
             else
             {
-                start(m_header_socket, m_request_socket);
-                m_is_started = true;
-                std::clog << "XDEBUGGER: the debugger has started" << std::endl;
+                m_is_started = start(m_header_socket, m_request_socket);
+                if (m_is_started)
+                {
+                    std::clog << "XDEBUGGER: the debugger has started" << std::endl;
+                }
+                else
+                {
+                    reply = 
+                    {
+                        {"command", "initialize"},
+                        {"request_seq", message["seq"]},
+                        {"seq", 3},
+                        {"success", false},
+                        {"type", "response"}
+                    };
+                }
             }
         }
 
