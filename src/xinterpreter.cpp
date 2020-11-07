@@ -77,9 +77,7 @@ namespace xpyt
         py::module sys = py::module::import("sys");
 
         // Monkey patching "import linecache". This monkey patch does not work with Python2.
-#if PY_MAJOR_VERSION >= 3
         sys.attr("modules")["linecache"] = get_linecache_module();
-#endif
 
         py::module jedi = py::module::import("jedi");
         jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
@@ -178,10 +176,8 @@ namespace xpyt
             register_filename_mapping(filename, execution_count);
 
             // Caching the input code
-#if PY_MAJOR_VERSION >= 3
             py::module linecache = py::module::import("linecache");
             linecache.attr("xupdatecache")(code, filename);
-#endif
 
             // If the last statement is an expression, we compile it separately
             // in an interactive mode (This will trigger the display hook)

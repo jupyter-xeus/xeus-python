@@ -47,12 +47,6 @@ namespace xpyt
         builtins.attr("input") = allow_stdin ? py::cpp_function(&cpp_input, py::arg("prompt") = "")
                                              : py::cpp_function(&notimplemented, py::arg("prompt") = "");
 
-#if PY_MAJOR_VERSION == 2
-        // Forward raw_input()
-        m_sys_raw_input = builtins.attr("raw_input");
-        builtins.attr("raw_input") = allow_stdin ? py::cpp_function(&cpp_input, py::arg("prompt") = "")
-                                                 : py::cpp_function(&notimplemented, py::arg("prompt") = "");
-#endif
 
         // Forward getpass()
         py::module getpass = py::module::import("getpass");
@@ -66,11 +60,6 @@ namespace xpyt
         // Restore input()
         py::module builtins = py::module::import(XPYT_BUILTINS);
         builtins.attr("input") = m_sys_input;
-
-#if PY_MAJOR_VERSION == 2
-        // Restore raw_input()
-        builtins.attr("raw_input") = m_sys_raw_input;
-#endif
 
         // Restore getpass()
         py::module getpass = py::module::import("getpass");

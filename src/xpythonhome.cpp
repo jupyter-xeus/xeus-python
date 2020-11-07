@@ -29,12 +29,8 @@ namespace xpyt
         if (pythonhome_environment != nullptr)
         {
             static const std::string pythonhome = pythonhome_environment;
-#if PY_MAJOR_VERSION == 2
-            Py_SetPythonHome(const_cast<char*>(pythonhome.c_str()));
-#else
             static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
             Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
-#endif
         }
         // ------------------------------------------------------------------
         // Otherwise, set the PYTHONHOME to the prefix path
@@ -48,12 +44,8 @@ namespace xpyt
 #else
             static const std::string pythonhome = prefix_path();
 #endif
-#if PY_MAJOR_VERSION == 2
-            Py_SetPythonHome(const_cast<char*>(pythonhome.c_str()));
-#else
             static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
             Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
-#endif
         }
     }
 }

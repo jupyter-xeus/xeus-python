@@ -29,11 +29,7 @@ namespace xpyt
         // to side effects when importing pygments
         py::object formatter = py::module::import("pygments.formatters").attr("TerminalFormatter");
 
-#if PY_MAJOR_VERSION == 2
-        py::object lexer = py::module::import("pygments.lexers").attr("PythonLexer");
-#else
         py::object lexer = py::module::import("pygments.lexers").attr("Python3Lexer");
-#endif
 
         return py::str(py_highlight(code, lexer(), formatter()));
     }
@@ -116,18 +112,10 @@ namespace xpyt
                 std::string name;
                 std::string line;
 
-#if PY_MAJOR_VERSION == 2
-                py::tuple frame_tuple = py_frame.cast<py::tuple>();
-                filename = py::str(frame_tuple[0]);
-                lineno = py::str(frame_tuple[1]);
-                name = py::str(frame_tuple[2]);
-                line = py::str(frame_tuple[3]);
-#else
                 filename = py::str(py_frame.attr("filename"));
                 lineno = py::str(py_frame.attr("lineno"));
                 name = py::str(py_frame.attr("name"));
                 line = py::str(py_frame.attr("line"));
-#endif
 
                 // Workaround for py::exec
                 if (filename == "<string>")

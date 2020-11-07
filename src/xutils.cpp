@@ -57,11 +57,7 @@ namespace xpyt
     {
         char* buffer;
         Py_ssize_t length;
-#if PY_MAJOR_VERSION >= 3
         PyBytes_AsStringAndSize(bytes.ptr(), &buffer, &length);
-#else
-        PyString_AsStringAndSize(bytes.ptr(), &buffer, &length);
-#endif
         return zmq::message_t(buffer, static_cast<std::size_t>(length));
     }
 
@@ -118,18 +114,10 @@ namespace xpyt
         return PyObject_IsTrue(obj.ptr());
     }
 
-#if PY_MAJOR_VERSION == 2
-    bool holding_gil()
-    {
-        PyThreadState * tstate = _PyThreadState_Current;
-        return tstate && (tstate == PyGILState_GetThisThreadState());
-    }
-#else
     bool holding_gil()
     {
         return PyGILState_Check();
     }
-#endif
 
     void exec(const py::object& code, const py::object& scope)
     {

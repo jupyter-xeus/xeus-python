@@ -71,15 +71,12 @@ std::string extract_filename(int& argc, char* argv[])
 
 void print_pythonhome()
 {
-#if PY_MAJOR_VERSION == 2
-    char* mbstr = Py_GetPythonHome();
-#else
     std::setlocale(LC_ALL, "en_US.utf8");
     wchar_t* ph = Py_GetPythonHome();
 
     char mbstr[1024];
     std::wcstombs(mbstr, ph, 1024);
-#endif
+
     std::clog << "PYTHONHOME set to " << mbstr << std::endl;
 }
 
@@ -103,15 +100,11 @@ int main(int argc, char* argv[])
 
     // Setting Program Name
     static const std::string executable(XEUS_PYTHON_EXECUTABLE);
-#if PY_MAJOR_VERSION == 2
-    Py_SetProgramName(const_cast<char*>(executable.c_str()));
-#else
     static const std::wstring wexecutable(executable.cbegin(), executable.cend());
 #ifdef _WIN32
     _Py_SetProgramFullPath(const_cast<wchar_t*>(wexecutable.c_str()));
 #else
     Py_SetProgramName(const_cast<wchar_t*>(wexecutable.c_str()));
-#endif
 #endif
 
     // Setting PYTHONHOME
@@ -122,9 +115,6 @@ int main(int argc, char* argv[])
     py::scoped_interpreter guard;
 
     // Setting argv
-#if PY_MAJOR_VERSION == 2
-    PySys_SetArgvEx(argc, argv, 0);
-#else
     wchar_t** argw = new wchar_t*[size_t(argc)];
     for(auto i = 0; i < argc; ++i)
     {
@@ -136,7 +126,6 @@ int main(int argc, char* argv[])
         PyMem_RawFree(argw[i]);
     }
     delete[] argw;
-#endif
 
     // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
