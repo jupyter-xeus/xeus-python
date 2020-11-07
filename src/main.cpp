@@ -106,8 +106,12 @@ int main(int argc, char* argv[])
 #if PY_MAJOR_VERSION == 2
     Py_SetProgramName(const_cast<char*>(executable.c_str()));
 #else
-    static const std::wstring wexecutable(executable.cbegin(), executable.cend());;
+    static const std::wstring wexecutable(executable.cbegin(), executable.cend());
+#ifdef _WIN32
+    _Py_SetProgramFullPath(const_cast<wchar_t*>(wexecutable.c_str()));
+#else
     Py_SetProgramName(const_cast<wchar_t*>(wexecutable.c_str()));
+#endif
 #endif
 
     // Setting PYTHONHOME
