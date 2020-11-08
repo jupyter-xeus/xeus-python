@@ -10,6 +10,7 @@
 
 #include "xpaths.hpp"
 
+#include <iostream>
 #include <string>
 #include <cstring>
 
@@ -92,6 +93,10 @@ namespace xpyt
 #else
         char separator = '/';
 #endif
-        return path.substr(0, path.find_last_of("/\\")) + separator + ".." + separator;
+
+        std::string bin_folder = path.substr(0, path.find_last_of(separator));
+        std::string prefix = bin_folder.substr(0, bin_folder.find_last_of(separator)) + separator;
+
+        return prefix;
     }
 }
