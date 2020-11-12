@@ -128,8 +128,10 @@ namespace xpyt
 
     bool debugger::start_debugpy()
     {
+        // Setting Program Name
+        std::string executable(XEUS_PYTHON_EXECUTABLE);
         // debugpy has to be started in the main thread
-        std::string code = "import debugpy\ndebugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
+        std::string code = "import debugpy\ndebugpy.configure({\'python\': \'" + executable  + "\'})\ndebugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
         nl::json json_code;
         json_code["code"] = code;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);

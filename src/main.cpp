@@ -101,15 +101,7 @@ int main(int argc, char* argv[])
     // Setting Program Name
     static const std::string executable(XEUS_PYTHON_EXECUTABLE);
     static const std::wstring wexecutable(executable.cbegin(), executable.cend());
-
-// On windows, sys.executable is not properly set with Py_SetProgramName
-// Cf. https://bugs.python.org/issue34725
-// A private undocumented API was added as a workaround in Python 3.7.2.
-#ifdef _WIN32
-    _Py_SetProgramFullPath(const_cast<wchar_t*>(wexecutable.c_str()));
-#else
     Py_SetProgramName(const_cast<wchar_t*>(wexecutable.c_str()));
-#endif
 
     // Setting PYTHONHOME
     xpyt::set_pythonhome();

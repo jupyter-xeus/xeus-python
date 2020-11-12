@@ -285,6 +285,7 @@ macro(xpyt_create_target target_name linkage output_name)
                           OUTPUT_NAME "lib${output_name}")
 
     target_compile_definitions(${target_name} PUBLIC "XEUS_PYTHON_EXPORTS")
+    target_compile_definitions(${target_name} PRIVATE XEUS_PYTHON_EXECUTABLE="${PYTHON_EXECUTABLE}")
 
     target_include_directories(${target_name}
                                PUBLIC
