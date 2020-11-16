@@ -32,7 +32,8 @@ namespace xpyt
         debugger(zmq::context_t& context,
                  const xeus::xconfiguration& config,
                  const std::string& user_name,
-                 const std::string& session_id);
+                 const std::string& session_id,
+                 const nl::json& debugger_config);
 
         virtual ~debugger();
 
@@ -53,13 +54,15 @@ namespace xpyt
         xdebugpy_client* p_debugpy_client;
         std::string m_debugpy_host;
         std::string m_debugpy_port;
+        nl::json m_debugger_config;
     };
 
     XEUS_PYTHON_API
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,
-                                                          const std::string& session_id);
+                                                          const std::string& session_id,
+                                                          const nl::json& debugger_config);
 }
 
 #endif
