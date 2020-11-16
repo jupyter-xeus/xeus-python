@@ -42,7 +42,8 @@ namespace xpyt
     debugger::debugger(zmq::context_t& context,
                        const xeus::xconfiguration& config,
                        const std::string& user_name,
-                       const std::string& session_id)
+                       const std::string& session_id,
+                       const nl::json& debugger_config)
         : xdebugger_base(context)
         , p_debugpy_client(new xdebugpy_client(context,
                                                config,
@@ -54,6 +55,7 @@ namespace xpyt
                                                get_event_callback()))
         , m_debugpy_host("127.0.0.1")
         , m_debugpy_port("")
+        , m_debugger_config(debugger_config)
     {
         m_debugpy_port = xeus::find_free_port(100, 5678, 5900);
         register_request_handler("inspectVariables", std::bind(&debugger::inspect_variables_request, this, _1), false);
@@ -128,8 +130,16 @@ namespace xpyt
 
     bool debugger::start_debugpy()
     {
-        // debugpy has to be started in the main thread
-        std::string code = "import debugpy\ndebugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
+        // import debugpy 
+        std::string code = "import debugpy;";
+        // specify sys.executable
+        auto it = m_debugger_config.find("python");
+        if (it != m_debugger_config.end())
+        {
+            code += "debugpy.configure({\'python\': \'" + it->template get<std::string>()  + "\'});";
+        }
+        // call to debugpy.listen 
+        code += "debugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
         nl::json json_code;
         json_code["code"] = code;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
@@ -211,9 +221,10 @@ namespace xpyt
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,
-                                                          const std::string& session_id)
+                                                          const std::string& session_id,
+                                                          const nl::json& debugger_config)
     {
-        return std::unique_ptr<xeus::xdebugger>(new debugger(context, config, user_name, session_id));
+        return std::unique_ptr<xeus::xdebugger>(new debugger(context, config, user_name, session_id, debugger_config));
     }
 }
 

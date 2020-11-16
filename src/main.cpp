@@ -102,14 +102,11 @@ int main(int argc, char* argv[])
     static const std::string executable(XEUS_PYTHON_EXECUTABLE);
     static const std::wstring wexecutable(executable.cbegin(), executable.cend());
 
-// On windows, sys.executable is not properly set with Py_SetProgramName
-// Cf. https://bugs.python.org/issue34725
-// A private undocumented API was added as a workaround in Python 3.7.2.
-#ifdef _WIN32
-    _Py_SetProgramFullPath(const_cast<wchar_t*>(wexecutable.c_str()));
-#else
+    // On windows, sys.executable is not properly set with Py_SetProgramName
+    // Cf. https://bugs.python.org/issue34725
+    // A private undocumented API was added as a workaround in Python 3.7.2.
+    // _Py_SetProgramFullPath(const_cast<wchar_t*>(wexecutable.c_str()));
     Py_SetProgramName(const_cast<wchar_t*>(wexecutable.c_str()));
-#endif
 
     // Setting PYTHONHOME
     xpyt::set_pythonhome();
@@ -147,6 +144,9 @@ int main(int argc, char* argv[])
         << std::endl;
 #endif
 
+    nl::json debugger_config;
+    debugger_config["python"] = executable;
+
     if (!connection_filename.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
@@ -158,7 +158,8 @@ int main(int argc, char* argv[])
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
                              xeus::make_xserver_shell_main,
-                             xpyt::make_python_debugger);
+                             xpyt::make_python_debugger,
+                             debugger_config);
 
         std::clog <<
             "Starting xeus-python kernel...\n\n"
@@ -175,7 +176,8 @@ int main(int argc, char* argv[])
                              std::move(hist),
                              nullptr,
                              xeus::make_xserver_shell_main,
-                             xpyt::make_python_debugger);
+                             xpyt::make_python_debugger,
+                             debugger_config);
 
         const auto& config = kernel.get_config();
         std::clog <<
