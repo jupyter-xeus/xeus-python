@@ -1,0 +1,50 @@
+parameters:
+  - name: 'platform'
+    type: string
+
+steps:
+  - script: |
+      conda config --set always_yes yes --set changeps1 no
+      conda update -q conda
+      conda env create --file environment-dev.yml
+    displayName: Install dependencies
+
+  - script: |
+      source activate xeus-python
+      if [[ $(py_version) != '' ]]; then
+        const install python=$(py_version) -c conda-forge
+      fi
+      conda install gcc_linux-64=7.5.0 gcc_impl_linux-64=7.5.0 gxx_linux-64=7.5.0 gxx_impl_linux-64 -c conda-forge;
+    condition: eq('${{ parameters.platform }}', 'Linux')
+    displayName: Install conda-forge compilers
+
+  - script: |
+      source activate xeus-python
+      pip install example_magic
+      mkdir build
+      cd build
+      if [[ $(xpyt_used_shared_xeus_python) == '0' ]]; then
+        CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF";
+      fi
+      if [[ $(xpyt_used_shared_xeus_python) == '0' ]]; then
+        CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_USE_SHARED_XEUS=OFF";
+      fi
+      # The xeus conda package is built with CMAKE_CXX_STANDARD=17
+      CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DCMAKE_CXX_STANDARD=17";
+      cmake -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DXPYT_DOWNLOAD_GTEST=ON -DPYTHON_EXECUTABLE=`which python` -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX ${CMAKE_EXTRA_ARGS} $(Build.SourcesDirectory)
+    displayName: Configure xeus-python
+    workingDirectory: $(Build.BinariesDirectory)
+
+  - script: |
+      source activate xeus-python
+      make install -j2
+    displayName: Build xeus-python
+    workingDirectory: $(Build.BinariesDirectory)/build
+
+  - script: |
+      source activate xeus-python
+      cd test
+      ./test_xeus_python
+      cd ../../test && py.test . -v;
+    displayName: Test xeus-python
+    workingDirectory: $(Build.BinariesDirectory)/build/test
