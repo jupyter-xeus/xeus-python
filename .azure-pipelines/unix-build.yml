@@ -26,7 +26,7 @@ steps:
       if [[ $(xpyt_used_shared_xeus_python) == '0' ]]; then
         CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF";
       fi
-      if [[ $(xpyt_used_shared_xeus_python) == '0' ]]; then
+      if [[ $(xpyt_used_shared_xeus) == '0' ]]; then
         CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_USE_SHARED_XEUS=OFF";
       fi
       # The xeus conda package is built with CMAKE_CXX_STANDARD=17
