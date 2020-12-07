@@ -105,50 +105,53 @@ namespace xpyt
                         << red_text(out.m_ename) << first_frame_padding << traceback_msg;
             out.m_traceback.push_back(first_frame.str());
 
-            for (py::handle py_frame : py::module::import("traceback").attr("extract_tb")(py_tb))
+            if (py_tb.ptr() != nullptr && !py_tb.is_none())
             {
-                std::string filename;
-                std::string lineno;
-                std::string name;
-                std::string line;
-
-                filename = py::str(py_frame.attr("filename"));
-                lineno = py::str(py_frame.attr("lineno"));
-                name = py::str(py_frame.attr("name"));
-                line = py::str(py_frame.attr("line"));
-
-                // Workaround for py::exec
-                if (filename == "<string>")
+                for (py::handle py_frame : py::module::import("traceback").attr("extract_tb")(py_tb))
                 {
-                    continue;
-                }
+                    std::string filename;
+                    std::string lineno;
+                    std::string name;
+                    std::string line;
 
-                std::stringstream cpp_frame;
-                std::string padding(6 - lineno.size(), ' ');
-                std::string file_prefix;
-                std::string func_name;
+                    filename = py::str(py_frame.attr("filename"));
+                    lineno = py::str(py_frame.attr("lineno"));
+                    name = py::str(py_frame.attr("name"));
+                    line = py::str(py_frame.attr("line"));
 
-                std::string prefix = get_tmp_prefix();
-                // If the error occured in a cell code, extract the line from the given code
-                if(!filename.empty() && !filename.compare(0, prefix.size(), prefix.c_str(), prefix.size()))
-                {
-                    file_prefix = "In  ";
-                    auto it = get_filename_map().find(filename);
-                    if(it != get_filename_map().end())
+                    // Workaround for py::exec
+                    if (filename == "<string>")
                     {
-                        filename = '[' + std::to_string(it->second) + ']';
+                        continue;
                     }
-                }
-                else
-                {
-                    file_prefix = "File ";
-                    func_name = ", in " + green_text(name);
-                }
 
-                cpp_frame << file_prefix << blue_text(filename) << func_name << ":\n"
-                          << "Line " << blue_text(lineno) << ":"
-                          << padding << highlight(line);
-                out.m_traceback.push_back(cpp_frame.str());
+                    std::stringstream cpp_frame;
+                    std::string padding(6 - lineno.size(), ' ');
+                    std::string file_prefix;
+                    std::string func_name;
+
+                    std::string prefix = get_tmp_prefix();
+                    // If the error occured in a cell code, extract the line from the given code
+                    if(!filename.empty() && !filename.compare(0, prefix.size(), prefix.c_str(), prefix.size()))
+                    {
+                        file_prefix = "In  ";
+                        auto it = get_filename_map().find(filename);
+                        if(it != get_filename_map().end())
+                        {
+                            filename = '[' + std::to_string(it->second) + ']';
+                        }
+                    }
+                    else
+                    {
+                        file_prefix = "File ";
+                        func_name = ", in " + green_text(name);
+                    }
+
+                    cpp_frame << file_prefix << blue_text(filename) << func_name << ":\n"
+                            << "Line " << blue_text(lineno) << ":"
+                            << padding << highlight(line);
+                    out.m_traceback.push_back(cpp_frame.str());
+                }
             }
 
             std::stringstream last_frame;
