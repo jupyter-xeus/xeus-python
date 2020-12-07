@@ -29,7 +29,7 @@
 
 #include "xeus-python/xdebugger.hpp"
 #include "xdebugpy_client.hpp"
-#include "xutils.hpp"
+#include "xeus-python/xutils.hpp"
 
 namespace nl = nlohmann;
 namespace py = pybind11;
@@ -130,7 +130,7 @@ namespace xpyt
 
     bool debugger::start_debugpy()
     {
-        // import debugpy 
+        // import debugpy
         std::string code = "import debugpy;";
         // specify sys.executable
         auto it = m_debugger_config.find("python");
@@ -138,7 +138,7 @@ namespace xpyt
         {
             code += "debugpy.configure({\'python\': \'" + it->template get<std::string>()  + "\'});";
         }
-        // call to debugpy.listen 
+        // call to debugpy.listen
         code += "debugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
         nl::json json_code;
         json_code["code"] = code;
@@ -217,7 +217,7 @@ namespace xpyt
     {
         return get_cell_tmp_file(code);
     }
-    
+
     std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,
@@ -227,4 +227,3 @@ namespace xpyt
         return std::unique_ptr<xeus::xdebugger>(new debugger(context, config, user_name, session_id, debugger_config));
     }
 }
-

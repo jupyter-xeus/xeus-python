@@ -14,7 +14,7 @@
 #include "pybind11/functional.h"
 
 #include "xlinecache.hpp"
-#include "xutils.hpp"
+#include "xeus-python/xutils.hpp"
 
 namespace py = pybind11;
 

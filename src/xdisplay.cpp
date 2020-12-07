@@ -25,7 +25,7 @@
 #include "pybind11/stl.h"
 
 #include "xdisplay.hpp"
-#include "xutils.hpp"
+#include "xeus-python/xutils.hpp"
 
 #ifdef __GNUC__
     #pragma GCC diagnostic push
@@ -92,7 +92,7 @@ namespace xpyt
     py::tuple mime_bundle_repr(const py::object& obj, const std::vector<std::string>& include = {}, const std::vector<std::string>& exclude = {})
     {
         py::module py_json = py::module::import("json");
-        py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module builtins = py::module::import("builtins");
         py::dict pub_data;
         py::dict pub_metadata;
 
@@ -461,7 +461,7 @@ namespace xpyt
 
     void xdisplay_object::reload()
     {
-        py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module builtins = py::module::import("builtins");
 
         if (!m_filename.is_none())
         {
@@ -1051,7 +1051,7 @@ namespace xpyt
 
     py::object pngxy(const py::object& data)
     {
-        py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module builtins = py::module::import("builtins");
         py::module struct_module = py::module::import("struct");
 
         std::size_t ihdr = data.attr("index")(builtins.attr("bytes")("IHDR", "UTF8")).cast<std::size_t>();

@@ -13,8 +13,8 @@
 #include <sstream>
 #include <string>
 
-#include "xutils.hpp"
-#include "xtraceback.hpp"
+#include "xeus-python/xutils.hpp"
+#include "xeus-python/xtraceback.hpp"
 
 #include "pybind11/pybind11.h"
 

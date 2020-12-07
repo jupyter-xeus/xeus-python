@@ -23,13 +23,6 @@
 namespace py = pybind11;
 namespace nl = nlohmann;
 
-#if PY_MAJOR_VERSION == 2
-    #define XPYT_BUILTINS "__builtin__"
-    #define XPYT_EXEC_COMMAND "exec(\"\"\"exec _code_ in _scope_\"\"\")"
-#else
-    #define XPYT_BUILTINS "builtins"
-    #define XPYT_EXEC_COMMAND "exec(_code_, _scope_, _scope_)"
-#endif
 
 namespace xpyt
 {

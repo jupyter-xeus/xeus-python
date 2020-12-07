@@ -23,7 +23,7 @@
 #include "pybind11/eval.h"
 
 #include "xpython_kernel.hpp"
-#include "xutils.hpp"
+#include "xeus-python/xutils.hpp"
 #include "xinteractiveshell.hpp"
 
 namespace py = pybind11;
@@ -187,7 +187,7 @@ namespace xpyt
 
             compiler_object()
             {
-               builtins = py::module::import(XPYT_BUILTINS);
+               builtins = py::module::import("builtins");
             }
 
             py::object operator()(py::object source, py::str filename, py::str mode)
