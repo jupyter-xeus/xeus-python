@@ -18,7 +18,7 @@
 #include "pybind11/pybind11.h"
 
 #include "xinput.hpp"
-#include "xutils.hpp"
+#include "xeus-python/xutils.hpp"
 
 namespace py = pybind11;
 
@@ -42,7 +42,7 @@ namespace xpyt
     input_redirection::input_redirection(bool allow_stdin)
     {
         // Forward input()
-        py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module builtins = py::module::import("builtins");
         m_sys_input = builtins.attr("input");
         builtins.attr("input") = allow_stdin ? py::cpp_function(&cpp_input, py::arg("prompt") = "")
                                              : py::cpp_function(&notimplemented, py::arg("prompt") = "");
@@ -58,7 +58,7 @@ namespace xpyt
     input_redirection::~input_redirection()
     {
         // Restore input()
-        py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module builtins = py::module::import("builtins");
         builtins.attr("input") = m_sys_input;
 
         // Restore getpass()

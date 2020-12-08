@@ -33,8 +33,8 @@
 #include "xis_complete.hpp"
 #include "xlinecache.hpp"
 #include "xstream.hpp"
-#include "xtraceback.hpp"
-#include "xutils.hpp"
+#include "xeus-python/xtraceback.hpp"
+#include "xeus-python/xutils.hpp"
 #include "xinteractiveshell.hpp"
 
 namespace py = pybind11;
@@ -166,7 +166,7 @@ namespace xpyt
         {
             // Import modules
             py::module ast = py::module::import("ast");
-            py::module builtins = py::module::import(XPYT_BUILTINS);
+            py::module builtins = py::module::import("builtins");
 
             // Parse code to AST
             py::object code_ast = ast.attr("parse")(code_copy, "<string>", "exec");
@@ -379,7 +379,7 @@ namespace xpyt
         {
             // Import modules
             py::module ast = py::module::import("ast");
-            py::module builtins = py::module::import(XPYT_BUILTINS);
+            py::module builtins = py::module::import("builtins");
 
             // Parse code to AST
             py::object code_ast = ast.attr("parse")(code, "<string>", "exec");

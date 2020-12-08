@@ -6,7 +6,7 @@
 #include "pybind11/eval.h"
 
 #include "xdisplay.hpp"
-#include "xutils.hpp"
+#include "xeus-python/xutils.hpp"
 #include "xinspect.hpp"
 #include "xnullcontext.hpp"
 
@@ -200,7 +200,7 @@ namespace xpyt
         // this is a placeholder for a real implementation
         // it does not handle multiple statements
         // nor magics parsing
-        py::module builtins = py::module::import(XPYT_BUILTINS);
+        py::module builtins = py::module::import("builtins");
         std::string filename = "debug_this_thread";
         auto compiled_code = builtins.attr("compile")(code, filename, "single");
 

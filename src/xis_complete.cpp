@@ -10,7 +10,7 @@
 
 #include "pybind11/pybind11.h"
 
-#include "xutils.hpp"
+#include "xeus-python/xutils.hpp"
 
 namespace py = pybind11;
 

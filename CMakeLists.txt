@@ -129,6 +129,8 @@ set(XEUS_PYTHON_SRC
     src/xinspect.hpp
     src/xinteractiveshell.cpp
     src/xinteractiveshell.hpp
+    src/xinternal_utils.cpp
+    src/xinternal_utils.hpp
     src/xinterpreter.cpp
     src/xis_complete.cpp
     src/xis_complete.hpp
@@ -141,15 +143,15 @@ set(XEUS_PYTHON_SRC
     src/xstream.cpp
     src/xstream.hpp
     src/xtraceback.cpp
-    src/xtraceback.hpp
     src/xutils.cpp
-    src/xutils.hpp
 )
 
 set(XEUS_PYTHON_HEADERS
     include/xeus-python/xdebugger.hpp
     include/xeus-python/xeus_python_config.hpp
     include/xeus-python/xinterpreter.hpp
+    include/xeus-python/xtraceback.hpp
+    include/xeus-python/xutils.hpp
 )
 
 set(XPYTHON_SRC

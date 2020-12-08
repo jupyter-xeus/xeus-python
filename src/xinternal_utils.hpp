@@ -8,27 +8,29 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_TRACEBACK_HPP
-#define XPYT_TRACEBACK_HPP
+
+#ifndef XPYT_INTERNAL_UTILS_HPP
+#define XPYT_INTERNAL_UTILS_HPP
 
 #include <vector>
-#include <string>
+
+#include "xeus/xcomm.hpp"
 
 #include "pybind11/pybind11.h"
 
 namespace py = pybind11;
 
+
 namespace xpyt
 {
-    struct xerror
-    {
-        std::string m_ename;
-        std::string m_evalue;
-        std::vector<std::string> m_traceback;
-    };
+    std::string red_text(const std::string& text);
+    std::string green_text(const std::string& text);
+    std::string blue_text(const std::string& text);
 
-    void register_filename_mapping(const std::string& filename, int execution_count);
-    xerror extract_error(py::error_already_set& error);
+    py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers);
+    std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::object& bufferlist);
+
+    py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
 }
 
 #endif
