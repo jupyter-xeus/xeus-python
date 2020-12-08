@@ -20,15 +20,17 @@
 
 #include "pybind11/pybind11.h"
 
+#include "xeus_python_config.hpp"
+
 namespace py = pybind11;
 namespace nl = nlohmann;
 
 
 namespace xpyt
 {
-    bool is_pyobject_true(const py::object& obj);
+    XEUS_PYTHON_API bool is_pyobject_true(const py::object& obj);
 
-    bool holding_gil();
+    XEUS_PYTHON_API bool holding_gil();
 
 #define XPYT_HOLDING_GIL(func)           \
     if (holding_gil())                   \
@@ -41,13 +43,13 @@ namespace xpyt
         func;                            \
     }
 
-    void exec(const py::object& code, const py::object& scope = py::globals());
-    py::object eval(const py::object& code, const py::object& scope = py::globals());
+    XEUS_PYTHON_API void exec(const py::object& code, const py::object& scope = py::globals());
+    XEUS_PYTHON_API py::object eval(const py::object& code, const py::object& scope = py::globals());
 
-    size_t get_hash_seed();
-    std::string get_tmp_prefix();
-    std::string get_tmp_suffix();
-    std::string get_cell_tmp_file(const std::string& content);
+    XEUS_PYTHON_API size_t get_hash_seed();
+    XEUS_PYTHON_API std::string get_tmp_prefix();
+    XEUS_PYTHON_API std::string get_tmp_suffix();
+    XEUS_PYTHON_API std::string get_cell_tmp_file(const std::string& content);
 }
 
 #endif

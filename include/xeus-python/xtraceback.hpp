@@ -16,19 +16,21 @@
 
 #include "pybind11/pybind11.h"
 
+#include "xeus_python_config.hpp"
+
 namespace py = pybind11;
 
 namespace xpyt
 {
-    struct xerror
+    struct XEUS_PYTHON_API xerror
     {
         std::string m_ename;
         std::string m_evalue;
         std::vector<std::string> m_traceback;
     };
 
-    void register_filename_mapping(const std::string& filename, int execution_count);
-    xerror extract_error(py::error_already_set& error);
+    XEUS_PYTHON_API void register_filename_mapping(const std::string& filename, int execution_count);
+    XEUS_PYTHON_API xerror extract_error(py::error_already_set& error);
 }
 
 #endif
