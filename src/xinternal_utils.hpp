@@ -23,6 +23,8 @@ namespace py = pybind11;
 
 namespace xpyt
 {
+    py::module create_module(const std::string& module_name);
+
     std::string red_text(const std::string& text);
     std::string green_text(const std::string& text);
     std::string blue_text(const std::string& text);

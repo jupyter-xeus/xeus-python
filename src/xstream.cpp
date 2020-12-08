@@ -16,6 +16,7 @@
 #include "pybind11/pybind11.h"
 
 #include "xstream.hpp"
+#include "xinternal_utils.hpp"
 
 namespace py = pybind11;
 
@@ -75,7 +76,7 @@ namespace xpyt
 
     py::module get_stream_module_impl()
     {
-        py::module stream_module = py::module("stream");
+        py::module stream_module = create_module("stream");
 
         py::class_<xstream>(stream_module, "Stream")
             .def(py::init<std::string>())

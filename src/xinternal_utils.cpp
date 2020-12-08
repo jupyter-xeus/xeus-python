@@ -32,6 +32,11 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
+    py::module create_module(const std::string& module_name)
+    {
+        return py::module_::create_extension_module(module_name.c_str(), nullptr, new py::module_::module_def);
+    }
+
     std::string red_text(const std::string& text)
     {
         return "\033[0;31m" + text + "\033[0m";

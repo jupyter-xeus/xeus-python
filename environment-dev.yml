@@ -10,7 +10,7 @@ dependencies:
   - cppzmq
   - xtl
   - jedi
-  - pybind11=2.5.0
+  - pybind11=2.6.0
   - pybind11_json=0.2.6
   - pygments
   - ipython=7.14.0
