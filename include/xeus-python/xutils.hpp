@@ -26,15 +26,6 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
-    std::string red_text(const std::string& text);
-    std::string green_text(const std::string& text);
-    std::string blue_text(const std::string& text);
-
-    py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers);
-    std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::object& bufferlist);
-
-    py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
-
     bool is_pyobject_true(const py::object& obj);
 
     bool holding_gil();

@@ -18,6 +18,8 @@
 
 #include "pybind11/pybind11.h"
 
+#include "xinternal_utils.hpp"
+
 namespace py = pybind11;
 
 namespace xpyt

@@ -22,9 +22,11 @@
 #include "pybind11/functional.h"
 #include "pybind11/eval.h"
 
-#include "xpython_kernel.hpp"
 #include "xeus-python/xutils.hpp"
+
+#include "xpython_kernel.hpp"
 #include "xinteractiveshell.hpp"
+#include "xinternal_utils.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;

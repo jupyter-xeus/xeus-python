@@ -129,6 +129,8 @@ set(XEUS_PYTHON_SRC
     src/xinspect.hpp
     src/xinteractiveshell.cpp
     src/xinteractiveshell.hpp
+    src/xinternal_utils.cpp
+    src/xinternal_utils.hpp
     src/xinterpreter.cpp
     src/xis_complete.cpp
     src/xis_complete.hpp
