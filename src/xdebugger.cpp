@@ -133,6 +133,12 @@ namespace xpyt
         // import debugpy
         std::string code = "import debugpy;";
         // specify sys.executable
+        if (std::getenv("XEUS_LOG") != nullptr)
+        {
+            std::ofstream out("xeus.log", std::ios_base::app);
+            out << "===== DEBUGGER CONFIG =====" << std::endl;
+            out << m_debugger_config.dump() << std::endl;
+        }
         auto it = m_debugger_config.find("python");
         if (it != m_debugger_config.end())
         {
