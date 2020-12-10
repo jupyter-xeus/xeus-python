@@ -425,7 +425,10 @@ namespace xpyt
             py::module sys = py::module::import("sys");
             sys.attr("displayhook") = m_displayhook;
         }
+
+        // Expose display functions to Python
         py::globals()["display"] = display_module.attr("display");
+        py::globals()["update_display"] = display_module.attr("update_display");
     }
 
     void interpreter::load_extensions()
