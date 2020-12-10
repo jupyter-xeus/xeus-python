@@ -26,5 +26,13 @@ namespace xpyt
      ***************/
 
     std::string prefix_path();
+
+    /**************************
+     * python home and prefix *
+     **************************/
+
+    std::string get_python_prefix();
+    std::string get_python_path();
+    void set_pythonhome();
 }
 #endif

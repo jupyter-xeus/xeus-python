@@ -142,7 +142,7 @@ namespace xpyt
         auto it = m_debugger_config.find("python");
         if (it != m_debugger_config.end())
         {
-            code += "debugpy.configure({\'python\': \'" + it->template get<std::string>()  + "\'});";
+            code += "debugpy.configure({\'python\': r\'" + it->template get<std::string>()  + "\'});";
         }
         // call to debugpy.listen
         code += "debugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
