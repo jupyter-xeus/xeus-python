@@ -29,7 +29,7 @@
 
 #include "xeus-python/xdebugger.hpp"
 #include "xdebugpy_client.hpp"
-#include "xeus-python/xutils.hpp"
+#include "xinternal_utils.hpp"
 
 namespace nl = nlohmann;
 namespace py = pybind11;
@@ -208,7 +208,7 @@ namespace xpyt
 
     xeus::xdebugger_info debugger::get_debugger_info() const
     {
-        return xeus::xdebugger_info(get_hash_seed(),
+        return xeus::xdebugger_info(xeus::get_tmp_hash_seed(),
                                     get_tmp_prefix(),
                                     get_tmp_suffix());
     }

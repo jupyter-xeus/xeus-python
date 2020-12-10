@@ -5,7 +5,7 @@ dependencies:
   # Builde dependencies
   - cmake
   # Host dependencies
-  - xeus=0.25.1
+  - xeus=0.25.3
   - nlohmann_json
   - cppzmq
   - xtl

@@ -31,6 +31,10 @@ namespace xpyt
     std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::object& bufferlist);
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
+
+    std::string get_tmp_prefix();
+    std::string get_tmp_suffix();
+    std::string get_cell_tmp_file(const std::string& content);
 }
 
 #endif

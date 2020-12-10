@@ -102,4 +102,21 @@ namespace xpyt
 
         return py_msg;
     }
+
+    std::string get_tmp_prefix()
+    {
+        return xeus::get_tmp_prefix("xpython");
+    }
+
+    std::string get_tmp_suffix()
+    {
+        return ".py";
+    }
+
+    std::string get_cell_tmp_file(const std::string& content)
+    {
+        return xeus::get_cell_tmp_file(get_tmp_prefix(),
+                                       content,
+                                       get_tmp_suffix());
+    }
 }
