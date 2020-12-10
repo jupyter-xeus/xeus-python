@@ -45,11 +45,6 @@ namespace xpyt
 
     XEUS_PYTHON_API void exec(const py::object& code, const py::object& scope = py::globals());
     XEUS_PYTHON_API py::object eval(const py::object& code, const py::object& scope = py::globals());
-
-    XEUS_PYTHON_API size_t get_hash_seed();
-    XEUS_PYTHON_API std::string get_tmp_prefix();
-    XEUS_PYTHON_API std::string get_tmp_suffix();
-    XEUS_PYTHON_API std::string get_cell_tmp_file(const std::string& content);
 }
 
 #endif

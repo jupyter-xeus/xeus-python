@@ -67,30 +67,4 @@ namespace xpyt
         }
         return py::eval(code, scope);
     }
-
-    std::size_t get_hash_seed()
-    {
-        return static_cast<std::size_t>(0xc70f6907UL);
-    }
-
-    std::string get_tmp_prefix()
-    {
-        static std::string tmp_prefix = xeus::get_temp_directory_path()
-                                      + "/xpython_"
-                                      + std::to_string(xeus::get_current_pid())
-                                      + '/';
-        return tmp_prefix;
-    }
-
-    std::string get_tmp_suffix()
-    {
-        return ".py";
-    }
-
-    std::string get_cell_tmp_file(const std::string& content)
-    {
-        std::uint32_t seed = static_cast<uint32_t>(get_hash_seed());
-        std::string id = std::to_string(xtl::murmur2_x86(content.data(), content.size(), seed));
-        return get_tmp_prefix() + id + get_tmp_suffix();
-    }
 }

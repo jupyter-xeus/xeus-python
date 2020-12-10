@@ -25,17 +25,18 @@
 
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
+#include "xeus-python/xtraceback.hpp"
+#include "xeus-python/xutils.hpp"
 
 #include "xpython_kernel.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
 #include "xinspect.hpp"
+#include "xinteractiveshell.hpp"
+#include "xinternal_utils.hpp"
 #include "xis_complete.hpp"
 #include "xlinecache.hpp"
 #include "xstream.hpp"
-#include "xeus-python/xtraceback.hpp"
-#include "xeus-python/xutils.hpp"
-#include "xinteractiveshell.hpp"
 
 namespace py = pybind11;
 namespace nl = nlohmann;
