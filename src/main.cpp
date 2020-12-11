@@ -30,8 +30,7 @@
 
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xdebugger.hpp"
-
-#include "xpaths.hpp"
+#include "xeus-python/xpaths.hpp"
 
 #ifdef __GNUC__
 void handler(int sig)

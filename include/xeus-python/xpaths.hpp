@@ -13,26 +13,17 @@
 
 #include <string>
 
+#include "xeus_python_config.hpp"
+
 namespace xpyt
 {
-    /*******************
-     * executable_path *
-     *******************/
-
-    std::string executable_path();
-
-    /***************
-     * prefix_path *
-     ***************/
-
-    std::string prefix_path();
-
     /**************************
      * python home and prefix *
      **************************/
 
-    std::string get_python_prefix();
-    std::string get_python_path();
-    void set_pythonhome();
+    XEUS_PYTHON_API std::string get_python_prefix();
+    XEUS_PYTHON_API std::string get_python_path();
+    XEUS_PYTHON_API void set_pythonhome();
 }
+
 #endif
