@@ -24,8 +24,10 @@
 #include "pybind11/functional.h"
 #include "pybind11/stl.h"
 
-#include "xdisplay.hpp"
 #include "xeus-python/xutils.hpp"
+
+#include "xdisplay.hpp"
+#include "xinternal_utils.hpp"
 
 #ifdef __GNUC__
     #pragma GCC diagnostic push
@@ -1065,7 +1067,7 @@ namespace xpyt
 
     py::module get_display_module_impl()
     {
-        py::module display_module("display");
+        py::module display_module = create_module("display");
 
         py::class_<xdisplayhook>(display_module, "DisplayHook")
             .def(py::init<>())

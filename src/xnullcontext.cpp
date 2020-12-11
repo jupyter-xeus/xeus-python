@@ -13,8 +13,10 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
 
-#include "xnullcontext.hpp"
 #include "xeus-python/xutils.hpp"
+
+#include "xnullcontext.hpp"
+#include "xinternal_utils.hpp"
 
 namespace py = pybind11;
 
@@ -26,7 +28,7 @@ namespace xpyt
 
     py::module get_nullcontext_module_impl()
     {
-        py::module nullcontext_module("xeus_nullcontext");
+        py::module nullcontext_module = create_module("xeus_nullcontext");
         exec(py::str(R"(
 from contextlib import AbstractContextManager
 class nullcontext(AbstractContextManager):

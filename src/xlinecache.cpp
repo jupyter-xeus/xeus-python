@@ -13,8 +13,10 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/functional.h"
 
-#include "xlinecache.hpp"
 #include "xeus-python/xutils.hpp"
+
+#include "xlinecache.hpp"
+#include "xinternal_utils.hpp"
 
 namespace py = pybind11;
 
@@ -53,7 +55,7 @@ namespace xpyt
 
     py::module get_linecache_module_impl()
     {
-        py::module linecache_module("linecache");
+        py::module linecache_module = create_module("linecache");
 
         exec(py::str(R"(
 from linecache import getline, getlines, updatecache, cache, clearcache, lazycache

@@ -70,7 +70,7 @@ OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 # ============
 
 set(xeus_REQUIRED_VERSION 0.25.0)
-set(pybind11_REQUIRED_VERSION 2.2.4)
+set(pybind11_REQUIRED_VERSION 2.6.0)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
 
 if (NOT TARGET xeus AND NOT TARGET xeus-static)

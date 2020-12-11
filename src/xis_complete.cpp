@@ -12,6 +12,8 @@
 
 #include "xeus-python/xutils.hpp"
 
+#include "xinternal_utils.hpp"
+
 namespace py = pybind11;
 
 namespace xpyt
@@ -23,7 +25,7 @@ namespace xpyt
 
     py::module get_completion_module_impl()
     {
-        py::module completion_module("completion");
+        py::module completion_module = create_module("completion");
 
         exec(py::str(R"(
 # Implementation from https://github.com/ipython/ipython/blob/master/IPython/core/inputtransformer2.py

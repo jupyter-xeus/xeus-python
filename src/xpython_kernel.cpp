@@ -405,7 +405,7 @@ namespace xpyt
 
     py::module get_kernel_module_impl()
     {
-        py::module kernel_module = py::module("kernel");
+        py::module kernel_module = create_module("kernel");
 
         py::class_<hooks_object>(kernel_module, "Hooks")
             .def_static("show_in_pager", &hooks_object::show_in_pager);
