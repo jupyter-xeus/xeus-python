@@ -36,4 +36,9 @@
     #define XEUS_PYTHON_API
 #endif
 
+#ifdef _MSC_VER
+    #define XPYT_FORCE_PYBIND11_EXPORT
+#else
+    #define XPYT_FORCE_PYBIND11_EXPORT __attribute__ ((visibility ("default")))
+#endif
 #endif
