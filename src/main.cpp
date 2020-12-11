@@ -31,7 +31,7 @@
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xdebugger.hpp"
 
-#include "xpythonhome.hpp"
+#include "xpaths.hpp"
 
 #ifdef __GNUC__
 void handler(int sig)
@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
 #endif
 
     // Setting Program Name
-    static const std::string executable(XEUS_PYTHON_EXECUTABLE);
+    static const std::string executable(xpyt::get_python_path());
     static const std::wstring wexecutable(executable.cbegin(), executable.cend());
 
     // On windows, sys.executable is not properly set with Py_SetProgramName
