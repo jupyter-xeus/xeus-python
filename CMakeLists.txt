@@ -69,10 +69,14 @@ OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 # Dependencies
 # ============
 
+set(xtl_REQUIRED_VERSION 0.6.23)
 set(xeus_REQUIRED_VERSION 0.25.0)
 set(pybind11_REQUIRED_VERSION 2.6.0)
 set(pybind11_json_REQUIRED_VERSION 0.2.2)
 
+if (NOT TARGET xtl)
+    find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
+endif ()
 if (NOT TARGET xeus AND NOT TARGET xeus-static)
     find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 endif ()
@@ -138,6 +142,7 @@ set(XEUS_PYTHON_SRC
     src/xlinecache.hpp
     src/xnullcontext.cpp
     src/xnullcontext.hpp
+    src/xpaths.cpp
     src/xpython_kernel.cpp
     src/xpython_kernel.hpp
     src/xstream.cpp
@@ -149,6 +154,7 @@ set(XEUS_PYTHON_SRC
 set(XEUS_PYTHON_HEADERS
     include/xeus-python/xdebugger.hpp
     include/xeus-python/xeus_python_config.hpp
+    include/xeus-python/xpaths.hpp
     include/xeus-python/xinterpreter.hpp
     include/xeus-python/xtraceback.hpp
     include/xeus-python/xutils.hpp
@@ -156,8 +162,6 @@ set(XEUS_PYTHON_HEADERS
 
 set(XPYTHON_SRC
     src/main.cpp
-    src/xpaths.hpp
-    src/xpaths.cpp
 )
 
 set(XPYTHON_EXTENSION_SRC
@@ -271,7 +275,7 @@ macro(xpyt_create_target target_name linkage output_name)
         set(XPYT_XEUS_TARGET xeus-static)
     endif ()
 
-    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} PRIVATE pybind11::pybind11 pybind11_json)
+    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} xtl PRIVATE pybind11::pybind11 pybind11_json)
     if (WIN32 OR CYGWIN)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)
@@ -280,6 +284,10 @@ macro(xpyt_create_target target_name linkage output_name)
 
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
     target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+
+    if (XEUS_PYTHONHOME_RELPATH)
+        target_compile_definitions(${target_name} PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
+    endif()
 endmacro()
 
 # xeus-python
@@ -313,10 +321,6 @@ if (XPYT_BUILD_XPYTHON_EXECUTABLE)
 
     xpyt_set_common_options(xpython)
     xpyt_set_kernel_options(xpython)
-
-    if (XEUS_PYTHONHOME_RELPATH)
-        target_compile_definitions(xpython PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
-    endif()
 endif()
 
 # xpython_extension
