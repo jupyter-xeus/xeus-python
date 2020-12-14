@@ -38,10 +38,10 @@ install:
   - nmake install
   # Install test dependencies
   - conda install mamba -c conda-forge
-  - mamba install pytest jupyter_kernel_test -c conda-forge
+  - mamba install jupyter_kernel_test -c conda-forge
   - pip install example_magic
 
 build_script:
   - cd test
   - test_xeus_python
-  - cd.. && cd.. && cd test && py.test .
+  - cd.. && cd.. && cd test && python test_xeus_python_kernel.py -vvv
