@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstring>
 
 #include "pybind11/pybind11.h"
 
@@ -26,7 +27,7 @@ namespace xpyt
         // If the PYTHONHOME environment variable is defined, use that.
         // ------------------------------------------------------------------
         const char* pythonhome_environment = std::getenv("PYTHONHOME");
-        if (pythonhome_environment != nullptr)
+        if (pythonhome_environment != nullptr && std::strlen(pythonhome_environment) != 0)
         {
             static const std::string pythonhome = pythonhome_environment;
             return pythonhome;
