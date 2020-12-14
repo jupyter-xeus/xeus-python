@@ -16,5 +16,4 @@ dependencies:
   - ipython=7.14.0
   - debugpy
   # Test dependencies
-  - pytest
   - jupyter_kernel_test

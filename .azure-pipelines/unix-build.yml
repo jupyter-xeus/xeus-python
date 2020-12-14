@@ -49,6 +49,6 @@ steps:
 
   - script: |
       source activate xeus-python
-      py.test . -v;
+      python test_xeus_python_kernel.py -vvv
     displayName: Test xeus-python (Python)
     workingDirectory: $(Build.sourcesDirectory)/test
