@@ -117,9 +117,9 @@ Check-out this blog post for the answer: https://blog.jupyter.org/a-new-python-k
 Long story short:
 xeus-python does not cover 100% of the features of ipykernel. For example, only some magics are supported for now (Matplotlib magics are not supported, but nothing prevents from using the Matplotlib API directly). However:
 
-- xeus-python is a lot lighter than ipykernel and IPython combined, which makes it a lot easier to implement new features on top of it. Our next goal is to augment the protocol to implement a Python debugger in JupyterLab.
+- xeus-python is a lot lighter than ipykernel and IPython combined, which makes it a lot easier to implement new features on top of it.
+- as an example, xeus-python already works with the **Jupyter Lab debugger**: https://github.com/jupyterlab/debugger
 - xeus-based kernels are more versatile in that one can overload e.g. the concurrency model. This is something that Kitware’s SlicerJupyter project takes advantage of to integrate with the Qt event loop of their Qt-based desktop application.
-- xeus-python works with the **Jupyter Lab debugger**: https://github.com/jupyterlab/debugger
 
 ## Dependencies
 
