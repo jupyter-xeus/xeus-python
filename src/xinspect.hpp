@@ -19,8 +19,8 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    py::object static_inspect(const std::string& code, int cursor_pos);
-    py::object static_inspect(const std::string& code);
+    py::list get_completions(const std::string& code, int cursor_pos);
+    py::list get_completions(const std::string& code);
 
     std::string formatted_docstring(const std::string& code, int cursor_pos);
     std::string formatted_docstring(const std::string& code);
