@@ -258,7 +258,7 @@ namespace xpyt
         std::vector<std::string> matches;
         int cursor_start = cursor_pos;
 
-        py::list completions = static_inspect(code, cursor_pos).attr("completions")();
+        py::list completions = get_completions(code, cursor_pos);
 
         if (py::len(completions) != 0)
         {

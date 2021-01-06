@@ -18,42 +18,41 @@
 
 #include "xinternal_utils.hpp"
 
-namespace py = pybind11;
 using namespace pybind11::literals;
 
 namespace xpyt
 {
-    py::object static_inspect(const std::string& code, int cursor_pos)
-    {
-        py::module jedi = py::module::import("jedi");
-
-        py::str py_code = code.substr(0, cursor_pos);
-
-        py::int_ line = 1;
-        py::int_ column = 0;
-        if (py::len(py_code) != 0)
-        {
-            py::list lines = py_code.attr("splitlines")();
-            line = py::len(lines);
-            column = py::len(lines[py::len(lines) - 1]);
-        }
-
-        return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a = line, "column"_a = column);
-    }
-
     py::object static_inspect(const std::string& code)
     {
         py::module jedi = py::module::import("jedi");
         return jedi.attr("Interpreter")(code, py::make_tuple(py::globals()));
     }
 
+    py::object static_inspect(const std::string& code, int cursor_pos)
+    {
+        std::string sub_code = code.substr(0, cursor_pos);
+        return static_inspect(sub_code);
+    }
+
+    py::list get_completions(const std::string& code, int cursor_pos)
+    {
+        return static_inspect(code, cursor_pos).attr("complete")();
+    }
+
+    py::list get_completions(const std::string& code)
+    {
+        return static_inspect(code).attr("complete")();
+    }
+
+    py::list get_completions(const std::string& code);
+
     std::string formatted_docstring_impl(py::object inter)
     {
         py::object definition = py::none();
 
         // If it's a function call
-        py::list call_sig = inter.attr("call_signatures")();
-        py::list definitions = inter.attr("goto_definitions")();
+        py::list call_sig = inter.attr("get_signatures")();
+        py::list definitions = inter.attr("infer")();
         if (py::len(call_sig) != 0)
         {
             definition = call_sig[0];
