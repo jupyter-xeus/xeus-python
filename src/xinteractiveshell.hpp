@@ -1,7 +1,9 @@
 #include <vector>
 
 #include "nlohmann/json.hpp"
+
 #include "pybind11/pybind11.h"
+
 #include "xdisplay.hpp"
 
 #include "xeus/xhistory_manager.hpp"
@@ -34,7 +36,7 @@ namespace xpyt
 
         // mock required methods
         void register_post_execute(py::args, py::kwargs) {};
-        void enable_gui(py::args, py::kwargs) {};
+        void enable_gui(py::object gui = py::none()) {};
         void observe(py::args, py::kwargs) {};
         void showtraceback(py::args, py::kwargs) {};
 
@@ -55,6 +57,9 @@ namespace xpyt
         void run_cell(py::str code, bool store_history);
         void ex(py::str cmd);
         py::object ev(py::str expr);
+
+        // required by matplotlib
+        py::tuple enable_matplotlib(py::object gui = py::none());
 
         // required by pinfo
         void inspect(std::string, std::string oname, py::kwargs);
@@ -103,6 +108,9 @@ namespace xpyt
         // required by pushd
         py::list m_dir_stack;
         py::str m_home_dir;
+
+        // required by matplotlib
+        py::object m_pylab_gui_select;
 
         void init_magics();
 

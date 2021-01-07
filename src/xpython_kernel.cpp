@@ -318,6 +318,8 @@ namespace xpyt
             // for timeit timeit
             .def("transform_cell", [](xinteractive_shell &, py::str raw_cell){return raw_cell;})
             .def("transform_ast", [](xinteractive_shell &, py::object ast){return ast;})
+            // for matplotlib
+            .def("enable_matplotlib", &xinteractive_shell::enable_matplotlib)
             // for pinfo (?magic)
             .def("_inspect", &xinteractive_shell::inspect)
             // generic magics code

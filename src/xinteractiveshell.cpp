@@ -1,5 +1,9 @@
 #include "xinteractiveshell.hpp"
 
+#include <iostream>
+#include <string>
+#include <utility>
+
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xhistory_manager.hpp"
 
@@ -29,14 +33,17 @@ namespace xpyt
         m_builtin_trap = get_nullcontext_module().attr("nullcontext")();
 
         m_ipython_dir = "";
+        m_pylab_gui_select = py::none();
 
-        py::object osm_magics =  m_magics_module.attr("OSMagics");
-        py::object basic_magics =  m_magics_module.attr("BasicMagics");
-        py::object user_magics =  m_magics_module.attr("UserMagics");
-        py::object extension_magics =  m_magics_module.attr("ExtensionMagics");
-        py::object history_magics =  m_magics_module.attr("HistoryMagics");
-        py::object ns_magics =  m_magics_module.attr("NamespaceMagics");
-        py::object execution_magics =  m_magics_module.attr("ExecutionMagics");
+        py::object osm_magics = m_magics_module.attr("OSMagics");
+        py::object basic_magics = m_magics_module.attr("BasicMagics");
+        py::object user_magics = m_magics_module.attr("UserMagics");
+        py::object extension_magics = m_magics_module.attr("ExtensionMagics");
+        py::object history_magics = m_magics_module.attr("HistoryMagics");
+        py::object ns_magics = m_magics_module.attr("NamespaceMagics");
+        py::object execution_magics = m_magics_module.attr("ExecutionMagics");
+        py::object pylab_magics = m_magics_module.attr("PylabMagics");
+
         m_magics_manager.attr("register")(osm_magics);
         m_magics_manager.attr("register")(basic_magics);
         m_magics_manager.attr("register")(user_magics);
@@ -44,11 +51,14 @@ namespace xpyt
         m_magics_manager.attr("register")(history_magics);
         m_magics_manager.attr("register")(ns_magics);
         m_magics_manager.attr("register")(execution_magics);
+        m_magics_manager.attr("register")(pylab_magics);
+
         m_magics_manager.attr("user_magics") = user_magics("shell"_a=this);
 
         //select magics supported by xeus-python
         auto line_magics = m_magics_manager.attr("magics")["line"];
         auto cell_magics = m_magics_manager.attr("magics")["cell"];
+
         line_magics = py::dict(
            "cd"_a=line_magics["cd"],
            "env"_a=line_magics["env"],
@@ -70,8 +80,11 @@ namespace xpyt
            //namespace magics
            "pinfo"_a=line_magics["pinfo"],
            //execution magics
-           "timeit"_a=line_magics["timeit"]
+           "timeit"_a=line_magics["timeit"],
+           // matplotlib
+           "matplotlib"_a=line_magics["matplotlib"]
         );
+
         cell_magics = py::dict(
             "writefile"_a=cell_magics["writefile"],
             "sx"_a=cell_magics["sx"],
@@ -84,7 +97,6 @@ namespace xpyt
            "line"_a=line_magics,
            "cell"_a=cell_magics);
     }
-
 
     xinteractive_shell::xinteractive_shell()
     {
@@ -112,7 +124,6 @@ namespace xpyt
 
     py::object xinteractive_shell::run_line_magic(std::string name, std::string arg)
     {
-
         py::object magic_method = m_magics_manager
             .attr("magics")["line"]
             .attr("get")(name);
@@ -127,7 +138,6 @@ namespace xpyt
         m_user_ns.attr("update")(py::globals());
 
         return magic_method(arg);
-
     }
 
     py::object xinteractive_shell::run_cell_magic(std::string name, std::string arg, std::string body)
@@ -184,6 +194,44 @@ namespace xpyt
         m_payloads.push_back(std::move(data));
     }
 
+    py::tuple xinteractive_shell::enable_matplotlib(py::object gui)
+    {
+        py::module pt = py::module::import("IPython.core.pylabtools");
+        if (std::string(py::str(gui)) == "inline")
+        {
+            std::cerr << "Warning: the inline matplotlib backend is not supported by xeus-python" << std::endl; 
+            return pt.attr("find_gui_and_backend")();
+        }
+        else
+        {
+            py::tuple gui_backend_tuple = pt.attr("find_gui_and_backend")(gui, m_pylab_gui_select);
+            // If we have our first gui selection, store it
+            if (m_pylab_gui_select.is_none())
+            {
+                m_pylab_gui_select = gui;
+            }
+            // Otherwise if they are different
+            else if (!gui.is(m_pylab_gui_select))
+            {
+                std::cerr << "Warning: Cannot change to a different GUI toolkit " << std::string(py::str(gui)) << "."
+                          << " Using " << std::string(py::str(m_pylab_gui_select)) << " instead" << std::endl;
+                gui_backend_tuple = pt.attr("find_gui_and_backend")(m_pylab_gui_select);
+            }
+            auto backend = gui_backend_tuple[1];
+            pt.attr("activate_matplotlib")(backend);
+/*
+            pt.attr("configure_inline_support")(*this, backend);
+*/
+            // Now we must activate the gui pylab wants to use, and fix %run to take
+            // plot updates into account
+            enable_gui(gui);
+/*
+            m_magics_manager.attr("registry")["ExecutionMagics"].attr("default_runner") = pt.mpl_runner(self.safe_execfile);
+*/
+            return gui_backend_tuple;
+        }
+    }
+
     void xinteractive_shell::clear_payloads()
     {
         m_payloads.clear();
@@ -225,7 +273,6 @@ namespace xpyt
         return m_magics_manager;
     }
 
-
     py::object xinteractive_shell::get_extension_manager() const
     {
         return m_extension_manager;
@@ -265,5 +312,4 @@ namespace xpyt
     {
         return *p_history_manager;
     }
-
 }
