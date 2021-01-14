@@ -273,6 +273,7 @@ namespace xpyt
         kernel_res["cursor_end"] = cursor_pos;
         kernel_res["matches"] = matches;
         kernel_res["status"] = "ok";
+        kernel_res["metadata"] = nl::json::object();
         return kernel_res;
     }
 
