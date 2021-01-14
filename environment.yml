@@ -6,4 +6,5 @@ dependencies:
   - jedi=0.18.0
   - notebook
   - ipywidgets>=7.4
+  - jupyterlab=3
   - itkwidgets
