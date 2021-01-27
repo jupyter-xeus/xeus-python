@@ -88,8 +88,10 @@ namespace xpyt
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = get_kernel_module();
 
-        // Monkey patching "import IPython.core.display"
+        // Monkey patching "import IPython.display" and internal IPython.display imports
         sys.attr("modules")["IPython.core.display"] = get_display_module();
+        sys.attr("modules")["IPython.lib.display"] = get_display_module();
+        sys.attr("modules")["IPython.display"] = get_display_module();
 
         // Monkey patching "from IPython import get_ipython"
         sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
