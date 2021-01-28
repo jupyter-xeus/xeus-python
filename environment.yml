@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - xeus-python=0.10.1
-  - jedi=0.18.0
+  - jedi>=0.15.1,<0.19
   - notebook
   - ipywidgets>=7.6
   - jupyterlab=3

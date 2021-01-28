@@ -9,7 +9,7 @@ dependencies:
   - nlohmann_json
   - cppzmq
   - xtl=0.7.0
-  - jedi=0.18.0
+  - jedi>=0.15.1,<0.19
   - pybind11=2.6.0
   - pybind11_json=0.2.6
   - pygments

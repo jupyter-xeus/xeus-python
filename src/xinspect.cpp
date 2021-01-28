@@ -22,6 +22,15 @@ using namespace pybind11::literals;
 
 namespace xpyt
 {
+    int jedi_minor_version()
+    {
+        py::list jedi_version = py::module::import("jedi").attr("__version__").attr("split")(".");
+
+        static int minor_version = py::int_(jedi_version[1]).cast<int>();
+
+        return minor_version;
+    }
+
     py::object static_inspect(const std::string& code)
     {
         py::module jedi = py::module::import("jedi");
@@ -30,29 +39,72 @@ namespace xpyt
 
     py::object static_inspect(const std::string& code, int cursor_pos)
     {
-        std::string sub_code = code.substr(0, cursor_pos);
-        return static_inspect(sub_code);
+        if (jedi_minor_version() < 18)
+        {
+            py::module jedi = py::module::import("jedi");
+
+            py::str py_code = code.substr(0, cursor_pos);
+
+            py::int_ line = 1;
+            py::int_ column = 0;
+            if (py::len(py_code) != 0)
+            {
+                py::list lines = py_code.attr("splitlines")();
+                line = py::len(lines);
+                column = py::len(lines[py::len(lines) - 1]);
+            }
+
+            return jedi.attr("Interpreter")(py_code, py::make_tuple(py::globals()), "line"_a = line, "column"_a = column);
+        }
+        else
+        {
+            std::string sub_code = code.substr(0, cursor_pos);
+            return static_inspect(sub_code);
+        }
     }
 
     py::list get_completions(const std::string& code, int cursor_pos)
     {
-        return static_inspect(code, cursor_pos).attr("complete")();
+        if (jedi_minor_version() < 18)
+        {
+            return static_inspect(code, cursor_pos).attr("completions")();
+        }
+        else
+        {
+            return static_inspect(code, cursor_pos).attr("complete")();
+        }
     }
 
     py::list get_completions(const std::string& code)
     {
-        return static_inspect(code).attr("complete")();
+        if (jedi_minor_version() < 18)
+        {
+            return static_inspect(code).attr("completions")();
+        }
+        else
+        {
+            return static_inspect(code).attr("complete")();
+        }
     }
-
-    py::list get_completions(const std::string& code);
 
     std::string formatted_docstring_impl(py::object inter)
     {
         py::object definition = py::none();
 
+        py::list call_sig;
+        py::list definitions;
+        if (jedi_minor_version() < 18)
+        {
+            call_sig = inter.attr("call_signatures")();
+            definitions = inter.attr("goto_definitions")();
+        }
+        else
+        {
+            call_sig = inter.attr("get_signatures")();
+            definitions = inter.attr("infer")();
+        }
+
         // If it's a function call
-        py::list call_sig = inter.attr("get_signatures")();
-        py::list definitions = inter.attr("infer")();
         if (py::len(call_sig) != 0)
         {
             definition = call_sig[0];
