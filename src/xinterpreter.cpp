@@ -214,9 +214,11 @@ namespace xpyt
             kernel_res["user_expressions"] = nl::json::object();
             if (m_has_ipython)
             {
-                xinteractive_shell* xshell = get_kernel_module()
-                    .attr("get_ipython")()
-                    .cast<xinteractive_shell*>();
+                py::object pyshell = get_kernel_module().attr("get_ipython")();
+
+                pyshell.attr("events").attr("trigger")("post_execute");
+
+                xinteractive_shell* xshell = pyshell.cast<xinteractive_shell*>();
                 auto payload = xshell->get_payloads();
                 kernel_res["payload"] = payload;
                 xshell->clear_payloads();

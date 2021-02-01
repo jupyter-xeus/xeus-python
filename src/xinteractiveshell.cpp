@@ -197,39 +197,29 @@ namespace xpyt
     py::tuple xinteractive_shell::enable_matplotlib(py::object gui)
     {
         py::module pt = py::module::import("IPython.core.pylabtools");
-        if (std::string(py::str(gui)) == "inline")
+        py::tuple gui_backend_tuple = pt.attr("find_gui_and_backend")(gui, m_pylab_gui_select);
+        // If we have our first gui selection, store it
+        if (m_pylab_gui_select.is_none())
         {
-            std::cerr << "Warning: the inline matplotlib backend is not supported by xeus-python" << std::endl; 
-            return pt.attr("find_gui_and_backend")();
+            m_pylab_gui_select = gui;
         }
-        else
+        // Otherwise if they are different
+        else if (!gui.is(m_pylab_gui_select))
         {
-            py::tuple gui_backend_tuple = pt.attr("find_gui_and_backend")(gui, m_pylab_gui_select);
-            // If we have our first gui selection, store it
-            if (m_pylab_gui_select.is_none())
-            {
-                m_pylab_gui_select = gui;
-            }
-            // Otherwise if they are different
-            else if (!gui.is(m_pylab_gui_select))
-            {
-                std::cerr << "Warning: Cannot change to a different GUI toolkit " << std::string(py::str(gui)) << "."
-                          << " Using " << std::string(py::str(m_pylab_gui_select)) << " instead" << std::endl;
-                gui_backend_tuple = pt.attr("find_gui_and_backend")(m_pylab_gui_select);
-            }
-            auto backend = gui_backend_tuple[1];
-            pt.attr("activate_matplotlib")(backend);
-/*
-            pt.attr("configure_inline_support")(*this, backend);
-*/
-            // Now we must activate the gui pylab wants to use, and fix %run to take
-            // plot updates into account
-            enable_gui(gui);
-/*
-            m_magics_manager.attr("registry")["ExecutionMagics"].attr("default_runner") = pt.mpl_runner(self.safe_execfile);
-*/
-            return gui_backend_tuple;
+            std::cerr << "Warning: Cannot change to a different GUI toolkit " << std::string(py::str(gui)) << "."
+                        << " Using " << std::string(py::str(m_pylab_gui_select)) << " instead" << std::endl;
+            gui_backend_tuple = pt.attr("find_gui_and_backend")(m_pylab_gui_select);
         }
+        auto backend = gui_backend_tuple[1];
+        pt.attr("activate_matplotlib")(backend);
+
+        // Now we must activate the gui pylab wants to use, and fix %run to take
+        // plot updates into account
+        enable_gui(gui);
+
+        // m_magics_manager.attr("registry")["ExecutionMagics"].attr("default_runner") = pt.mpl_runner(self.safe_execfile);
+
+        return gui_backend_tuple;
     }
 
     void xinteractive_shell::clear_payloads()

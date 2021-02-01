@@ -206,6 +206,43 @@ namespace xpyt
                  return compile(source, filename, symbol, py::cast<int>(ast.attr("PyCF_ONLY_AST")));
             }
         };
+
+        struct events_manager
+        {
+            py::object shell;
+            py::dict callbacks;
+
+            events_manager(py::object interactive_shell)
+            {
+                shell = interactive_shell;
+            }
+
+            void register_callback(py::str event, py::object function)
+            {
+                if (py::list(callbacks.attr("keys")()).attr("count")(event).cast<int>() == 0)
+                {
+                    callbacks[event] = py::list();
+                }
+                callbacks[event].attr("append")(function);
+            }
+
+            void unregister_callback(py::str event, py::object function)
+            {
+                py::list functions = callbacks[event];
+                functions.attr("remove")(function);
+            }
+
+            void trigger(py::str event)
+            {
+                if (py::list(callbacks.attr("keys")()).attr("count")(event).cast<int>() != 0)
+                {
+                    for (py::handle func: callbacks[event])
+                    {
+                        func();
+                    }
+                }
+            }
+        };
     }
 
     struct xmock_ipython
@@ -291,6 +328,12 @@ namespace xpyt
                  py::arg("code"),
                  py::arg("filename")="<unknown>",
                  py::arg("symbol")="exec");
+
+        py::class_<detail::events_manager> Events(kernel_module, "EventsManager");
+        Events.def(py::init<py::object>())
+            .def("register", &detail::events_manager::register_callback)
+            .def("unregister", &detail::events_manager::unregister_callback)
+            .def("trigger", &detail::events_manager::trigger);
 
         py::class_<xinteractive_shell>(kernel_module, "XInteractiveShell", py::dynamic_attr())
             .def(py::init<>())
@@ -388,6 +431,7 @@ namespace xpyt
                     py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
                             kernel_module.attr("XInteractiveShell"));
                     m_instance = kernel_module.attr("XInteractiveShell")();
+                    m_instance.attr("events") = kernel_module.attr("EventsManager")(m_instance);
                     kernel_module.attr("has_ipython") = py::bool_(true);
                 }
                 catch(...)
