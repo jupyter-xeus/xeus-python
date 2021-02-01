@@ -72,7 +72,7 @@ OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 set(xtl_REQUIRED_VERSION 0.6.23)
 set(xeus_REQUIRED_VERSION 0.25.0)
 set(pybind11_REQUIRED_VERSION 2.6.0)
-set(pybind11_json_REQUIRED_VERSION 0.2.2)
+set(pybind11_json_REQUIRED_VERSION 0.2.8)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
@@ -120,6 +120,10 @@ endif ()
 # ============
 
 set(XEUS_PYTHON_SRC
+    src/xcomm.cpp
+    src/xcomm.hpp
+    src/xcompiler.cpp
+    src/xcompiler.hpp
     src/xdebugger.cpp
     src/xdebugpy_client.hpp
     src/xdebugpy_client.cpp
@@ -127,22 +131,10 @@ set(XEUS_PYTHON_SRC
     src/xdisplay.hpp
     src/xinput.cpp
     src/xinput.hpp
-    src/xinspect.cpp
-    src/xinspect.hpp
-    src/xinteractiveshell.cpp
-    src/xinteractiveshell.hpp
     src/xinternal_utils.cpp
     src/xinternal_utils.hpp
     src/xinterpreter.cpp
-    src/xis_complete.cpp
-    src/xis_complete.hpp
-    src/xlinecache.cpp
-    src/xlinecache.hpp
-    src/xnullcontext.cpp
-    src/xnullcontext.hpp
     src/xpaths.cpp
-    src/xpython_kernel.cpp
-    src/xpython_kernel.hpp
     src/xstream.cpp
     src/xstream.hpp
     src/xtraceback.cpp

@@ -73,29 +73,20 @@ namespace xpyt
         get_filename_map()[filename] = execution_count;
     }
 
-    xerror extract_error(py::error_already_set& error)
+    xerror extract_error(const py::object& type, const py::object& value, const py::object& traceback)
     {
         xerror out;
 
-        // Fetch the error message, it must be released by the C++ exception first
-        error.restore();
-
-        py::object py_type;
-        py::object py_value;
-        py::object py_tb;
-        PyErr_Fetch(&py_type.ptr(), &py_value.ptr(), &py_tb.ptr());
-
         // This should NOT happen
-        if (py_type.is_none())
+        if (type.is_none())
         {
             out.m_ename = "Error";
-            out.m_evalue = error.what();
-            out.m_traceback.push_back(error.what());
+            out.m_evalue = "";
         }
         else
         {
-            out.m_ename = py::str(py_type.attr("__name__"));
-            out.m_evalue = py::str(py_value);
+            out.m_ename = py::str(type.attr("__name__"));
+            out.m_evalue = py::str(value);
 
             std::size_t first_frame_size(75);
             std::string delimiter(first_frame_size, '-');
@@ -107,9 +98,9 @@ namespace xpyt
                         << red_text(out.m_ename) << first_frame_padding << traceback_msg;
             out.m_traceback.push_back(first_frame.str());
 
-            if (py_tb.ptr() != nullptr && !py_tb.is_none())
+            if (traceback.ptr() != nullptr && !traceback.is_none())
             {
-                for (py::handle py_frame : py::module::import("traceback").attr("extract_tb")(py_tb))
+                for (py::handle py_frame : py::module::import("traceback").attr("extract_tb")(traceback))
                 {
                     std::string filename;
                     std::string lineno;
@@ -163,5 +154,55 @@ namespace xpyt
         }
 
         return out;
+    }
+
+    xerror extract_error(py::error_already_set& error)
+    {
+        return extract_error(error.type(), error.value(), error.trace());
+    }
+
+    /********************
+     * traceback module *
+     ********************/
+
+    py::module get_traceback_module_impl()
+    {
+        py::module traceback_module = create_module("traceback");
+
+        traceback_module.def("register_filename_mapping",
+            register_filename_mapping,
+            py::arg("filename"),
+            py::arg("execution_count")
+        );
+
+        exec(py::str(R"(
+last_error = None
+
+
+def reset_last_error():
+    global last_error
+
+    last_error = None
+
+
+def set_last_error(type, value, traceback):
+    global last_error
+
+    last_error = (type, value, traceback)
+
+
+def get_last_error():
+    global last_error
+
+    return last_error
+        )"), traceback_module.attr("__dict__"));
+
+        return traceback_module;
+    }
+
+    py::module get_traceback_module()
+    {
+        static py::module traceback_module = get_traceback_module_impl();
+        return traceback_module;
     }
 }

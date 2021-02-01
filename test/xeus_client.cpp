@@ -308,4 +308,3 @@ void xeus_logger_client::log_message(nl::json msg)
     std::ofstream out(m_file_name, std::ios_base::app);
     out << msg.dump(4) << std::endl;
 }
-

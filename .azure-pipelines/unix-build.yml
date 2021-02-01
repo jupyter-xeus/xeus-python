@@ -20,7 +20,6 @@ steps:
 
   - script: |
       source activate xeus-python
-      pip install example_magic
       mkdir build
       cd build
       if [[ $(xpyt_used_shared_xeus_python) == '0' ]]; then
@@ -49,6 +48,6 @@ steps:
 
   - script: |
       source activate xeus-python
-      python test_xeus_python_kernel.py -vvv
+      pytest . -vvv
     displayName: Test xeus-python (Python)
     workingDirectory: $(Build.sourcesDirectory)/test

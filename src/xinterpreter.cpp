@@ -9,7 +9,6 @@
 ****************************************************************************/
 
 #include <algorithm>
-#include <iostream>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -23,19 +22,18 @@
 
 #include "pybind11/functional.h"
 
+#include "pybind11_json/pybind11_json.hpp"
+
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-python/xtraceback.hpp"
 #include "xeus-python/xutils.hpp"
 
-#include "xpython_kernel.hpp"
+#include "xcomm.hpp"
+#include "xcompiler.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
-#include "xinspect.hpp"
-#include "xinteractiveshell.hpp"
 #include "xinternal_utils.hpp"
-#include "xis_complete.hpp"
-#include "xlinecache.hpp"
 #include "xstream.hpp"
 
 namespace py = pybind11;
@@ -46,17 +44,15 @@ namespace xpyt
 {
 
     interpreter::interpreter(bool redirect_output_enabled/*=true*/, bool redirect_display_enabled/*=true*/)
+        : m_redirect_display_enabled{redirect_display_enabled}
     {
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
         {
             redirect_output();
         }
-        redirect_display(redirect_display_enabled);
 
-        // Monkey patch the IPython modules later in the execution, in the configure_impl
-        // This is needed because the kernel needs to initialize the history_manager before
-        // we can expose it to Python.
+        m_user_ns = py::dict();
     }
 
     interpreter::~interpreter()
@@ -69,7 +65,6 @@ namespace xpyt
         {
             // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
             // will need to acquire the GIL
-            //
             m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
         }
 
@@ -77,160 +72,256 @@ namespace xpyt
 
         py::module sys = py::module::import("sys");
 
-        // Monkey patching "import linecache". This monkey patch does not work with Python2.
-        sys.attr("modules")["linecache"] = get_linecache_module();
-
-        py::module jedi = py::module::import("jedi");
-        jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi] () {
-            jedi.attr("api").attr("environment").attr("SameEnvironment")();
-        });
-
         // Monkey patching "from ipykernel.comm import Comm"
-        sys.attr("modules")["ipykernel.comm"] = get_kernel_module();
+        sys.attr("modules")["ipykernel.comm"] = get_comm_module();
 
-        // Monkey patching "import IPython.display" and internal IPython.display imports
-        sys.attr("modules")["IPython.core.display"] = get_display_module();
-        sys.attr("modules")["IPython.lib.display"] = get_display_module();
-        sys.attr("modules")["IPython.display"] = get_display_module();
+        // TODO Remove this when we use https://github.com/ipython/ipython/pull/12809
+        // Monkey patching IPython.core.compilerop
+        sys.attr("modules")["IPython.core.compilerop"] = get_compiler_module();
 
-        // Monkey patching "from IPython import get_ipython"
-        sys.attr("modules")["IPython.core.getipython"] = get_kernel_module();
+        py::module display_module = get_display_module();
+        py::module traceback_module = get_traceback_module();
 
-        // Add get_ipython to global namespace
-        py::globals()["get_ipython"] = get_kernel_module().attr("get_ipython");
+        py::dict scope;
+        scope["CommManager"] = get_comm_module().attr("CommManager");
+        scope["set_last_error"] = traceback_module.attr("set_last_error");
 
-        // Initializes get_ipython result
-        get_kernel_module().attr("get_ipython")();
+        exec(py::str(R"(
+import sys
 
-        m_has_ipython = get_kernel_module().attr("has_ipython").cast<bool>();
+# TODO Just import InteractiveShell when we use https://github.com/ipython/ipython/pull/12809
+# from IPython.core.interactiveshell import InteractiveShell
+from IPython.core.interactiveshell import *
 
-        // Initialize cached inputs
-        py::globals()["_i"] = "";
-        py::globals()["_ii"] = "";
-        py::globals()["_iii"] = "";
 
-        load_extensions();
+class XKernel():
+    def __init__(self):
+        self.comm_manager = CommManager()
+
+
+class XPythonShell(InteractiveShell):
+    def __init__(self, *args, **kwargs):
+        super(XPythonShell, self).__init__(*args, **kwargs)
+        self.kernel = XKernel()
+
+    def enable_gui(self, gui=None):
+        """Not implemented yet."""
+        pass
+
+    # Workaround for preventing IPython to show error traceback
+    # We catch it and will display it later properly
+    def showtraceback(self, exc_tuple=None, filename=None, tb_offset=None,
+                      exception_only=False, running_compiled_code=False):
+        try:
+            etype, value, tb = self._get_exc_info(exc_tuple)
+        except ValueError:
+            print('No traceback available to show.', file=sys.stderr)
+            return
+
+        set_last_error(etype, value, tb)
+
+    # TODO Remove this method when we use https://github.com/ipython/ipython/pull/12809
+    async def run_cell_async(
+        self,
+        raw_cell: str,
+        store_history=False,
+        silent=False,
+        shell_futures=True,
+        *,
+        transformed_cell=None,
+        preprocessing_exc_tuple=None
+    ):
+        info = ExecutionInfo(
+            raw_cell, store_history, silent, shell_futures)
+        result = ExecutionResult(info)
+
+        if (not raw_cell) or raw_cell.isspace():
+            self.last_execution_succeeded = True
+            self.last_execution_result = result
+            return result
+
+        if silent:
+            store_history = False
+
+        if store_history:
+            result.execution_count = self.execution_count
+
+        def error_before_exec(value):
+            if store_history:
+                self.execution_count += 1
+            result.error_before_exec = value
+            self.last_execution_succeeded = False
+            self.last_execution_result = result
+            return result
+
+        self.events.trigger('pre_execute')
+        if not silent:
+            self.events.trigger('pre_run_cell', info)
+
+        if transformed_cell is None:
+            warnings.warn(
+                "`run_cell_async` will not call `transform_cell`"
+                " automatically in the future. Please pass the result to"
+                " `transformed_cell` argument and any exception that happen"
+                " during the"
+                "transform in `preprocessing_exc_tuple` in"
+                " IPython 7.17 and above.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            # If any of our input transformation (input_transformer_manager or
+            # prefilter_manager) raises an exception, we store it in this variable
+            # so that we can display the error after logging the input and storing
+            # it in the history.
+            try:
+                cell = self.transform_cell(raw_cell)
+            except Exception:
+                preprocessing_exc_tuple = sys.exc_info()
+                cell = raw_cell  # cell has to exist so it can be stored/logged
+            else:
+                preprocessing_exc_tuple = None
+        else:
+            if preprocessing_exc_tuple is None:
+                cell = transformed_cell
+            else:
+                cell = raw_cell
+
+        # Store raw and processed history
+        if store_history:
+            self.history_manager.store_inputs(self.execution_count,
+                                              cell, raw_cell)
+        if not silent:
+            self.logger.log(cell, raw_cell)
+
+        # Display the exception if input processing failed.
+        if preprocessing_exc_tuple is not None:
+            self.showtraceback(preprocessing_exc_tuple)
+            if store_history:
+                self.execution_count += 1
+            return error_before_exec(preprocessing_exc_tuple[1])
+
+        # Our own compiler remembers the __future__ environment. If we want to
+        # run code with a separate __future__ environment, use the default
+        # compiler
+        compiler = self.compile if shell_futures else CachingCompiler()
+
+        _run_async = False
+
+        with self.builtin_trap:
+            cell_name = self.compile.cache(cell, self.execution_count, raw_cell)
+
+            with self.display_trap:
+                # Compile to bytecode
+                try:
+                    code_ast = compiler.ast_parse(cell, filename=cell_name)
+                except self.custom_exceptions as e:
+                    etype, value, tb = sys.exc_info()
+                    self.CustomTB(etype, value, tb)
+                    return error_before_exec(e)
+                except IndentationError as e:
+                    self.showindentationerror()
+                    return error_before_exec(e)
+                except (OverflowError, SyntaxError, ValueError, TypeError,
+                        MemoryError) as e:
+                    self.showsyntaxerror()
+                    return error_before_exec(e)
+
+                # Apply AST transformations
+                try:
+                    code_ast = self.transform_ast(code_ast)
+                except InputRejected as e:
+                    self.showtraceback()
+                    return error_before_exec(e)
+
+                # Give the displayhook a reference to our ExecutionResult so it
+                # can fill in the output value.
+                self.displayhook.exec_result = result
+
+                # Execute the user code
+                interactivity = "none" if silent else self.ast_node_interactivity
+                if _run_async:
+                    interactivity = 'async'
+
+                has_raised = await self.run_ast_nodes(code_ast.body, cell_name,
+                       interactivity=interactivity, compiler=compiler, result=result)
+
+                self.last_execution_succeeded = not has_raised
+                self.last_execution_result = result
+
+                # Reset this so later displayed values do not modify the
+                # ExecutionResult
+                self.displayhook.exec_result = None
+
+        if store_history:
+            # Write output to the database. Does nothing unless
+            # history output logging is enabled.
+            self.history_manager.store_output(self.execution_count)
+            # Each cell is a *single* input, regardless of how many lines it has
+            self.execution_count += 1
+
+        return result
+        )"), scope);
+
+        if (m_redirect_display_enabled)
+        {
+            m_ipython_shell = scope["XPythonShell"].attr("instance")(
+                "display_pub_class"_a=display_module.attr("XDisplayPublisher"),
+                "displayhook_class"_a=display_module.attr("XDisplayHook"),
+                // TODO Uncomment this when we use https://github.com/ipython/ipython/pull/12809
+                // "compiler_class"_a=get_compiler_module().attr("XCachingCompiler"),
+                "user_ns"_a=m_user_ns
+            );
+
+            m_displayhook = m_ipython_shell.attr("displayhook");
+        }
+        else
+        {
+            m_ipython_shell = scope["XPythonShell"].attr("instance")(
+                "display_pub_class"_a=display_module.attr("XDisplayPublisher"),
+                // TODO Uncomment this when we use https://github.com/ipython/ipython/pull/12809
+                // "compiler_class"_a=get_compiler_module().attr("XCachingCompiler"),
+                "user_ns"_a=m_user_ns
+            );
+
+            m_displayhook = display_module.attr("XDisplayHook")(
+                "parent"_a=m_ipython_shell, "shell"_a=m_ipython_shell, "cache_size"_a=m_ipython_shell.attr("cache_size")
+            );
+        }
+
+        m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
     }
 
-    nl::json interpreter::execute_request_impl(int execution_count,
+    nl::json interpreter::execute_request_impl(int /*execution_count*/,
                                                const std::string& code,
                                                bool silent,
-                                               bool /*store_history*/,
-                                               nl::json /*user_expressions*/,
+                                               bool store_history,
+                                               nl::json user_expressions,
                                                bool allow_stdin)
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
-        py::str code_copy;
-        if(m_has_ipython)
-        {
-            py::module input_transformers = py::module::import("IPython.core.inputtransformer2");
-            py::object transformer_manager = input_transformers.attr("TransformerManager")();
-            code_copy = transformer_manager.attr("transform_cell")(code);
-        }
-        else
-        {
-            // Special handling of question mark whe IPython is not installed. Otherwise, this
-            // is already implemented in the IPython.core.inputtransformer2 module that we
-            // import. This is a temporary implementation until:
-            // - either we reimplement the parsing logic in xeus-python
-            // - or this logic is extracted from IPython into a dedicated package, that becomes
-            // a dependency of both xeus-python and IPython.
-            if (code.size() >= 2 && code[0] == '?')
-            {
-                std::string result = formatted_docstring(code);
-                if (result.empty())
-                {
-                    result = "Object " + code.substr(1) + " not found.";
-                }
-
-                kernel_res["status"] = "ok";
-                kernel_res["payload"] = nl::json::array();
-                kernel_res["payload"][0] = nl::json::object({
-                    {"data", {
-                        {"text/plain", result}
-                    }},
-                    {"source", "page"},
-                    {"start", 0}
-                });
-                kernel_res["user_expressions"] = nl::json::object();
-
-                return kernel_res;
-            }
-            code_copy = code;
-        }
+        py::module traceback = get_traceback_module();
 
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(allow_stdin);
 
-        try
+        py::object ipython_res = m_ipython_shell.attr("run_cell")(code, "store_history"_a=store_history, "silent"_a=silent);
+
+        // Get payload
+        kernel_res["payload"] = m_ipython_shell.attr("payload_manager").attr("read_payload")();
+        m_ipython_shell.attr("payload_manager").attr("clear_payload")();
+
+        if (traceback.attr("get_last_error")().is_none())
         {
-            // Import modules
-            py::module ast = py::module::import("ast");
-            py::module builtins = py::module::import("builtins");
-
-            // Parse code to AST
-            py::object code_ast = ast.attr("parse")(code_copy, "<string>", "exec");
-            py::list expressions = code_ast.attr("body");
-
-            std::string filename = get_cell_tmp_file(code);
-            register_filename_mapping(filename, execution_count);
-
-            // Caching the input code
-            py::module linecache = py::module::import("linecache");
-            linecache.attr("xupdatecache")(code, filename);
-
-            // If the last statement is an expression, we compile it separately
-            // in an interactive mode (This will trigger the display hook)
-            py::object last_stmt = expressions[py::len(expressions) - 1];
-            if (py::isinstance(last_stmt, ast.attr("Expr")))
-            {
-                code_ast.attr("body").attr("pop")();
-
-                py::list interactive_nodes;
-                interactive_nodes.append(last_stmt);
-
-                py::object interactive_ast = ast.attr("Interactive")(interactive_nodes);
-
-                py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
-
-                py::object compiled_interactive_code = builtins.attr("compile")(interactive_ast, filename, "single");
-
-                if (m_displayhook.ptr() != nullptr)
-                {
-                    m_displayhook.attr("set_execution_count")(execution_count);
-                }
-
-                exec(compiled_code);
-                exec(compiled_interactive_code);
-            }
-            else
-            {
-                py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
-                exec(compiled_code);
-            }
-
             kernel_res["status"] = "ok";
-            kernel_res["user_expressions"] = nl::json::object();
-            if (m_has_ipython)
-            {
-                xinteractive_shell* xshell = get_kernel_module()
-                    .attr("get_ipython")()
-                    .cast<xinteractive_shell*>();
-                auto payload = xshell->get_payloads();
-                kernel_res["payload"] = payload;
-                xshell->clear_payloads();
-            }
-            else
-            {
-                kernel_res["payload"] = nl::json::array();
-            }
+            kernel_res["user_expressions"] = m_ipython_shell.attr("user_expressions")(user_expressions);
         }
-        catch (py::error_already_set& e)
+        else
         {
-            xerror error = extract_error(e);
+            py::list pyerror = traceback.attr("get_last_error")();
+            xerror error = extract_error(pyerror[0], pyerror[1], pyerror[2]);
 
             if (!silent)
             {
@@ -241,12 +332,9 @@ namespace xpyt
             kernel_res["ename"] = error.m_ename;
             kernel_res["evalue"] = error.m_evalue;
             kernel_res["traceback"] = error.m_traceback;
-        }
 
-        // Cache inputs
-        py::globals()["_iii"] = py::globals()["_ii"];
-        py::globals()["_ii"] = py::globals()["_i"];
-        py::globals()["_i"] = code;
+            traceback.attr("reset_last_error")();
+        }
 
         return kernel_res;
     }
@@ -257,46 +345,74 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
-        std::vector<std::string> matches;
-        int cursor_start = cursor_pos;
 
-        py::list completions = get_completions(code, cursor_pos);
+        py::module completer = py::module::import("IPython.core.completer");
 
-        if (py::len(completions) != 0)
-        {
-            cursor_start -= py::len(completions[0].attr("name_with_symbols")) - py::len(completions[0].attr("complete"));
-            for (py::handle completion : completions)
-            {
-                matches.push_back(completion.attr("name_with_symbols").cast<std::string>());
-            }
-        }
+        py::dict scope;
+        scope["provisionalcompleter"] = completer.attr("provisionalcompleter");
+        scope["rectify_completions"] = completer.attr("rectify_completions");
+        scope["shell"] = m_ipython_shell;
+        scope["code"] = code;
+        scope["cursor_pos"] = cursor_pos;
+        exec(py::str(R"(
+with provisionalcompleter():
+    raw_completions = shell.Completer.completions(code, cursor_pos)
+    completions = list(rectify_completions(code, raw_completions))
 
-        kernel_res["cursor_start"] = cursor_start;
-        kernel_res["cursor_end"] = cursor_pos;
-        kernel_res["matches"] = matches;
-        kernel_res["status"] = "ok";
+    comps = []
+    for comp in completions:
+        comps.append(dict(
+            start=comp.start,
+            end=comp.end,
+            text=comp.text,
+            type=comp.type,
+        ))
+
+if completions:
+    cursor_start = completions[0].start
+    cursor_end = completions[0].end
+    matches = [c.text for c in completions]
+else:
+    cursor_start = cursor_pos
+    cursor_end = cursor_pos
+    matches = []
+        )"), scope);
+
+        kernel_res["matches"] = scope["matches"];
+        kernel_res["cursor_end"] = scope["cursor_end"];
+        kernel_res["cursor_start"] = scope["cursor_start"];
         kernel_res["metadata"] = nl::json::object();
+        kernel_res["status"] = "ok";
+
         return kernel_res;
     }
 
     nl::json interpreter::inspect_request_impl(const std::string& code,
                                                int cursor_pos,
-                                               int /*detail_level*/)
+                                               int detail_level)
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
-        nl::json pub_data;
-
-        std::string docstring = formatted_docstring(code, cursor_pos);
-
+        nl::json data = nl::json::object();
         bool found = false;
-        if (!docstring.empty())
+
+        py::module tokenutil = py::module::import("IPython.utils.tokenutil");
+        py::str name = tokenutil.attr("token_at_cursor")(code, cursor_pos);
+
+        try
         {
+            data = m_ipython_shell.attr("object_inspect_mime")(
+                name,
+                "detail_level"_a=detail_level
+            );
             found = true;
-            pub_data["text/plain"] = docstring;
+        }
+        catch (py::error_already_set& e)
+        {
+            // pass
         }
 
-        kernel_res["data"] = pub_data;
+        kernel_res["data"] = data;
         kernel_res["metadata"] = nl::json::object();
         kernel_res["found"] = found;
         kernel_res["status"] = "ok";
@@ -308,9 +424,13 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
-        py::module completion_module = get_completion_module();
-        py::list result = completion_module.attr("check_complete")(code);
+        py::object transformer_manager = py::getattr(m_ipython_shell, "input_transformer_manager", py::none());
+        if (transformer_manager.is_none())
+        {
+            transformer_manager = m_ipython_shell.attr("input_splitter");
+        }
 
+        py::list result = transformer_manager.attr("check_complete")(code);
         auto status = result[0].cast<std::string>();
 
         kernel_res["status"] = status;
@@ -381,16 +501,7 @@ namespace xpyt
         nl::json reply;
         try
         {
-            // Import modules
-            py::module ast = py::module::import("ast");
-            py::module builtins = py::module::import("builtins");
-
-            // Parse code to AST
-            py::object code_ast = ast.attr("parse")(code, "<string>", "exec");
-
-            std::string filename = "debug_this_thread";
-            py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
-            exec(compiled_code);
+            exec(py::str(code));
 
             reply["status"] = "ok";
         }
@@ -419,69 +530,4 @@ namespace xpyt
         sys.attr("stderr") = stream_module.attr("Stream")("stderr");
     }
 
-    void interpreter::redirect_display(bool install_hook/*=true*/)
-    {
-        py::module display_module = get_display_module();
-        m_displayhook = display_module.attr("DisplayHook")();
-        if (install_hook)
-        {
-            py::module sys = py::module::import("sys");
-            sys.attr("displayhook") = m_displayhook;
-        }
-
-        // Expose display functions to Python
-        py::globals()["display"] = display_module.attr("display");
-        py::globals()["update_display"] = display_module.attr("update_display");
-    }
-
-    void interpreter::load_extensions()
-    {
-        if (m_has_ipython)
-        {
-            py::module os = py::module::import("os");
-            py::module path = py::module::import("os.path");
-            py::module sys = py::module::import("sys");
-            py::module fnmatch = py::module::import("fnmatch");
-
-            py::str extensions_path = path.attr("join")(sys.attr("exec_prefix"), "etc", "xeus-python", "extensions");
-
-            if (!is_pyobject_true(path.attr("exists")(extensions_path)))
-            {
-                return;
-            }
-
-            py::list list_files = os.attr("listdir")(extensions_path);
-
-            xinteractive_shell* xshell = get_kernel_module()
-                .attr("get_ipython")()
-                .cast<xinteractive_shell*>();
-            py::object extension_manager = xshell->get_extension_manager();
-
-            for (const py::handle& file : list_files)
-            {
-                if (!is_pyobject_true(fnmatch.attr("fnmatch")(file, "*.json")))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    std::ifstream config_file(py::str(path.attr("join")(extensions_path, file)).cast<std::string>());
-                    nl::json config;
-                    config_file >> config;
-
-                    if (config["enabled"].get<bool>())
-                    {
-                        extension_manager.attr("load_extension")(config["module"].get<std::string>());
-                    }
-                }
-                catch (py::error_already_set& e)
-                {
-                    xerror error = extract_error(e);
-
-                    std::cerr << "Warning: Failed loading extension with: " << error.m_ename << ": " << error.m_evalue << std::endl;
-                }
-            }
-        }
-    }
 }
