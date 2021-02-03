@@ -73,6 +73,8 @@ namespace xpyt
         py::object get_builtin_trap() const;
         py::str get_ipython_dir() const;
         hooks_object get_hooks() const;
+        py::dict get_config() const;
+        void set_config(py::dict config);
 
         inline py::list get_dir_stack() const { return m_dir_stack; };
         inline py::str get_home_dir() const { return m_home_dir; };
@@ -111,6 +113,8 @@ namespace xpyt
 
         // required by matplotlib
         py::object m_pylab_gui_select;
+
+        py::dict m_config;
 
         void init_magics();
 

@@ -100,6 +100,7 @@ namespace xpyt
 
     xinteractive_shell::xinteractive_shell()
     {
+        m_config = py::dict();
         p_history_manager = &xeus::get_interpreter().get_history_manager();
         m_hooks = hooks_object();
         m_ipy_process = py::module::import("IPython.utils.process");
@@ -296,6 +297,16 @@ namespace xpyt
     hooks_object xinteractive_shell::get_hooks() const
     {
         return m_hooks;
+    }
+
+    py::dict xinteractive_shell::get_config() const
+    {
+        return m_config;
+    }
+
+    void xinteractive_shell::set_config(py::dict config)
+    {
+        m_config = config;
     }
 
     const xeus::xhistory_manager& xinteractive_shell::get_history_manager()

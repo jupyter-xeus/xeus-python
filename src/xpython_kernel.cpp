@@ -335,8 +335,8 @@ namespace xpyt
             .def("unregister", &detail::events_manager::unregister_callback)
             .def("trigger", &detail::events_manager::trigger);
 
-        py::class_<xinteractive_shell>(kernel_module, "XInteractiveShell", py::dynamic_attr())
-            .def(py::init<>())
+        py::class_<xinteractive_shell> shell(kernel_module, "XInteractiveShell", py::dynamic_attr());
+        shell.def(py::init<>())
             .def_property_readonly("magics_manager", &xinteractive_shell::get_magics_manager)
             .def_property_readonly("extension_manager", &xinteractive_shell::get_extension_manager)
             .def_property_readonly("hooks", &xinteractive_shell::get_hooks)
@@ -348,6 +348,7 @@ namespace xpyt
             .def_property_readonly("dir_stack", &xinteractive_shell::get_dir_stack)
             .def_property_readonly("home_dir", &xinteractive_shell::get_home_dir)
             .def_property_readonly("history_manager", &xinteractive_shell::get_history_manager)
+            // .def_property("config", &xinteractive_shell::get_config, &xinteractive_shell::set_config)
             .def("run_line_magic", &xinteractive_shell::run_line_magic)
             .def("run_cell_magic", &xinteractive_shell::run_cell_magic)
             // magic method is deprecated but some magic functions still use it
@@ -380,8 +381,15 @@ namespace xpyt
             .def("register_magics", &xinteractive_shell::register_magics)
             .def("set_next_input", &xinteractive_shell::set_next_input,
                  py::arg("text"),
-                 py::arg("replace")=false)
-            .attr("compile") = Compiler();
+                 py::arg("replace")=false);
+        shell.attr("compile") = Compiler();
+
+//         exec(py::str(R"(
+// from traitlets.config import Configurable
+
+// class XInteractiveShell(XInteractiveShell, Configurable):
+//     pass
+//         )"), kernel_module.attr("__dict__"));
     }
 
     void bind_comm(py::module& kernel_module)
@@ -426,19 +434,19 @@ namespace xpyt
             {
                 // The first import of IPython will throw if IPython has not been installed.
                 // In this case we fallback on the mock_ipython object.
-                try
-                {
+                // try
+                // {
                     py::module::import("IPython.core.interactiveshell").attr("InteractiveShellABC").attr("register")(
                             kernel_module.attr("XInteractiveShell"));
                     m_instance = kernel_module.attr("XInteractiveShell")();
                     m_instance.attr("events") = kernel_module.attr("EventsManager")(m_instance);
                     kernel_module.attr("has_ipython") = py::bool_(true);
-                }
-                catch(...)
-                {
-                    m_instance = kernel_module.attr("MockIPython");
-                    kernel_module.attr("has_ipython") = py::bool_(false);
-                }
+                // }
+                // catch(...)
+                // {
+                //     m_instance = kernel_module.attr("MockIPython");
+                //     kernel_module.attr("has_ipython") = py::bool_(false);
+                // }
                 m_instance.attr("kernel") = kernel_module.attr("MockKernel")();
             }
             return m_instance;

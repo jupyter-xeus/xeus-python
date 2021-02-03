@@ -120,6 +120,9 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
+        std::cout << "1" << std::endl;
+        std::cout << m_has_ipython << std::endl;
+
         py::str code_copy;
         if(m_has_ipython)
         {
@@ -159,19 +162,26 @@ namespace xpyt
             code_copy = code;
         }
 
+        std::cout << "2" << std::endl;
+
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(allow_stdin);
+        std::cout << "21" << std::endl;
+        std::cout << "210" << std::endl;
 
         try
         {
             // Import modules
             py::module ast = py::module::import("ast");
             py::module builtins = py::module::import("builtins");
+        std::cout << "211" << code_copy.cast<std::string>() << std::endl;
 
             // Parse code to AST
             py::object code_ast = ast.attr("parse")(code_copy, "<string>", "exec");
+        std::cout << "212" << std::endl;
             py::list expressions = code_ast.attr("body");
+        std::cout << "213" << std::endl;
 
             std::string filename = get_cell_tmp_file(code);
             register_filename_mapping(filename, execution_count);
@@ -185,6 +195,7 @@ namespace xpyt
             py::object last_stmt = expressions[py::len(expressions) - 1];
             if (py::isinstance(last_stmt, ast.attr("Expr")))
             {
+                std::cout << "22" << std::endl;
                 code_ast.attr("body").attr("pop")();
 
                 py::list interactive_nodes;
@@ -206,9 +217,12 @@ namespace xpyt
             }
             else
             {
+                std::cout << "23" << std::endl;
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
                 exec(compiled_code);
             }
+
+            std::cout << "3" << std::endl;
 
             kernel_res["status"] = "ok";
             kernel_res["user_expressions"] = nl::json::object();
@@ -216,7 +230,10 @@ namespace xpyt
             {
                 py::object pyshell = get_kernel_module().attr("get_ipython")();
 
+                std::cout << "execute post_execute" << std::endl;
+
                 pyshell.attr("events").attr("trigger")("post_execute");
+                pyshell.attr("events").attr("trigger")("post_run_cell");
 
                 xinteractive_shell* xshell = pyshell.cast<xinteractive_shell*>();
                 auto payload = xshell->get_payloads();
