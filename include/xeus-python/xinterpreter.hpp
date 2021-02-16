@@ -74,8 +74,8 @@ namespace xpyt
 
         void redirect_output();
 
+        py::object m_ipython_shell_app;
         py::object m_ipython_shell;
-        py::dict m_user_ns;
         py::object m_displayhook;
 
         // The interpreter has the same scope as a `gil_scoped_release` instance

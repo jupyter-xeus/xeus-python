@@ -51,8 +51,6 @@ namespace xpyt
         {
             redirect_output();
         }
-
-        m_user_ns = py::dict();
     }
 
     interpreter::~interpreter()
@@ -86,12 +84,18 @@ namespace xpyt
         scope["CommManager"] = get_comm_module().attr("CommManager");
         scope["set_last_error"] = traceback_module.attr("set_last_error");
 
+        scope["XDisplayPublisher"] = display_module.attr("XDisplayPublisher");
+        scope["XDisplayHook"] = display_module.attr("XDisplayHook");
+
         exec(py::str(R"(
 import sys
+import logging
 
 # TODO Just import InteractiveShell when we use https://github.com/ipython/ipython/pull/12809
 # from IPython.core.interactiveshell import InteractiveShell
 from IPython.core.interactiveshell import *
+from IPython.core.shellapp import InteractiveShellApp
+from IPython.core.application import BaseIPythonApplication
 
 
 class XKernel():
@@ -260,33 +264,45 @@ class XPythonShell(InteractiveShell):
             self.execution_count += 1
 
         return result
+
+
+class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
+    def initialize(self, argv=None):
+        super(XPythonShellApp, self).initialize(argv)
+
+        self.user_ns = {}
+
+        # self.init_io() ?
+
+        self.init_path()
+        self.init_shell()
+
+        self.init_extensions()
+        self.init_code()
+
+        sys.stdout.flush()
+        sys.stderr.flush()
+
+    def init_shell(self):
+        self.shell = XPythonShell.instance(
+            display_pub_class=XDisplayPublisher,
+            displayhook_class=XDisplayHook,
+            # TODO Uncomment this when we use https://github.com/ipython/ipython/pull/12809
+            # compiler_class=XCachingCompiler,
+            user_ns=self.user_ns
+        )
+
+    # Overwrite exit logic, this is not part of the kernel protocole
+    def exit(self, exit_status=0):
+        pass
         )"), scope);
 
-        if (m_redirect_display_enabled)
-        {
-            m_ipython_shell = scope["XPythonShell"].attr("instance")(
-                "display_pub_class"_a=display_module.attr("XDisplayPublisher"),
-                "displayhook_class"_a=display_module.attr("XDisplayHook"),
-                // TODO Uncomment this when we use https://github.com/ipython/ipython/pull/12809
-                // "compiler_class"_a=get_compiler_module().attr("XCachingCompiler"),
-                "user_ns"_a=m_user_ns
-            );
+        m_ipython_shell_app = scope["XPythonShellApp"]();
+        // TODO Pass argv to initialize
+        m_ipython_shell_app.attr("initialize")();
+        m_ipython_shell = m_ipython_shell_app.attr("shell");
 
-            m_displayhook = m_ipython_shell.attr("displayhook");
-        }
-        else
-        {
-            m_ipython_shell = scope["XPythonShell"].attr("instance")(
-                "display_pub_class"_a=display_module.attr("XDisplayPublisher"),
-                // TODO Uncomment this when we use https://github.com/ipython/ipython/pull/12809
-                // "compiler_class"_a=get_compiler_module().attr("XCachingCompiler"),
-                "user_ns"_a=m_user_ns
-            );
-
-            m_displayhook = display_module.attr("XDisplayHook")(
-                "parent"_a=m_ipython_shell, "shell"_a=m_ipython_shell, "cache_size"_a=m_ipython_shell.attr("cache_size")
-            );
-        }
+        m_displayhook = m_ipython_shell.attr("displayhook");
 
         m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
     }
