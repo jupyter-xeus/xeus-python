@@ -598,7 +598,7 @@ bool debugger_client::test_stack_trace()
     ++seq;
     nl::json stackframes = m_client.receive_on_control();
 
-    bool res = stackframes["content"]["body"]["stackFrames"].size() == 1;
+    bool res = stackframes["content"]["body"]["stackFrames"].size() != 0;
     continue_exec(seq);
     m_client.wait_for_debug_event("stopped");
     continue_exec(seq);
@@ -1083,4 +1083,3 @@ TEST(debugger, variables)
         notify_done();
     }
 }
-

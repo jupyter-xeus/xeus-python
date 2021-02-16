@@ -8,17 +8,16 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_LINECACHE_HPP
-#define XPYT_LINECACHE_HPP
+#ifndef XPYT_COMPILER_HPP
+#define XPYT_COMPILER_HPP
 
 #include "pybind11/pybind11.h"
-#include "pybind11/functional.h"
 
 namespace py = pybind11;
 
 namespace xpyt
 {
-    py::module get_linecache_module();
+    py::module get_compiler_module();
 }
 
 #endif

@@ -2,18 +2,19 @@ name: xeus-python
 channels:
   - conda-forge
 dependencies:
-  # Builde dependencies
+  # Build dependencies
   - cmake
   # Host dependencies
   - xeus=1.0.0
   - nlohmann_json
   - cppzmq
   - xtl=0.7.0
-  - jedi>=0.15.1,<0.19
+  - jedi>=0.15.1,<0.18
   - pybind11=2.6.0
-  - pybind11_json=0.2.6
-  - pygments
-  - ipython=7.14.0
+  - pybind11_json>=0.2.6,<0.3
+  - ipython>=7.14.0,<8
   - debugpy
   # Test dependencies
-  - jupyter_kernel_test
+  - pytest
+  - nbval
+  - ipympl

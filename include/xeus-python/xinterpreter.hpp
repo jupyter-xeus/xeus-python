@@ -73,9 +73,9 @@ namespace xpyt
         nl::json internal_request_impl(const nl::json& content) override;
 
         void redirect_output();
-        void redirect_display(bool install_hook=true);
-        void load_extensions();
 
+        py::object m_ipython_shell;
+        py::dict m_user_ns;
         py::object m_displayhook;
 
         // The interpreter has the same scope as a `gil_scoped_release` instance
@@ -92,7 +92,7 @@ namespace xpyt
         bool m_release_gil_at_startup = true;
         gil_scoped_release_ptr m_release_gil = nullptr;
 
-        bool m_has_ipython;
+        bool m_redirect_display_enabled;
     };
 }
 

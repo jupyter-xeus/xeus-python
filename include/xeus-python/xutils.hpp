@@ -46,7 +46,7 @@ namespace xpyt
 
     XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
     void exec(const py::object& code, const py::object& scope = py::globals());
-    
+
     XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
     py::object eval(const py::object& code, const py::object& scope = py::globals());
 }
