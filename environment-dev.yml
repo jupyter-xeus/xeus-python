@@ -9,7 +9,6 @@ dependencies:
   - nlohmann_json
   - cppzmq
   - xtl=0.7.0
-  - jedi>=0.15.1,<0.18
   - pybind11=2.6.0
   - pybind11_json>=0.2.6,<0.3
   - ipython>=7.14.0,<8
@@ -18,3 +17,4 @@ dependencies:
   - pytest
   - nbval
   - ipympl
+  - jupyter_kernel_test

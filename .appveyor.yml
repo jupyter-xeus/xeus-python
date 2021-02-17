@@ -38,7 +38,7 @@ install:
   - nmake install
   # Install test dependencies
   - conda install mamba -c conda-forge
-  - mamba install pytest nbval ipympl -c conda-forge
+  - mamba install pytest nbval ipympl jupyter_kernel_test -c conda-forge
 
 build_script:
   - cd test
