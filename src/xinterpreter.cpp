@@ -96,7 +96,7 @@ import logging
 from IPython.core.interactiveshell import *
 from IPython.core.shellapp import InteractiveShellApp
 from IPython.core.application import BaseIPythonApplication
-
+from IPython.core import page, payloadpage
 
 class XKernel():
     def __init__(self):
@@ -111,6 +111,10 @@ class XPythonShell(InteractiveShell):
     def enable_gui(self, gui=None):
         """Not implemented yet."""
         pass
+
+    def init_hooks(self):
+        super(XPythonShell, self).init_hooks()
+        self.set_hook('show_in_pager', page.as_hook(payloadpage.page), 99)
 
     # Workaround for preventing IPython to show error traceback
     # We catch it and will display it later properly
