@@ -91,10 +91,10 @@ Or you can install it from the sources, you will first need to install dependenc
 conda install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json ipython debugpy jupyterlab -c conda-forge
 ```
 
-Then you can compile the sources
+Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
 
 ```bash
-cmake -D CMAKE_PREFIX_PATH=your_conda_path -D CMAKE_INSTALL_PREFIX=your_conda_path -D PYTHON_EXECUTABLE=`which python`
+cmake -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_INSTALL_LIBDIR=lib -D PYTHON_EXECUTABLE=`which python`
 make && make install
 ```
 
