@@ -94,7 +94,8 @@ conda install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json ipython
 Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
 
 ```bash
-cmake -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_INSTALL_LIBDIR=lib -D PYTHON_EXECUTABLE=`which python`
+mkdir build && cd build
+cmake .. -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_INSTALL_LIBDIR=lib -D PYTHON_EXECUTABLE=`which python`
 make && make install
 ```
 
