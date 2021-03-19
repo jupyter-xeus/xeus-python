@@ -73,10 +73,6 @@ namespace xpyt
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = get_comm_module();
 
-        // TODO Remove this when we use https://github.com/ipython/ipython/pull/12809
-        // Monkey patching IPython.core.compilerop
-        sys.attr("modules")["IPython.core.compilerop"] = get_compiler_module();
-
         py::module display_module = get_display_module();
         py::module traceback_module = get_traceback_module();
 
@@ -87,16 +83,16 @@ namespace xpyt
         scope["XDisplayPublisher"] = display_module.attr("XDisplayPublisher");
         scope["XDisplayHook"] = display_module.attr("XDisplayHook");
 
+        scope["XCachingCompiler"] = get_compiler_module().attr("XCachingCompiler");
+
         exec(py::str(R"(
 import sys
-import logging
 
-# TODO Just import InteractiveShell when we use https://github.com/ipython/ipython/pull/12809
-# from IPython.core.interactiveshell import InteractiveShell
-from IPython.core.interactiveshell import *
+from IPython.core.interactiveshell import InteractiveShell
 from IPython.core.shellapp import InteractiveShellApp
 from IPython.core.application import BaseIPythonApplication
 from IPython.core import page, payloadpage
+
 
 class XKernel():
     def __init__(self):
@@ -128,147 +124,6 @@ class XPythonShell(InteractiveShell):
 
         set_last_error(etype, value, tb)
 
-    # TODO Remove this method when we use https://github.com/ipython/ipython/pull/12809
-    async def run_cell_async(
-        self,
-        raw_cell: str,
-        store_history=False,
-        silent=False,
-        shell_futures=True,
-        *,
-        transformed_cell=None,
-        preprocessing_exc_tuple=None
-    ):
-        info = ExecutionInfo(
-            raw_cell, store_history, silent, shell_futures)
-        result = ExecutionResult(info)
-
-        if (not raw_cell) or raw_cell.isspace():
-            self.last_execution_succeeded = True
-            self.last_execution_result = result
-            return result
-
-        if silent:
-            store_history = False
-
-        if store_history:
-            result.execution_count = self.execution_count
-
-        def error_before_exec(value):
-            if store_history:
-                self.execution_count += 1
-            result.error_before_exec = value
-            self.last_execution_succeeded = False
-            self.last_execution_result = result
-            return result
-
-        self.events.trigger('pre_execute')
-        if not silent:
-            self.events.trigger('pre_run_cell', info)
-
-        if transformed_cell is None:
-            warnings.warn(
-                "`run_cell_async` will not call `transform_cell`"
-                " automatically in the future. Please pass the result to"
-                " `transformed_cell` argument and any exception that happen"
-                " during the"
-                "transform in `preprocessing_exc_tuple` in"
-                " IPython 7.17 and above.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            # If any of our input transformation (input_transformer_manager or
-            # prefilter_manager) raises an exception, we store it in this variable
-            # so that we can display the error after logging the input and storing
-            # it in the history.
-            try:
-                cell = self.transform_cell(raw_cell)
-            except Exception:
-                preprocessing_exc_tuple = sys.exc_info()
-                cell = raw_cell  # cell has to exist so it can be stored/logged
-            else:
-                preprocessing_exc_tuple = None
-        else:
-            if preprocessing_exc_tuple is None:
-                cell = transformed_cell
-            else:
-                cell = raw_cell
-
-        # Store raw and processed history
-        if store_history:
-            self.history_manager.store_inputs(self.execution_count,
-                                              cell, raw_cell)
-        if not silent:
-            self.logger.log(cell, raw_cell)
-
-        # Display the exception if input processing failed.
-        if preprocessing_exc_tuple is not None:
-            self.showtraceback(preprocessing_exc_tuple)
-            if store_history:
-                self.execution_count += 1
-            return error_before_exec(preprocessing_exc_tuple[1])
-
-        # Our own compiler remembers the __future__ environment. If we want to
-        # run code with a separate __future__ environment, use the default
-        # compiler
-        compiler = self.compile if shell_futures else CachingCompiler()
-
-        _run_async = False
-
-        with self.builtin_trap:
-            cell_name = self.compile.cache(cell, self.execution_count, raw_cell)
-
-            with self.display_trap:
-                # Compile to bytecode
-                try:
-                    code_ast = compiler.ast_parse(cell, filename=cell_name)
-                except self.custom_exceptions as e:
-                    etype, value, tb = sys.exc_info()
-                    self.CustomTB(etype, value, tb)
-                    return error_before_exec(e)
-                except IndentationError as e:
-                    self.showindentationerror()
-                    return error_before_exec(e)
-                except (OverflowError, SyntaxError, ValueError, TypeError,
-                        MemoryError) as e:
-                    self.showsyntaxerror()
-                    return error_before_exec(e)
-
-                # Apply AST transformations
-                try:
-                    code_ast = self.transform_ast(code_ast)
-                except InputRejected as e:
-                    self.showtraceback()
-                    return error_before_exec(e)
-
-                # Give the displayhook a reference to our ExecutionResult so it
-                # can fill in the output value.
-                self.displayhook.exec_result = result
-
-                # Execute the user code
-                interactivity = "none" if silent else self.ast_node_interactivity
-                if _run_async:
-                    interactivity = 'async'
-
-                has_raised = await self.run_ast_nodes(code_ast.body, cell_name,
-                       interactivity=interactivity, compiler=compiler, result=result)
-
-                self.last_execution_succeeded = not has_raised
-                self.last_execution_result = result
-
-                # Reset this so later displayed values do not modify the
-                # ExecutionResult
-                self.displayhook.exec_result = None
-
-        if store_history:
-            # Write output to the database. Does nothing unless
-            # history output logging is enabled.
-            self.history_manager.store_output(self.execution_count)
-            # Each cell is a *single* input, regardless of how many lines it has
-            self.execution_count += 1
-
-        return result
-
 
 class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
     def initialize(self, argv=None):
@@ -291,8 +146,7 @@ class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
         self.shell = XPythonShell.instance(
             display_pub_class=XDisplayPublisher,
             displayhook_class=XDisplayHook,
-            # TODO Uncomment this when we use https://github.com/ipython/ipython/pull/12809
-            # compiler_class=XCachingCompiler,
+            compiler_class=XCachingCompiler,
             user_ns=self.user_ns
         )
 
