@@ -156,7 +156,6 @@ class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
         )"), scope);
 
         m_ipython_shell_app = scope["XPythonShellApp"]();
-        // TODO Pass argv to initialize
         m_ipython_shell_app.attr("initialize")();
         m_ipython_shell = m_ipython_shell_app.attr("shell");
 
