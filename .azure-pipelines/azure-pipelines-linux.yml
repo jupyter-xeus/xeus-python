@@ -2,12 +2,12 @@ jobs:
   - job: 'Linux'
     strategy:
       matrix:
-        py36:
-          py_version: 3.6
         py37:
           py_version: 3.7
         py38:
           py_version: 3.8
+        py39:
+          py_version: 3.9
         static_xeus:
           xpyt_use_shared_xeus: 0
           xpyt_use_shared_xeus_python: 1
@@ -21,7 +21,7 @@ jobs:
       vmImage: ubuntu-16.04
     timeoutInMinutes: 30
     steps:
-          
+
       - bash: echo "##vso[task.prependpath]$CONDA/bin"
         displayName: Add conda to PATH
 
