@@ -69,12 +69,14 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
 
         py::module sys = py::module::import("sys");
+        py::module logging = py::module::import("logging");
 
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = get_comm_module();
 
         py::module display_module = get_display_module();
         py::module traceback_module = get_traceback_module();
+        py::module stream_module = get_stream_module();
 
         py::dict scope;
         scope["CommManager"] = get_comm_module().attr("CommManager");
@@ -160,6 +162,11 @@ class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
         m_ipython_shell = m_ipython_shell_app.attr("shell");
 
         m_displayhook = m_ipython_shell.attr("displayhook");
+
+        m_logger = m_ipython_shell_app.attr("log");
+
+        // Needed for redirecting logging to the terminal
+        m_logger.attr("handlers") = py::make_tuple(logging.attr("StreamHandler")(stream_module.attr("TerminalStream")()));
 
         m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
     }
