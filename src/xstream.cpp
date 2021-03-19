@@ -8,7 +8,9 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <iostream>
 #include <string>
+#include <sstream>
 
 #include "xeus/xinterpreter.hpp"
 
@@ -70,6 +72,42 @@ namespace xpyt
         return false;
     }
 
+    /********************************
+     * xterminal_stream declaration *
+     ********************************/
+
+    class xterminal_stream
+    {
+    public:
+
+        xterminal_stream();
+        virtual ~xterminal_stream();
+
+        void write(const std::string& message);
+        void flush();
+    };
+
+    /***********************************
+     * xterminal_stream implementation *
+     ***********************************/
+
+    xterminal_stream::xterminal_stream()
+    {
+    }
+
+    xterminal_stream::~xterminal_stream()
+    {
+    }
+
+    void xterminal_stream::write(const std::string& message)
+    {
+        std::cout << message;
+    }
+
+    void xterminal_stream::flush()
+    {
+    }
+
     /*****************
      * stream module *
      *****************/
@@ -83,6 +121,11 @@ namespace xpyt
             .def("write", &xstream::write)
             .def("flush", &xstream::flush)
             .def("isatty", &xstream::isatty);
+
+        py::class_<xterminal_stream>(stream_module, "TerminalStream")
+            .def(py::init<>())
+            .def("write", &xterminal_stream::write)
+            .def("flush", &xterminal_stream::flush);
 
         return stream_module;
     }
