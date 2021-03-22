@@ -78,6 +78,7 @@ namespace xpyt
         py::object m_ipython_shell;
         py::object m_displayhook;
         py::object m_logger;
+        py::object m_terminal_stream;
 
         // The interpreter has the same scope as a `gil_scoped_release` instance
         // so that the GIL is not held by default, it will only be held when the

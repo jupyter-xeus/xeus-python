@@ -164,9 +164,11 @@ class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
         m_displayhook = m_ipython_shell.attr("displayhook");
 
         m_logger = m_ipython_shell_app.attr("log");
+        m_terminal_stream = stream_module.attr("TerminalStream")();
 
         // Needed for redirecting logging to the terminal
-        m_logger.attr("handlers") = py::make_tuple(logging.attr("StreamHandler")(stream_module.attr("TerminalStream")()));
+        m_logger.attr("handlers") = py::list(0);
+        m_logger.attr("addHandler")(logging.attr("StreamHandler")(m_terminal_stream));
 
         m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
     }
