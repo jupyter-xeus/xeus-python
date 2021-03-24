@@ -8,6 +8,77 @@
 
 `xeus-python` is a Jupyter kernel for Python based on the native implementation of the Jupyter protocol [xeus](https://github.com/jupyter-xeus/xeus).
 
+## Installation
+
+xeus-python has been packaged for the conda package manager.
+
+To ensure that the installation works, it is preferable to install `xeus-python` in a fresh conda environment. It is also needed to use a [miniconda](https://conda.io/miniconda.html) installation because with the full [anaconda](https://www.anaconda.com/) you may have a conflict with the `zeromq` library which is already installed in the anaconda distribution.
+
+
+The safest usage is to create an environment named `xeus-python` with your miniconda installation
+
+```bash
+conda create -n xeus-python
+conda activate xeus-python # Or `source activate xeus-python` for conda < 4.6
+```
+
+### Installing from conda
+
+Then you can install in this environment `xeus-python` and its dependencies
+
+```bash
+conda install xeus-python notebook -c conda-forge
+```
+
+### Installing from PyPI
+
+Depending on the platform, PyPI wheels may be available for xeus-python.
+
+```bash
+pip install xeus-python notebook
+```
+
+If you encounter the following error message
+
+```bash
+Collecting xeus-python
+  Cache entry deserialization failed, entry ignored
+  Could not find a version that satisfies the requirement xeus-python (from versions: )
+No matching distribution found for xeus-python
+```
+
+you probably need to upgrade pip: `pip install --upgrade pip` before attempting to install
+`xeus-python` again.
+
+The wheels uploaded on PyPI are **experimental**. In general we strongly recommend using a
+package manager instead. We maintain the conda-forge package, and nothing prevents you from
+creating a package your favorite Linux distribution or FreeBSD.
+
+The ongoing effort to package xeus-python for pip takes place in the [xeus-python-wheel](https://github.com/jupyter-xeus/xeus-python-wheel) repository.
+
+### Installing from source
+
+Or you can install it from the sources, you will first need to install dependencies
+
+```bash
+conda install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json ipython debugpy jupyterlab -c conda-forge
+```
+
+Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
+
+```bash
+mkdir build && cd build
+cmake .. -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_INSTALL_LIBDIR=lib -D PYTHON_EXECUTABLE=`which python`
+make && make install
+```
+
+## Trying it online
+
+To try out xeus-python interactively in your web browser, just click on the binder
+link:
+
+[![Binder](binder-logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-python/stable?urlpath=/lab/tree/notebooks/xeus-python.ipynb)
+
 ## Usage
 
 Launch the Jupyter notebook with `jupyter notebook` or Jupyter lab with `jupyter lab` and launch a new Python notebook by selecting the **xpython** kernel.
@@ -45,67 +116,6 @@ Launch the Jupyter notebook with `jupyter notebook` or Jupyter lab with `jupyter
 ![Widgets](docs/source/widgets.gif)
 ![Widgets binary](docs/source/binary.gif)
 
-
-## Installation
-
-xeus-python has been packaged for the conda package manager.
-
-To ensure that the installation works, it is preferable to install `xeus-python` in a fresh conda environment. It is also needed to use a [miniconda](https://conda.io/miniconda.html) installation because with the full [anaconda](https://www.anaconda.com/) you may have a conflict with the `zeromq` library which is already installed in the anaconda distribution.
-
-
-The safest usage is to create an environment named `xeus-python` with your miniconda installation
-
-```bash
-conda create -n xeus-python
-conda activate xeus-python # Or `source activate xeus-python` for conda < 4.6
-```
-
-### Installing from conda
-
-Then you can install in this environment `xeus-python` and its dependencies
-
-```bash
-conda install xeus-python notebook -c conda-forge
-```
-
-### Installing from PyPI
-
-Depending on the platform, PyPI wheels may be available for xeus-python.
-
-```bash
-pip install xeus-python notebook
-```
-
-However, the wheels uploaded on PyPI are **experimental**.
-
-In general we strongly recommend using a package manager instead. We maintain the conda-forge package,
-and nothing prevents you from creating a package your favorite Linux distribution or FreeBSD.
-
-The ongoing effort to package xeus-python for pip takes place in the [xeus-python-wheel](https://github.com/jupyter-xeus/xeus-python-wheel) repository.
-
-### Installing from source
-
-Or you can install it from the sources, you will first need to install dependencies
-
-```bash
-conda install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json ipython debugpy jupyterlab -c conda-forge
-```
-
-Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
-
-```bash
-mkdir build && cd build
-cmake .. -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -D CMAKE_INSTALL_LIBDIR=lib -D PYTHON_EXECUTABLE=`which python`
-make && make install
-```
-
-## Trying it online
-
-To try out xeus-python interactively in your web browser, just click on the binder
-link:
-
-[![Binder](binder-logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-python/stable?urlpath=/lab/tree/notebooks/xeus-python.ipynb)
-
 ## Documentation
 
 To get started with using `xeus-python`, check out the full documentation
@@ -141,16 +151,6 @@ Long story short:
 |  0.11.2      |  >=1.0.0,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.8,<0.3      |                   | >=2.3.1,<3.0.0    |         | >=1.1.0   | >=7.20,<8 |
 |  0.11.1      |  >=1.0.0,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.8,<0.3      |                   | >=2.3.1,<3.0.0    |         | >=1.1.0   | >=7.20,<8 |
 |  0.11.0      |  >=1.0.0,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.8,<0.3      |                   | >=2.3.1,<3.0.0    |         | >=1.1.0   | >=7.20,<8 |
-|  0.10.2      |  >=1.0.0,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.6,<0.3      | >=0.15.1,<0.19    | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-|  0.10.1      |  >=1.0.0,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.6,<0.3      | >=0.18.0,<0.19    | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-|  0.10.0      |  >=1.0.0,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.6,<0.3      | >=0.18.0,<0.19    | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-|  0.9.5       |  >=0.25.3,<0.26  |  >=0.6.23,<0.7  | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.6,<0.3      | >=0.18.0,<0.19    | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-|  0.9.4       |  >=0.25.3,<0.26  |  >=0.6.23,<0.7  | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.6,<0.3      | >=0.15.1,<0.18    | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-|  0.9.3       |  >=0.25.3,<0.26  |  >=0.6.23,<0.7  | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.6,<0.3      | >=0.15.1          | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-|  0.9.2       |  >=0.25.3,<0.26  |  >=0.6.8,<0.7   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.6,<0.3      | >=0.15.1          | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-|  0.9.1       |  >=0.25.0,<0.26  |  >=0.6.8,<0.7   | ~4.4.1   | >=3.6.1,<4.0    | >=2.2.4,<3.0   | >=0.2.6,<0.3      | >=0.15.1          | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-|  0.9.0       |  >=0.25.0,<0.26  |  >=0.6.8,<0.7   | ~4.4.1   | >=3.6.1,<4.0    | >=2.2.4,<3.0   | >=0.2.6,<0.3      | >=0.15.1          | >=2.3.1,<3.0.0    |         | >=1.1.0   |           |
-
 
 ## Contributing
 
