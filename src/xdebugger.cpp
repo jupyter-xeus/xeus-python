@@ -69,6 +69,47 @@ namespace xpyt
         p_debugpy_client = nullptr;
     }
 
+    namespace
+    {
+        using name_list = std::vector<std::string>;
+
+        const name_list& get_excluded_variables()
+        {
+            static name_list l =
+            { 
+                "__name__",
+                "__doc__",
+                "__package__",
+                "__loader__",
+                "__spec__",
+                "__annotations__",
+                "__builtins__",
+                "__builtin__",
+                "display",
+                "get_ipython",
+                "debugpy",
+                "exit",
+                "quit",
+                "In",
+                "Out",
+                "_oh",
+                "_dh",
+                "_",
+                "__",
+                "___"
+            };
+            return l;
+        };
+
+        bool keep_variable(const std::string& var_name)
+        {
+            const name_list& l = get_excluded_variables();
+            bool res = var_name.substr(0u, 2u) != "_i";
+            res = res && std::find(l.cbegin(), l.cend(), var_name) == l.cend();
+            return res;
+        }
+    }
+
     nl::json debugger::inspect_variables_request(const nl::json& message)
     {
         py::gil_scoped_acquire acquire;
@@ -78,17 +119,21 @@ namespace xpyt
         for (const py::handle& key : variables)
         {
             nl::json json_var = nl::json::object();
-            json_var["name"] = py::str(key);
-            json_var["variablesReference"] = 0;
-            try
+            std::string var_name = py::str(key);
+            if (keep_variable(var_name))
             {
-                json_var["value"] = variables[key];
+                json_var["name"] = var_name;
+                json_var["variablesReference"] = 0;
+                try
+                {
+                    json_var["value"] = variables[key];
+                }
+                catch(std::exception&)
+                {
+                    json_var["value"] = py::repr(variables[key]);
+                }
+                json_vars.push_back(json_var);
             }
-            catch(std::exception&)
-            {
-                json_var["value"] = py::repr(variables[key]);
-            }
-            json_vars.push_back(json_var);
         }
 
         nl::json reply = {
