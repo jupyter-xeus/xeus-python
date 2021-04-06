@@ -8,6 +8,7 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include <cctype>
 #include <cstdlib>
 #include <fstream>
 #include <string>
@@ -105,6 +106,7 @@ namespace xpyt
         {
             const name_list& l = get_excluded_variables();
             bool res = var_name.substr(0u, 2u) != "_i";
+            res = res && !(var_name[0] == '_' && std::isdigit(var_name[1]));
             res = res && std::find(l.cbegin(), l.cend(), var_name) == l.cend();
             return res;
         }
@@ -132,6 +134,10 @@ namespace xpyt
                 {
                     json_var["value"] = py::repr(variables[key]);
                 }
+                std::string var_type = py::str(variables[key].get_type());
+                size_t size = var_type.size();
+                std::string var_trunc_type = var_type.substr(size_t(8), size - 10u);
+                json_var["type"] = var_trunc_type;
                 json_vars.push_back(json_var);
             }
         }
