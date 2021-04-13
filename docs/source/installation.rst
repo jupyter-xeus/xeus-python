@@ -21,34 +21,34 @@
 Installation
 ============
 
-With Conda
-----------
+With mamba (or conda)
+---------------------
 
-`xeus-python` has been packaged for the conda package manager.
+`xeus-python` has been packaged for the mamba (or conda) package manager.
 
-To ensure that the installation works, it is preferable to install `xeus-python` in a fresh conda environment.
-It is also needed to use a miniconda_ installation because with the full anaconda_ you may have a conflict with
+To ensure that the installation works, it is preferable to install `xeus-python` in a fresh environment.
+It is also needed to use a miniforge_ or miniconda_ installation because with the full anaconda_ you may have a conflict with
 the `zeromq` library which is already installed in the anaconda distribution.
 
 
-The safest usage is to create an environment named `xeus-python` with your miniconda installation
+The safest usage is to create an environment named `xeus-python`
 
 .. code::
 
-    conda create -n xeus-python
-    conda activate xeus-python # Or `source activate xeus-python` for conda < 4.6
+    mamba create -n xeus-python
+    source activate xeus-python
 
 Then you can install in this freshly created environment `xeus-python` and its dependencies
 
 .. code::
 
-    conda install xeus-python notebook -c conda-forge
+    mamba install xeus-python notebook -c conda-forge
 
 or, if you prefer to use JupyterLab_
 
 .. code::
 
-    conda install xeus-python jupyterlab -c conda-forge
+    mamba install xeus-python jupyterlab -c conda-forge
 
 From PyPI
 ---------
@@ -101,6 +101,7 @@ However, if Jupyter is installed in a different location, it will not pick up th
 
 For more information on the ``jupyter kernelspec`` command, please consult the ``jupyter_client`` documentation.
 
+.. _miniforge: https://github.com/conda-forge/miniforge#mambaforge
 .. _miniconda: https://conda.io/miniconda.html
 .. _anaconda: https://www.anaconda.com
 .. _JupyterLab: https://jupyterlab.readthedocs.io

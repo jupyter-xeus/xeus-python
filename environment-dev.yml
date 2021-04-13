@@ -11,7 +11,7 @@ dependencies:
   - xtl=0.7.0
   - pybind11=2.6.0
   - pybind11_json>=0.2.6,<0.3
-  - ipython>=7.14.0,<8
+  - ipython>=7.21.0,<8
   - debugpy
   # Test dependencies
   - pytest

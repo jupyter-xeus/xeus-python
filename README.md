@@ -10,24 +10,23 @@
 
 ## Installation
 
-xeus-python has been packaged for the conda package manager.
+xeus-python has been packaged for the mamba (or conda) package manager.
 
-To ensure that the installation works, it is preferable to install `xeus-python` in a fresh conda environment. It is also needed to use a [miniconda](https://conda.io/miniconda.html) installation because with the full [anaconda](https://www.anaconda.com/) you may have a conflict with the `zeromq` library which is already installed in the anaconda distribution.
+To ensure that the installation works, it is preferable to install `xeus-python` in a fresh environment. It is also needed to use a [miniforge](https://github.com/conda-forge/miniforge#mambaforge) or [miniconda](https://conda.io/miniconda.html) installation because with the full [anaconda](https://www.anaconda.com/) you may have a conflict with the `zeromq` library which is already installed in the anaconda distribution.
 
-
-The safest usage is to create an environment named `xeus-python` with your miniconda installation
+The safest usage is to create an environment named `xeus-python`
 
 ```bash
-conda create -n xeus-python
-conda activate xeus-python # Or `source activate xeus-python` for conda < 4.6
+mamba create -n xeus-python
+source activate xeus-python
 ```
 
-### Installing from conda
+### Installing from conda-forge
 
 Then you can install in this environment `xeus-python` and its dependencies
 
 ```bash
-conda install xeus-python notebook -c conda-forge
+mamba install xeus-python notebook -c conda-forge
 ```
 
 ### Installing from PyPI
@@ -61,7 +60,7 @@ The ongoing effort to package xeus-python for pip takes place in the [xeus-pytho
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-conda install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json ipython debugpy jupyterlab -c conda-forge
+mamba install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json ipython debugpy jupyterlab -c conda-forge
 ```
 
 Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
