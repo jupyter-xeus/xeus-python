@@ -314,6 +314,20 @@ nl::json make_inspect_variables_request(int seq)
     return req;
 }
 
+nl::json make_rich_inspect_variables_request(int seq, const std::string& var_name)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "richInspectVariables"},
+        {"arguments", {
+            {"variableName", var_name},
+            {"variableReference", 0}
+        }}
+    };
+    return req;
+}
+
 /*******************
  * debugger_client *
  *******************/
@@ -338,6 +352,7 @@ public:
     bool test_stack_trace();
     bool test_debug_info();
     bool test_inspect_variables();
+    bool test_rich_inspect_variables();
     bool test_variables();
     void shutdown();
 
@@ -674,6 +689,43 @@ bool debugger_client::test_inspect_variables()
     };
 
     bool res = check_var("i", 4) && check_var("j", 8) && check_var("k", 5);
+    return res;
+}
+
+std::string rich_inspect_class_def = R"RICH(
+class Person:
+    def __init__(self, name="John Doe", address="Paris", picture=""):
+        self.name = name
+        self.address = address
+        self.picture = picture
+
+    def _repr_mimebundle_(self, include=None, exclude=None):
+        return {
+            "text/html": """<img src="{}">
+                  <div><i class='fa-user fa'></i>: {}</div>
+                  <div><i class='fa-map fa'></i>: {}</div>""".format(self.picture, self.name, self.address) 
+        }
+)RICH";
+
+std::string rich_html = R"RICH(<img src="">
+                  <div><i class='fa-user fa'></i>: James Smith</div>
+                  <div><i class='fa-map fa'></i>: Boston</div>)RICH";
+
+bool debugger_client::test_rich_inspect_variables()
+{
+    m_client.send_on_shell("execute_request", make_execute_request(rich_inspect_class_def));
+    m_client.receive_on_shell();
+
+    std::string code = "james = Person(\"James Smith\", \"Boston\")";
+    m_client.send_on_shell("execute_request", make_execute_request(code));
+    m_client.receive_on_shell();
+
+    m_client.send_on_control("debug_request", make_rich_inspect_variables_request(0, "james"));
+    nl::json rep = m_client.receive_on_control();
+    nl::json data = rep["content"]["body"]["data"];
+    std::string html = data["text/html"].get<std::string>();
+    std::string plain = data["text/plain"].get<std::string>();
+    bool res = html == rich_html && !plain.empty();
     return res;
 }
 
@@ -1062,6 +1114,21 @@ TEST(debugger, inspect_variables)
     {
         debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
         bool res = deb.test_inspect_variables();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+        notify_done();
+    }
+}
+
+TEST(debugger, rich_inspect_variables)
+{
+    start_kernel();
+    start_timer();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        bool res = deb.test_rich_inspect_variables();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
         EXPECT_TRUE(res);
