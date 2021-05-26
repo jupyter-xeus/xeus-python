@@ -50,10 +50,19 @@ namespace xpyt
 
     std::string get_python_path()
     {
+        std::string python_prefix = get_python_prefix();
 #ifdef _WIN32
-        return get_python_prefix() + "python.exe";
+        if (python_prefix.back() != '\\')
+        {
+            python_prefix += '\\';
+        }
+        return python_prefix + "python.exe";
 #else
-        return get_python_prefix() + "bin/python";
+        if (python_prefix.back() != '/')
+        {
+            python_prefix += '/';
+        }
+        return python_prefix + "bin/python";
 #endif
     }
 
