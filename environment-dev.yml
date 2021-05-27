@@ -5,10 +5,10 @@ dependencies:
   # Build dependencies
   - cmake
   # Host dependencies
-  - xeus=1.0.0
+  - xeus=1.0.2
   - nlohmann_json
   - cppzmq
-  - xtl=0.7.0
+  - xtl>=0.7, <0.8
   - pybind11=2.6.0
   - pybind11_json>=0.2.6,<0.3
   - ipython>=7.21.0,<8
