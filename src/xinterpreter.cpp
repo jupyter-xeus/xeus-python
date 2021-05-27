@@ -87,6 +87,8 @@ namespace xpyt
 
         scope["XCachingCompiler"] = get_compiler_module().attr("XCachingCompiler");
 
+        scope["get_parent_header"] = py::cpp_function([]() { return py::dict(py::arg("header")=xeus::get_interpreter().parent_header().get<py::object>()); });
+
         exec(py::str(R"(
 import sys
 
@@ -99,6 +101,13 @@ from IPython.core import page, payloadpage
 class XKernel():
     def __init__(self):
         self.comm_manager = CommManager()
+
+    def get_parent(self):
+        return get_parent_header()
+
+    @property
+    def _parent_header(self):
+        return self.get_parent()
 
 
 class XPythonShell(InteractiveShell):
