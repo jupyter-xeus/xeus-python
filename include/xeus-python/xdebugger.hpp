@@ -29,6 +29,8 @@ namespace xpyt
     {
     public:
 
+        using base_type = xeus::xdebugger_base;
+
         debugger(zmq::context_t& context,
                  const xeus::xconfiguration& config,
                  const std::string& user_name,
@@ -40,6 +42,7 @@ namespace xpyt
     private:
 
         nl::json inspect_variables_request(const nl::json& message);
+        nl::json rich_inspect_variables_request(const nl::json& message);
         nl::json attach_request(const nl::json& message);
         nl::json configuration_done_request(const nl::json& message);
 

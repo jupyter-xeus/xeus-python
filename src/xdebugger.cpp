@@ -29,6 +29,7 @@
 #include "xeus/xsystem.hpp"
 
 #include "xeus-python/xdebugger.hpp"
+#include "xeus-python/xutils.hpp"
 #include "xdebugpy_client.hpp"
 #include "xinternal_utils.hpp"
 
@@ -60,6 +61,7 @@ namespace xpyt
     {
         m_debugpy_port = xeus::find_free_port(100, 5678, 5900);
         register_request_handler("inspectVariables", std::bind(&debugger::inspect_variables_request, this, _1), false);
+        register_request_handler("richInspectVariables", std::bind(&debugger::rich_inspect_variables_request, this, _1), false);
         register_request_handler("attach", std::bind(&debugger::attach_request, this, _1), true);
         register_request_handler("configurationDone", std::bind(&debugger::configuration_done_request, this, _1), true);
     }
@@ -152,6 +154,53 @@ namespace xpyt
             }}
         };
 
+        return reply;
+    }
+
+    nl::json debugger::rich_inspect_variables_request(const nl::json& message)
+    {
+        nl::json reply = {
+            {"type", "response"},
+            {"request_seq", message["seq"]},
+            {"success", false},
+            {"command", message["command"]}
+        };
+
+        if (base_type::get_stopped_threads().empty())
+        {
+            // The code did not hit a breakpoint, we use the interpreter 
+            // to get the rich reprensentation of the variable
+            std::string var_name = message["arguments"]["variableName"].get<std::string>();
+            std::string var_repr_data = var_name + "_repr_data";
+            std::string var_repr_metadata = var_name + "_repr_metada";
+            py::gil_scoped_acquire acquire;
+            std::string code = "from IPython import get_ipython;";
+            code += var_repr_data + ',' + var_repr_metadata + "= get_ipython().display_formatter.format(" + var_name + ")";
+            exec(py::str(code));
+            py::object variables = py::globals();
+            py::object repr_data = variables[py::str(var_repr_data)];
+            py::object repr_metadata = variables[py::str(var_repr_metadata)];
+            nl::json body = {
+                {"data", {}},
+                {"metadata", {}}
+            };
+            for (const py::handle& key : repr_data)
+            {
+                std::string data_key = py::str(key);
+                body["data"][data_key] = repr_data[key];
+                if (repr_metadata.contains(key))
+                {
+                    body["metadata"][data_key] = repr_metadata[key];
+                }
+            }
+            reply["body"] = body;
+            reply["success"] = true;
+        }
+        else
+        {
+            // The code has stopped on a breakpoint, we use the evalute request
+            // to get the rich representation of the variable
+        }
         return reply;
     }
 
