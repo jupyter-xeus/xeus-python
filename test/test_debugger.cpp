@@ -328,6 +328,27 @@ nl::json make_rich_inspect_variables_request(int seq, const std::string& var_nam
     return req;
 }
 
+nl::json make_exception_breakpoint_request(int seq)
+{
+    nl::json except_option = {
+        {"path", nl::json::array({
+                nl::json::object({{"names", nl::json::array({"Python Exceptions"})}})
+        })},
+        {"breakMode", "always"}
+    };
+    nl::json options = nl::json::array({except_option, except_option});
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "setExceptionBreakpoints"},
+        {"arguments", {
+            {"filters", {"raised", "uncaught"}},
+            {"exceptionOptions", options}
+        }}
+    };
+    return req;
+}
+
 /*******************
  * debugger_client *
  *******************/
@@ -346,6 +367,7 @@ public:
     bool test_external_set_breakpoints();
     bool test_external_next_continue();
     bool test_set_breakpoints();
+    bool test_set_exception_breakpoints();
     bool test_source();
     bool test_next_continue();
     bool test_step_in();
@@ -361,6 +383,7 @@ private:
     nl::json attach();
     nl::json set_external_breakpoints();
     nl::json set_breakpoints();
+    nl::json set_exception_breakpoints();
 
     std::string get_external_path();
     void dump_external_file();
@@ -460,6 +483,22 @@ bool debugger_client::test_set_breakpoints()
     attach();
     nl::json rep = set_breakpoints();
     return rep["content"]["body"].size() != 0;
+}
+
+bool debugger_client::test_set_exception_breakpoints()
+{
+    attach();
+    nl::json reply = set_exception_breakpoints();
+    std::string code = "a = 3 * undef";
+    m_client.send_on_shell("execute_request", make_execute_request(code));
+
+    nl::json ev = m_client.wait_for_debug_event("stopped");
+    std::string reason = ev["content"]["body"]["reason"].get<std::string>();
+
+    m_client.send_on_control("debug_request", make_disconnect_request(6));
+    nl::json rep = m_client.receive_on_control();
+
+    return reason == "exception";
 }
 
 bool debugger_client::test_source()
@@ -816,6 +855,12 @@ nl::json debugger_client::set_breakpoints()
     return m_client.receive_on_control();
 }
 
+nl::json debugger_client::set_exception_breakpoints()
+{
+    m_client.send_on_control("debug_request", make_exception_breakpoint_request(4));
+    return m_client.receive_on_control();
+}
+
 std::string debugger_client::get_external_path()
 {
     return get_current_working_directory() + "/external_code.py";
@@ -923,7 +968,7 @@ void start_timer()
     t.detach();
 }
 
-TEST(debugger, init)
+/*TEST(debugger, init)
 {
     start_kernel();
     start_timer();
@@ -1029,9 +1074,24 @@ TEST(debugger, set_breakpoints)
         EXPECT_TRUE(res);
         notify_done();
     }
+}*/
+
+TEST(debugger, set_exception_breakpoints)
+{
+    start_kernel();
+    start_timer();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_set_exception_breakpoints.log");
+        bool res = deb.test_set_exception_breakpoints();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+        notify_done();
+    }
 }
 
-TEST(debugger, source)
+/*TEST(debugger, source)
 {
     start_kernel();
     start_timer();
@@ -1149,4 +1209,4 @@ TEST(debugger, variables)
         EXPECT_TRUE(res);
         notify_done();
     }
-}
+}*/
