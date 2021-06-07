@@ -968,7 +968,7 @@ void start_timer()
     t.detach();
 }
 
-/*TEST(debugger, init)
+TEST(debugger, init)
 {
     start_kernel();
     start_timer();
@@ -1074,7 +1074,7 @@ TEST(debugger, set_breakpoints)
         EXPECT_TRUE(res);
         notify_done();
     }
-}*/
+}
 
 TEST(debugger, set_exception_breakpoints)
 {
@@ -1091,7 +1091,7 @@ TEST(debugger, set_exception_breakpoints)
     }
 }
 
-/*TEST(debugger, source)
+TEST(debugger, source)
 {
     start_kernel();
     start_timer();
@@ -1209,4 +1209,4 @@ TEST(debugger, variables)
         EXPECT_TRUE(res);
         notify_done();
     }
-}*/
+}
