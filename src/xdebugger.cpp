@@ -316,7 +316,9 @@ namespace xpyt
     {
         return xeus::xdebugger_info(xeus::get_tmp_hash_seed(),
                                     get_tmp_prefix(),
-                                    get_tmp_suffix());
+                                    get_tmp_suffix(),
+                                    true,
+                                    {"Python Exceptions"});
     }
 
     std::string debugger::get_cell_temporary_file(const std::string& code) const
