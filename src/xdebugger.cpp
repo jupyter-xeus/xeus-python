@@ -159,6 +159,42 @@ namespace xpyt
 
     nl::json debugger::rich_inspect_variables_request(const nl::json& message)
     {
+
+
+        std::string var_name = message["arguments"]["variableName"].get<std::string>();
+        std::string var_repr_data = var_name + "_repr_data";
+        std::string var_repr_metadata = var_name + "_repr_metada";
+
+        if (base_type::get_stopped_threads().empty())
+        {
+            // The code did not hit a breakpoint, we use the interpreter 
+            // to get the rich reprensentation of the variable
+            std::string code = "from IPython import get_ipython;";
+            code += var_repr_data + ',' + var_repr_metadata + "= get_ipython().display_formatter.format(" + var_name + ")";
+            py::gil_scoped_acquire acquire;
+            exec(py::str(code));
+        }
+        else
+        {   
+            // The code has stopped on a breakpoint, we use the setExpression request
+            // to get the rich representation of the variable
+            std::string lvalue = var_repr_data + ',' + var_repr_metadata;
+            std::string code = "get_ipython().display_formatter.format(" + var_name + ")";
+            int frame_id = message["arguments"]["frameId"].get<int>();
+            int seq = message["seq"].get<int>();
+            nl::json request = {
+                {"type", "request"},
+                {"command", "setExpression"},
+                {"seq", seq+1},
+                {"arguments", {
+                    {"expression", lvalue},
+                    {"value", code},
+                    {"frameId", frame_id}
+                }}
+            };
+            forward_message(request);
+        }
+
         nl::json reply = {
             {"type", "response"},
             {"request_seq", message["seq"]},
@@ -166,41 +202,25 @@ namespace xpyt
             {"command", message["command"]}
         };
 
-        if (base_type::get_stopped_threads().empty())
+        py::gil_scoped_acquire acquire;
+        py::object variables = py::globals();
+        py::object repr_data = variables[py::str(var_repr_data)];
+        py::object repr_metadata = variables[py::str(var_repr_metadata)];
+        nl::json body = {
+            {"data", {}},
+            {"metadata", {}}
+        };
+        for (const py::handle& key : repr_data)
         {
-            // The code did not hit a breakpoint, we use the interpreter 
-            // to get the rich reprensentation of the variable
-            std::string var_name = message["arguments"]["variableName"].get<std::string>();
-            std::string var_repr_data = var_name + "_repr_data";
-            std::string var_repr_metadata = var_name + "_repr_metada";
-            py::gil_scoped_acquire acquire;
-            std::string code = "from IPython import get_ipython;";
-            code += var_repr_data + ',' + var_repr_metadata + "= get_ipython().display_formatter.format(" + var_name + ")";
-            exec(py::str(code));
-            py::object variables = py::globals();
-            py::object repr_data = variables[py::str(var_repr_data)];
-            py::object repr_metadata = variables[py::str(var_repr_metadata)];
-            nl::json body = {
-                {"data", {}},
-                {"metadata", {}}
-            };
-            for (const py::handle& key : repr_data)
+            std::string data_key = py::str(key);
+            body["data"][data_key] = repr_data[key];
+            if (repr_metadata.contains(key))
             {
-                std::string data_key = py::str(key);
-                body["data"][data_key] = repr_data[key];
-                if (repr_metadata.contains(key))
-                {
-                    body["metadata"][data_key] = repr_metadata[key];
-                }
+                body["metadata"][data_key] = repr_metadata[key];
             }
-            reply["body"] = body;
-            reply["success"] = true;
         }
-        else
-        {
-            // The code has stopped on a breakpoint, we use the evalute request
-            // to get the rich representation of the variable
-        }
+        reply["body"] = body;
+        reply["success"] = true;
         return reply;
     }
 

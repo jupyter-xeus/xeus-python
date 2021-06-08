@@ -322,9 +322,15 @@ nl::json make_rich_inspect_variables_request(int seq, const std::string& var_nam
         {"command", "richInspectVariables"},
         {"arguments", {
             {"variableName", var_name},
-            {"variableReference", 0}
         }}
     };
+    return req;
+}
+
+nl::json make_rich_inspect_variables_request(int seq, const std::string& var_name, int frame_id)
+{
+    nl::json req = make_rich_inspect_variables_request(seq, var_name);
+    req["arguments"]["frameId"] = frame_id;
     return req;
 }
 
@@ -749,23 +755,62 @@ class Person:
 std::string rich_html = R"RICH(<img src="">
                   <div><i class='fa-user fa'></i>: James Smith</div>
                   <div><i class='fa-map fa'></i>: Boston</div>)RICH";
+std::string rich_html2 = R"RICH(<img src="">
+                  <div><i class='fa-user fa'></i>: John Smith</div>
+                  <div><i class='fa-map fa'></i>: NYC</div>)RICH";
 
 bool debugger_client::test_rich_inspect_variables()
 {
-    m_client.send_on_shell("execute_request", make_execute_request(rich_inspect_class_def));
-    m_client.receive_on_shell();
+    bool res = false;
+    {
+        m_client.send_on_shell("execute_request", make_execute_request(rich_inspect_class_def));
+        m_client.receive_on_shell();
 
-    std::string code = "james = Person(\"James Smith\", \"Boston\")";
-    m_client.send_on_shell("execute_request", make_execute_request(code));
-    m_client.receive_on_shell();
+        std::string code = "james = Person(\"James Smith\", \"Boston\")";
+        m_client.send_on_shell("execute_request", make_execute_request(code));
+        m_client.receive_on_shell();
 
-    m_client.send_on_control("debug_request", make_rich_inspect_variables_request(0, "james"));
-    nl::json rep = m_client.receive_on_control();
-    nl::json data = rep["content"]["body"]["data"];
-    std::string html = data["text/html"].get<std::string>();
-    std::string plain = data["text/plain"].get<std::string>();
-    bool res = html == rich_html && !plain.empty();
-    return res;
+        m_client.send_on_control("debug_request", make_rich_inspect_variables_request(0, "james"));
+        nl::json rep = m_client.receive_on_control();
+        nl::json data = rep["content"]["body"]["data"];
+        std::string html = data["text/html"].get<std::string>();
+        std::string plain = data["text/plain"].get<std::string>();
+        res = html == rich_html && !plain.empty();
+    }
+    bool res2 = true;
+    {
+        attach();
+        std::string code = "john = Person(\"John Smith\", \"NYC\")\ni = 4\nj = 2";
+        m_client.send_on_shell("execute_request", make_execute_request(code));
+        m_client.receive_on_shell();
+
+        m_client.send_on_control("debug_request", make_dump_cell_request(12, code));
+        nl::json dump_res = m_client.receive_on_control();
+        std::string path = dump_res["content"]["body"]["sourcePath"].get<std::string>();
+        m_client.send_on_control("debug_request", make_breakpoint_request(12, path, 2));
+        m_client.receive_on_control();
+
+        m_client.send_on_shell("execute_request", make_execute_request(code));
+
+        nl::json ev = m_client.wait_for_debug_event("stopped");
+
+        int seq = 14;
+        m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+        nl::json stackframes = m_client.receive_on_control();
+        int frame_id = stackframes["content"]["body"]["stackFrames"][0]["id"].get<int>();
+        m_client.send_on_control("debug_request", make_rich_inspect_variables_request(seq, "john", frame_id));
+        nl::json rep = m_client.receive_on_control();
+        m_client.send_on_control("debug_request", make_continue_request(seq, 1));
+        m_client.receive_on_control();
+        m_client.receive_on_shell();
+
+        nl::json data = rep["content"]["body"]["data"];
+        std::string html = data["text/html"].get<std::string>();
+        std::string plain = data["text/plain"].get<std::string>();
+        res = html == rich_html2 && !plain.empty();
+
+    }
+    return res && res2;
 }
 
 bool debugger_client::test_variables()
@@ -1142,7 +1187,7 @@ TEST(debugger, stack_trace)
     start_timer();
     zmq::context_t context;
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        debugger_client deb(context, KERNEL_JSON, "debugger_stack_trace.log");
         bool res = deb.test_stack_trace();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
@@ -1172,7 +1217,7 @@ TEST(debugger, inspect_variables)
     start_timer();
     zmq::context_t context;
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        debugger_client deb(context, KERNEL_JSON, "debugger_inspect_variables.log");
         bool res = deb.test_inspect_variables();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
@@ -1187,7 +1232,7 @@ TEST(debugger, rich_inspect_variables)
     start_timer();
     zmq::context_t context;
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        debugger_client deb(context, KERNEL_JSON, "debugger_rich_inspect_variables.log");
         bool res = deb.test_rich_inspect_variables();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
@@ -1202,7 +1247,7 @@ TEST(debugger, variables)
     start_timer();
     zmq::context_t context;
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+        debugger_client deb(context, KERNEL_JSON, "debugger_variables.log");
         bool res = deb.test_variables();
         deb.shutdown();
         std::this_thread::sleep_for(2s);
