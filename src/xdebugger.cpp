@@ -168,7 +168,7 @@ namespace xpyt
         if (base_type::get_stopped_threads().empty())
         {
             // The code did not hit a breakpoint, we use the interpreter 
-            // to get the rich reprensentation of the variable
+            // to get the rich representation of the variable
             std::string code = "from IPython import get_ipython;";
             code += var_repr_data + ',' + var_repr_metadata + "= get_ipython().display_formatter.format(" + var_name + ")";
             py::gil_scoped_acquire acquire;
@@ -219,6 +219,8 @@ namespace xpyt
                 body["metadata"][data_key] = repr_metadata[key];
             }
         }
+        PyDict_DelItem(variables.ptr(), py::str(var_repr_data).ptr());
+        PyDict_DelItem(variables.ptr(), py::str(var_repr_metadata).ptr());
         reply["body"] = body;
         reply["success"] = true;
         return reply;
