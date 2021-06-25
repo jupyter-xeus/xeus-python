@@ -16,7 +16,7 @@ First, you need to fork the project. Then setup your environment:
 
 ```bash
 # create a new conda environment
-conda create -n xeus-python -c conda-forge -c defaults xtl nlohmann_json cppzmq xeus pybind11 pybind11_json jedi pygments
+conda create -f environment-dev.yml
 conda activate xeus-python
 
 # download xeus-python from your GitHub fork
@@ -25,3 +25,27 @@ git clone https://github.com/<your-github-username>/xeus-python.git
 
 You may also want to install a C++ compiler, and cmake from conda if they are not available on your system.
 
+## Building and installing xeus-python
+
+```bash
+# Create a directory for building
+mkdir build && cd build
+# Generate the makefile with cmake
+cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_PREFIX_PATH=$CONDA_PREFIX -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DXPYT_DOWNLOAD_GTEST=ON -DPYTHON_EXECUTABLE=`which python` -DCMAKE_INSTALL_LIBDIR=lib ..
+# Build and install
+make install -j2
+```
+
+## Running the tests
+
+To run the C++ test suite, from the build directory, type
+
+```bash
+./test/test_xeus-python
+```
+
+To run Python tests, from the build directory, type
+```bash
+cd ../test
+pytest . -vvv
+```
