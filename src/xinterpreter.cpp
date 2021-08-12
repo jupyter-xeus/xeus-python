@@ -80,7 +80,6 @@ namespace xpyt
 
         py::dict scope;
         scope["CommManager"] = get_comm_module().attr("CommManager");
-        scope["set_last_error"] = traceback_module.attr("set_last_error");
 
         scope["XDisplayPublisher"] = display_module.attr("XDisplayPublisher");
         scope["XDisplayHook"] = display_module.attr("XDisplayHook");
@@ -124,16 +123,9 @@ class XPythonShell(InteractiveShell):
         self.set_hook('show_in_pager', page.as_hook(payloadpage.page), 99)
 
     # Workaround for preventing IPython to show error traceback
-    # We catch it and will display it later properly
-    def showtraceback(self, exc_tuple=None, filename=None, tb_offset=None,
-                      exception_only=False, running_compiled_code=False):
-        try:
-            etype, value, tb = self._get_exc_info(exc_tuple)
-        except ValueError:
-            print('No traceback available to show.', file=sys.stderr)
-            return
-
-        set_last_error(etype, value, tb)
+    # in the console, we catch it and will display it later
+    def _showtraceback(self, etype, evalue, stb):
+        self.last_error = [str(etype), str(evalue), stb]
 
 
 class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
@@ -192,7 +184,8 @@ class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
-        py::module traceback = get_traceback_module();
+        // Reset traceback
+        m_ipython_shell.attr("last_error") = py::none();
 
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
@@ -204,15 +197,16 @@ class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
         kernel_res["payload"] = m_ipython_shell.attr("payload_manager").attr("read_payload")();
         m_ipython_shell.attr("payload_manager").attr("clear_payload")();
 
-        if (traceback.attr("get_last_error")().is_none())
+        if (m_ipython_shell.attr("last_error").is_none())
         {
             kernel_res["status"] = "ok";
             kernel_res["user_expressions"] = m_ipython_shell.attr("user_expressions")(user_expressions);
         }
         else
         {
-            py::list pyerror = traceback.attr("get_last_error")();
-            xerror error = extract_error(pyerror[0], pyerror[1], pyerror[2]);
+            py::list pyerror = m_ipython_shell.attr("last_error");
+
+            xerror error = extract_error(pyerror);
 
             if (!silent)
             {
@@ -223,8 +217,6 @@ class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
             kernel_res["ename"] = error.m_ename;
             kernel_res["evalue"] = error.m_evalue;
             kernel_res["traceback"] = error.m_traceback;
-
-            traceback.attr("reset_last_error")();
         }
 
         return kernel_res;
@@ -390,6 +382,10 @@ else:
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
         nl::json reply;
+
+        // Reset traceback
+        m_ipython_shell.attr("last_error") = py::none();
+
         try
         {
             exec(py::str(code));
@@ -398,7 +394,12 @@ else:
         }
         catch (py::error_already_set& e)
         {
-            xerror error = extract_error(e);
+            // This will grab the latest traceback and set shell.last_error
+            m_ipython_shell.attr("showtraceback")();
+
+            py::list pyerror = m_ipython_shell.attr("last_error");
+
+            xerror error = extract_error(pyerror);
 
             publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             error.m_traceback.resize(1);
@@ -409,6 +410,7 @@ else:
             reply["evalue"] = error.m_evalue;
             reply["traceback"] = error.m_traceback;
         }
+
         return reply;
     }
 
