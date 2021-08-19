@@ -37,21 +37,6 @@ namespace xpyt
         return py::module_::create_extension_module(module_name.c_str(), nullptr, new py::module_::module_def);
     }
 
-    std::string red_text(const std::string& text)
-    {
-        return "\033[0;31m" + text + "\033[0m";
-    }
-
-    std::string green_text(const std::string& text)
-    {
-        return "\033[0;32m" + text + "\033[0m";
-    }
-
-    std::string blue_text(const std::string& text)
-    {
-        return "\033[0;34m" + text + "\033[0m";
-    }
-
     zmq::message_t pybytes_to_zmq_message(py::bytes bytes)
     {
         char* buffer;
