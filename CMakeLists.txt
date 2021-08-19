@@ -122,8 +122,6 @@ endif ()
 set(XEUS_PYTHON_SRC
     src/xcomm.cpp
     src/xcomm.hpp
-    src/xcompiler.cpp
-    src/xcompiler.hpp
     src/xdebugger.cpp
     src/xdebugpy_client.hpp
     src/xdebugpy_client.cpp
@@ -134,6 +132,8 @@ set(XEUS_PYTHON_SRC
     src/xinternal_utils.cpp
     src/xinternal_utils.hpp
     src/xinterpreter.cpp
+    src/xkernel.cpp
+    src/xkernel.hpp
     src/xpaths.cpp
     src/xstream.cpp
     src/xstream.hpp

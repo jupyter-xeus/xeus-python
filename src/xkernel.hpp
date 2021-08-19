@@ -8,8 +8,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_COMPILER_HPP
-#define XPYT_COMPILER_HPP
+#ifndef XPYT_KERNEL_HPP
+#define XPYT_KERNEL_HPP
 
 #include "pybind11/pybind11.h"
 
@@ -17,7 +17,7 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    py::module get_compiler_module();
+    py::module get_kernel_module();
 }
 
 #endif
