@@ -33,6 +33,7 @@ namespace xpyt
 
     XEUS_PYTHON_API void register_filename_mapping(const std::string& filename, int execution_count);
 
+    XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
     xerror extract_error(const py::list& error);
 }
 
