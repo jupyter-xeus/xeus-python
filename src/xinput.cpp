@@ -47,7 +47,6 @@ namespace xpyt
         builtins.attr("input") = allow_stdin ? py::cpp_function(&cpp_input, py::arg("prompt") = "")
                                              : py::cpp_function(&notimplemented, py::arg("prompt") = "");
 
-
         // Forward getpass()
         py::module getpass = py::module::import("getpass");
         m_sys_getpass = getpass.attr("getpass");

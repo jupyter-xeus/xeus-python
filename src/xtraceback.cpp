@@ -24,6 +24,11 @@ namespace py = pybind11;
 
 namespace xpyt
 {
+    py::str get_filename(const py::str& raw_code)
+    {
+        return get_cell_tmp_file(raw_code);
+    }
+
     using filename_map = std::map<std::string, int>;
 
     filename_map& get_filename_map()
@@ -61,6 +66,11 @@ namespace xpyt
     py::module get_traceback_module_impl()
     {
         py::module traceback_module = create_module("traceback");
+
+        traceback_module.def("get_filename",
+            get_filename,
+            py::arg("raw_code")
+        );
 
         traceback_module.def("register_filename_mapping",
             register_filename_mapping,

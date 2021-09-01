@@ -30,7 +30,7 @@
 #include "xeus-python/xutils.hpp"
 
 #include "xcomm.hpp"
-#include "xcompiler.hpp"
+#include "xkernel.hpp"
 #include "xdisplay.hpp"
 #include "xinput.hpp"
 #include "xinternal_utils.hpp"
@@ -71,107 +71,43 @@ namespace xpyt
         py::module sys = py::module::import("sys");
         py::module logging = py::module::import("logging");
 
-        // Monkey patching "from ipykernel.comm import Comm"
-        sys.attr("modules")["ipykernel.comm"] = get_comm_module();
-
         py::module display_module = get_display_module();
         py::module traceback_module = get_traceback_module();
         py::module stream_module = get_stream_module();
+        py::module comm_module = get_comm_module();
+        py::module kernel_module = get_kernel_module();
 
-        py::dict scope;
-        scope["CommManager"] = get_comm_module().attr("CommManager");
+        // Monkey patching "from ipykernel.comm import Comm"
+        sys.attr("modules")["ipykernel.comm"] = comm_module;
 
-        scope["XDisplayPublisher"] = display_module.attr("XDisplayPublisher");
-        scope["XDisplayHook"] = display_module.attr("XDisplayHook");
+        py::module xeus_python_shell = py::module::import("xeus_python_shell");
 
-        scope["XCachingCompiler"] = get_compiler_module().attr("XCachingCompiler");
-
-        scope["get_parent_header"] = py::cpp_function([]() { return py::dict(py::arg("header")=xeus::get_interpreter().parent_header().get<py::object>()); });
-
-        exec(py::str(R"(
-import sys
-
-from IPython.core.interactiveshell import InteractiveShell
-from IPython.core.shellapp import InteractiveShellApp
-from IPython.core.application import BaseIPythonApplication
-from IPython.core import page, payloadpage
-
-
-class XKernel():
-    def __init__(self):
-        self.comm_manager = CommManager()
-
-    def get_parent(self):
-        return get_parent_header()
-
-    @property
-    def _parent_header(self):
-        return self.get_parent()
-
-
-class XPythonShell(InteractiveShell):
-    def __init__(self, *args, **kwargs):
-        super(XPythonShell, self).__init__(*args, **kwargs)
-        self.kernel = XKernel()
-
-    def enable_gui(self, gui=None):
-        """Not implemented yet."""
-        pass
-
-    def init_hooks(self):
-        super(XPythonShell, self).init_hooks()
-        self.set_hook('show_in_pager', page.as_hook(payloadpage.page), 99)
-
-    # Workaround for preventing IPython to show error traceback
-    # in the console, we catch it and will display it later
-    def _showtraceback(self, etype, evalue, stb):
-        self.last_error = [str(etype), str(evalue), stb]
-
-
-class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
-    def initialize(self, argv=None):
-        super(XPythonShellApp, self).initialize(argv)
-
-        self.user_ns = {}
-
-        # self.init_io() ?
-
-        self.init_path()
-        self.init_shell()
-
-        self.init_extensions()
-        self.init_code()
-
-        sys.stdout.flush()
-        sys.stderr.flush()
-
-    def init_shell(self):
-        self.shell = XPythonShell.instance(
-            display_pub_class=XDisplayPublisher,
-            displayhook_class=XDisplayHook,
-            compiler_class=XCachingCompiler,
-            user_ns=self.user_ns
-        )
-
-    # Overwrite exit logic, this is not part of the kernel protocole
-    def exit(self, exit_status=0):
-        pass
-        )"), scope);
-
-        m_ipython_shell_app = scope["XPythonShellApp"]();
+        m_ipython_shell_app = xeus_python_shell.attr("XPythonShellApp")();
         m_ipython_shell_app.attr("initialize")();
         m_ipython_shell = m_ipython_shell_app.attr("shell");
 
-        m_displayhook = m_ipython_shell.attr("displayhook");
+        // Setting kernel property owning the CommManager and get_parent
+        m_ipython_shell.attr("kernel") = kernel_module.attr("XKernel")();
+        m_ipython_shell.attr("kernel").attr("comm_manager") = comm_module.attr("CommManager")();
 
-        m_logger = m_ipython_shell_app.attr("log");
-        m_terminal_stream = stream_module.attr("TerminalStream")();
+        // Initializing the DisplayPublisher
+        m_ipython_shell.attr("display_pub").attr("publish_display_data") = display_module.attr("publish_display_data");
+        m_ipython_shell.attr("display_pub").attr("clear_output") = display_module.attr("clear_output");
+
+        // Initializing the DisplayHook
+        m_displayhook = m_ipython_shell.attr("displayhook");
+        m_displayhook.attr("publish_execution_result") = display_module.attr("publish_execution_result");
 
         // Needed for redirecting logging to the terminal
+        m_logger = m_ipython_shell_app.attr("log");
+        m_terminal_stream = stream_module.attr("TerminalStream")();
         m_logger.attr("handlers") = py::list(0);
         m_logger.attr("addHandler")(logging.attr("StreamHandler")(m_terminal_stream));
 
+        // Initializing the compiler
         m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
+        m_ipython_shell.attr("compile").attr("get_filename") = traceback_module.attr("get_filename");
+
     }
 
     nl::json interpreter::execute_request_impl(int /*execution_count*/,
@@ -229,41 +165,11 @@ class XPythonShellApp(BaseIPythonApplication, InteractiveShellApp):
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
-        py::module completer = py::module::import("IPython.core.completer");
+        py::list completion = m_ipython_shell.attr("complete_code")(code, cursor_pos);
 
-        py::dict scope;
-        scope["provisionalcompleter"] = completer.attr("provisionalcompleter");
-        scope["rectify_completions"] = completer.attr("rectify_completions");
-        scope["shell"] = m_ipython_shell;
-        scope["code"] = code;
-        scope["cursor_pos"] = cursor_pos;
-        exec(py::str(R"(
-with provisionalcompleter():
-    raw_completions = shell.Completer.completions(code, cursor_pos)
-    completions = list(rectify_completions(code, raw_completions))
-
-    comps = []
-    for comp in completions:
-        comps.append(dict(
-            start=comp.start,
-            end=comp.end,
-            text=comp.text,
-            type=comp.type,
-        ))
-
-if completions:
-    cursor_start = completions[0].start
-    cursor_end = completions[0].end
-    matches = [c.text for c in completions]
-else:
-    cursor_start = cursor_pos
-    cursor_end = cursor_pos
-    matches = []
-        )"), scope);
-
-        kernel_res["matches"] = scope["matches"];
-        kernel_res["cursor_end"] = scope["cursor_end"];
-        kernel_res["cursor_start"] = scope["cursor_start"];
+        kernel_res["matches"] = completion[0];
+        kernel_res["cursor_start"] = completion[1];
+        kernel_res["cursor_end"] = completion[2];
         kernel_res["metadata"] = nl::json::object();
         kernel_res["status"] = "ok";
 
