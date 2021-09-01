@@ -18,3 +18,4 @@ dependencies:
   - nbval
   - ipympl
   - jupyter_kernel_test
+  - jupyter_client<=6.2
