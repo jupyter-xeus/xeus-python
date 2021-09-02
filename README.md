@@ -60,7 +60,7 @@ The ongoing effort to package xeus-python for pip takes place in the [xeus-pytho
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-mamba install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json ipython debugpy jupyterlab -c conda-forge
+mamba install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json xeus-python-shell jupyterlab -c conda-forge
 ```
 
 Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
@@ -144,7 +144,7 @@ Long story short:
 
 | `xeus-python`|   `xeus`         |      `xtl`      | `cppzmq` | `nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` | `IPython` | `xeus-python-shell` |
 |--------------|------------------|-----------------|----------|-----------------|----------------|-------------------|-------------------|-----------|-----------|---------------------|
-|  master      |  >=1.0.3,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.8,<0.3      |                   | >=1.1.0   |           | >=0.1.2,<0.2.0      |
+|  master      |  >=1.0.3,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.8,<0.3      |                   |           |           | >=0.1.4,<0.2.0      |
 |  0.12.5      |  >=1.0.3,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=7.21,<8 |                     |
 |  0.12.4      |  >=1.0.0,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=7.21,<8 |                     |
 |  0.12.3      |  >=1.0.0,<0.26   |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<4.0    | >=2.6.0,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=7.21,<8 |                     |
