@@ -117,50 +117,13 @@ namespace xpyt
     nl::json debugger::inspect_variables_request(const nl::json& message)
     {
         py::gil_scoped_acquire acquire;
-        py::object variables = py::globals();
-
-        nl::json json_vars = nl::json::array();
-        for (const py::handle& key : variables)
-        {
-            nl::json json_var = nl::json::object();
-            std::string var_name = py::str(key);
-            if (keep_variable(var_name))
-            {
-                json_var["name"] = var_name;
-                json_var["variablesReference"] = 0;
-                try
-                {
-                    json_var["value"] = variables[key];
-                }
-                catch(std::exception&)
-                {
-                    json_var["value"] = py::repr(variables[key]);
-                }
-                std::string var_type = py::str(variables[key].get_type());
-                size_t size = var_type.size();
-                std::string var_trunc_type = var_type.substr(size_t(8), size - 10u);
-                json_var["type"] = var_trunc_type;
-                json_vars.push_back(json_var);
-            }
-        }
-
-        nl::json reply = {
-            {"type", "response"},
-            {"request_seq", message["seq"]},
-            {"success", true},
-            {"command", message["command"]},
-            {"body", {
-                {"variables", json_vars}
-            }}
-        };
-
+        py::object pymessage = message;
+        nl::json reply = m_pydebugger.attr("inspect_variables")(pymessage);
         return reply;
     }
 
     nl::json debugger::rich_inspect_variables_request(const nl::json& message)
     {
-
-
         std::string var_name = message["arguments"]["variableName"].get<std::string>();
         std::string var_repr_data = var_name + "_repr_data";
         std::string var_repr_metadata = var_name + "_repr_metada";
@@ -250,6 +213,21 @@ namespace xpyt
         return reply;
     }
 
+    nl::json debugger::variables_request_impl(const nl::json& message)
+    {
+        if (base_type::get_stopped_threads().empty())
+        {
+            py::gil_scoped_acquire acquire;
+            py::object pymessage = message;
+            nl::json reply = m_pydebugger.attr("variables")(pymessage);
+            return reply;
+        }
+        else
+        {
+            return base_type::variables_request_impl(message);
+        }
+    }
+
     bool debugger::start_debugpy()
     {
         // import debugpy
@@ -283,6 +261,12 @@ namespace xpyt
                 std::clog << traceback[i] << std::endl;
             }
             std::clog << ename << " - " << evalue << std::endl;
+        }
+        else
+        {
+            py::gil_scoped_acquire acquire;
+            py::module xeus_python_shell = py::module::import("xeus_python_shell");
+            m_pydebugger = xeus_python_shell.attr("XDebugger")();
         }
         return status == "ok";
     }

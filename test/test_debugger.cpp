@@ -712,6 +712,8 @@ bool debugger_client::test_debug_info()
 
 bool debugger_client::test_inspect_variables()
 {
+    attach();
+
     std::string code = "i=4\nj=i+4\nk=j-3\n";
     m_client.send_on_shell("execute_request", make_execute_request(code));
     m_client.receive_on_shell();
@@ -721,19 +723,20 @@ bool debugger_client::test_inspect_variables()
 
     nl::json vars = rep["content"]["body"]["variables"];
 
-    auto check_var = [&vars](const std::string& name, int value) {
+    auto check_var = [&vars](const std::string& name, const std::string& value) {
         auto x = std::find_if(vars.begin(), vars.end(), [&name](const nl::json& var) {
             return var.is_object() && var.value("name", "") == name;
         });
         if (x == vars.end())
         {
+            std::cout << "missing " << name << std::endl;
             return false;
         }
         nl::json var = *x;
         return var["value"] == value && var["variablesReference"] == 0;
     };
 
-    bool res = check_var("i", 4) && check_var("j", 8) && check_var("k", 5);
+    bool res = check_var("i", "4") && check_var("j", "8") && check_var("k", "5");
     return res;
 }
 
