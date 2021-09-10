@@ -195,21 +195,6 @@ macro(xpyt_set_common_options target_name)
             message(FATAL_ERROR "Unsupported compiler -- xeus-python requires C++14 support!")
         endif ()
     endif ()
-
-    if (APPLE)
-        set_target_properties(${target_name} PROPERTIES
-            MACOSX_RPATH ON
-        )
-    else ()
-        set_target_properties(${target_name} PROPERTIES
-            BUILD_WITH_INSTALL_RPATH 1
-            SKIP_BUILD_RPATH FALSE
-        )
-    endif ()
-
-    set_target_properties(${target_name} PROPERTIES
-        INSTALL_RPATH_USE_LINK_PATH TRUE
-    )
 endmacro()
 
 # Common macro kernels (xpython and xpython_extension)
