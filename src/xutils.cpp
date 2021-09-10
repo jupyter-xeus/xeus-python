@@ -50,21 +50,11 @@ namespace xpyt
 
     void exec(const py::object& code, const py::object& scope)
     {
-        // Workaround for https://github.com/pybind/pybind11/issues/1654
-        if (scope.attr("get")("__builtins__").is_none())
-        {
-            scope["__builtins__"] = py::module::import("builtins");
-        }
         py::exec("exec(_code_, _scope_, _scope_)", py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
     }
 
     py::object eval(const py::object& code, const py::object& scope)
     {
-        // Workaround for https://github.com/pybind/pybind11/issues/1654
-        if (scope.attr("get")("__builtins__").is_none())
-        {
-            scope["__builtins__"] = py::module::import("builtins");
-        }
         return py::eval(code, scope);
     }
 }
