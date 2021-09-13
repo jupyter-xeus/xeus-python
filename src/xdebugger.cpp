@@ -348,12 +348,13 @@ namespace xpyt
         return get_cell_tmp_file(code);
     }
 
-    std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
+    std::unique_ptr<xeus::xdebugger> make_python_debugger(xeus::xcontext& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,
                                                           const std::string& session_id,
                                                           const nl::json& debugger_config)
     {
-        return std::unique_ptr<xeus::xdebugger>(new debugger(context, config, user_name, session_id, debugger_config));
+        return std::unique_ptr<xeus::xdebugger>(new debugger(context.get_wrapped_context<zmq::context_t>(),
+                                                             config, user_name, session_id, debugger_config));
     }
 }

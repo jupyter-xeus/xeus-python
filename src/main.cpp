@@ -21,9 +21,10 @@
 #include <unistd.h>
 #endif
 
+#include "xeus/xeus_context.hpp"
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
-#include "xeus/xserver.hpp"
+#include "xeus/xserver_shell_main.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -155,6 +156,10 @@ int main(int argc, char* argv[])
     }
     delete[] argw;
 
+    using context_type = xeus::xcontext_impl<zmq::context_t>;
+    using context_ptr = std::unique_ptr<context_type>;
+    context_ptr context = context_ptr(new context_type());
+
     // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter());
@@ -180,11 +185,12 @@ int main(int argc, char* argv[])
 
         xeus::xkernel kernel(config,
                              xeus::get_user_name(),
+                             std::move(context),
                              std::move(interpreter),
+                             xeus::make_xserver_shell_main,
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
-                             xeus::make_xserver_shell_main,
                              xpyt::make_python_debugger,
                              debugger_config);
 
@@ -199,10 +205,11 @@ int main(int argc, char* argv[])
     else
     {
         xeus::xkernel kernel(xeus::get_user_name(),
+                             std::move(context),
                              std::move(interpreter),
+                             xeus::make_xserver_shell_main,
                              std::move(hist),
                              nullptr,
-                             xeus::make_xserver_shell_main,
                              xpyt::make_python_debugger,
                              debugger_config);
 
