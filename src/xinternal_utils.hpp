@@ -25,8 +25,8 @@ namespace xpyt
 {
     py::module create_module(const std::string& module_name);
 
-    py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers);
-    std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::object& bufferlist);
+    py::list cpp_buffers_to_pylist(const xeus::buffer_sequence& buffers);
+    xeus::buffer_sequence pylist_to_cpp_buffers(const py::object& bufferlist);
 
     py::object cppmessage_to_pymessage(const xeus::xmessage& msg);
 

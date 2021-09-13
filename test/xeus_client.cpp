@@ -19,6 +19,7 @@
 #include "xeus/xguid.hpp"
 #include "xeus/xmessage.hpp"
 #include "xeus/xmiddleware.hpp"
+#include "xeus/xzmq_serializer.hpp"
 
 using namespace std::chrono_literals;
 
@@ -107,8 +108,7 @@ nl::json xeus_client_base::receive_on_iopub()
 {
     zmq::multipart_t wire_msg;
     wire_msg.recv(m_iopub);
-    xeus::xpub_message msg;
-    msg.deserialize(wire_msg, *p_iopub_authentication);
+    xeus::xpub_message msg = xeus::xzmq_serializer::deserialize_iopub(wire_msg, *p_iopub_authentication);
 
     nl::json res =  aggregate(msg.header(),
                               msg.parent_header(),
@@ -130,14 +130,13 @@ void xeus_client_base::send_message(nl::json header,
                                     zmq::socket_t& socket,
                                     const xeus::xauthentication& auth)
 {
-    zmq::multipart_t wire_msg;
     xeus::xmessage msg(xeus::xmessage::guid_list(),
                        std::move(header),
                        std::move(parent_header),
                        std::move(metadata),
                        std::move(content),
                        xeus::buffer_sequence());
-    std::move(msg).serialize(wire_msg, auth);
+    zmq::multipart_t wire_msg = xeus::xzmq_serializer::serialize(std::move(msg), auth);
     wire_msg.send(socket);
 }
 
@@ -146,8 +145,7 @@ nl::json xeus_client_base::receive_message(zmq::socket_t& socket,
 {
     zmq::multipart_t wire_msg;
     wire_msg.recv(socket);
-    xeus::xmessage msg;
-    msg.deserialize(wire_msg, auth);
+    xeus::xmessage msg = xeus::xzmq_serializer::deserialize(wire_msg, auth);
 
     return aggregate(msg.header(),
                      msg.parent_header(),

@@ -42,7 +42,7 @@ namespace xpyt
 
         using python_callback_type = std::function<void(py::object)>;
         using cpp_callback_type = std::function<void(const xeus::xmessage&)>;
-        using zmq_buffers_type = std::vector<zmq::message_t>;
+        using buffers_sequence = xeus::buffer_sequence;
 
         xcomm(const py::args& args, const py::kwargs& kwargs);
         xcomm(xeus::xcomm&& comm);
@@ -83,7 +83,7 @@ namespace xpyt
         m_comm.open(
             kwargs.attr("get")("metadata", py::dict()),
             kwargs.attr("get")("data", py::dict()),
-            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
+            pylist_to_cpp_buffers(kwargs.attr("get")("buffers", py::list()))
         );
     }
 
@@ -111,7 +111,7 @@ namespace xpyt
         m_comm.close(
             kwargs.attr("get")("metadata", py::dict()),
             kwargs.attr("get")("data", py::dict()),
-            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
+            pylist_to_cpp_buffers(kwargs.attr("get")("buffers", py::list()))
         );
     }
 
@@ -120,7 +120,7 @@ namespace xpyt
         m_comm.send(
             kwargs.attr("get")("metadata", py::dict()),
             kwargs.attr("get")("data", py::dict()),
-            pylist_to_zmq_buffers(kwargs.attr("get")("buffers", py::list()))
+            pylist_to_cpp_buffers(kwargs.attr("get")("buffers", py::list()))
         );
     }
 

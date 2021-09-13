@@ -37,28 +37,28 @@ namespace xpyt
         return py::module_::create_extension_module(module_name.c_str(), nullptr, new py::module_::module_def);
     }
 
-    zmq::message_t pybytes_to_zmq_message(py::bytes bytes)
+    xeus::binary_buffer pybytes_to_cpp_message(py::bytes bytes)
     {
         char* buffer;
         Py_ssize_t length;
         PyBytes_AsStringAndSize(bytes.ptr(), &buffer, &length);
-        return zmq::message_t(buffer, static_cast<std::size_t>(length));
+        return xeus::binary_buffer(buffer, buffer + static_cast<std::size_t>(length));
     }
 
-    py::list zmq_buffers_to_pylist(const std::vector<zmq::message_t>& buffers)
+    py::list cpp_buffers_to_pylist(const xeus::buffer_sequence& buffers)
     {
         py::list bufferlist;
-        for (const zmq::message_t& buffer : buffers)
+        for (const xeus::binary_buffer& buffer : buffers)
         {
-            const char* buf = buffer.data<const char>();
+            const char* buf = buffer.data();
             bufferlist.attr("append")(py::memoryview(py::bytes(buf)));
         }
         return bufferlist;
     }
 
-    std::vector<zmq::message_t> pylist_to_zmq_buffers(const py::object& bufferlist)
+    xeus::buffer_sequence pylist_to_cpp_buffers(const py::object& bufferlist)
     {
-        std::vector<zmq::message_t> buffers;
+        xeus::buffer_sequence buffers;
 
         // Cannot iterate over NoneType, returning immediately with an empty vector
         if (bufferlist.is_none())
@@ -71,11 +71,11 @@ namespace xpyt
             if (py::isinstance<py::memoryview>(buffer))
             {
                 py::bytes bytes = buffer.attr("tobytes")();
-                buffers.push_back(pybytes_to_zmq_message(bytes));
+                buffers.push_back(pybytes_to_cpp_message(bytes));
             }
             else
             {
-                buffers.push_back(pybytes_to_zmq_message(buffer.cast<py::bytes>()));
+                buffers.push_back(pybytes_to_cpp_message(buffer.cast<py::bytes>()));
             }
         }
         return buffers;
@@ -88,7 +88,7 @@ namespace xpyt
         py_msg["parent_header"] = msg.parent_header().get<py::object>();
         py_msg["metadata"] = msg.metadata().get<py::object>();
         py_msg["content"] = msg.content().get<py::object>();
-        py_msg["buffers"] = zmq_buffers_to_pylist(msg.buffers());
+        py_msg["buffers"] = cpp_buffers_to_pylist(msg.buffers());
 
         return py_msg;
     }

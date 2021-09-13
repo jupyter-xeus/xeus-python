@@ -17,6 +17,7 @@
 
 #include "zmq.hpp"
 #include "nlohmann/json.hpp"
+#include "xeus/xeus_context.hpp"
 #include "xeus/xdebugger_base.hpp"
 #include "xeus_python_config.hpp"
 
@@ -61,7 +62,7 @@ namespace xpyt
     };
 
     XEUS_PYTHON_API
-    std::unique_ptr<xeus::xdebugger> make_python_debugger(zmq::context_t& context,
+    std::unique_ptr<xeus::xdebugger> make_python_debugger(xeus::xcontext& context,
                                                           const xeus::xconfiguration& config,
                                                           const std::string& user_name,
                                                           const std::string& session_id,
