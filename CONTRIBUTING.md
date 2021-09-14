@@ -49,3 +49,17 @@ To run Python tests, from the build directory, type
 cd ../test
 pytest . -vvv
 ```
+
+## Debugging the debugger
+
+You can redirect all debugpy logs to a logs directory with:
+
+```bash
+export DEBUGPY_LOG_DIR=/home/path/to/logs
+```
+
+You can also enable xeus logging with:
+
+```bash
+export XEUS_LOG=1
+```
