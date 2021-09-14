@@ -42,13 +42,19 @@ namespace xpyt
     {
         auto& interp = xeus::get_interpreter();
 
+        // Make sure transient is not None
+        py::object transient_ = transient;
+        if (transient_.is_none()) {
+            transient_ = py::dict();
+        }
+
         if (update)
         {
-            interp.update_display_data(data, metadata, transient);
+            interp.update_display_data(data, metadata, transient_);
         }
         else
         {
-            interp.display_data(data, metadata, transient);
+            interp.display_data(data, metadata, transient_);
         }
     }
 
@@ -88,22 +94,22 @@ namespace xpyt
 
         display_module.def("publish_display_data",
             xpublish_display_data,
-            py::arg("data"),
-            py::arg("metadata"),
-            py::arg("transient"),
-            py::arg("update")
+            "data"_a,
+            "metadata"_a=py::dict(),
+            "transient"_a=py::dict(),
+            "update"_a=false
         );
 
         display_module.def("publish_execution_result",
             xpublish_execution_result,
-            py::arg("execution_count"),
-            py::arg("data"),
-            py::arg("metadata")
+            "execution_count"_a,
+            "data"_a,
+            "metadata"_a=py::dict()
         );
 
         display_module.def("clear_output",
             xclear,
-            py::arg("wait") = false
+            "wait"_a=false
         );
 
         exec(py::str(R"(
