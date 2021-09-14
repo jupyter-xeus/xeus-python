@@ -18,8 +18,11 @@
 #include "zmq.hpp"
 #include "nlohmann/json.hpp"
 #include "xeus/xeus_context.hpp"
+#include "pybind11/pybind11.h"
 #include "xeus/xdebugger_base.hpp"
 #include "xeus_python_config.hpp"
+
+namespace py = pybind11;
 
 namespace xpyt
 {
@@ -47,6 +50,8 @@ namespace xpyt
         nl::json attach_request(const nl::json& message);
         nl::json configuration_done_request(const nl::json& message);
 
+        nl::json variables_request_impl(const nl::json& message) override;
+
         bool start_debugpy();
         bool start(zmq::socket_t& header_socket,
                    zmq::socket_t& request_socket) override;
@@ -59,6 +64,7 @@ namespace xpyt
         std::string m_debugpy_host;
         std::string m_debugpy_port;
         nl::json m_debugger_config;
+        py::object m_pydebugger;
     };
 
     XEUS_PYTHON_API
