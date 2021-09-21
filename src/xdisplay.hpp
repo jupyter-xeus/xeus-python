@@ -18,8 +18,7 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    py::module get_display_module();
-    void xdisplay(py::args, py::kwargs);
+    py::module get_display_module(bool raw_mode = false);
 }
 
 #endif

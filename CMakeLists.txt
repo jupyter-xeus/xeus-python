@@ -45,6 +45,10 @@ configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
 )
+configure_file (
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json"
+)
 
 # Build options
 # =============
@@ -129,9 +133,12 @@ set(XEUS_PYTHON_SRC
     src/xdisplay.hpp
     src/xinput.cpp
     src/xinput.hpp
+    src/xinspect.cpp
+    src/xinspect.hpp
     src/xinternal_utils.cpp
     src/xinternal_utils.hpp
     src/xinterpreter.cpp
+    src/xinterpreter_raw.cpp
     src/xkernel.cpp
     src/xkernel.hpp
     src/xpaths.cpp
@@ -146,6 +153,7 @@ set(XEUS_PYTHON_HEADERS
     include/xeus-python/xeus_python_config.hpp
     include/xeus-python/xpaths.hpp
     include/xeus-python/xinterpreter.hpp
+    include/xeus-python/xinterpreter_raw.hpp
     include/xeus-python/xtraceback.hpp
     include/xeus-python/xutils.hpp
 )

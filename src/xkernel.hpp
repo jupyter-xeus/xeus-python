@@ -17,7 +17,7 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    py::module get_kernel_module();
+    py::module get_kernel_module(bool raw_mode = false);
 }
 
 #endif

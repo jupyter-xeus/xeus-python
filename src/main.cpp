@@ -25,11 +25,13 @@
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus/xserver_shell_main.hpp"
+#include "xeus/xinterpreter.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
 
 #include "xeus-python/xinterpreter.hpp"
+#include "xeus-python/xinterpreter_raw.hpp"
 #include "xeus-python/xdebugger.hpp"
 #include "xeus-python/xpaths.hpp"
 #include "xeus-python/xeus_python_config.hpp"
@@ -68,12 +70,12 @@ bool should_print_version(int argc, char* argv[])
     return false;
 }
 
-std::string extract_filename(int argc, char* argv[])
+std::string extract_parameter(std::string param, int argc, char* argv[])
 {
     std::string res = "";
     for (int i = 0; i < argc; ++i)
     {
-        if ((std::string(argv[i]) == "-f") && (i + 1 < argc))
+        if ((std::string(argv[i]) == param) && (i + 1 < argc))
         {
             res = argv[i + 1];
             for (int j = i; j < argc - 2; ++j)
@@ -100,6 +102,7 @@ void print_pythonhome()
 
 int main(int argc, char* argv[])
 {
+
     if (should_print_version(argc, argv))
     {
         std::clog << "xpython " << XPYT_VERSION << std::endl;
@@ -160,14 +163,24 @@ int main(int argc, char* argv[])
     using context_ptr = std::unique_ptr<context_type>;
     context_ptr context = context_ptr(new context_type());
 
+
     // Instantiating the xeus xinterpreter
-    using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
-    interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter());
+    std::string kernel_mode_str = extract_parameter("-m", argc, argv);
+    bool raw_mode = (kernel_mode_str == "raw")? true : false;
+    using interpreter_ptr = std::unique_ptr<xeus::xinterpreter>;
+    interpreter_ptr interpreter;
+    if (raw_mode)
+    {
+        interpreter = interpreter_ptr(new xpyt::raw_interpreter());
+    } else {
+        interpreter = interpreter_ptr(new xpyt::interpreter());
+    }
+    
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
 
-    std::string connection_filename = extract_filename(argc, argv);
+    std::string connection_filename = extract_parameter("-f", argc, argv);
 
 #ifdef XEUS_PYTHON_PYPI_WARNING
     std::clog <<

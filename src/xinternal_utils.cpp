@@ -37,6 +37,33 @@ namespace xpyt
         return py::module_::create_extension_module(module_name.c_str(), nullptr, new py::module_::module_def);
     }
 
+    std::string red_text(const std::string& text)
+    {
+        return "\033[0;31m" + text + "\033[0m";
+    }
+
+    std::string green_text(const std::string& text)
+    {
+        return "\033[0;32m" + text + "\033[0m";
+    }
+
+    std::string blue_text(const std::string& text)
+    {
+        return "\033[0;34m" + text + "\033[0m";
+    }
+
+    std::string highlight(const std::string& code)
+    {
+        py::object py_highlight = py::module::import("pygments").attr("highlight");
+        // py::module::import("pygments").attr("formatters") does NOT work due
+        // to side effects when importing pygments
+        py::object formatter = py::module::import("pygments.formatters").attr("TerminalFormatter");
+
+        py::object lexer = py::module::import("pygments.lexers").attr("Python3Lexer");
+
+        return py::str(py_highlight(code, lexer(), formatter()));
+    }
+
     xeus::binary_buffer pybytes_to_cpp_message(py::bytes bytes)
     {
         char* buffer;

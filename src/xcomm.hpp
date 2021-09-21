@@ -17,7 +17,45 @@ namespace py = pybind11;
 
 namespace xpyt
 {
+    class xcomm
+    {
+    public:
+
+        using python_callback_type = std::function<void(py::object)>;
+        using cpp_callback_type = std::function<void(const xeus::xmessage&)>;
+        using buffers_sequence = xeus::buffer_sequence;
+
+        xcomm(const py::args& args, const py::kwargs& kwargs);
+        xcomm(xeus::xcomm&& comm);
+        xcomm(xcomm&& comm) = default;
+        virtual ~xcomm();
+
+        std::string comm_id() const;
+        bool kernel() const;
+
+        void close(const py::args& args, const py::kwargs& kwargs);
+        void send(const py::args& args, const py::kwargs& kwargs);
+        void on_msg(const python_callback_type& callback);
+        void on_close(const python_callback_type& callback);
+
+    private:
+
+        xeus::xtarget* target(const py::kwargs& kwargs) const;
+        xeus::xguid id(const py::kwargs& kwargs) const;
+        cpp_callback_type cpp_callback(const python_callback_type& callback) const;
+
+        xeus::xcomm m_comm;
+    };
+
+    struct xcomm_manager
+    {
+        xcomm_manager() = default;
+
+        void register_target(const py::str& target_name, const py::object& callback);
+    };
+
     py::module get_comm_module();
+
 }
 
 #endif
