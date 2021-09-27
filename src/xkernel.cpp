@@ -8,7 +8,6 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include <iostream>
 #include <string>
 #include <utility>
 
@@ -84,6 +83,7 @@ namespace xpyt_raw
 
     struct xmock_ipython
     {
+        py::object kernel;
         void register_post_execute(py::args, py::kwargs) {};
         void enable_gui(py::args, py::kwargs) {};
         void observe(py::args, py::kwargs) {};
@@ -180,6 +180,8 @@ namespace xpyt_raw
             .def_readwrite("comm_manager", &xmock_kernel::m_comm_manager);
 
         py::class_<xmock_ipython>(kernel_module, "MockIPython")
+            .def(py::init<>())
+            .def_readwrite("kernel", &xmock_ipython::kernel)
             .def("register_post_execute", &xmock_ipython::register_post_execute)
             .def("enable_gui", &xmock_ipython::enable_gui)
             .def("observe", &xmock_ipython::observe)
@@ -197,7 +199,7 @@ namespace xpyt_raw
             if (m_instance.is(py::none()))
             {
 
-                m_instance = kernel_module.attr("MockIPython");
+                m_instance = kernel_module.attr("MockIPython")();
                 m_instance.attr("kernel") = kernel_module.attr("MockKernel")();
             }
             return m_instance;

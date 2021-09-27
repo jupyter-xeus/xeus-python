@@ -8,7 +8,6 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include <iostream>
 #include <algorithm>
 #include <fstream>
 #include <memory>
@@ -47,7 +46,6 @@ namespace xpyt
     interpreter::interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
         : m_redirect_display_enabled{redirect_display_enabled}
     {
-        std::cout << "in normal mode" << std::endl;
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
         {

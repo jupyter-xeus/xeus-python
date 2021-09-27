@@ -8,7 +8,6 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include <iostream>
 #include <algorithm>
 #include <fstream>
 #include <memory>
@@ -45,10 +44,9 @@ using namespace pybind11::literals;
 namespace xpyt
 {
 
-    raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/) :m_redirect_display_enabled{redirect_display_enabled}
+    raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/) :m_redirect_display_enabled{ redirect_display_enabled }
 
     {
-        std::cout << "in raw mode" << std::endl;
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
         {
@@ -70,14 +68,14 @@ namespace xpyt
         }
 
         py::gil_scoped_acquire acquire;
+        exec(py::str("import logging"));
 
         py::module sys = py::module::import("sys");
-        py::module logging = py::module::import("logging");
 
         py::module jedi = py::module::import("jedi");
         jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
             jedi.attr("api").attr("environment").attr("SameEnvironment")();
-        });
+            });
 
         py::module display_module = get_display_module(true);
         m_displayhook = display_module.attr("DisplayHook")();
@@ -91,7 +89,7 @@ namespace xpyt
         // Expose display functions to Python
         py::globals()["display"] = display_module.attr("display");
         py::globals()["update_display"] = display_module.attr("update_display");
-         // Monkey patching "import IPython.core.display"
+        // Monkey patching "import IPython.core.display"
         sys.attr("modules")["IPython.core.display"] = display_module;
 
 
@@ -104,6 +102,7 @@ namespace xpyt
 
         // Add get_ipython to global namespace
         py::globals()["get_ipython"] = kernel_module.attr("get_ipython");
+        kernel_module.attr("get_ipython")();
 
         py::globals()["_i"] = "";
         py::globals()["_ii"] = "";
@@ -111,12 +110,14 @@ namespace xpyt
 
     }
 
+
+
     nl::json raw_interpreter::execute_request_impl(
         int execution_count,
         const std::string& code,
         bool silent,
-        bool store_history,
-        nl::json user_expressions,
+        bool /*store_history*/,
+        nl::json /*user_expressions*/,
         bool allow_stdin)
     {
         py::gil_scoped_acquire acquire;
@@ -125,8 +126,8 @@ namespace xpyt
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(allow_stdin);
-
-        code_copy = code;
+        std::string cleaned_code = remove_magics(code);
+        code_copy = cleaned_code;
         try
         {
             // Import modules
@@ -137,12 +138,9 @@ namespace xpyt
             py::object code_ast = ast.attr("parse")(code_copy, "<string>", "exec");
             py::list expressions = code_ast.attr("body");
 
-            std::string filename = get_cell_tmp_file(code);
+            std::string filename = get_cell_tmp_file(cleaned_code);
             register_filename_mapping(filename, execution_count);
 
-            // Caching the input code
-            // py::module linecache = py::module::import("linecache");
-            // linecache.attr("xupdatecache")(code, filename);
 
             // If the last statement is an expression, we compile it separately
             // in an interactive mode (This will trigger the display hook)
@@ -323,5 +321,27 @@ namespace xpyt
         sys.attr("stdout") = stream_module.attr("Stream")("stdout");
         sys.attr("stderr") = stream_module.attr("Stream")("stderr");
     }
+
+
+    std::string raw_interpreter::remove_magics(const std::string& code, bool warning)
+    {
+        std::string result = "";
+        std::stringstream stream(code);
+        std::string temp;
+        while (std::getline(stream, temp)) {
+            if (temp.rfind("%", 0) != 0) {
+                result += temp + "\n";
+            }
+            else if (warning) {
+                if (!m_logging_imported) {
+                    result += "import logging\n";
+                    m_logging_imported = true;
+                }
+                result += "logging.getLogger().warning('IPython magics are disabled in raw mode')\n";
+            }
+        }
+        return result;
+    }
+
 
 }

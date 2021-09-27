@@ -117,7 +117,6 @@ namespace xpyt
         py_msg["metadata"] = msg.metadata().get<py::object>();
         py_msg["content"] = msg.content().get<py::object>();
         py_msg["buffers"] = cpp_buffers_to_pylist(msg.buffers());
-
         return py_msg;
     }
 
