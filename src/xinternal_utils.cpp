@@ -50,8 +50,9 @@ namespace xpyt
         py::list bufferlist;
         for (const xeus::binary_buffer& buffer : buffers)
         {
-            const char* buf = buffer.data();
-            bufferlist.attr("append")(py::memoryview(py::bytes(buf)));
+            bufferlist.attr("append")(
+                py::memoryview(py::bytes(buffer.data(), buffer.size()))
+            );
         }
         return bufferlist;
     }
