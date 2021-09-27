@@ -11,6 +11,11 @@
 #ifndef XPYT_DEBUGGER_HPP
 #define XPYT_DEBUGGER_HPP
 
+#ifdef __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 #include <map>
 #include <mutex>
 #include <set>
@@ -74,5 +79,9 @@ namespace xpyt
                                                           const std::string& session_id,
                                                           const nl::json& debugger_config);
 }
+
+#ifdef __GNUC__
+    #pragma GCC diagnostic pop
+#endif
 
 #endif
