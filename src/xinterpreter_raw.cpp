@@ -68,7 +68,7 @@ namespace xpyt
         }
 
         py::gil_scoped_acquire acquire;
-        exec(py::str("import logging"));
+
 
         py::module sys = py::module::import("sys");
 
