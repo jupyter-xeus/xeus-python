@@ -82,7 +82,6 @@ namespace xpyt
 
         if (m_redirect_display_enabled)
         {
-            py::module sys = py::module::import("sys");
             sys.attr("displayhook") = m_displayhook;
         }
 
@@ -126,8 +125,7 @@ namespace xpyt
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(allow_stdin);
-        std::string cleaned_code = remove_magics(code);
-        code_copy = cleaned_code;
+        code_copy = code;
         try
         {
             // Import modules
@@ -138,7 +136,7 @@ namespace xpyt
             py::object code_ast = ast.attr("parse")(code_copy, "<string>", "exec");
             py::list expressions = code_ast.attr("body");
 
-            std::string filename = get_cell_tmp_file(cleaned_code);
+            std::string filename = get_cell_tmp_file(code);
             register_filename_mapping(filename, execution_count);
 
 
@@ -180,6 +178,12 @@ namespace xpyt
         catch (py::error_already_set& e)
         {
             xerror error = extract_already_set_error(e);
+
+            if (error.m_ename == "SyntaxError") {
+                if (code.find("%") != std::string::npos) {
+                    error.m_traceback.push_back("There may be Ipython magics in your code, this feature is not supported in xeus-python raw mode! Please consider switching to xeus-python normal mode or removing these magics");
+                }
+            }
 
             if (!silent)
             {
@@ -321,27 +325,5 @@ namespace xpyt
         sys.attr("stdout") = stream_module.attr("Stream")("stdout");
         sys.attr("stderr") = stream_module.attr("Stream")("stderr");
     }
-
-
-    std::string raw_interpreter::remove_magics(const std::string& code, bool warning)
-    {
-        std::string result = "";
-        std::stringstream stream(code);
-        std::string temp;
-        while (std::getline(stream, temp)) {
-            if (temp.rfind("%", 0) != 0) {
-                result += temp + "\n";
-            }
-            else if (warning) {
-                if (!m_logging_imported) {
-                    result += "import logging\n";
-                    m_logging_imported = true;
-                }
-                result += "logging.getLogger().warning('IPython magics are disabled in raw mode')\n";
-            }
-        }
-        return result;
-    }
-
 
 }

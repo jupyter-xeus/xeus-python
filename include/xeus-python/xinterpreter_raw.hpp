@@ -70,8 +70,6 @@ namespace xpyt
 
         void redirect_output();
 
-        std::string remove_magics(const std::string& code, bool warning = true);
-
         py::object m_displayhook;
 
         // The interpreter has the same scope as a `gil_scoped_release` instance
@@ -87,7 +85,6 @@ namespace xpyt
         //
         bool m_release_gil_at_startup = true;
         gil_scoped_release_ptr m_release_gil = nullptr;
-        bool m_logging_imported = false;
         bool m_redirect_display_enabled;
     };
 

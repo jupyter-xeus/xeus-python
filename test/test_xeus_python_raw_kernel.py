@@ -46,14 +46,16 @@ class XeusPythonRawTests(jupyter_kernel_test.KernelTests):
     def test_xeus_python_line_magic(self):
         self.flush_channels()
         reply, output_msgs = self.execute_helper(code="%pwd")
-        self.assertEqual(output_msgs[0]['msg_type'], 'stream')
+        self.assertEqual(output_msgs[0]['msg_type'], 'error')
+        msg_error = output_msgs[0]['content']
         self.assertEqual(
-            output_msgs[0]['content']['text'],
-            'IPython magics are disabled in raw mode\n'
+            msg_error['ename'],
+            'SyntaxError'
         )
-        # line magic expressions
-        reply, output_msgs = self.execute_helper(code="a = %pwd\nassert a")
-        self.assertEqual(reply['content']['status'], 'error')
+        self.assertTrue(
+            'There may be Ipython magics in your code, this feature is not supported in xeus-python raw mode! Please consider switching to xeus-python normal mode or removing these magics' in msg_error[
+                'traceback']
+        )
 
     def test_xeus_python_stderr(self):
         self.flush_channels()
