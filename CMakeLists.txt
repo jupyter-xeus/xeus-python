@@ -165,8 +165,6 @@ include(CheckCXXCompilerFlag)
 
 string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib; ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-
 macro(xpyt_set_common_options target_name)
     if (MSVC)
         target_compile_options(${target_name} PUBLIC /wd4251 /wd4141)
@@ -216,6 +214,7 @@ macro(xpyt_set_kernel_options target_name)
 
     find_package(Threads) # TODO: add Threads as a dependence of xeus or xeus-static?
     target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+    set_target_properties(${target_name} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 endmacro()
 
 # Common macro for shared and static library xeus-python
