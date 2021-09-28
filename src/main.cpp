@@ -89,6 +89,25 @@ std::string extract_parameter(std::string param, int argc, char* argv[])
     return res;
 }
 
+bool extract_option(std::string short_opt, std::string long_opt, int argc, char* argv[])
+{
+    bool res = false;
+    for (int i = 0; i < argc; ++i)
+    {
+        if (((std::string(argv[i]) == short_opt) || (std::string(argv[i]) == long_opt)))
+        {
+            res = true;
+            for (int j = i; j < argc - 1; ++j)
+            {
+                argv[j] = argv[j + 1];
+            }
+            argc -= 1;
+            break;
+        }
+    }
+    return res;
+}
+
 void print_pythonhome()
 {
     std::setlocale(LC_ALL, "en_US.utf8");
@@ -165,8 +184,7 @@ int main(int argc, char* argv[])
 
 
     // Instantiating the xeus xinterpreter
-    std::string kernel_mode_str = extract_parameter("-m", argc, argv);
-    bool raw_mode = (kernel_mode_str == "raw")? true : false;
+    bool raw_mode = extract_option("-r", "--raw", argc, argv);
     using interpreter_ptr = std::unique_ptr<xeus::xinterpreter>;
     interpreter_ptr interpreter;
     if (raw_mode)

@@ -33,7 +33,7 @@ class XeusPythonRawTests(jupyter_kernel_test.KernelTests):
     def setUpClass(cls):
         cls.km, cls.kc = start_new_kernel(
             kernel_name=cls.kernel_name,
-            extra_arguments=['-m', 'raw']
+            extra_arguments=['--raw']
         )
 
     def test_xeus_python_stdout(self):

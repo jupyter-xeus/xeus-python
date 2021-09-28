@@ -4,8 +4,7 @@
       "@XPYTHON_KERNELSPEC_PATH@xpython",
       "-f",
       "{connection_file}",
-      "-m",
-      "raw"
+      "--raw"
   ],
   "language": "python",
   "metadata": { "debugger": false }
