@@ -94,11 +94,6 @@ if (APPLE)
     set_target_properties(test_xeus_python PROPERTIES
         MACOSX_RPATH ON
     )
-else()
-    set_target_properties(test_xeus_python PROPERTIES
-        BUILD_WITH_INSTALL_RPATH 1
-        SKIP_BUILD_RPATH FALSE
-    )
 endif()
 
 set_target_properties(test_xeus_python PROPERTIES
