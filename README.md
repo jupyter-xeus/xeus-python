@@ -82,6 +82,22 @@ link:
 
 Launch the Jupyter notebook with `jupyter notebook` or Jupyter lab with `jupyter lab` and launch a new Python notebook by selecting the **xpython** kernel.
 
+**Raw mode**
+
+You can run xeus-python in the "raw" mode by selecting the `XPython Raw` kernel. In this mode:
+
+- IPython is not used: IPython magics are not available
+- Jupyter console is not supported
+
+but
+
+- xeus-python starts faster
+- Completion/Inspection/Code execution works faster
+- Interactive widgets are supported
+
+This is useful when using xeus-python in [Voila](https://github.com/voila-dashboards/voila), where you should see a
+~15% performance improvement, reducing the load of your application.
+
 **Code execution and variable display**:
 
 ![Basic code execution](docs/source/code_exec.gif)
