@@ -11,6 +11,7 @@
 import unittest
 import jupyter_kernel_test
 
+from jupyter_client.manager import start_new_kernel
 
 class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
@@ -34,7 +35,9 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
     code_inspect_sample = "open"
 
     def test_xeus_python_history_manager(self):
-        reply, output_msgs = self.execute_helper(code="assert get_ipython().history_manager is not None")
+        reply, output_msgs = self.execute_helper(
+            code="assert get_ipython().history_manager is not None"
+        )
         self.assertEqual(reply['content']['status'], 'ok')
 
     def test_xeus_python_stdout(self):
@@ -50,3 +53,5 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
 if __name__ == '__main__':
     unittest.main()
+
+

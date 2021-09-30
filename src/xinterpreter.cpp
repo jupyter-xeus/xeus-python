@@ -43,7 +43,7 @@ using namespace pybind11::literals;
 namespace xpyt
 {
 
-    interpreter::interpreter(bool redirect_output_enabled/*=true*/, bool redirect_display_enabled/*=true*/)
+    interpreter::interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
         : m_redirect_display_enabled{redirect_display_enabled}
     {
         xeus::register_interpreter(this);

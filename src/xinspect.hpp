@@ -8,34 +8,22 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XPYT_TRACEBACK_HPP
-#define XPYT_TRACEBACK_HPP
+#ifndef XPYT_INSPECT_HPP
+#define XPYT_INSPECT_HPP
 
-#include <vector>
 #include <string>
 
 #include "pybind11/pybind11.h"
-
-#include "xeus_python_config.hpp"
 
 namespace py = pybind11;
 
 namespace xpyt
 {
-    struct XEUS_PYTHON_API xerror
-    {
-        std::string m_ename;
-        std::string m_evalue;
-        std::vector<std::string> m_traceback;
-    };
+    py::list get_completions(const std::string& code, int cursor_pos);
+    py::list get_completions(const std::string& code);
 
-    XEUS_PYTHON_API py::module get_traceback_module();
-
-    XEUS_PYTHON_API void register_filename_mapping(const std::string& filename, int execution_count);
-
-    XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
-    xerror extract_error(const py::list& error);
-    xerror extract_already_set_error(py::error_already_set& error);
+    std::string formatted_docstring(const std::string& code, int cursor_pos);
+    std::string formatted_docstring(const std::string& code);
 }
 
 #endif
