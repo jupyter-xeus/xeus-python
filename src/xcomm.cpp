@@ -114,14 +114,16 @@ namespace xpyt
 
     auto xcomm::cpp_callback(const python_callback_type& py_callback) const -> cpp_callback_type
     {
-        return [this, py_callback](const xeus::xmessage& msg) {
+        return [this, py_callback](const xeus::xmessage& msg) 
+        {
             XPYT_HOLDING_GIL(py_callback(cppmessage_to_pymessage(msg)))
         };
     }
 
     void xcomm_manager::register_target(const py::str& target_name, const py::object& callback)
     {
-        auto target_callback = [&callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) {
+        auto target_callback = [&callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) 
+        {
             XPYT_HOLDING_GIL(callback(xcomm(std::move(comm)), cppmessage_to_pymessage(msg)));
         };
 

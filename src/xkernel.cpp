@@ -115,7 +115,10 @@ namespace xpyt_raw
                 int start,
                 int stop,
                 bool raw,
-                bool output) {return me.get_range(session, start, stop, raw, output)["history"];},
+                bool output) 
+                {
+                    return me.get_range(session, start, stop, raw, output)["history"];
+                },
                 py::arg("session") = 0,
                 py::arg("start") = 0,
                 py::arg("stop") = 1000,
@@ -250,7 +253,8 @@ namespace xpyt
         {
             kernel_module = xpyt_raw::get_kernel_module_impl();
         }
-        else {
+        else 
+        {
 
             kernel_module = xpyt_ipython::get_kernel_module_impl();
         }

@@ -179,8 +179,10 @@ namespace xpyt
         {
             xerror error = extract_already_set_error(e);
 
-            if (error.m_ename == "SyntaxError") {
-                if (code.find("%") != std::string::npos) {
+            if (error.m_ename == "SyntaxError") 
+            {
+                if (code.find("%") != std::string::npos) 
+                {
                     error.m_traceback.push_back("There may be Ipython magics in your code, this feature is not supported in xeus-python raw mode! Please consider switching to xeus-python normal mode or removing these magics");
                 }
             }
@@ -303,10 +305,12 @@ namespace xpyt
         result["language_info"]["file_extension"] = ".py";
 
         result["help_links"] = nl::json::array();
-        result["help_links"][0] = nl::json::object({
-            {"text", "Xeus-Python Reference"},
-            {"url", "https://xeus-python.readthedocs.io"}
-            });
+        result["help_links"][0] = nl::json::object(
+            {
+                {"text", "Xeus-Python Reference"},
+                {"url", "https://xeus-python.readthedocs.io"}
+            }
+        );
 
         result["status"] = "ok";
         return result;

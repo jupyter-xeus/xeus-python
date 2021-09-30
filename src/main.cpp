@@ -190,7 +190,8 @@ int main(int argc, char* argv[])
     if (raw_mode)
     {
         interpreter = interpreter_ptr(new xpyt::raw_interpreter());
-    } else {
+    } else 
+    {
         interpreter = interpreter_ptr(new xpyt::interpreter());
     }
     

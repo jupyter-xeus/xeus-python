@@ -44,7 +44,8 @@ namespace xpyt_ipython
 
         // Make sure transient is not None
         py::object transient_ = transient;
-        if (transient_.is_none()) {
+        if (transient_.is_none()) 
+        {
             transient_ = py::dict();
         }
 
@@ -1267,7 +1268,8 @@ namespace xpyt
         {
             display_module = xpyt_raw::get_display_module_impl();
         }
-        else {
+        else 
+        {
             display_module = xpyt_ipython::get_display_module_impl();
         }
         return display_module;
