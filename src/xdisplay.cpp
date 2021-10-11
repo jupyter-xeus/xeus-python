@@ -28,6 +28,11 @@
 #include "xdisplay.hpp"
 #include "xinternal_utils.hpp"
 
+#ifdef __GNUC__
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 namespace py = pybind11;
 namespace nl = nlohmann;
 using namespace pybind11::literals;
@@ -44,7 +49,7 @@ namespace xpyt_ipython
 
         // Make sure transient is not None
         py::object transient_ = transient;
-        if (transient_.is_none()) 
+        if (transient_.is_none())
         {
             transient_ = py::dict();
         }
@@ -1256,7 +1261,6 @@ namespace xpyt_raw
         return display_module;
     }
 
-
 }
 
 namespace xpyt
@@ -1268,10 +1272,14 @@ namespace xpyt
         {
             display_module = xpyt_raw::get_display_module_impl();
         }
-        else 
+        else
         {
             display_module = xpyt_ipython::get_display_module_impl();
         }
         return display_module;
     }
 }
+
+#ifdef __GNUC__
+    #pragma GCC diagnostic pop
+#endif
