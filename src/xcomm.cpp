@@ -28,6 +28,7 @@
 
 namespace py = pybind11;
 namespace nl = nlohmann;
+using namespace pybind11::literals;
 
 namespace xpyt
 {
@@ -36,14 +37,10 @@ namespace xpyt
      * xcomm implementation *
      ************************/
 
-    xcomm::xcomm(const py::args& /*args*/, const py::kwargs& kwargs)
-        : m_comm(target(kwargs), id(kwargs))
+    xcomm::xcomm(const py::object& target_name, const py::object& data, const py::object& metadata, const py::object& buffers, const py::kwargs& kwargs)
+        : m_comm(target(target_name), id(kwargs))
     {
-        m_comm.open(
-            kwargs.attr("get")("metadata", py::dict()),
-            kwargs.attr("get")("data", py::dict()),
-            pylist_to_cpp_buffers(kwargs.attr("get")("buffers", py::list()))
-        );
+        m_comm.open(metadata, data, pylist_to_cpp_buffers(buffers));
     }
 
     xcomm::xcomm(xeus::xcomm&& comm)
@@ -65,22 +62,14 @@ namespace xpyt
         return true;
     }
 
-    void xcomm::close(const py::args& /*args*/, const py::kwargs& kwargs)
+    void xcomm::close(const py::object& data, const py::object& metadata, const py::object& buffers)
     {
-        m_comm.close(
-            kwargs.attr("get")("metadata", py::dict()),
-            kwargs.attr("get")("data", py::dict()),
-            pylist_to_cpp_buffers(kwargs.attr("get")("buffers", py::list()))
-        );
+        m_comm.close(metadata, data, pylist_to_cpp_buffers(buffers));
     }
 
-    void xcomm::send(const py::args& /*args*/, const py::kwargs& kwargs)
+    void xcomm::send(const py::object& data, const py::object& metadata, const py::object& buffers)
     {
-        m_comm.send(
-            kwargs.attr("get")("metadata", py::dict()),
-            kwargs.attr("get")("data", py::dict()),
-            pylist_to_cpp_buffers(kwargs.attr("get")("buffers", py::list()))
-        );
+        m_comm.send(metadata, data, pylist_to_cpp_buffers(buffers));
     }
 
     void xcomm::on_msg(const python_callback_type& callback)
@@ -93,10 +82,9 @@ namespace xpyt
         m_comm.on_close(cpp_callback(callback));
     }
 
-    xeus::xtarget* xcomm::target(const py::kwargs& kwargs) const
+    xeus::xtarget* xcomm::target(const py::object& target_name) const
     {
-        std::string target_name = kwargs["target_name"].cast<std::string>();
-        return xeus::get_interpreter().comm_manager().target(target_name);
+        return xeus::get_interpreter().comm_manager().target(target_name.cast<std::string>());
     }
 
     xeus::xguid xcomm::id(const py::kwargs& kwargs) const
@@ -114,7 +102,7 @@ namespace xpyt
 
     auto xcomm::cpp_callback(const python_callback_type& py_callback) const -> cpp_callback_type
     {
-        return [this, py_callback](const xeus::xmessage& msg) 
+        return [this, py_callback](const xeus::xmessage& msg)
         {
             XPYT_HOLDING_GIL(py_callback(cppmessage_to_pymessage(msg)))
         };
@@ -122,7 +110,7 @@ namespace xpyt
 
     void xcomm_manager::register_target(const py::str& target_name, const py::object& callback)
     {
-        auto target_callback = [&callback] (xeus::xcomm&& comm, const xeus::xmessage& msg) 
+        auto target_callback = [&callback] (xeus::xcomm&& comm, const xeus::xmessage& msg)
         {
             XPYT_HOLDING_GIL(callback(xcomm(std::move(comm)), cppmessage_to_pymessage(msg)));
         };
@@ -141,9 +129,12 @@ namespace xpyt
         py::module comm_module = create_module("comm");
 
         py::class_<xcomm>(comm_module, "Comm")
-            .def(py::init<py::args, py::kwargs>())
-            .def("close", &xcomm::close)
-            .def("send", &xcomm::send)
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::object&, py::kwargs>(),
+                "target_name"_a="", "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list()
+            )
+            .def("close", &xcomm::close, "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list())
+            .def("send", &xcomm::send, "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list())
             .def("on_msg", &xcomm::on_msg)
             .def("on_close", &xcomm::on_close)
             .def_property_readonly("comm_id", &xcomm::comm_id)
