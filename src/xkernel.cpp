@@ -34,6 +34,7 @@
 
 namespace py = pybind11;
 namespace nl = nlohmann;
+using namespace pybind11::literals;
 
 namespace xpyt_ipython
 {
@@ -115,7 +116,7 @@ namespace xpyt_raw
                 int start,
                 int stop,
                 bool raw,
-                bool output) 
+                bool output)
                 {
                     return me.get_range(session, start, stop, raw, output)["history"];
                 },
@@ -162,9 +163,12 @@ namespace xpyt_raw
     void bind_comm(py::module& kernel_module)
     {
         py::class_<xpyt::xcomm>(kernel_module, "Comm")
-            .def(py::init<py::args, py::kwargs>())
-            .def("close", &xpyt::xcomm::close)
-            .def("send", &xpyt::xcomm::send)
+            .def(
+                py::init<const py::object&, const py::object&, const py::object&, const py::object&, py::kwargs>(),
+                "target_name"_a="", "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list()
+            )
+            .def("close", &xpyt::xcomm::close, "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list())
+            .def("send", &xpyt::xcomm::send, "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list())
             .def("on_msg", &xpyt::xcomm::on_msg)
             .def("on_close", &xpyt::xcomm::on_close)
             .def_property_readonly("comm_id", &xpyt::xcomm::comm_id)
@@ -253,7 +257,7 @@ namespace xpyt
         {
             kernel_module = xpyt_raw::get_kernel_module_impl();
         }
-        else 
+        else
         {
 
             kernel_module = xpyt_ipython::get_kernel_module_impl();
