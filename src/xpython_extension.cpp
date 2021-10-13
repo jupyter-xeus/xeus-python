@@ -13,6 +13,8 @@
 #include <string>
 #include <utility>
 
+#include "xinternal_utils.hpp"
+
 #include "xeus/xeus_context.hpp"
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
@@ -21,19 +23,39 @@
 #include "pybind11/pybind11.h"
 
 #include "xeus-python/xinterpreter.hpp"
+#include "xeus-python/xinterpreter_raw.hpp"
 #include "xeus-python/xdebugger.hpp"
 
 namespace py = pybind11;
 
-void launch(const std::string& connection_filename)
+void launch(const py::list args_list)
 {
+
+    int argc = args_list.size();
+    char** argv = (char**)malloc(argc * sizeof(char*));
+    for (size_t i = 0; i < argc; i++)
+    {
+        argv[i] = (char*)PyUnicode_AsUTF8(args_list[i].ptr());
+    }
+
+    bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv);
+    std::string connection_filename = xpyt::extract_parameter("-f", argc, argv);
+
     using context_type = xeus::xcontext_impl<zmq::context_t>;
     using context_ptr = std::unique_ptr<context_type>;
     context_ptr context = context_ptr(new context_type());
 
     // Instantiating the xeus xinterpreter
-    using interpreter_ptr = std::unique_ptr<xpyt::interpreter>;
-    interpreter_ptr interpreter = interpreter_ptr(new xpyt::interpreter());
+    using interpreter_ptr = std::unique_ptr<xeus::xinterpreter>;
+    interpreter_ptr interpreter;
+    if (raw_mode)
+    {
+        interpreter = interpreter_ptr(new xpyt::raw_interpreter());
+    } else 
+    {
+        interpreter = interpreter_ptr(new xpyt::interpreter());
+    }
+    
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
@@ -103,5 +125,5 @@ void launch(const std::string& connection_filename)
 PYBIND11_MODULE(xpython_extension, m)
 {
     m.doc() = "Xeus-python kernel launcher";
-    m.def("launch", launch, py::arg("connection_filename") = "", "Launch the Jupyter kernel");
+    m.def("launch", launch, py::arg("args_list"), "Launch the Jupyter kernel");
 }

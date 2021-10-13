@@ -136,4 +136,42 @@ namespace xpyt
                                        content,
                                        get_tmp_suffix());
     }
+
+    std::string extract_parameter(std::string param, int argc, char* argv[])
+    {
+        std::string res = "";
+        for (int i = 0; i < argc; ++i)
+        {
+            if ((std::string(argv[i]) == param) && (i + 1 < argc))
+            {
+                res = argv[i + 1];
+                for (int j = i; j < argc - 2; ++j)
+                {
+                    argv[j] = argv[j + 2];
+                }
+                argc -= 2;
+                break;
+            }
+        }
+        return res;
+    }
+
+    bool extract_option(std::string short_opt, std::string long_opt, int argc, char* argv[])
+    {
+        bool res = false;
+        for (int i = 0; i < argc; ++i)
+        {
+            if (((std::string(argv[i]) == short_opt) || (std::string(argv[i]) == long_opt)))
+            {
+                res = true;
+                for (int j = i; j < argc - 1; ++j)
+                {
+                    argv[j] = argv[j + 1];
+                }
+                argc -= 1;
+                break;
+            }
+        }
+        return res;
+    }
 }
