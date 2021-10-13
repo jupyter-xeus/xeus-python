@@ -38,8 +38,6 @@ namespace xpyt
     std::string get_tmp_prefix();
     std::string get_tmp_suffix();
     std::string get_cell_tmp_file(const std::string& content);
-    std::string extract_parameter(std::string param, int argc, char* argv[]);
-    bool extract_option(std::string short_opt, std::string long_opt, int argc, char* argv[]);
 }
 
 #endif

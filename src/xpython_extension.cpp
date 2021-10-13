@@ -13,8 +13,6 @@
 #include <string>
 #include <utility>
 
-#include "xinternal_utils.hpp"
-
 #include "xeus/xeus_context.hpp"
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
@@ -25,6 +23,7 @@
 #include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xinterpreter_raw.hpp"
 #include "xeus-python/xdebugger.hpp"
+#include "xeus-python/xutils.hpp"
 
 namespace py = pybind11;
 
@@ -32,14 +31,15 @@ void launch(const py::list args_list)
 {
 
     int argc = args_list.size();
-    char* argv[argc];
-    for (size_t i = 0; i < argc; i++)
+    std::vector<char*> argv(argc);
+    
+    for (int i = 0; i < argc; ++i)
     {
         argv[i] = (char*)PyUnicode_AsUTF8(args_list[i].ptr());
     }
 
-    bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv);
-    std::string connection_filename = xpyt::extract_parameter("-f", argc, argv);
+    bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv.data());
+    std::string connection_filename = xpyt::extract_parameter("-f", argc, argv.data());
 
     using context_type = xeus::xcontext_impl<zmq::context_t>;
     using context_ptr = std::unique_ptr<context_type>;

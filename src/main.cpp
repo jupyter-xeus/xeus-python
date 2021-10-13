@@ -21,8 +21,6 @@
 #include <unistd.h>
 #endif
 
-#include "xinternal_utils.hpp"
-
 #include "xeus/xeus_context.hpp"
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
@@ -37,6 +35,7 @@
 #include "xeus-python/xdebugger.hpp"
 #include "xeus-python/xpaths.hpp"
 #include "xeus-python/xeus_python_config.hpp"
+#include "xeus-python/xutils.hpp"
 
 #ifdef __GNUC__
 void handler(int sig)

@@ -33,6 +33,12 @@ namespace xpyt
 
     XEUS_PYTHON_API bool holding_gil();
 
+    XEUS_PYTHON_API
+    std::string extract_parameter(std::string param, int argc, char* argv[]);
+
+    XEUS_PYTHON_API
+    bool extract_option(std::string short_opt, std::string long_opt, int argc, char* argv[]);
+
 #define XPYT_HOLDING_GIL(func)           \
     if (holding_gil())                   \
     {                                    \
