@@ -32,7 +32,7 @@ void launch(const py::list args_list)
 {
 
     int argc = args_list.size();
-    char** argv = (char**)malloc(argc * sizeof(char*));
+    char* argv[argc];
     for (size_t i = 0; i < argc; i++)
     {
         argv[i] = (char*)PyUnicode_AsUTF8(args_list[i].ptr());
