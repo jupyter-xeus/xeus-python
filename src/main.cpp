@@ -21,6 +21,8 @@
 #include <unistd.h>
 #endif
 
+#include "xinternal_utils.hpp"
+
 #include "xeus/xeus_context.hpp"
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
@@ -68,44 +70,6 @@ bool should_print_version(int argc, char* argv[])
         }
     }
     return false;
-}
-
-std::string extract_parameter(std::string param, int argc, char* argv[])
-{
-    std::string res = "";
-    for (int i = 0; i < argc; ++i)
-    {
-        if ((std::string(argv[i]) == param) && (i + 1 < argc))
-        {
-            res = argv[i + 1];
-            for (int j = i; j < argc - 2; ++j)
-            {
-                argv[j] = argv[j + 2];
-            }
-            argc -= 2;
-            break;
-        }
-    }
-    return res;
-}
-
-bool extract_option(std::string short_opt, std::string long_opt, int argc, char* argv[])
-{
-    bool res = false;
-    for (int i = 0; i < argc; ++i)
-    {
-        if (((std::string(argv[i]) == short_opt) || (std::string(argv[i]) == long_opt)))
-        {
-            res = true;
-            for (int j = i; j < argc - 1; ++j)
-            {
-                argv[j] = argv[j + 1];
-            }
-            argc -= 1;
-            break;
-        }
-    }
-    return res;
 }
 
 void print_pythonhome()
@@ -184,7 +148,7 @@ int main(int argc, char* argv[])
 
 
     // Instantiating the xeus xinterpreter
-    bool raw_mode = extract_option("-r", "--raw", argc, argv);
+    bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv);
     using interpreter_ptr = std::unique_ptr<xeus::xinterpreter>;
     interpreter_ptr interpreter;
     if (raw_mode)
@@ -199,7 +163,7 @@ int main(int argc, char* argv[])
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
 
-    std::string connection_filename = extract_parameter("-f", argc, argv);
+    std::string connection_filename = xpyt::extract_parameter("-f", argc, argv);
 
 #ifdef XEUS_PYTHON_PYPI_WARNING
     std::clog <<
