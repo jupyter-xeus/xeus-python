@@ -4,6 +4,7 @@ channels:
 dependencies:
   # Build dependencies
   - cmake
+  - cxx-compiler
   # Host dependencies
   - xeus=2.1.0
   - nlohmann_json

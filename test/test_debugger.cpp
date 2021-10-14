@@ -24,7 +24,7 @@
 #include "pybind11/pybind11.h"
 
 #include <stdio.h>
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h>
 #define getcwd _getcwd
 #else
@@ -43,7 +43,7 @@ std::string get_current_working_directory()
     (void*)r;
     std::string current_dir(buff);
     //current_dir += '/';
-#ifdef WIN32
+#ifdef _WIN32
     std::replace(current_dir.begin(), current_dir.end(), '\\', '/');
 #endif
     return current_dir;
@@ -751,7 +751,7 @@ class Person:
         return {
             "text/html": """<img src="{}">
                   <div><i class='fa-user fa'></i>: {}</div>
-                  <div><i class='fa-map fa'></i>: {}</div>""".format(self.picture, self.name, self.address) 
+                  <div><i class='fa-map fa'></i>: {}</div>""".format(self.picture, self.name, self.address)
         }
 )RICH";
 

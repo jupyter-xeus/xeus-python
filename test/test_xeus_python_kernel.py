@@ -24,8 +24,7 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
     completion_samples = [
         {'text': 'pri', 'matches': {'print'}},
-        {'text': 'from sys imp', 'matches': {'import ', 'import'}},
-        {'text': 'se', 'matches': {'set', 'setattr', '%set_env'}},
+        {'text': 'from sys imp', 'matches': {'import ', 'import'}}
     ]
 
     complete_code_samples = ['1', "print('hello, world')", "def f(x):\n  return x*2\n\n\n"]
