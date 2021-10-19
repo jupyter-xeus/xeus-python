@@ -72,48 +72,6 @@ namespace xpyt
         p_debugpy_client = nullptr;
     }
 
-    namespace
-    {
-        using name_list = std::vector<std::string>;
-
-        const name_list& get_excluded_variables()
-        {
-            static name_list l =
-            { 
-                "__name__",
-                "__doc__",
-                "__package__",
-                "__loader__",
-                "__spec__",
-                "__annotations__",
-                "__builtins__",
-                "__builtin__",
-                "display",
-                "get_ipython",
-                "debugpy",
-                "exit",
-                "quit",
-                "In",
-                "Out",
-                "_oh",
-                "_dh",
-                "_",
-                "__",
-                "___"
-            };
-            return l;
-        };
-
-        bool keep_variable(const std::string& var_name)
-        {
-            const name_list& l = get_excluded_variables();
-            bool res = var_name.substr(0u, 2u) != "_i";
-            res = res && !(var_name[0] == '_' && std::isdigit(var_name[1]));
-            res = res && std::find(l.cbegin(), l.cend(), var_name) == l.cend();
-            return res;
-        }
-    }
-
     nl::json debugger::inspect_variables_request(const nl::json& message)
     {
         py::gil_scoped_acquire acquire;
@@ -124,7 +82,29 @@ namespace xpyt
 
     nl::json debugger::rich_inspect_variables_request(const nl::json& message)
     {
+        nl::json reply = {
+            {"type", "response"},
+            {"request_seq", message["seq"]},
+            {"success", false},
+            {"command", message["command"]}
+        };
+        
         std::string var_name = message["arguments"]["variableName"].get<std::string>();
+        py::str py_var_name = py::str(var_name);
+        bool valid_name = PyUnicode_IsIdentifier(py_var_name.ptr()) == 1;
+        if (!valid_name)
+        {
+            reply["body"] = {
+                {"data", {}},
+                {"metadata", {}}
+            };
+            if (var_name == "special variables" || var_name == "function variables")
+            {
+                reply["success"] = true;
+            }
+            return reply;
+        }
+
         std::string var_repr_data = var_name + "_repr_data";
         std::string var_repr_metadata = var_name + "_repr_metada";
 
@@ -157,13 +137,6 @@ namespace xpyt
             };
             forward_message(request);
         }
-
-        nl::json reply = {
-            {"type", "response"},
-            {"request_seq", message["seq"]},
-            {"success", false},
-            {"command", message["command"]}
-        };
 
         py::gil_scoped_acquire acquire;
         py::object variables = py::globals();
