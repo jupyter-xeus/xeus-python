@@ -197,7 +197,12 @@ namespace xpyt
         }
         else
         {
-            return base_type::variables_request_impl(message);
+            nl::json rep = base_type::variables_request_impl(message);
+            py::gil_scoped_acquire acquire;
+            py::object pymessage = message;
+            py::object pyvariables = rep["body"]["variables"];
+            nl::json reply = m_pydebugger.attr("build_variables_response")(pymessage, pyvariables);
+            return reply;
         }
     }
 
