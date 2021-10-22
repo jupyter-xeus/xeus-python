@@ -12,6 +12,14 @@
 #include <iostream>
 #include <string>
 #include <utility>
+#include <signal.h>
+
+#ifdef __GNUC__
+#include <stdio.h>
+#include <execinfo.h>
+#include <stdlib.h>
+#include <unistd.h>
+#endif
 
 #include "xeus/xeus_context.hpp"
 #include "xeus/xkernel.hpp"
@@ -27,16 +35,33 @@
 
 namespace py = pybind11;
 
+
 void launch(const py::list args_list)
 {
-
+    // Extract cli args from Python object
     int argc = args_list.size();
     std::vector<char*> argv(argc);
-    
+
     for (int i = 0; i < argc; ++i)
     {
         argv[i] = (char*)PyUnicode_AsUTF8(args_list[i].ptr());
     }
+
+    if (xpyt::should_print_version(argc, argv.data()))
+    {
+        std::clog << "xpython " << XPYT_VERSION << std::endl;
+        return;
+    }
+
+    // Registering SIGSEGV handler
+#ifdef __GNUC__
+    std::clog << "registering handler for SIGSEGV" << std::endl;
+    signal(SIGSEGV, xpyt::sigsegv_handler);
+
+    // Registering SIGINT and SIGKILL handlers
+    signal(SIGKILL, xpyt::sigkill_handler);
+#endif
+    signal(SIGINT, xpyt::sigkill_handler);
 
     bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv.data());
     std::string connection_filename = xpyt::extract_parameter("-f", argc, argv.data());
@@ -51,11 +76,11 @@ void launch(const py::list args_list)
     if (raw_mode)
     {
         interpreter = interpreter_ptr(new xpyt::raw_interpreter());
-    } else 
+    }
+    else
     {
         interpreter = interpreter_ptr(new xpyt::interpreter());
     }
-    
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();

@@ -37,55 +37,12 @@
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-python/xutils.hpp"
 
-#ifdef __GNUC__
-void handler(int sig)
-{
-    void* array[10];
-
-    // get void*'s for all entries on the stack
-    size_t size = backtrace(array, 10);
-
-    // print out all the frames to stderr
-    fprintf(stderr, "Error: signal %d:\n", sig);
-    backtrace_symbols_fd(array, size, STDERR_FILENO);
-    exit(1);
-}
-#endif
-
-void stop_handler(int /*sig*/)
-{
-    exit(0);
-}
-
 namespace py = pybind11;
 
-bool should_print_version(int argc, char* argv[])
-{
-    for (int i = 0; i < argc; ++i)
-    {
-        if (std::string(argv[i]) == "--version")
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-void print_pythonhome()
-{
-    std::setlocale(LC_ALL, "en_US.utf8");
-    wchar_t* ph = Py_GetPythonHome();
-
-    char mbstr[1024];
-    std::wcstombs(mbstr, ph, 1024);
-
-    std::clog << "PYTHONHOME set to " << mbstr << std::endl;
-}
 
 int main(int argc, char* argv[])
 {
-
-    if (should_print_version(argc, argv))
+    if (xpyt::should_print_version(argc, argv))
     {
         std::clog << "xpython " << XPYT_VERSION << std::endl;
         return 0;
@@ -104,12 +61,12 @@ int main(int argc, char* argv[])
     // Registering SIGSEGV handler
 #ifdef __GNUC__
     std::clog << "registering handler for SIGSEGV" << std::endl;
-    signal(SIGSEGV, handler);
+    signal(SIGSEGV, xpyt::sigsegv_handler);
 
     // Registering SIGINT and SIGKILL handlers
-    signal(SIGKILL, stop_handler);
+    signal(SIGKILL, xpyt::sigkill_handler);
 #endif
-    signal(SIGINT, stop_handler);
+    signal(SIGINT, xpyt::sigkill_handler);
 
     // Setting Program Name
     static const std::string executable(xpyt::get_python_path());
@@ -123,7 +80,7 @@ int main(int argc, char* argv[])
 
     // Setting PYTHONHOME
     xpyt::set_pythonhome();
-    print_pythonhome();
+    xpyt::print_pythonhome();
 
     // Instanciating the Python interpreter
     py::scoped_interpreter guard;
@@ -145,7 +102,6 @@ int main(int argc, char* argv[])
     using context_ptr = std::unique_ptr<context_type>;
     context_ptr context = context_ptr(new context_type());
 
-
     // Instantiating the xeus xinterpreter
     bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv);
     using interpreter_ptr = std::unique_ptr<xeus::xinterpreter>;
@@ -153,11 +109,11 @@ int main(int argc, char* argv[])
     if (raw_mode)
     {
         interpreter = interpreter_ptr(new xpyt::raw_interpreter());
-    } else 
+    }
+    else
     {
         interpreter = interpreter_ptr(new xpyt::interpreter());
     }
-    
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
