@@ -11,9 +11,21 @@
 #include <cmath>
 #include <cstdlib>
 #include <functional>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#ifdef WIN32
+#include "Windows.h"
+#endif
+
+#ifdef __GNUC__
+#include <stdio.h>
+#include <execinfo.h>
+#include <stdlib.h>
+#include <unistd.h>
+#endif
 
 #include "nlohmann/json.hpp"
 
@@ -29,9 +41,6 @@
 
 #include "xeus-python/xutils.hpp"
 
-#ifdef WIN32
-#include "Windows.h"
-#endif
 
 namespace py = pybind11;
 namespace nl = nlohmann;
@@ -94,5 +103,48 @@ namespace xpyt
             }
         }
         return res;
+    }
+
+    void sigsegv_handler(int sig)
+    {
+#ifdef __GNUC__
+        void* array[10];
+
+        // get void*'s for all entries on the stack
+        size_t size = backtrace(array, 10);
+
+        // print out all the frames to stderr
+        fprintf(stderr, "Error: signal %d:\n", sig);
+        backtrace_symbols_fd(array, size, STDERR_FILENO);
+#endif
+        exit(1);
+    }
+
+    void sigkill_handler(int /*sig*/)
+    {
+        exit(0);
+    }
+
+    bool should_print_version(int argc, char* argv[])
+    {
+        for (int i = 0; i < argc; ++i)
+        {
+            if (std::string(argv[i]) == "--version")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void print_pythonhome()
+    {
+        std::setlocale(LC_ALL, "en_US.utf8");
+        wchar_t* ph = Py_GetPythonHome();
+
+        char mbstr[1024];
+        std::wcstombs(mbstr, ph, 1024);
+
+        std::clog << "PYTHONHOME set to " << mbstr << std::endl;
     }
 }

@@ -55,6 +55,18 @@ namespace xpyt
 
     XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
     py::object eval(const py::object& code, const py::object& scope = py::globals());
+
+    XEUS_PYTHON_API
+    void sigsegv_handler(int sig);
+
+    XEUS_PYTHON_API
+    void sigkill_handler(int sig);
+
+    XEUS_PYTHON_API
+    bool should_print_version(int argc, char* argv[]);
+
+    XEUS_PYTHON_API
+    void print_pythonhome();
 }
 
 #endif
