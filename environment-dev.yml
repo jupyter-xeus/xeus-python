@@ -18,5 +18,5 @@ dependencies:
   - pytest
   - nbval
   - ipympl
-  - jupyter_kernel_test
+  - jupyter_kernel_test>=0.4.3,<0.5
   - jupyter_client<=6.2
