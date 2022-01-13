@@ -179,9 +179,9 @@ namespace xpyt
         {
             xerror error = extract_already_set_error(e);
 
-            if (error.m_ename == "SyntaxError") 
+            if (error.m_ename == "SyntaxError")
             {
-                if (code.find("%") != std::string::npos) 
+                if (code.find("%") != std::string::npos)
                 {
                     error.m_traceback.push_back("There may be Ipython magics in your code, this feature is not supported in xeus-python raw mode! Please consider switching to xeus-python normal mode or removing these magics");
                 }
@@ -229,6 +229,7 @@ namespace xpyt
         kernel_res["cursor_start"] = cursor_start;
         kernel_res["cursor_end"] = cursor_pos;
         kernel_res["matches"] = matches;
+        kernel_res["metadata"] = nl::json::object();
         kernel_res["status"] = "ok";
         return kernel_res;
     }

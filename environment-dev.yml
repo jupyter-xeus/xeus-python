@@ -6,7 +6,7 @@ dependencies:
   - cmake
   - cxx-compiler
   # Host dependencies
-  - xeus=2.1.0
+  - xeus=2.3.1
   - nlohmann_json
   - cppzmq
   - xtl>=0.7, <0.8
@@ -18,5 +18,4 @@ dependencies:
   - pytest
   - nbval
   - ipympl
-  - jupyter_kernel_test
-  - jupyter_client<=6.2
+  - jupyter_kernel_test>=0.4.3,<0.5
