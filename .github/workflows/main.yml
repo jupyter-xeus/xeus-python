@@ -90,40 +90,43 @@ jobs:
           environment-file: environment-dev.yml
           environment-name: xeus-python
 
-      - name: micromamba shell hook
-        shell: powershell
-        run: |
-          micromamba shell hook -s cmd.exe -p C:\Users\runneradmin\micromamba
-          Get-Content -Path C:\Users\runneradmin\micromamba\condabin\mamba_hook.bat
-
       - name: Make build directory
         run: mkdir build
 
       - name: cmake configure
-        shell: cmd
+        shell: cmd /C call {0}
         run: |
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate xeus-python
-          cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DXPYT_DOWNLOAD_GTEST=ON -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library" -DXEXTRA_JUPYTER_DATA_DIR=%CONDA_PREFIX%\share\jupyter -DXPYT_BUILD_XPYTHON_EXTENSION=ON -DXEUS_PYTHONHOME_RELPATH=..\\ -Dgtest_force_shared_crt=ON -DCMAKE_CXX_FLAGS=/D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
+          micromamba activate xeus-python
+          cmake .. ^
+            -G "NMake Makefiles" ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DXPYT_DOWNLOAD_GTEST=ON ^
+            -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library" ^
+            -DXEXTRA_JUPYTER_DATA_DIR=%CONDA_PREFIX%\share\jupyter ^
+            -DXPYT_BUILD_XPYTHON_EXTENSION=ON ^
+            -DXEUS_PYTHONHOME_RELPATH=..\\ ^
+            -Dgtest_force_shared_crt=ON ^
+            -DCMAKE_CXX_FLAGS=/D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
         working-directory: build
 
       - name: build
-        shell: cmd
+        shell: cmd /C call {0}
         run: |
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate xeus-python
+          micromamba activate xeus-python
           set CL=/MP
           nmake install
         working-directory: build
 
       # - name: Test xeus-python C++
-      #   shell: cmd
+      #   shell: cmd /C call {0}
       #   run: |
-      #     call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate xeus-python
+      #     micromamba activate xeus-python
       #     test_xeus_python
       #   timeout-minutes: 4
       #   working-directory: build/test
 
       - name: Test xeus-python Python
-        shell: cmd
+        shell: cmd /C call {0}
         run: |
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate xeus-python
+          micromamba activate xeus-python
           pytest . -vvv
