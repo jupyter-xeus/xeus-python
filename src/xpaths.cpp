@@ -41,6 +41,8 @@ namespace xpyt
             // to specify the PYTHONHOME location as a relative path to the PREFIX.
 #if defined(XEUS_PYTHONHOME_RELPATH)
             static const std::string pythonhome = xtl::prefix_path() + XPYT_STRINGIFY(XEUS_PYTHONHOME_RELPATH);
+#elif defined(XEUS_PYTHONHOME_ABSPATH)
+            static const std::string pythonhome = XPYT_STRINGIFY(XEUS_PYTHONHOME_ABSPATH);
 #else
             static const std::string pythonhome = xtl::prefix_path();
 #endif
