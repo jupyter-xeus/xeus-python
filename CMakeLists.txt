@@ -269,6 +269,8 @@ macro(xpyt_create_target target_name linkage output_name)
 
     if (XEUS_PYTHONHOME_RELPATH)
         target_compile_definitions(${target_name} PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
+    elseif (XEUS_PYTHONHOME_ABSPATH)
+        target_compile_definitions(${target_name} PRIVATE XEUS_PYTHONHOME_ABSPATH=${XEUS_PYTHONHOME_ABSPATH})
     endif()
 endmacro()
 
