@@ -1133,7 +1133,7 @@ TEST(debugger, set_exception_breakpoints)
         debugger_client deb(context, KERNEL_JSON, "debugger_set_exception_breakpoints.log");
         bool res = deb.test_set_exception_breakpoints();
         deb.shutdown();
-        std::this_thread::sleep_for(2s);
+        std::this_thread::sleep_for(5s);
         EXPECT_TRUE(res);
         notify_done();
     }
