@@ -110,7 +110,7 @@ namespace xpyt
 
     void xcomm_manager::register_target(const py::str& target_name, const py::object& callback)
     {
-        auto target_callback = [&callback] (xeus::xcomm&& comm, const xeus::xmessage& msg)
+        auto target_callback = [callback] (xeus::xcomm&& comm, const xeus::xmessage& msg)
         {
             XPYT_HOLDING_GIL(callback(xcomm(std::move(comm)), cppmessage_to_pymessage(msg)));
         };
