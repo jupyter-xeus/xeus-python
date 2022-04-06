@@ -6,7 +6,7 @@ dependencies:
   - cmake
   - cxx-compiler
   # Host dependencies
-  - xeus=2.3.1
+  - xeus=2.4.1
   - nlohmann_json
   - cppzmq
   - xtl>=0.7, <0.8
