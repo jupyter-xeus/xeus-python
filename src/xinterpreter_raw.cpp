@@ -14,6 +14,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
+
 
 #include "nlohmann/json.hpp"
 
@@ -47,11 +49,15 @@ namespace xpyt
     raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/) :m_redirect_display_enabled{ redirect_display_enabled }
 
     {
+        std::cout<<"in ctr\n";
         xeus::register_interpreter(this);
+        std::cout<<"in ctr 2\n";
         if (redirect_output_enabled)
         {
+            std::cout<<"in ctr 2b\n";
             redirect_output();
         }
+        std::cout<<"in ctr 3\n";
     }
 
     raw_interpreter::~raw_interpreter()
@@ -60,52 +66,63 @@ namespace xpyt
 
     void raw_interpreter::configure_impl()
     {
-        if (m_release_gil_at_startup)
-        {
-            // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
-            // will need to acquire the GIL
-            m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
+        try {
+
+            std::cout<<"Configure IMPL 1\n";
+            if (false && m_release_gil_at_startup)
+            {   
+                std::cout<<"Configure IMPL 1a\n";
+                // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
+                // will need to acquire the GIL
+                m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
+            }
+
+            std::cout<<"Configure IMPL 2\n";
+            //py::gil_scoped_acquire acquire;
+
+            std::cout<<"Configure IMPL 3\n";
+            py::module sys = py::module::import("sys");
+            std::cout<<"Configure IMPL 4\n";
+            // py::module jedi = py::module::import("jedi");
+            // std::cout<<"Configure IMPL 5\n";
+            // jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
+            //     jedi.attr("api").attr("environment").attr("SameEnvironment")();
+            //     });
+
+            py::module display_module = get_display_module(true);
+            m_displayhook = display_module.attr("DisplayHook")();
+
+            if (m_redirect_display_enabled)
+            {
+                sys.attr("displayhook") = m_displayhook;
+            }
+
+            // Expose display functions to Python
+            py::globals()["display"] = display_module.attr("display");
+            py::globals()["update_display"] = display_module.attr("update_display");
+            // Monkey patching "import IPython.core.display"
+            sys.attr("modules")["IPython.core.display"] = display_module;
+
+
+            py::module kernel_module = get_kernel_module(true);
+            // Monkey patching "from ipykernel.comm import Comm"
+            sys.attr("modules")["ipykernel.comm"] = kernel_module;
+
+            // Monkey patching "from IPython import get_ipython"
+            sys.attr("modules")["IPython.core.getipython"] = kernel_module;
+
+            // Add get_ipython to global namespace
+            py::globals()["get_ipython"] = kernel_module.attr("get_ipython");
+            kernel_module.attr("get_ipython")();
+
+            py::globals()["_i"] = "";
+            py::globals()["_ii"] = "";
+            py::globals()["_iii"] = "";
+
+        } catch (std::exception &e) {
+            std::cout<<"ewhat "<<e.what()<<"\n";
+            
         }
-
-        py::gil_scoped_acquire acquire;
-
-
-        py::module sys = py::module::import("sys");
-
-        py::module jedi = py::module::import("jedi");
-        jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
-            jedi.attr("api").attr("environment").attr("SameEnvironment")();
-            });
-
-        py::module display_module = get_display_module(true);
-        m_displayhook = display_module.attr("DisplayHook")();
-
-        if (m_redirect_display_enabled)
-        {
-            sys.attr("displayhook") = m_displayhook;
-        }
-
-        // Expose display functions to Python
-        py::globals()["display"] = display_module.attr("display");
-        py::globals()["update_display"] = display_module.attr("update_display");
-        // Monkey patching "import IPython.core.display"
-        sys.attr("modules")["IPython.core.display"] = display_module;
-
-
-        py::module kernel_module = get_kernel_module(true);
-        // Monkey patching "from ipykernel.comm import Comm"
-        sys.attr("modules")["ipykernel.comm"] = kernel_module;
-
-        // Monkey patching "from IPython import get_ipython"
-        sys.attr("modules")["IPython.core.getipython"] = kernel_module;
-
-        // Add get_ipython to global namespace
-        py::globals()["get_ipython"] = kernel_module.attr("get_ipython");
-        kernel_module.attr("get_ipython")();
-
-        py::globals()["_i"] = "";
-        py::globals()["_ii"] = "";
-        py::globals()["_iii"] = "";
 
     }
 
@@ -177,27 +194,30 @@ namespace xpyt
         }
         catch (py::error_already_set& e)
         {
-            xerror error = extract_already_set_error(e);
+            std::cout<<"ewhat "<<e.what()<<"\n";
+            // xerror error = extract_already_set_error(e);
 
-            if (error.m_ename == "SyntaxError")
-            {
-                if (code.find("%") != std::string::npos)
-                {
-                    error.m_traceback.push_back("There may be Ipython magics in your code, this feature is not supported in xeus-python raw mode! Please consider switching to xeus-python normal mode or removing these magics");
-                }
-            }
+            // if (error.m_ename == "SyntaxError")
+            // {
+            //     if (code.find("%") != std::string::npos)
+            //     {
+            //         error.m_traceback.push_back("There may be Ipython magics in your code, this feature is not supported in xeus-python raw mode! Please consider switching to xeus-python normal mode or removing these magics");
+            //     }
+            // }
 
-            if (!silent)
-            {
-                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
-            }
+            // if (!silent)
+            // {
+            //     publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+            // }
 
-            kernel_res["status"] = "error";
-            kernel_res["ename"] = error.m_ename;
-            kernel_res["evalue"] = error.m_evalue;
-            kernel_res["traceback"] = error.m_traceback;
+            // kernel_res["status"] = "error";
+            // kernel_res["ename"] = error.m_ename;
+            // kernel_res["evalue"] = error.m_evalue;
+            // kernel_res["traceback"] = error.m_traceback;
         }
-
+        catch(std::exception & e){
+            std::cout<<"exception.what "<<e.what()<<"\n";
+        }
         // Cache inputs
         py::globals()["_iii"] = py::globals()["_ii"];
         py::globals()["_ii"] = py::globals()["_i"];

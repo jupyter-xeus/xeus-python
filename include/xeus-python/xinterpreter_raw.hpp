@@ -22,6 +22,7 @@
 #include "xeus/xinterpreter.hpp"
 
 #include "pybind11/pybind11.h"
+#include <pybind11/embed.h>
 
 #include "xeus_python_config.hpp"
 
@@ -47,6 +48,7 @@ namespace xpyt
 
     protected:
 
+        py::scoped_interpreter m_interpreter;
         void configure_impl() override;
 
         nl::json execute_request_impl(int execution_counter,

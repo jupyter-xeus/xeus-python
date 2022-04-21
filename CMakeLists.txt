@@ -54,6 +54,7 @@ configure_file (
 # =============
 
 # Compilation options
+
 OPTION(XPYT_DISABLE_ARCH_NATIVE "disable -march=native flag" OFF)
 OPTION(XPYT_DISABLE_TUNE_GENERIC "disable -mtune=generic flag" OFF)
 OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
@@ -69,6 +70,21 @@ OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the 
 # Test options
 OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
+OPTION(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
+
+if(XPYT_EMSCRIPTEN_WASM_BUILD)
+    configure_file(post.js               ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
+    add_compile_definitions(XPYT_EMSCRIPTEN_WASM_BUILD)
+    set(XPYT_DISABLE_ARCH_NATIVE ON)
+    set(XPYT_BUILD_STATIC ON)
+    set(XPYT_BUILD_SHARED OFF)
+    set(XPYT_BUILD_XPYTHON_EXECUTABLE OFF)
+    set(XPYT_BUILD_XPYTHON_EXTENSION OFF)
+    set(XPYT_USE_SHARED_XEUS OFF)
+    set(XPYT_USE_SHARED_XEUS_PYTHON OFF)
+    set(XPYT_BUILD_TESTS OFF)
+    set(XPYT_DOWNLOAD_GTEST OFF)
+endif()
 
 # Dependencies
 # ============
@@ -126,9 +142,6 @@ endif ()
 set(XEUS_PYTHON_SRC
     src/xcomm.cpp
     src/xcomm.hpp
-    src/xdebugger.cpp
-    src/xdebugpy_client.hpp
-    src/xdebugpy_client.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
     src/xinput.cpp
@@ -147,6 +160,14 @@ set(XEUS_PYTHON_SRC
     src/xtraceback.cpp
     src/xutils.cpp
 )
+
+if(NOT XPYT_EMSCRIPTEN_WASM_BUILD)
+    SET(XEUS_PYTHON_SRC ${XEUS_PYTHON_SRC}
+        src/xdebugger.cpp
+        src/xdebugpy_client.hpp
+        src/xdebugpy_client.cpp
+    )
+endif()
 
 set(XEUS_PYTHON_HEADERS
     include/xeus-python/xdebugger.hpp
@@ -201,6 +222,9 @@ macro(xpyt_set_common_options target_name)
             message(FATAL_ERROR "Unsupported compiler -- xeus-python requires C++14 support!")
         endif ()
     endif ()
+    if(XPYT_EMSCRIPTEN_WASM_BUILD)
+        target_compile_options(${target_name} PRIVATE -fPIC)
+    endif()
 endmacro()
 
 # Common macro kernels (xpython and xpython_extension)
@@ -219,10 +243,53 @@ macro(xpyt_set_kernel_options target_name)
     else ()
         target_link_libraries(${target_name} PRIVATE xeus-python-static)
     endif()
+    if(NOT XPYT_EMSCRIPTEN_WASM_BUILD)
+        find_package(Threads) # TODO: add Threads as a dependence of xeus or xeus-static?
+        target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+        set_target_properties(${target_name} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+    endif()
 
-    find_package(Threads) # TODO: add Threads as a dependence of xeus or xeus-static?
-    target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-    set_target_properties(${target_name} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+    if(XPYT_EMSCRIPTEN_WASM_BUILD)
+        target_compile_options(${target_name}
+            PUBLIC --std=c++17
+            PUBLIC -Wno-deprecated
+            PUBLIC "SHELL: --bind"
+            PUBLIC "SHELL: -s ENVIRONMENT=web"
+            PUBLIC "SHELL: -fwasm-exceptions"
+            PUBLIC "SHELL: -s FORCE_FILESYSTEM"
+            PUBLIC "SHELL:  -s LZ4=1"
+            # PUBLIC "SHELL: -s EXPORTED_FUNCTIONS='[\"_post_kernel_message\"]'"
+    
+       )
+
+
+    target_link_options(${target_name}
+            PUBLIC --bind
+            PUBLIC -Wno-unused-command-line-argument
+            PUBLIC "SHELL: --bind"
+            PUBLIC "SHELL: -s MODULARIZE=1"
+            PUBLIC "SHELL: -s EXPORT_NAME=\"createXeusModule\""
+            PUBLIC "SHELL: -s EXPORT_ES6=0"
+            PUBLIC "SHELL: -s USE_ES6_IMPORT_META=0"
+            PUBLIC "SHELL: -s DEMANGLE_SUPPORT=0"
+            PUBLIC "SHELL: -s ASSERTIONS=0"
+            PUBLIC "SHELL: -s ALLOW_MEMORY_GROWTH=1"
+            PUBLIC "SHELL: -s EXIT_RUNTIME=1"
+            PUBLIC "SHELL: -s WASM=1"
+            PUBLIC "SHELL: -s USE_PTHREADS=0"
+            PUBLIC "SHELL: -fwasm-exceptions"
+            # PUBLIC "SHELL: -s ENVIRONMENT=${XEUS_EMSCRIPTEN_ENVIRONMENT}"
+            PUBLIC "SHELL: -s MAIN_MODULE=1"
+            PUBLIC "SHELL: -s ENVIRONMENT=worker"
+            PUBLIC "SHELL: -s TOTAL_STACK=512mb"
+            PUBLIC "SHELL: -s INITIAL_MEMORY=1024mb"
+            PUBLIC "SHELL: -s FORCE_FILESYSTEM"
+            PUBLIC "SHELL:  -s LZ4=1"
+            PUBLIC "SHELL: --post-js post.js"
+           # PUBLIC "SHELL: -s EXPORTED_FUNCTIONS='[\"_post_kernel_message\"]'"
+       )
+
+    endif()
 endmacro()
 
 # Common macro for shared and static library xeus-python
@@ -315,6 +382,24 @@ if (XPYT_BUILD_XPYTHON_EXTENSION)
 
     xpyt_set_common_options(xpython_extension)
     xpyt_set_kernel_options(xpython_extension)
+endif()
+
+
+if(XPYT_EMSCRIPTEN_WASM_BUILD)
+
+    # TODO MAKE BETTER
+    SET(PYTHON_UTIL_LIBS 
+        $ENV{PREFIX}/lib/libbz2.a
+        $ENV{PREFIX}/lib/libz.a
+        $ENV{PREFIX}/lib/libsqlite3.a
+        $ENV{PREFIX}/lib/libffi.a
+    )
+
+
+    add_executable(xeus_kernel src/main_emscripten_kernel.cpp )
+    target_link_libraries(xeus_kernel PRIVATE ${PYTHON_UTIL_LIBS}   pybind11::embed)
+    xpyt_set_common_options(xeus_kernel)
+    xpyt_set_kernel_options(xeus_kernel)
 endif()
 
 # Tests

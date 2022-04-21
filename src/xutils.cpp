@@ -22,7 +22,9 @@
 
 #ifdef __GNUC__
 #include <stdio.h>
+#ifndef XPYT_EMSCRIPTEN_WASM_BUILD
 #include <execinfo.h>
+#endif
 #include <stdlib.h>
 #include <unistd.h>
 #endif
@@ -107,7 +109,7 @@ namespace xpyt
 
     void sigsegv_handler(int sig)
     {
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(XPYT_EMSCRIPTEN_WASM_BUILD)
         void* array[10];
 
         // get void*'s for all entries on the stack
