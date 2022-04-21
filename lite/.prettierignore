@@ -1,0 +1,6 @@
+node_modules
+**/node_modules
+**/lib
+**/package.json
+jupyterlite_xeus_python
+/_output

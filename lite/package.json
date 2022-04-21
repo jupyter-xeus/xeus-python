@@ -1,0 +1,108 @@
+{
+  "name": "@jupyterlite/xeus-python-kernel",
+  "version": "0.2.0",
+  "description": "A Python kernel for JupyterLite, powered by Xeus",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlite",
+    "jupyterlite-extension"
+  ],
+  "homepage": "https://github.com/jupyterlite/xeus-python-kernel",
+  "bugs": {
+    "url": "https://github.com/jupyterlite/xeus-python-kernel/issues"
+  },
+  "license": "BSD-3-Clause",
+  "author": {
+    "name": "Thorsten Beier, JupyterLite Contributors",
+    "email": ""
+  },
+  "files": [
+    "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf,wasm}",
+    "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "style": "style/index.css",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jupyterlite/xeus-python-kernel.git"
+  },
+  "scripts": {
+    "build:dockerimage": "docker build -t mydockerimage  --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) . ",
+    "build:dockerimage_no_cache": "docker build -t mydockerimage  --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --no-cache . ",
+    "build:emscripten": "echo $(pwd) && docker run --rm -v $(pwd):/src    -u $(id -u):$(id -g)  mydockerimage    ./build.sh",
+    "copy-files": "copyfiles -u 1 src/xeus_kernel.wasm  src/xeus_kernel.worker.js src/xeus_kernel.js   src/python_data.js src/python_data.data  lib",
+    "build:wasm": "jlpm run build:dockerimage && jlpm run build:emscripten",
+    "build:wasm_no_cache": "jlpm run build:dockerimage_no_cache && jlpm run build:emscripten",
+    "build": "jlpm run build:lib && jlpm run copy-files && jlpm run build:labextension:dev",
+    "build:prod": "jlpm run clean && jlpm run build:lib && jlpm run copy-files && jlpm run build:labextension",
+    "build:labextension": "jupyter labextension build .",
+    "build:labextension:dev": "jupyter labextension build --development True .",
+    "build:lib": "tsc",
+    "clean": "jlpm run clean:lib",
+    "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
+    "clean:labextension": "rimraf jupyterlite_xeus_python/labextension",
+    "clean:all": "jlpm run clean:lib && jlpm run clean:labextension",
+    "eslint": "eslint . --ext .ts,.tsx --fix",
+    "eslint:check": "eslint . --ext .ts,.tsx",
+    "install:extension": "jlpm run build",
+    "lint": "jlpm prettier && yarn eslint",
+    "lint:check": "jlpm prettier:check && yarn eslint:check",
+    "prettier": "prettier --list-different --write \"**/*{.ts,.tsx,.js,.jsx,.css,.json,.md,.yml,.html}\"",
+    "prettier:check": "prettier --list-different \"**/*{.ts,.tsx,.js,.jsx,.css,.json,.md,.yml,.html}\"",
+    "watch": "run-p watch:src watch:labextension",
+    "watch:src": "tsc -w",
+    "watch:labextension": "jupyter labextension watch ."
+  },
+  "dependencies": {
+    "@jupyterlite/server": "^0.1.0-alpha.14"
+  },
+  "devDependencies": {
+    "@jupyterlab/builder": "^3.1.0",
+    "@typescript-eslint/eslint-plugin": "^4.8.1",
+    "@typescript-eslint/parser": "^4.8.1",
+    "copy-webpack-plugin": "^9.0.1",
+    "copyfiles": "^2.4.1",
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.1.1",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.2.3"
+  },
+  "sideEffects": [
+    "style/*.css",
+    "style/index.js"
+  ],
+  "styleModule": "style/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "jupyterlab": {
+    "extension": true,
+    "outputDir": "jupyterlite_xeus_python/labextension",
+    "webpackConfig": "./webpack.config.js",
+    "sharedPackages": {
+      "@jupyterlite/kernel": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
+  },
+  "jupyterlite": {
+    "liteExtension": true
+  },
+  "jupyter-releaser": {
+    "skip": [
+      "check-links"
+    ],
+    "hooks": {
+      "before-build-npm": [
+        "python -m pip install jupyterlab~=3.1",
+        "jlpm"
+      ]
+    }
+  }
+}
