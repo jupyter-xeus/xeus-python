@@ -69,7 +69,7 @@ namespace xpyt
         try {
 
             std::cout<<"Configure IMPL 1\n";
-            if (false && m_release_gil_at_startup)
+            if (m_release_gil_at_startup)
             {   
                 std::cout<<"Configure IMPL 1a\n";
                 // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
@@ -78,7 +78,7 @@ namespace xpyt
             }
 
             std::cout<<"Configure IMPL 2\n";
-            //py::gil_scoped_acquire acquire;
+            py::gil_scoped_acquire acquire;
 
             std::cout<<"Configure IMPL 3\n";
             py::module sys = py::module::import("sys");
