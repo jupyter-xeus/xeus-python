@@ -13,13 +13,13 @@
 
 #include <emscripten/bind.h>
 
-#include "xeus-python/xinterpreter.hpp"
+#include "xeus-python/xinterpreter_raw.hpp"
 #include "xeus/xembind.hpp"
 
 
 EMSCRIPTEN_BINDINGS(my_module) {
     xeus::export_core();
-    using interpreter_type = xpyt::interpreter;
+    using interpreter_type = xpyt::raw_interpreter;
     xeus::export_kernel<interpreter_type>("xkernel");
 }
 

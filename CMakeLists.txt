@@ -396,10 +396,17 @@ if(XPYT_EMSCRIPTEN_WASM_BUILD)
     )
 
 
+    # add_executable(xeus_kernel src/main_emscripten_kernel.cpp )
+    # target_link_libraries(xeus_kernel PRIVATE ${PYTHON_UTIL_LIBS}   pybind11::embed)
+    # xpyt_set_common_options(xeus_kernel)
+    # xpyt_set_kernel_options(xeus_kernel)
+
+
     add_executable(xeus_kernel src/main_emscripten_kernel.cpp )
     target_link_libraries(xeus_kernel PRIVATE ${PYTHON_UTIL_LIBS}   pybind11::embed)
     xpyt_set_common_options(xeus_kernel)
     xpyt_set_kernel_options(xeus_kernel)
+
 endif()
 
 # Tests

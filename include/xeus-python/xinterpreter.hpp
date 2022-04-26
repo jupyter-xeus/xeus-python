@@ -24,6 +24,9 @@
 #include "xeus/xinterpreter.hpp" 
 
 #include "pybind11/pybind11.h"
+#ifdef XPYT_EMSCRIPTEN_WASM_BUILD
+#include "pybind11/embed.h"
+#endif
 
 #include "xeus_python_config.hpp"
 
@@ -74,6 +77,10 @@ namespace xpyt
 
         void redirect_output();
 
+        #ifdef XPYT_EMSCRIPTEN_WASM_BUILD
+        py::scoped_interpreter m_interpreter;
+        #endif
+        
         py::object m_ipython_shell_app;
         py::object m_ipython_shell;
         py::object m_displayhook;

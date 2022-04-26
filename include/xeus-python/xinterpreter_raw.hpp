@@ -22,7 +22,9 @@
 #include "xeus/xinterpreter.hpp"
 
 #include "pybind11/pybind11.h"
-#include <pybind11/embed.h>
+#ifdef XPYT_EMSCRIPTEN_WASM_BUILD
+#include "pybind11/embed.h"
+#endif
 
 #include "xeus_python_config.hpp"
 
@@ -48,7 +50,7 @@ namespace xpyt
 
     protected:
 
-        py::scoped_interpreter m_interpreter;
+
         void configure_impl() override;
 
         nl::json execute_request_impl(int execution_counter,
@@ -71,6 +73,10 @@ namespace xpyt
         void shutdown_request_impl() override;
 
         void redirect_output();
+
+        #ifdef XPYT_EMSCRIPTEN_WASM_BUILD
+        py::scoped_interpreter m_interpreter;
+        #endif
 
         py::object m_displayhook;
 
