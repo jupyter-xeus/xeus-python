@@ -83,11 +83,11 @@ namespace xpyt
             std::cout<<"Configure IMPL 3\n";
             py::module sys = py::module::import("sys");
             std::cout<<"Configure IMPL 4\n";
-            // py::module jedi = py::module::import("jedi");
-            // std::cout<<"Configure IMPL 5\n";
-            // jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
-            //     jedi.attr("api").attr("environment").attr("SameEnvironment")();
-            //     });
+            py::module jedi = py::module::import("jedi");
+            std::cout<<"Configure IMPL 5\n";
+            jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
+            jedi.attr("api").attr("environment").attr("SameEnvironment")();
+            });
 
             py::module display_module = get_display_module(true);
             m_displayhook = display_module.attr("DisplayHook")();
@@ -195,25 +195,25 @@ namespace xpyt
         catch (py::error_already_set& e)
         {
             std::cout<<"ewhat "<<e.what()<<"\n";
-            // xerror error = extract_already_set_error(e);
+            xerror error = extract_already_set_error(e);
 
-            // if (error.m_ename == "SyntaxError")
-            // {
-            //     if (code.find("%") != std::string::npos)
-            //     {
-            //         error.m_traceback.push_back("There may be Ipython magics in your code, this feature is not supported in xeus-python raw mode! Please consider switching to xeus-python normal mode or removing these magics");
-            //     }
-            // }
+            if (error.m_ename == "SyntaxError")
+            {
+                if (code.find("%") != std::string::npos)
+                {
+                    error.m_traceback.push_back("There may be Ipython magics in your code, this feature is not supported in xeus-python raw mode! Please consider switching to xeus-python normal mode or removing these magics");
+                }
+            }
 
-            // if (!silent)
-            // {
-            //     publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
-            // }
+            if (!silent)
+            {
+                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+            }
 
-            // kernel_res["status"] = "error";
-            // kernel_res["ename"] = error.m_ename;
-            // kernel_res["evalue"] = error.m_evalue;
-            // kernel_res["traceback"] = error.m_traceback;
+            kernel_res["status"] = "error";
+            kernel_res["ename"] = error.m_ename;
+            kernel_res["evalue"] = error.m_evalue;
+            kernel_res["traceback"] = error.m_traceback;
         }
         catch(std::exception & e){
             std::cout<<"exception.what "<<e.what()<<"\n";

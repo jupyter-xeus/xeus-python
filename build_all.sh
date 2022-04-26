@@ -1,7 +1,7 @@
 #bin/bash
 set -e
 
-boa build  $EM_RECIPES/xeus  --target-platform=emscripten-32
+# boa build  $EM_RECIPES/xeus  --target-platform=emscripten-32
 
 $MAMBA_EXE create  -n emxeus   --platform=emscripten-32  --yes python ipython pybind11 jedi xeus xtl nlohmann_json pybind11_json numpy
 
