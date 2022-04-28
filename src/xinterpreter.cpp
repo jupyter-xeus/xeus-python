@@ -42,28 +42,6 @@ namespace nl = nlohmann;
 using namespace pybind11::literals;
 
 
-PYBIND11_EMBEDDED_MODULE(my_sys, m) {
-    struct my_stdout {
-        my_stdout() = default;
-        my_stdout(const my_stdout &) = default;
-        my_stdout(my_stdout &&) = default;
-    };
-
-    py::class_<my_stdout> my_stdout(m, "my_stdout");
-    my_stdout.def_static("write", [](py::object buffer) {
-        std::cout << buffer.cast<std::string>();
-    });
-    my_stdout.def_static("flush", []() {
-        std::cout << std::flush;
-    });
-
-    m.def("hook_stdout", []() {
-        auto py_sys = py::module::import("sys");
-        auto my_sys = py::module::import("my_sys");
-        py_sys.attr("stdout") = my_sys.attr("my_stdout");
-    });
-}
-
 namespace xpyt
 {
 
@@ -84,8 +62,7 @@ namespace xpyt
     void interpreter::configure_impl()
     {
         if (m_release_gil_at_startup)
-        {   
-            std::cout<<"release gil!\n";
+        {
             // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
             // will need to acquire the GIL
             m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
@@ -93,126 +70,49 @@ namespace xpyt
 
         py::gil_scoped_acquire acquire;
 
-py::module::import("my_sys").attr("hook_stdout")();
-#ifdef XPYT_EMSCRIPTEN_WASM_BUILD
-    py:exec(R"""(
-"""Mocks installed directly into sys.modules"""
-import sys
-import types
-
-
-def mock_fcntl():
-    sys.modules["fcntl"] = types.ModuleType("fcntl")
-
-
-def mock_pexpect():
-    pexpect_mock = types.ModuleType("pexpect")
-    sys.modules["pexpect"] = pexpect_mock
-
-
-def mock_resource():
-    sys.modules["resource"] = types.ModuleType("resource")
-
-
-def mock_termios():
-    termios_mock = types.ModuleType("termios")
-    termios_mock.TCSAFLUSH = 2
-
-    sys.modules["termios"] = termios_mock
-
-
-def mock_tornado():
-    """This is needed for some Matplotlib backends (webagg, ipympl) and plotly"""
-
-    # Appease plotly -> tenacity -> tornado.gen usage
-    gen = sys.modules["tornado.gen"] = types.ModuleType("gen")
-    gen.coroutine = lambda *args, **kwargs: args[0]
-    gen.sleep = lambda *args, **kwargs: None
-    gen.is_coroutine_function = lambda *args: False
-
-    tornado = sys.modules["tornado"] = types.ModuleType("tornado")
-    tornado.gen = gen
-
-
-ALL_MOCKS = [
-mock_termios,
-mock_fcntl,
-mock_resource,
-mock_tornado,
-mock_pexpect,
-]
-
-
-def apply_mocks():
-    """apply all of the mocks, if possible"""
-    import warnings
-
-    for mock in ALL_MOCKS:
-        try:
-            mock()
-        except Exception as err:
-            warnings.warn("failed to apply mock", mock, err)
-apply_mocks()
-)""",py::globals());
-#endif
-        std::cout<<"Installed mock!\n";
-
-
-
         py::module sys = py::module::import("sys");
         py::module logging = py::module::import("logging");
 
-        std::cout<<"get_display_module!\n";
         py::module display_module = get_display_module();
-        std::cout<<"get_traceback_module!\n";
         py::module traceback_module = get_traceback_module();
-        std::cout<<"get_stream_module!\n";
         py::module stream_module = get_stream_module();
-        std::cout<<"get_comm_module!\n";
         py::module comm_module = get_comm_module();
-        std::cout<<"get_kernel_module!\n";
         py::module kernel_module = get_kernel_module();
 
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = comm_module;
 
+        // We need a special shell app for in-browser execution
+#ifdef XPYT_EMSCRIPTEN_WASM_BUILD
+        m_ipython_shell_app = py::module::import("xeus_python_shell_lite").attr("LiteXPythonShellApp")();
+#else
+        m_ipython_shell_app = py::module::import("xeus_python_shell").attr("XPythonShellApp")();
+#endif
 
-        std::cout<<"xeus_python_shell!\n";
-        py::module xeus_python_shell = py::module::import("xeus_python_shell");
-
-        m_ipython_shell_app = xeus_python_shell.attr("XPythonShellApp")();
-        std::cout<<"initialize!\n";
         m_ipython_shell_app.attr("initialize")();
         m_ipython_shell = m_ipython_shell_app.attr("shell");
 
         // Setting kernel property owning the CommManager and get_parent
-        std::cout<<"kernel\n";
         m_ipython_shell.attr("kernel") = kernel_module.attr("XKernel")();
         m_ipython_shell.attr("kernel").attr("comm_manager") = comm_module.attr("CommManager")();
 
         // Initializing the DisplayPublisher
-        std::cout<<"display_pub\n";
         m_ipython_shell.attr("display_pub").attr("publish_display_data") = display_module.attr("publish_display_data");
         m_ipython_shell.attr("display_pub").attr("clear_output") = display_module.attr("clear_output");
 
         // Initializing the DisplayHook
-        std::cout<<"displayhook\n";
         m_displayhook = m_ipython_shell.attr("displayhook");
         m_displayhook.attr("publish_execution_result") = display_module.attr("publish_execution_result");
 
         // Needed for redirecting logging to the terminal
-        std::cout<<"log\n";
         m_logger = m_ipython_shell_app.attr("log");
         m_terminal_stream = stream_module.attr("TerminalStream")();
         m_logger.attr("handlers") = py::list(0);
         m_logger.attr("addHandler")(logging.attr("StreamHandler")(m_terminal_stream));
 
         // Initializing the compiler
-        std::cout<<"compilen";
         m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
         m_ipython_shell.attr("compile").attr("get_filename") = traceback_module.attr("get_filename");
-        std::cout<<"DONE\n";
-
     }
 
     nl::json interpreter::execute_request_impl(int /*execution_count*/,

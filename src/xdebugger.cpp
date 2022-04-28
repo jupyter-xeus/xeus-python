@@ -88,7 +88,7 @@ namespace xpyt
             {"success", false},
             {"command", message["command"]}
         };
-        
+
         std::string var_name = message["arguments"]["variableName"].get<std::string>();
         py::str py_var_name = py::str(var_name);
         bool valid_name = PyUnicode_IsIdentifier(py_var_name.ptr()) == 1;
@@ -110,7 +110,7 @@ namespace xpyt
 
         if (base_type::get_stopped_threads().empty())
         {
-            // The code did not hit a breakpoint, we use the interpreter 
+            // The code did not hit a breakpoint, we use the interpreter
             // to get the rich representation of the variable
             std::string code = "from IPython import get_ipython;";
             code += var_repr_data + ',' + var_repr_metadata + "= get_ipython().display_formatter.format(" + var_name + ")";
@@ -118,7 +118,7 @@ namespace xpyt
             exec(py::str(code));
         }
         else
-        {   
+        {
             // The code has stopped on a breakpoint, we use the setExpression request
             // to get the rich representation of the variable
             std::string lvalue = var_repr_data + ',' + var_repr_metadata;
@@ -243,7 +243,7 @@ namespace xpyt
         else
         {
             py::gil_scoped_acquire acquire;
-            py::module xeus_python_shell = py::module::import("xeus_python_shell");
+            py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
         }
         return status == "ok";
