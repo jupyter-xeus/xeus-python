@@ -130,3 +130,67 @@ jobs:
         run: |
           micromamba activate xeus-python
           pytest . -vvv
+
+  test-wasm:
+
+    runs-on: ubuntu
+
+    strategy:
+      fail-fast: false
+      matrix:
+        emsdk_ver: ["3.1.2"]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get number of CPU cores
+        uses: SimenB/github-actions-cpu-cores@v1
+
+      - name: Install mamba
+        uses: mamba-org/provision-with-micromamba@main
+
+      - name: Create micromamba wasm env
+        run: |
+          micromamba create -n xeus-python-wasm \
+            --platform=emscripten-32 --yes \
+            -c https://repo.mamba.pm/emscripten-forge \
+            -c https://repo.mamba.pm/conda-forge \
+            pip python ipython pybind11 jedi xtl nlohmann_json pybind11_json numpy xeus xeus-python-shell>=0.3.0
+
+      - name: Setup emsdk (TODO Install from conda-forge when available)
+        run: |
+          git clone https://github.com/emscripten-core/emsdk.git
+          pushd emsdk
+          ./emsdk install ${{matrix.emsdk_ver}}
+          popd
+
+      - name: Install emboa (TODO Install from conda-forge when available)
+        run: |
+          micromamba activate xeus-python-wasm
+          pip install git+https://github.com/emscripten-forge/emboa
+
+      - name: Build and pack xeus-python
+        run: |
+          micromamba activate xeus-python-wasm
+
+          pushd emsdk
+          ./emsdk activate ${{matrix.emsdk_ver}}
+          source emsdk_env.sh
+          export FILE_PACKAGER=$(cwd)/upstream/emscripten/tools/file_packager.py
+          popd
+
+          export CMAKE_PREFIX_PATH=$CONDA_PREFIX
+          export CMAKE_SYSTEM_PREFIX_PATH=$CONDA_PREFIX
+
+          emcmake cmake  \
+              -DCMAKE_BUILD_TYPE=Release\
+              -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
+              -DCMAKE_PROJECT_INCLUDE=overwriteProp.cmake \
+              -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
+              ..
+
+          make -j ${{ steps.cpu-cores.outputs.count }}
+
+          emboa pack python core $CONDA_PREFIX --version=3.10
+
+        # TODO Add test with node?
