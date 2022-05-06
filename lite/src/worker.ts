@@ -65,19 +65,14 @@ ctx.get_stdin = get_stdin;
 let resolveInputReply: any;
 
 
-function sleep(ms:number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function loadCppModule(moduleFactory: any): Promise<any> {
   const options: any = {};
   globalThis.Module = await moduleFactory(options);
-  
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   await import("./python_data");
 
-  await sleep(2000)
   await waitRunDependency();
   raw_xkernel = new globalThis.Module.xkernel();
   raw_xserver = raw_xkernel.get_server();
