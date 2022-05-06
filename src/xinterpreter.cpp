@@ -14,7 +14,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <iostream>
 
 #include "nlohmann/json.hpp"
 
@@ -40,7 +39,6 @@
 namespace py = pybind11;
 namespace nl = nlohmann;
 using namespace pybind11::literals;
-
 
 namespace xpyt
 {
