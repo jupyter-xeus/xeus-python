@@ -14,7 +14,7 @@ globalThis.Module = {}
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import createXeusModule from './xeus_kernel.js';
+import createXeusModule from './xpython_wasm.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // import populate from './python_data.js';
