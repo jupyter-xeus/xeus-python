@@ -259,7 +259,7 @@ macro(xpyt_set_kernel_options target_name)
             PUBLIC "SHELL: -s FORCE_FILESYSTEM"
             PUBLIC "SHELL:  -s LZ4=1"
             # PUBLIC "SHELL: -s EXPORTED_FUNCTIONS='[\"_post_kernel_message\"]'"
-    
+
        )
 
 
@@ -388,21 +388,19 @@ endif()
 if(XPYT_EMSCRIPTEN_WASM_BUILD)
 
     # TODO MAKE BETTER
-    SET(PYTHON_UTIL_LIBS 
+    SET(PYTHON_UTIL_LIBS
         $ENV{PREFIX}/lib/libbz2.a
         $ENV{PREFIX}/lib/libz.a
         $ENV{PREFIX}/lib/libsqlite3.a
         $ENV{PREFIX}/lib/libffi.a
     )
 
-
     # add_executable(xeus_kernel src/main_emscripten_kernel.cpp )
     # target_link_libraries(xeus_kernel PRIVATE ${PYTHON_UTIL_LIBS}   pybind11::embed)
     # xpyt_set_common_options(xeus_kernel)
     # xpyt_set_kernel_options(xeus_kernel)
 
-
-    add_executable(xeus_kernel src/main_emscripten_kernel.cpp )
+    add_executable(xeus_kernel src/main_emscripten_kernel.cpp)
     target_link_libraries(xeus_kernel PRIVATE ${PYTHON_UTIL_LIBS}   pybind11::embed)
     xpyt_set_common_options(xeus_kernel)
     xpyt_set_kernel_options(xeus_kernel)
