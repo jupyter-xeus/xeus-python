@@ -45,7 +45,6 @@ namespace xpyt
 {
 
     raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/) :m_redirect_display_enabled{ redirect_display_enabled }
-
     {
         xeus::register_interpreter(this);
         if (redirect_output_enabled)

@@ -7,19 +7,18 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include <iostream>
 #include <memory>
-
 
 #include <emscripten/bind.h>
 
-#include "xeus-python/xinterpreter_raw.hpp"
 #include "xeus/xembind.hpp"
+
+#include "xeus-python/xinterpreter_wasm.hpp"
 
 
 EMSCRIPTEN_BINDINGS(my_module) {
     xeus::export_core();
-    using interpreter_type = xpyt::raw_interpreter;
+
+    using interpreter_type = xpyt::wasm_interpreter;
     xeus::export_kernel<interpreter_type>("xkernel");
 }
-

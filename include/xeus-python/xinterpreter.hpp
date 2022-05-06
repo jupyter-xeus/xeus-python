@@ -21,12 +21,9 @@
 
 #include "nlohmann/json.hpp"
 
-#include "xeus/xinterpreter.hpp" 
+#include "xeus/xinterpreter.hpp"
 
 #include "pybind11/pybind11.h"
-#ifdef XPYT_EMSCRIPTEN_WASM_BUILD
-#include "pybind11/embed.h"
-#endif
 
 #include "xeus_python_config.hpp"
 
@@ -76,11 +73,8 @@ namespace xpyt
         nl::json internal_request_impl(const nl::json& content) override;
 
         void redirect_output();
+        void instanciate_ipython_shell();
 
-        #ifdef XPYT_EMSCRIPTEN_WASM_BUILD
-        py::scoped_interpreter m_interpreter;
-        #endif
-        
         py::object m_ipython_shell_app;
         py::object m_ipython_shell;
         py::object m_displayhook;

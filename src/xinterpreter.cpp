@@ -80,12 +80,7 @@ namespace xpyt
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = comm_module;
 
-        // We need a special shell app for in-browser execution
-#ifdef XPYT_EMSCRIPTEN_WASM_BUILD
-        m_ipython_shell_app = py::module::import("xeus_python_shell_lite").attr("LiteXPythonShellApp")();
-#else
-        m_ipython_shell_app = py::module::import("xeus_python_shell").attr("XPythonShellApp")();
-#endif
+        instanciate_ipython_shell();
 
         m_ipython_shell_app.attr("initialize")();
         m_ipython_shell = m_ipython_shell_app.attr("shell");
@@ -330,6 +325,11 @@ namespace xpyt
 
         sys.attr("stdout") = stream_module.attr("Stream")("stdout");
         sys.attr("stderr") = stream_module.attr("Stream")("stderr");
+    }
+
+    void interpreter::instanciate_ipython_shell()
+    {
+        m_ipython_shell_app = py::module::import("xeus_python_shell").attr("XPythonShellApp")();
     }
 
 }
