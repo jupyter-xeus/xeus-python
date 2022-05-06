@@ -14,18 +14,17 @@
     #pragma GCC diagnostic ignored "-Wattributes"
 #endif
 
-#include "xeus/xinterpreter.hpp"
-
 #include "pybind11/pybind11.h"
 #include "pybind11/embed.h"
 
+#include "xinterpreter.hpp"
 #include "xeus_python_config.hpp"
 
 namespace py = pybind11;
 
 namespace xpyt
 {
-    class XEUS_PYTHON_API wasm_interpreter : public xeus::xinterpreter
+    class XEUS_PYTHON_API wasm_interpreter : public interpreter
     {
     public:
 

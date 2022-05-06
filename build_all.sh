@@ -1,46 +1,39 @@
 #bin/bash
 set -e
 
-#boa build  $EM_RECIPES/xeus  --target-platform=emscripten-32
-boa build  $EM_RECIPES/xeus-python-shell  --target-platform=emscripten-32
+# boa build /home/martin/github/recipes/recipes/xeus-python-shell --target-platform=emscripten-32
 
-$MAMBA_EXE create  -n emxeus2   --platform=emscripten-32  --yes python ipython pybind11 jedi  xtl nlohmann_json pybind11_json numpy \
-    "xeus=2.3.1=h501ac3a_1" xeus-python-shell
+# rm -rf /home/martin/micromamba/envs/xeus-python-kernel
+# micromamba create -n xeus-python-kernel --platform=emscripten-32 -c /home/martin/micromamba/envs/xeus-python/conda-bld/ --yes python ipython pybind11 jedi xtl nlohmann_json pybind11_json numpy xeus xeus-python-shell=0.3.0
 
-mkdir -p bld_ems
+rm -rf bld_ems
+mkdir bld_ems
 cd bld_ems
 
+export PREFIX=/home/martin/micromamba/envs/xeus-python-kernel
+export CMAKE_PREFIX_PATH=$PREFIX
+export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
 
-
-
-export PREFIX=$HOME/micromamba/envs/emxeus2
-export CMAKE_PREFIX_PATH=$PREFIX 
-export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX 
 # export EMCC_FORCE_STDLIBS=1
 emcmake cmake  \
     -DCMAKE_BUILD_TYPE=Release\
     -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
     -DCMAKE_PROJECT_INCLUDE=overwriteProp.cmake \
-    -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
+    -DXPYT_WASM_BUILD=ON \
     ..
 
 make -j12
 
-emboa pack python core $HOME/micromamba/envs/emxeus2 --version=3.10
-
+emboa pack python core /home/martin/micromamba/envs/xeus-python-kernel --version=3.10
 
 cd ..
 # patch
 python patch_it.py
 
+cp bld_ems/python_data.js       $HOME/github/xeus-python-kernel/src
+cp bld_ems/python_data.data     $HOME/github/xeus-python-kernel/src
+cp bld_ems/xpython_wasm.js       $HOME/github/xeus-python-kernel/src
+cp bld_ems/xpython_wasm.wasm     $HOME/github/xeus-python-kernel/src
 
-
-
-
-cp bld_ems/python_data.js       $HOME/src/xeus-python-kernel/src
-cp bld_ems/python_data.data     $HOME/src/xeus-python-kernel/src
-cp bld_ems/xeus_kernel.js   $HOME/src/xeus-python-kernel/src
-cp bld_ems/xeus_kernel.wasm $HOME/src/xeus-python-kernel/src
-
-cd $HOME/src/xeus-python-kernel
-npm run build && jupyter lite build && jupyter lite serve
+# cd $HOME/github/xeus-python-kernel
+# yarn run build && jupyter lite build && jupyter lite serve

@@ -13,6 +13,7 @@
 
 #include "pybind11/functional.h"
 
+#include "xeus-python/xinterpreter.hpp"
 #include "xeus-python/xinterpreter_wasm.hpp"
 
 namespace py = pybind11;
@@ -20,14 +21,9 @@ namespace py = pybind11;
 namespace xpyt
 {
 
-    wasm_interpreter::wasm_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
-        : m_redirect_display_enabled{redirect_display_enabled}
+    wasm_interpreter::wasm_interpreter()
+        : interpreter(true, true)
     {
-        xeus::register_interpreter(this);
-        if (redirect_output_enabled)
-        {
-            redirect_output();
-        }
     }
 
     wasm_interpreter::~wasm_interpreter()
