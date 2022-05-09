@@ -73,7 +73,6 @@ namespace xpyt
         nl::json internal_request_impl(const nl::json& content) override;
 
         void redirect_output();
-        void instanciate_ipython_shell();
 
         py::object m_ipython_shell_app;
         py::object m_ipython_shell;
@@ -95,7 +94,12 @@ namespace xpyt
         bool m_release_gil_at_startup = true;
         gil_scoped_release_ptr m_release_gil = nullptr;
 
+        bool m_redirect_output_enabled;
         bool m_redirect_display_enabled;
+
+    private:
+
+        virtual void instanciate_ipython_shell();
     };
 }
 

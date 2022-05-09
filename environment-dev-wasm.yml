@@ -1,0 +1,9 @@
+name: xeus-python-wasm
+channels:
+  - conda-forge
+dependencies:
+  - cmake
+  - pip
+  - python=3.10
+  - yarn
+  - click

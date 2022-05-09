@@ -74,7 +74,7 @@ OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 
 if(XPYT_EMSCRIPTEN_WASM_BUILD)
-    configure_file(post.js ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
+    configure_file(wasm_patches/post.js ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
 
     add_compile_definitions(XPYT_EMSCRIPTEN_WASM_BUILD)
 

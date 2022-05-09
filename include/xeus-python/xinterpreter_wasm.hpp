@@ -28,14 +28,12 @@ namespace xpyt
     {
     public:
 
-        using gil_scoped_release_ptr = std::unique_ptr<py::gil_scoped_release>;
-
         wasm_interpreter();
         virtual ~wasm_interpreter();
 
     protected:
 
-        void instanciate_ipython_shell();
+        void instanciate_ipython_shell() override;
 
         py::scoped_interpreter m_interpreter;
     };
