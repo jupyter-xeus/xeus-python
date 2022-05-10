@@ -12,7 +12,7 @@ dependencies:
   - xtl>=0.7, <0.8
   - pybind11>=2.6.1,<3.0
   - pybind11_json>=0.2.6,<0.3
-  - xeus-python-shell>=0.1.6,<0.3
+  - xeus-python-shell>=0.3.0,<0.4
   - debugpy
   # Test dependencies
   - pytest

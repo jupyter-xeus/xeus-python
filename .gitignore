@@ -51,3 +51,6 @@ build/
 
 # Jupyter artefacts
 .ipynb_checkpoints/
+
+# JS artifacts
+node_modules/

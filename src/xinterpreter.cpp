@@ -44,13 +44,9 @@ namespace xpyt
 {
 
     interpreter::interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
-        : m_redirect_display_enabled{redirect_display_enabled}
+        : m_redirect_output_enabled{redirect_output_enabled}, m_redirect_display_enabled{redirect_display_enabled}
     {
         xeus::register_interpreter(this);
-        if (redirect_output_enabled)
-        {
-            redirect_output();
-        }
     }
 
     interpreter::~interpreter()
@@ -80,9 +76,8 @@ namespace xpyt
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = comm_module;
 
-        py::module xeus_python_shell = py::module::import("xeus_python_shell");
+        instanciate_ipython_shell();
 
-        m_ipython_shell_app = xeus_python_shell.attr("XPythonShellApp")();
         m_ipython_shell_app.attr("initialize")();
         m_ipython_shell = m_ipython_shell_app.attr("shell");
 
@@ -108,6 +103,10 @@ namespace xpyt
         m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
         m_ipython_shell.attr("compile").attr("get_filename") = traceback_module.attr("get_filename");
 
+        if (m_redirect_output_enabled)
+        {
+            redirect_output();
+        }
     }
 
     nl::json interpreter::execute_request_impl(int /*execution_count*/,
@@ -327,6 +326,11 @@ namespace xpyt
 
         sys.attr("stdout") = stream_module.attr("Stream")("stdout");
         sys.attr("stderr") = stream_module.attr("Stream")("stderr");
+    }
+
+    void interpreter::instanciate_ipython_shell()
+    {
+        m_ipython_shell_app = py::module::import("xeus_python_shell").attr("XPythonShellApp")();
     }
 
 }

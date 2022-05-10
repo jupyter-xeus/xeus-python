@@ -88,8 +88,6 @@ namespace xpyt
         bool m_redirect_display_enabled;
     };
 
-
-    
 }
 
 #ifdef __GNUC__

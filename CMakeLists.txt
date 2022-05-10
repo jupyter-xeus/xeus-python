@@ -54,6 +54,7 @@ configure_file (
 # =============
 
 # Compilation options
+
 OPTION(XPYT_DISABLE_ARCH_NATIVE "disable -march=native flag" OFF)
 OPTION(XPYT_DISABLE_TUNE_GENERIC "disable -mtune=generic flag" OFF)
 OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
@@ -66,9 +67,27 @@ OPTION(XPYT_BUILD_XPYTHON_EXTENSION "Build the xpython extension module" OFF)
 OPTION(XPYT_USE_SHARED_XEUS "Link xpython or xpython_extension with the xeus shared library (instead of the static library)" ON)
 OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the xeus-python shared library (instead of the static library)" ON)
 
+OPTION(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
+
 # Test options
 OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
+
+if(XPYT_EMSCRIPTEN_WASM_BUILD)
+    configure_file(wasm_patches/post.js ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
+
+    add_compile_definitions(XPYT_EMSCRIPTEN_WASM_BUILD)
+
+    set(XPYT_DISABLE_ARCH_NATIVE ON)
+    set(XPYT_BUILD_STATIC OFF)
+    set(XPYT_BUILD_SHARED OFF)
+    set(XPYT_BUILD_XPYTHON_EXECUTABLE OFF)
+    set(XPYT_BUILD_XPYTHON_EXTENSION OFF)
+    set(XPYT_USE_SHARED_XEUS OFF)
+    set(XPYT_USE_SHARED_XEUS_PYTHON OFF)
+    set(XPYT_BUILD_TESTS OFF)
+    set(XPYT_DOWNLOAD_GTEST OFF)
+endif()
 
 # Dependencies
 # ============
@@ -166,6 +185,42 @@ set(XPYTHON_EXTENSION_SRC
     src/xpython_extension.cpp
 )
 
+set(XEUS_PYTHON_WASM_SRC
+    src/xcomm.cpp
+    src/xcomm.hpp
+    src/xdisplay.cpp
+    src/xdisplay.hpp
+    src/xinput.cpp
+    src/xinput.hpp
+    src/xinspect.cpp
+    src/xinspect.hpp
+    src/xinternal_utils.cpp
+    src/xinternal_utils.hpp
+    src/xinterpreter.cpp
+    src/xinterpreter_wasm.cpp
+    src/xkernel.cpp
+    src/xkernel.hpp
+    src/xpaths.cpp
+    src/xstream.cpp
+    src/xstream.hpp
+    src/xtraceback.cpp
+    src/xutils.cpp
+)
+
+set(XEUS_PYTHON_WASM_HEADERS
+    include/xeus-python/xdebugger.hpp
+    include/xeus-python/xeus_python_config.hpp
+    include/xeus-python/xpaths.hpp
+    include/xeus-python/xinterpreter.hpp
+    include/xeus-python/xinterpreter_wasm.hpp
+    include/xeus-python/xtraceback.hpp
+    include/xeus-python/xutils.hpp
+)
+
+set(XPYTHON_WASM_SRC
+    src/main_wasm.cpp
+)
+
 # Targets and link - Macros
 # =========================
 
@@ -209,7 +264,10 @@ macro(xpyt_set_kernel_options target_name)
         message(STATUS "Enabling PyPI warning for target: " ${target_name})
         target_compile_definitions(${target_name} PRIVATE XEUS_PYTHON_PYPI_WARNING)
     endif()
+endmacro()
 
+# Common macro for linking targets
+macro(xpyt_target_link_libraries target_name)
     if (XPYT_USE_SHARED_XEUS_PYTHON)
         target_link_libraries(${target_name} PRIVATE xeus-python)
 
@@ -226,18 +284,18 @@ macro(xpyt_set_kernel_options target_name)
 endmacro()
 
 # Common macro for shared and static library xeus-python
-macro(xpyt_create_target target_name linkage output_name)
+macro(xpyt_create_target target_name src headers linkage output_name)
     string(TOUPPER "${linkage}" linkage_upper)
 
     if (NOT ${linkage_upper} MATCHES "^(SHARED|STATIC)$")
         message(FATAL_ERROR "Invalid library linkage: ${linkage}")
     endif ()
 
-    add_library(${target_name} ${linkage_upper} ${XEUS_PYTHON_SRC} ${XEUS_PYTHON_HEADERS})
+    add_library(${target_name} ${linkage_upper} ${src} ${headers})
     xpyt_set_common_options(${target_name})
 
     set_target_properties(${target_name} PROPERTIES
-                          PUBLIC_HEADER "${XEUS_PYTHON_HEADERS}"
+                          PUBLIC_HEADER "${headers}"
                           PREFIX ""
                           VERSION ${${PROJECT_NAME}_VERSION}
                           SOVERSION ${XPYT_VERSION_MAJOR}
@@ -271,8 +329,8 @@ macro(xpyt_create_target target_name linkage output_name)
         target_compile_definitions(${target_name} PRIVATE XEUS_PYTHONHOME_RELPATH=${XEUS_PYTHONHOME_RELPATH})
     elseif (XEUS_PYTHONHOME_ABSPATH)
         target_compile_definitions(${target_name} PRIVATE XEUS_PYTHONHOME_ABSPATH=${XEUS_PYTHONHOME_ABSPATH})
-    endif()
-endmacro()
+    endif ()
+endmacro ()
 
 # xeus-python
 # ===========
@@ -281,7 +339,7 @@ set(XEUS_PYTHON_TARGETS "")
 
 if (XPYT_BUILD_SHARED)
     # Build libraries
-    xpyt_create_target(xeus-python SHARED xeus-python)
+    xpyt_create_target(xeus-python "${XEUS_PYTHON_SRC}" "${XEUS_PYTHON_HEADERS}" SHARED xeus-python)
     list(APPEND XEUS_PYTHON_TARGETS xeus-python)
 endif ()
 
@@ -289,11 +347,17 @@ if (XPYT_BUILD_STATIC)
     # On Windows, a static library should use a different output name
     # to avoid the conflict with the import library of a shared one.
     if (CMAKE_HOST_WIN32)
-        xpyt_create_target(xeus-python-static STATIC xeus-python-static)
+        xpyt_create_target(xeus-python-static "${XEUS_PYTHON_SRC}" "${XEUS_PYTHON_HEADERS}" STATIC xeus-python-static)
     else ()
-        xpyt_create_target(xeus-python-static STATIC xeus-python)
+        xpyt_create_target(xeus-python-static "${XEUS_PYTHON_SRC}" "${XEUS_PYTHON_HEADERS}" STATIC xeus-python)
     endif ()
     list(APPEND XEUS_PYTHON_TARGETS xeus-python-static)
+endif ()
+
+if (XPYT_EMSCRIPTEN_WASM_BUILD)
+    xpyt_create_target(xeus-python-wasm "${XEUS_PYTHON_WASM_SRC}" "${XEUS_PYTHON_WASM_HEADERS}" STATIC xeus-python-wasm)
+    target_compile_options(xeus-python-wasm PRIVATE -fPIC)
+    list(APPEND XEUS_PYTHON_TARGETS xeus-python-wasm)
 endif ()
 
 # xpython
@@ -305,6 +369,7 @@ if (XPYT_BUILD_XPYTHON_EXECUTABLE)
 
     xpyt_set_common_options(xpython)
     xpyt_set_kernel_options(xpython)
+    xpyt_target_link_libraries(xpython)
 endif()
 
 # xpython_extension
@@ -315,6 +380,63 @@ if (XPYT_BUILD_XPYTHON_EXTENSION)
 
     xpyt_set_common_options(xpython_extension)
     xpyt_set_kernel_options(xpython_extension)
+    xpyt_target_link_libraries(xpython_extension)
+endif()
+
+# xpython_wasm
+# ============
+
+if (XPYT_EMSCRIPTEN_WASM_BUILD)
+    # TODO MAKE BETTER
+    SET(PYTHON_UTIL_LIBS
+        $ENV{PREFIX}/lib/libbz2.a
+        $ENV{PREFIX}/lib/libz.a
+        $ENV{PREFIX}/lib/libsqlite3.a
+        $ENV{PREFIX}/lib/libffi.a
+    )
+
+    add_executable(xpython_wasm ${XPYTHON_WASM_SRC})
+    target_link_libraries(xpython_wasm PRIVATE ${PYTHON_UTIL_LIBS} pybind11::embed)
+
+    xpyt_set_common_options(xpython_wasm)
+    target_compile_options(xpython_wasm PRIVATE -fPIC)
+
+    xpyt_set_kernel_options(xpython_wasm)
+    target_link_libraries(xpython_wasm PRIVATE xeus-python-wasm)
+
+    target_compile_options(xpython_wasm
+        PUBLIC --std=c++17
+        PUBLIC -Wno-deprecated
+        PUBLIC "SHELL: --bind"
+        PUBLIC "SHELL: -s ENVIRONMENT=web"
+        PUBLIC "SHELL: -fwasm-exceptions"
+        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
+        PUBLIC "SHELL: -s LZ4=1"
+    )
+
+    target_link_options(xpython_wasm
+        PUBLIC --bind
+        PUBLIC -Wno-unused-command-line-argument
+        PUBLIC "SHELL: --bind"
+        PUBLIC "SHELL: -s MODULARIZE=1"
+        PUBLIC "SHELL: -s EXPORT_NAME=\"createXeusModule\""
+        PUBLIC "SHELL: -s EXPORT_ES6=0"
+        PUBLIC "SHELL: -s USE_ES6_IMPORT_META=0"
+        PUBLIC "SHELL: -s DEMANGLE_SUPPORT=0"
+        PUBLIC "SHELL: -s ASSERTIONS=0"
+        PUBLIC "SHELL: -s ALLOW_MEMORY_GROWTH=1"
+        PUBLIC "SHELL: -s EXIT_RUNTIME=1"
+        PUBLIC "SHELL: -s WASM=1"
+        PUBLIC "SHELL: -s USE_PTHREADS=0"
+        PUBLIC "SHELL: -fwasm-exceptions"
+        PUBLIC "SHELL: -s MAIN_MODULE=1"
+        PUBLIC "SHELL: -s ENVIRONMENT=worker"
+        PUBLIC "SHELL: -s TOTAL_STACK=512mb"
+        PUBLIC "SHELL: -s INITIAL_MEMORY=1024mb"
+        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
+        PUBLIC "SHELL: -s LZ4=1"
+        PUBLIC "SHELL: --post-js post.js"
+    )
 endif()
 
 # Tests

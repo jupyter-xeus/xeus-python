@@ -45,7 +45,6 @@ namespace xpyt
 {
 
     raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/) :m_redirect_display_enabled{ redirect_display_enabled }
-
     {
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
@@ -69,13 +68,11 @@ namespace xpyt
 
         py::gil_scoped_acquire acquire;
 
-
         py::module sys = py::module::import("sys");
-
         py::module jedi = py::module::import("jedi");
         jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
             jedi.attr("api").attr("environment").attr("SameEnvironment")();
-            });
+        });
 
         py::module display_module = get_display_module(true);
         m_displayhook = display_module.attr("DisplayHook")();
@@ -91,7 +88,6 @@ namespace xpyt
         // Monkey patching "import IPython.core.display"
         sys.attr("modules")["IPython.core.display"] = display_module;
 
-
         py::module kernel_module = get_kernel_module(true);
         // Monkey patching "from ipykernel.comm import Comm"
         sys.attr("modules")["ipykernel.comm"] = kernel_module;
@@ -106,10 +102,7 @@ namespace xpyt
         py::globals()["_i"] = "";
         py::globals()["_ii"] = "";
         py::globals()["_iii"] = "";
-
     }
-
-
 
     nl::json raw_interpreter::execute_request_impl(
         int execution_count,
