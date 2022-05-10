@@ -411,8 +411,7 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
         PUBLIC "SHELL: -s ENVIRONMENT=web"
         PUBLIC "SHELL: -fwasm-exceptions"
         PUBLIC "SHELL: -s FORCE_FILESYSTEM"
-        PUBLIC "SHELL:  -s LZ4=1"
-        # PUBLIC "SHELL: -s EXPORTED_FUNCTIONS='[\"_post_kernel_message\"]'"
+        PUBLIC "SHELL: -s LZ4=1"
     )
 
     target_link_options(xpython_wasm
@@ -430,15 +429,13 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
         PUBLIC "SHELL: -s WASM=1"
         PUBLIC "SHELL: -s USE_PTHREADS=0"
         PUBLIC "SHELL: -fwasm-exceptions"
-        # PUBLIC "SHELL: -s ENVIRONMENT=${XEUS_EMSCRIPTEN_ENVIRONMENT}"
         PUBLIC "SHELL: -s MAIN_MODULE=1"
         PUBLIC "SHELL: -s ENVIRONMENT=worker"
         PUBLIC "SHELL: -s TOTAL_STACK=512mb"
         PUBLIC "SHELL: -s INITIAL_MEMORY=1024mb"
         PUBLIC "SHELL: -s FORCE_FILESYSTEM"
-        PUBLIC "SHELL:  -s LZ4=1"
+        PUBLIC "SHELL: -s LZ4=1"
         PUBLIC "SHELL: --post-js post.js"
-        # PUBLIC "SHELL: -s EXPORTED_FUNCTIONS='[\"_post_kernel_message\"]'"
     )
 endif()
 
