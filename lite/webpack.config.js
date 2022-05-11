@@ -11,7 +11,7 @@ module.exports = {
         {
           from: 'src/python_data.data',
           to: '.'
-        },
+        }
       ]
     })
   ]
