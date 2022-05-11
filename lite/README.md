@@ -6,7 +6,6 @@ The [xeus-python](https://github.com/jupyter-xeus/xeus-python) Python kernel for
 
 ![jupyterlite-xeus-python](https://user-images.githubusercontent.com/21197331/167814755-76975633-30f7-4f8e-8fdb-eeec98fa3fd1.gif)
 
-
 ## Requirements
 
 - JupyterLite >= 0.1.0a14
