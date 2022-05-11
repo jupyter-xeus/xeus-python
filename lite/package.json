@@ -32,7 +32,7 @@
     "build:dockerimage": "docker build -t mydockerimage  --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) . ",
     "build:dockerimage_no_cache": "docker build -t mydockerimage  --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --no-cache . ",
     "build:emscripten": "echo $(pwd) && docker run --rm -v $(pwd):/src    -u $(id -u):$(id -g)  mydockerimage    ./build.sh",
-    "copy-files": "copyfiles -u 1 src/xeus_kernel.wasm  src/xeus_kernel.worker.js src/xeus_kernel.js   src/python_data.js src/python_data.data  lib",
+    "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm  src/xpython_wasm.worker.js src/xpython_wasm.js   src/python_data.js src/python_data.data  lib",
     "build:wasm": "jlpm run build:dockerimage && jlpm run build:emscripten",
     "build:wasm_no_cache": "jlpm run build:dockerimage_no_cache && jlpm run build:emscripten",
     "build": "jlpm run build:lib && jlpm run copy-files && jlpm run build:labextension:dev",
