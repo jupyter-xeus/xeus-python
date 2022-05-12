@@ -1,6 +1,11 @@
 # jupyterlite-xeus-python-kernel
 
-[![Github Actions Status](https://github.com/jupyterlite/xeus-python-kernel/workflows/Build/badge.svg)](https://github.com/jupyterlite/xeus-python-kernel/actions/workflows/build.yml)
+[![ci-badge]][ci] [![docs-badge]][docs]
+
+[ci-badge]: https://github.com/jupyterlite/xeus-python-kernel/workflows/Build/badge.svg
+[ci]: https://github.com/jupyterlite/xeus-python-kernel/actions?query=branch%3Amain
+[docs-badge]: https://readthedocs.org/projects/xeus-python-kernel/badge/?version=latest
+[docs]: https://xeus-python-kernel.readthedocs.io/en/latest/?badge=latest
 
 The [xeus-python](https://github.com/jupyter-xeus/xeus-python) Python kernel for JupyterLite running in the browser.
 
@@ -15,7 +20,7 @@ The [xeus-python](https://github.com/jupyter-xeus/xeus-python) Python kernel for
 To install the extension, execute:
 
 ```bash
-pip install jupyterlite_xeus_python
+pip install jupyterlite-xeus-python
 ```
 
 Then build your JupyterLite site:
@@ -29,7 +34,7 @@ jupyter lite build
 To remove the extension, execute:
 
 ```bash
-pip uninstall jupyterlite_xeus_python
+pip uninstall jupyterlite-xeus-python
 ```
 
 ## Contributing

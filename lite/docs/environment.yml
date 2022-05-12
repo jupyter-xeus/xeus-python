@@ -1,0 +1,14 @@
+name: xeus-python-kernel-docs
+
+channels:
+  - conda-forge
+
+dependencies:
+  - yarn
+  - jupyterlab
+  - jupyter-packaging
+  - pydata-sphinx-theme
+
+  - pip:
+    - jupyterlite-xeus-python
+    - jupyterlite-sphinx
