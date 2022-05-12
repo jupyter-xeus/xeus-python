@@ -27,7 +27,7 @@ RUN git clone https://github.com/emscripten-core/emsdk.git && \
     popd
 
 ##################################################################
-# Create build env
+# Create emscripten env
 ##################################################################
 
 RUN micromamba create -n xeus-python-build-wasm \
@@ -36,7 +36,8 @@ RUN micromamba create -n xeus-python-build-wasm \
     -c https://repo.mamba.pm/conda-forge \
     --yes \
     python=3.10 ipython pybind11 jedi xtl nlohmann_json \
-    pybind11_json numpy xeus "xeus-python-shell>=0.3"
+    pybind11_json xeus "xeus-python-shell>=0.3" \
+    numpy matplotlib
 
 ##################################################################
 # git config
