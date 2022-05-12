@@ -9,6 +9,8 @@ include webpack.config.js
 
 graft jupyterlite_xeus_python/labextension
 
+graft docs
+
 # Javascript files
 graft src
 graft style
