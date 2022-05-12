@@ -47,9 +47,8 @@ RUN git config --global advice.detachedHead false
 ##################################################################
 # xeus-python build
 ##################################################################
-# TODO Use a tag that is not master
 RUN mkdir -p xeus-python && \
-    git clone --branch master --depth 1 https://github.com/jupyter-xeus/xeus-python.git  xeus-python
+    git clone --branch 0.13.8 --depth 1 https://github.com/jupyter-xeus/xeus-python.git  xeus-python
 
 RUN mkdir -p xeus-python/build && \
     cd xeus-python/build && \
