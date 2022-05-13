@@ -1,4 +1,3 @@
-
 import json
 from pathlib import Path
 
@@ -11,7 +10,4 @@ with (HERE / "labextension" / "package.json").open() as fid:
 
 
 def _jupyter_labextension_paths():
-    return [{
-        "src": "labextension",
-        "dest": data["name"]
-    }]
+    return [{"src": "labextension", "dest": data["name"]}]

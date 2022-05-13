@@ -48,8 +48,12 @@ setup_args = dict(
     license=pkg_json["license"],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=setuptools.find_packages(),
-    install_requires=[],
+    packages=setuptools.find_packages(exclude=["tests"]),
+    install_requires=[
+        "traitlets",
+        "jupyterlite",
+        "empack"
+    ],
     zip_safe=False,
     include_package_data=True,
     python_requires=">=3.6",
@@ -69,6 +73,11 @@ setup_args = dict(
         "Framework :: Jupyter :: JupyterLab :: Extensions",
         "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
     ],
+    entry_points={
+        "jupyterlite.addon.v0": [
+            "jupyterlite-xeus-python=jupyterlite_xeus_python.env_build_addon:XeusPythonEnv"
+        ]
+    }
 )
 
 try:

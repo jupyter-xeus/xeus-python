@@ -2,14 +2,9 @@
 // Copyright (c) JupyterLite Contributors
 // Distributed under the terms of the Modified BSD License.
 
-declare namespace globalThis {
-  let Module: any;
-}
-globalThis.Module = {};
+declare function createXeusModule(options: any): any;
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import createXeusModule from './xpython_wasm.js';
+globalThis.Module = {};
 
 // We alias self to ctx and give it our newly created type
 const ctx: Worker = self as any;
@@ -44,17 +39,16 @@ async function get_stdin() {
 // @ts-ignore: breaks typedoc
 ctx.get_stdin = get_stdin;
 
-// eslint-disable-next-line
-// @ts-ignore: breaks typedoc
 let resolveInputReply: any;
 
-async function loadCppModule(moduleFactory: any): Promise<any> {
+async function load() {
   const options: any = {};
-  globalThis.Module = await moduleFactory(options);
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  await import('./python_data');
+  importScripts('./xpython_wasm.js');
+
+  globalThis.Module = await createXeusModule(options);
+
+  importScripts('./python_data.js');
 
   await waitRunDependency();
   raw_xkernel = new globalThis.Module.xkernel();
@@ -62,7 +56,7 @@ async function loadCppModule(moduleFactory: any): Promise<any> {
   raw_xkernel!.start();
 }
 
-const loadCppModulePromise = loadCppModule(createXeusModule);
+const loadCppModulePromise = load();
 
 ctx.onmessage = async (event: MessageEvent): Promise<void> => {
   await loadCppModulePromise;

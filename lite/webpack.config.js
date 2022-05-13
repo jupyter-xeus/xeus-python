@@ -9,7 +9,15 @@ module.exports = {
           to: '.'
         },
         {
+          from: 'src/xpython_wasm.js',
+          to: '.'
+        },
+        {
           from: 'src/python_data.data',
+          to: '.'
+        },
+        {
+          from: 'src/python_data.js',
           to: '.'
         }
       ]

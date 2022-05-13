@@ -1,27 +1,22 @@
-# TODO Try to combine micromamba and emsdk
-# FROM emscripten/emsdk:2.0.32
-FROM mambaorg/micromamba:0.22.0
+FROM mambaorg/micromamba:0.23.1
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 ARG PYTHON_VERSION=3.10
 
-RUN micromamba install --yes -c https://repo.mamba.pm/conda-forge \
-    git pip python=$PYTHON_VERSION click typer
+RUN micromamba install --yes -c conda-forge \
+    git pip python=$PYTHON_VERSION click typer emsdk
 
 ##################################################################
-# Install emboa
+# Install empack
 ##################################################################
 
-RUN pip install git+https://github.com/emscripten-forge/emboa
+RUN pip install empack
 
 ##################################################################
 # Setup emsdk
 ##################################################################
 
-RUN git clone https://github.com/emscripten-core/emsdk.git && \
-    pushd emsdk && \
-    ./emsdk install 3.1.2 && \
-    popd
+RUN emsdk install 3.1.2 && emsdk activate 3.1.2
 
 ##################################################################
 # Create emscripten env and pack it
@@ -29,18 +24,16 @@ RUN git clone https://github.com/emscripten-core/emsdk.git && \
 
 RUN micromamba create -n xeus-python-kernel \
     --platform=emscripten-32 \
+    --root-prefix=/tmp/xeus-python-kernel \
     -c https://repo.mamba.pm/emscripten-forge \
     -c https://repo.mamba.pm/conda-forge \
     --yes \
-    python=$PYTHON_VERSION xeus-python \
-    numpy matplotlib
+    python=$PYTHON_VERSION xeus-python
 
 RUN mkdir -p xeus-python-kernel && cd xeus-python-kernel && \
-    export FILE_PACKAGER=/tmp/emsdk/upstream/emscripten/tools/file_packager.py && \
-    /tmp/emsdk/emsdk activate 3.1.2 3.1.2 && \
-    cp $MAMBA_ROOT_PREFIX/envs/xeus-python-kernel/bin/xpython_wasm.js . && \
-    cp $MAMBA_ROOT_PREFIX/envs/xeus-python-kernel/bin/xpython_wasm.wasm . && \
-    emboa pack python core $MAMBA_ROOT_PREFIX/envs/xeus-python-kernel --version=$PYTHON_VERSION
+    cp /tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.js . && \
+    cp /tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.wasm . && \
+    empack pack python core /tmp/xeus-python-kernel/envs/xeus-python-kernel --version=$PYTHON_VERSION
 
 COPY copy_output.sh .
 

@@ -1,11 +1,13 @@
 include LICENSE
 include *.md
+include *.yml
 include pyproject.toml
 include package.json
 include install.json
 include ts*.json
 include yarn.lock
 include webpack.config.js
+recursive-include tests *.py
 
 graft jupyterlite_xeus_python/labextension
 
