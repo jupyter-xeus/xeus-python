@@ -519,3 +519,12 @@ if (XPYT_BUILD_SHARED)
             FILE ${PROJECT_NAME}Targets.cmake
             DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
 endif ()
+
+if (XPYT_EMSCRIPTEN_WASM_BUILD)
+    install(TARGETS xpython_wasm
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(FILES
+            "$<TARGET_FILE_DIR:xpython_wasm>/xpython_wasm.js"
+            "$<TARGET_FILE_DIR:xpython_wasm>/xpython_wasm.wasm"
+            DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif ()
