@@ -192,7 +192,6 @@ jobs:
           emcmake cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
-            -DCMAKE_PROJECT_INCLUDE=cmake/overwriteProp.cmake \
             -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
             ..
 
