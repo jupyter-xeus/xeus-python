@@ -3,7 +3,7 @@ set -e
 
 mkdir -p /src/src
 
-cd /tmp/xeus-python/build
+cd /tmp/xeus-python-kernel
 ls
 cp *python*.{js,wasm,data} /src/src
 
