@@ -153,27 +153,22 @@ jobs:
           environment-name: xeus-python-wasm
           micromamba-version: "0.22.0"
 
-      - name: Setup emsdk (TODO Install from conda-forge when available)
-        run: |
-          git clone https://github.com/emscripten-core/emsdk.git
-          pushd emsdk
-          ./emsdk install ${{matrix.emsdk_ver}}
-          popd
-
-      - name: Install emboa (TODO Install from conda-forge when available)
+      - name: Setup emsdk
         run: |
           micromamba activate xeus-python-wasm
-          pip install git+https://github.com/emscripten-forge/emboa
+          emsdk install ${{matrix.emsdk_ver}}
+
+      - name: Install emperator (TODO Install from conda-forge when available)
+        run: |
+          micromamba activate xeus-python-wasm
+          pip install emperator
 
       - name: Build and pack xeus-python
         run: |
           micromamba activate xeus-python-wasm
 
-          pushd emsdk
-          ./emsdk activate ${{matrix.emsdk_ver}}
-          source emsdk_env.sh
-          export FILE_PACKAGER=$(pwd)/upstream/emscripten/tools/file_packager.py
-          popd
+          emsdk activate ${{matrix.emsdk_ver}}
+          source $CONDA_PREFIX/opt/emsdk/emsdk_env.sh
 
           micromamba create -n xeus-python-build-wasm \
             --platform=emscripten-32 \
@@ -197,7 +192,7 @@ jobs:
 
           make -j5
 
-          emboa pack python core $MAMBA_ROOT_PREFIX/envs/xeus-python-build-wasm --version=3.10
+          emperator pack python core $MAMBA_ROOT_PREFIX/envs/xeus-python-build-wasm --version=3.10
 
           popd
 
