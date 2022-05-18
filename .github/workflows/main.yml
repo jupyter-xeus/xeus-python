@@ -158,10 +158,10 @@ jobs:
           micromamba activate xeus-python-wasm
           emsdk install ${{matrix.emsdk_ver}}
 
-      - name: Install emperator (TODO Install from conda-forge when available)
+      - name: Install empack (TODO Install from conda-forge when available)
         run: |
           micromamba activate xeus-python-wasm
-          pip install emperator
+          pip install empack
 
       - name: Build and pack xeus-python
         run: |
@@ -192,7 +192,7 @@ jobs:
 
           make -j5
 
-          emperator pack python core $MAMBA_ROOT_PREFIX/envs/xeus-python-build-wasm --version=3.10
+          empack pack python core $MAMBA_ROOT_PREFIX/envs/xeus-python-build-wasm --version=3.10
 
           popd
 
