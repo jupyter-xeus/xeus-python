@@ -1,0 +1,11 @@
+name: xeus-python-kernel
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - pip
+  - pytest
+  - emsdk
+  - pip:
+    - jupyterlite
+    - empack

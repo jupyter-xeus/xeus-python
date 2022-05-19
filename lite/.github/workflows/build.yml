@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: '*'
 
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -64,14 +68,14 @@ jobs:
 
           pip install build
           python -m build --sdist
-          cp dist/*.tar.gz myextension.tar.gz
-          pip uninstall -y myextension jupyterlab
-          rm -rf myextension
+          cp dist/*.tar.gz jupyterlite-xeus-python.tar.gz
+          pip uninstall -y jupyterlite-xeus-python jupyterlab
+          rm -rf jupyterlite-xeus-python
 
       - uses: actions/upload-artifact@v2
         with:
-          name: myextension-sdist
-          path: myextension.tar.gz
+          name: jupyterlite-xeus-python-sdist
+          path: jupyterlite-xeus-python.tar.gz
 
   test_isolated:
     needs: build
@@ -87,16 +91,135 @@ jobs:
           architecture: 'x64'
       - uses: actions/download-artifact@v2
         with:
-          name: myextension-sdist
+          name: jupyterlite-xeus-python-sdist
       - name: Install and Test
         run: |
           set -eux
           # Remove NodeJS, twice to take care of system and locally installed node versions.
           sudo rm -rf $(which node)
           sudo rm -rf $(which node)
-          pip install myextension.tar.gz
+          pip install jupyterlite-xeus-python.tar.gz
           pip install jupyterlab
           jupyter labextension list 2>&1 | grep -ie "@jupyterlite/xeus-python-kernel.*OK"
 
           # TODO: add JupyterLite browser check
           # python -m jupyterlab.browser_check --no-chrome-test
+
+  python-tests-mamba-python:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jupyterlite-xeus-python-sdist
+
+      - name: Setup conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: xeus-python-kernel
+          environment-file: environment.yml
+          python-version: "3.10"
+          mamba-version: "*"
+
+      - name: Make sure the Mamba Python API is available
+        run: |
+          mamba install mamba
+          python -c "from mamba.api import create"
+
+      - name: Install
+        run: |
+          emsdk install 3.1.2
+          emsdk activate 3.1.2
+          pip install jupyterlite-xeus-python.tar.gz
+
+      - name: Run tests
+        run: pytest -rP tests/test_xeus_python_env.py
+
+  python-tests-mamba:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jupyterlite-xeus-python-sdist
+
+      - name: Setup conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: xeus-python-kernel
+          environment-file: environment.yml
+          python-version: "3.10"
+          mamba-version: "*"
+
+      - name: Install
+        run: |
+          emsdk install 3.1.2
+          emsdk activate 3.1.2
+          pip install jupyterlite-xeus-python.tar.gz
+
+      - name: Run tests
+        run: pytest -rP tests/test_xeus_python_env.py
+
+  python-tests-micromamba:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jupyterlite-xeus-python-sdist
+
+      - name: Install mamba
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          micromamba-version: "0.22.0"
+          environment-file: environment.yml
+          environment-name: xeus-python-kernel
+
+      - name: Install
+        run: |
+          emsdk install 3.1.2
+          emsdk activate 3.1.2
+          pip install jupyterlite-xeus-python.tar.gz
+
+      - name: Run tests
+        run: pytest -rP tests/test_xeus_python_env.py
+
+  python-tests-conda:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jupyterlite-xeus-python-sdist
+
+      - name: Setup conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: xeus-python-kernel
+          environment-file: environment.yml
+          python-version: "3.10"
+
+      - name: Install
+        run: |
+          emsdk install 3.1.2
+          emsdk activate 3.1.2
+          pip install jupyterlite-xeus-python.tar.gz
+
+      - name: Run tests
+        run: pytest -rP tests/test_xeus_python_env.py
