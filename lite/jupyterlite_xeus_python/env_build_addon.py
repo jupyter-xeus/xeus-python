@@ -118,14 +118,18 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # (make jupyterlite-xeus-python extension somewhat configurable?)
         dest = self.output_extensions / "@jupyterlite" / "xeus-python-kernel" / "static"
 
+        task_dep = ["pre_build:federated_extensions:*"]
+
         for file in ["python_data.js", "python_data.data"]:
             yield dict(
+                task_dep=task_dep,
                 name=f"copy:{file}",
                 actions=[(self.copy_one, [Path(self.cwd.name) / file, dest / file])],
             )
 
         for file in ["xpython_wasm.js", "xpython_wasm.wasm"]:
             yield dict(
+                task_dep=task_dep,
                 name=f"copy:{file}",
                 actions=[
                     (
