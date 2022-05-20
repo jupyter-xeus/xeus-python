@@ -10,7 +10,7 @@ RUN micromamba install --yes -c conda-forge \
 # Install empack
 ##################################################################
 
-RUN pip install empack
+RUN pip install empack>=0.5.2
 
 ##################################################################
 # Setup emsdk
