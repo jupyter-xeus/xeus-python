@@ -9,7 +9,7 @@ include yarn.lock
 include webpack.config.js
 recursive-include tests *.py
 
-graft jupyterlite_xeus_python/labextension
+graft share
 
 graft docs
 

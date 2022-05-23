@@ -4,7 +4,6 @@ node_modules/
 *.egg-info/
 .ipynb_checkpoints
 *.tsbuildinfo
-jupyterlite_xeus_python/labextension
 
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
@@ -119,3 +118,6 @@ python_data.data
 xpython_wasm.js
 xpython_wasm.wasm
 xeus_python.worker.js
+
+# Labextension
+share

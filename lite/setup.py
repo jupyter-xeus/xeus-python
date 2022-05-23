@@ -12,7 +12,7 @@ HERE = Path(__file__).parent.resolve()
 # The name of the project
 name = "jupyterlite-xeus-python"
 
-lab_path = (HERE / name.replace("-", "_") / "labextension")
+lab_path = (HERE / "share" / "jupyter" / "labextensions" / "@jupyterlite" / "xeus-python-kernel")
 
 # Representative files that should exist after a successful build
 ensured_targets = [
@@ -20,7 +20,7 @@ ensured_targets = [
     str(lab_path / "static/style.js")
 ]
 
-labext_name = "jupyterlite-xeus-python"
+labext_name = "@jupyterlite/xeus-python-kernel"
 
 data_files_spec = [
     ("share/jupyter/labextensions/%s" % labext_name, str(lab_path.relative_to(HERE)), "**"),

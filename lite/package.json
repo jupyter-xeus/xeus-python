@@ -82,7 +82,7 @@
   },
   "jupyterlab": {
     "extension": true,
-    "outputDir": "jupyterlite_xeus_python/labextension",
+    "outputDir": "share/jupyter/labextensions/@jupyterlite/xeus-python-kernel",
     "webpackConfig": "./webpack.config.js",
     "sharedPackages": {
       "@jupyterlite/kernel": {
