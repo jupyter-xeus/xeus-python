@@ -5,7 +5,7 @@ dependencies:
   - python
   - pip
   - pytest
-  - emsdk
+  - emsdk >=3.1.11
+  - empack >=0.5.3
   - pip:
     - jupyterlite
-    - empack

@@ -131,10 +131,7 @@ jobs:
           python -c "from mamba.api import create"
 
       - name: Install
-        run: |
-          emsdk install 3.1.2
-          emsdk activate 3.1.2
-          pip install jupyterlite-xeus-python.tar.gz
+        run: pip install jupyterlite-xeus-python.tar.gz
 
       - name: Run tests
         run: pytest -rP tests/test_xeus_python_env.py
@@ -160,10 +157,7 @@ jobs:
           mamba-version: "*"
 
       - name: Install
-        run: |
-          emsdk install 3.1.2
-          emsdk activate 3.1.2
-          pip install jupyterlite-xeus-python.tar.gz
+        run: pip install jupyterlite-xeus-python.tar.gz
 
       - name: Run tests
         run: pytest -rP tests/test_xeus_python_env.py
@@ -188,10 +182,7 @@ jobs:
           environment-name: xeus-python-kernel
 
       - name: Install
-        run: |
-          emsdk install 3.1.2
-          emsdk activate 3.1.2
-          pip install jupyterlite-xeus-python.tar.gz
+        run: pip install jupyterlite-xeus-python.tar.gz
 
       - name: Run tests
         run: pytest -rP tests/test_xeus_python_env.py
@@ -216,10 +207,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install
-        run: |
-          emsdk install 3.1.2
-          emsdk activate 3.1.2
-          pip install jupyterlite-xeus-python.tar.gz
+        run: pip install jupyterlite-xeus-python.tar.gz
 
       - name: Run tests
         run: pytest -rP tests/test_xeus_python_env.py

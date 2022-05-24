@@ -4,19 +4,8 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 ARG PYTHON_VERSION=3.10
 
 RUN micromamba install --yes -c conda-forge \
-    git pip python=$PYTHON_VERSION click typer emsdk
-
-##################################################################
-# Install empack
-##################################################################
-
-RUN pip install empack>=0.5.2
-
-##################################################################
-# Setup emsdk
-##################################################################
-
-RUN emsdk install 3.1.2 && emsdk activate 3.1.2
+    git pip python=$PYTHON_VERSION click typer \
+    "emsdk>=3.1.11" "empack>=0.5.3"
 
 ##################################################################
 # Create emscripten env and pack it
