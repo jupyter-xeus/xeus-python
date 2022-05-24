@@ -17,7 +17,11 @@ lab_path = (HERE / "share" / "jupyter" / "labextensions" / "@jupyterlite" / "xeu
 # Representative files that should exist after a successful build
 ensured_targets = [
     str(lab_path / "package.json"),
-    str(lab_path / "static/style.js")
+    str(lab_path / "static" / "python_data.js"),
+    str(lab_path / "static" / "python_data.data"),
+    str(lab_path / "static" / "xpython_wasm.js"),
+    str(lab_path / "static" / "xpython_wasm.wasm"),
+    str(lab_path / "static" / "style.js")
 ]
 
 labext_name = "@jupyterlite/xeus-python-kernel"
