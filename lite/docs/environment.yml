@@ -4,11 +4,13 @@ channels:
   - conda-forge
 
 dependencies:
-  - yarn
-  - jupyterlab
-  - jupyter-packaging
+  - mamba
   - pydata-sphinx-theme
+  - emsdk
+  # - empack
 
   - pip:
-    - jupyterlite-xeus-python
+    - jupyterlite
     - jupyterlite-sphinx
+    - jupyterlite-xeus-python==0.3.0
+    - empack
