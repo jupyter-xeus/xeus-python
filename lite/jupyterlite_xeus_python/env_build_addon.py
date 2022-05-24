@@ -81,7 +81,9 @@ class XeusPythonEnv(FederatedExtensionAddon):
         self.root_prefix = "/tmp/xeus-python-kernel"
         self.env_name = "xeus-python-kernel"
 
-        self.prefix_path.mkdir(parents=True, exist_ok=True)
+        # Cleanup tmp dir in case it's not empty
+        shutil.rmtree(self.root_prefix, ignore_errors=True)
+        Path(self.root_prefix).mkdir(parents=True, exist_ok=True)
 
         self.orig_config = os.environ.get("CONDARC")
 
@@ -90,9 +92,6 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # Bail early if there is nothing to do
         if not self.packages:
             return []
-
-        # Cleanup tmp dir
-        shutil.rmtree(self.root_prefix, ignore_errors=True)
 
         # Create emscripten env with the given packages
         self.create_env()
@@ -159,6 +158,8 @@ class XeusPythonEnv(FederatedExtensionAddon):
             channels.extend(["-c", channel])
 
         if MAMBA_AVAILABLE:
+            # Mamba needs the directory to exist already
+            self.prefix_path.mkdir(parents=True, exist_ok=True)
             return self._create_env_with_config("mamba", channels)
 
         if MICROMAMBA_AVAILABLE:
