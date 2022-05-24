@@ -158,17 +158,12 @@ jobs:
           micromamba activate xeus-python-wasm
           emsdk install ${{matrix.emsdk_ver}}
 
-      - name: Install empack (TODO Install from conda-forge when available)
-        run: |
-          micromamba activate xeus-python-wasm
-          pip install empack
-
       - name: Build and pack xeus-python
         run: |
           micromamba activate xeus-python-wasm
 
           emsdk activate ${{matrix.emsdk_ver}}
-          source $CONDA_PREFIX/opt/emsdk/emsdk_env.sh
+          source $CONDA_EMSDK_DIR/emsdk_env.sh
 
           micromamba create -n xeus-python-build-wasm \
             --platform=emscripten-32 \
