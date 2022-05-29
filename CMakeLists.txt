@@ -96,6 +96,7 @@ set(xtl_REQUIRED_VERSION 0.7.0)
 set(xeus_REQUIRED_VERSION 2.0.0)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
+set(pyjs_REQUIRED_VERSION 0.1.0)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
@@ -109,6 +110,13 @@ endif ()
 if (NOT TARGET pybind11_json)
     find_package(pybind11_json ${pybind11_json_REQUIRED_VERSION} REQUIRED)
 endif ()
+
+if(XPYT_EMSCRIPTEN_WASM_BUILD)
+    if (NOT TARGET pyjs)
+        find_package(pyjs ${pyjs_REQUIRED_VERSION} REQUIRED)
+    endif ()
+    configure_file(${pyjs_PRE_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/pre.js COPYONLY)
+endif()
 
 # Flags
 # =====
@@ -302,12 +310,14 @@ macro(xpyt_create_target target_name src headers linkage output_name)
                           OUTPUT_NAME "lib${output_name}")
 
     target_compile_definitions(${target_name} PUBLIC "XEUS_PYTHON_EXPORTS")
-
     target_include_directories(${target_name}
                                PUBLIC
                                ${PYTHON_INCLUDE_DIRS}
+                               ${pyjs_INCLUDE_DIR}
                                $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>)
+
+
 
     if (XPYT_USE_SHARED_XEUS)
         set(XPYT_XEUS_TARGET xeus)
@@ -320,6 +330,8 @@ macro(xpyt_create_target target_name src headers linkage output_name)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)
         target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
+    elseif (XPYT_EMSCRIPTEN_WASM_BUILD)
+        target_link_libraries(${target_name} PRIVATE pyjs)
     endif ()
 
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
@@ -350,6 +362,8 @@ if (XPYT_BUILD_STATIC)
         xpyt_create_target(xeus-python-static "${XEUS_PYTHON_SRC}" "${XEUS_PYTHON_HEADERS}" STATIC xeus-python-static)
     else ()
         xpyt_create_target(xeus-python-static "${XEUS_PYTHON_SRC}" "${XEUS_PYTHON_HEADERS}" STATIC xeus-python)
+
+        target_link_libraries(xeus-python-static PRIVATE pyjs)
     endif ()
     list(APPEND XEUS_PYTHON_TARGETS xeus-python-static)
 endif ()
@@ -436,6 +450,7 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
         PUBLIC "SHELL: -s FORCE_FILESYSTEM"
         PUBLIC "SHELL: -s LZ4=1"
         PUBLIC "SHELL: --post-js post.js"
+        PUBLIC "SHELL: --pre-js pre.js"
     )
 endif()
 
