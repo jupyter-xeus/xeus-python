@@ -33,8 +33,6 @@ namespace xpyt
 
     protected:
 
-        void instanciate_ipython_shell() override;
-
         py::scoped_interpreter m_interpreter;
     };
 

@@ -30,9 +30,4 @@ namespace xpyt
     {
     }
 
-    void wasm_interpreter::instanciate_ipython_shell()
-    {
-        m_ipython_shell_app = py::module::import("xeus_python_shell_lite").attr("LiteXPythonShellApp")();
-    }
-
 }
