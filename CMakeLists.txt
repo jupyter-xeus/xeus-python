@@ -96,7 +96,7 @@ set(xtl_REQUIRED_VERSION 0.7.0)
 set(xeus_REQUIRED_VERSION 2.0.0)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
-set(pyjs_REQUIRED_VERSION 0.1.0)
+set(pyjs_REQUIRED_VERSION 0.3.1)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
@@ -330,8 +330,6 @@ macro(xpyt_create_target target_name src headers linkage output_name)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)
         target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
-    elseif (XPYT_EMSCRIPTEN_WASM_BUILD)
-        target_link_libraries(${target_name} PRIVATE pyjs)
     endif ()
 
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
