@@ -13,12 +13,12 @@
 
 #include "xeus/xembind.hpp"
 
-#include "xeus-python/xinterpreter.hpp"
+#include "xeus-python/xinterpreter_wasm.hpp"
 
 
 EMSCRIPTEN_BINDINGS(my_module) {
     xeus::export_core();
 
-    using interpreter_type = xpyt::interpreter;
+    using interpreter_type = xpyt::wasm_interpreter;
     xeus::export_kernel<interpreter_type>("xkernel");
 }
