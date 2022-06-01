@@ -194,6 +194,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
             [
                 conda,
                 "create",
+                "--yes",
                 "--prefix",
                 self.prefix_path,
                 *channels
@@ -205,6 +206,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
             [
                 conda,
                 "install",
+                "--yes",
                 "--prefix",
                 self.prefix_path,
                 *channels,
