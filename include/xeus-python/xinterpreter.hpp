@@ -22,7 +22,7 @@
 #include "nlohmann/json.hpp"
 
 #include "xeus/xinterpreter.hpp"
-#include "pybind11/embed.h"
+
 #include "pybind11/pybind11.h"
 
 #include "xeus_python_config.hpp"
@@ -74,9 +74,6 @@ namespace xpyt
 
         void redirect_output();
 
-
-        // py::scoped_interpreter m_interpreter;
-        
         py::object m_ipython_shell_app;
         py::object m_ipython_shell;
         py::object m_displayhook;
@@ -99,7 +96,6 @@ namespace xpyt
 
         bool m_redirect_output_enabled;
         bool m_redirect_display_enabled;
-
 
     private:
 

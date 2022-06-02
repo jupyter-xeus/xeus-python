@@ -96,7 +96,7 @@ set(xtl_REQUIRED_VERSION 0.7.0)
 set(xeus_REQUIRED_VERSION 2.0.0)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
-set(pyjs_REQUIRED_VERSION 0.3.1)
+set(pyjs_REQUIRED_VERSION 0.6.1)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
@@ -310,14 +310,12 @@ macro(xpyt_create_target target_name src headers linkage output_name)
                           OUTPUT_NAME "lib${output_name}")
 
     target_compile_definitions(${target_name} PUBLIC "XEUS_PYTHON_EXPORTS")
+
     target_include_directories(${target_name}
                                PUBLIC
                                ${PYTHON_INCLUDE_DIRS}
-                               ${pyjs_INCLUDE_DIR}
                                $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>)
-
-
 
     if (XPYT_USE_SHARED_XEUS)
         set(XPYT_XEUS_TARGET xeus)
@@ -360,9 +358,10 @@ if (XPYT_BUILD_STATIC)
         xpyt_create_target(xeus-python-static "${XEUS_PYTHON_SRC}" "${XEUS_PYTHON_HEADERS}" STATIC xeus-python-static)
     else ()
         xpyt_create_target(xeus-python-static "${XEUS_PYTHON_SRC}" "${XEUS_PYTHON_HEADERS}" STATIC xeus-python)
-
-        target_link_libraries(xeus-python-static PRIVATE pyjs)
     endif ()
+    if(XPYT_EMSCRIPTEN_WASM_BUILD)
+        target_link_libraries(xeus-python-static PRIVATE pyjs)
+    endif()
     list(APPEND XEUS_PYTHON_TARGETS xeus-python-static)
 endif ()
 
