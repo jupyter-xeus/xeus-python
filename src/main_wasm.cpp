@@ -11,24 +11,19 @@
 
 #include <emscripten/bind.h>
 #include <pybind11/embed.h>
-// #include <pyjs/export_pyjs_module.hpp>
-// #include <pyjs/export_js_module.hpp>
+#include <pyjs/export_pyjs_module.hpp>
+#include <pyjs/export_js_module.hpp>
 
 #include "xeus/xembind.hpp"
+#include "xeus-python/xinterpreter_wasm.hpp"
 
-
-#include "xeus-python/xinterpreter.hpp"
-
-
-// PYBIND11_EMBEDDED_MODULE(pyjs, m) {
-//     std::cout<<"export_pyjs_module \n";
-//     pyjs::export_pyjs_module(m);
-//     std::cout<<"export_pyjs_module DONE\n";
-// }
+PYBIND11_EMBEDDED_MODULE(pyjs, m) {
+    pyjs::export_pyjs_module(m);
+}
 
 EMSCRIPTEN_BINDINGS(my_module) {
+    pyjs::export_js_module();
     xeus::export_core();
-    // pyjs::export_js_module();
-    using interpreter_type = xpyt::interpreter;
+    using interpreter_type = xpyt::wasm_interpreter;
     xeus::export_kernel<interpreter_type>("xkernel");
 }

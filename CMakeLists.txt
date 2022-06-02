@@ -205,6 +205,7 @@ set(XEUS_PYTHON_WASM_SRC
     src/xinternal_utils.cpp
     src/xinternal_utils.hpp
     src/xinterpreter.cpp
+    src/xinterpreter_wasm.cpp
     src/xkernel.cpp
     src/xkernel.hpp
     src/xpaths.cpp
@@ -219,6 +220,7 @@ set(XEUS_PYTHON_WASM_HEADERS
     include/xeus-python/xeus_python_config.hpp
     include/xeus-python/xpaths.hpp
     include/xeus-python/xinterpreter.hpp
+    include/xeus-python/xinterpreter_wasm.hpp
     include/xeus-python/xtraceback.hpp
     include/xeus-python/xutils.hpp
 )

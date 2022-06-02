@@ -14,6 +14,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream> // REMMOOOOVE ME
 
 #include "nlohmann/json.hpp"
 
@@ -55,57 +56,68 @@ namespace xpyt
 
     void interpreter::configure_impl()
     {
-        if (m_release_gil_at_startup)
-        {
-            // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
-            // will need to acquire the GIL
-            m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
+        try{
+            if (m_release_gil_at_startup)
+            {
+                // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
+                // will need to acquire the GIL
+                m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
+            }
+
+            py::gil_scoped_acquire acquire;
+
+            py::module sys = py::module::import("sys");
+            py::module logging = py::module::import("logging");
+
+            py::module display_module = get_display_module();
+            py::module traceback_module = get_traceback_module();
+            py::module stream_module = get_stream_module();
+            py::module comm_module = get_comm_module();
+            py::module kernel_module = get_kernel_module();
+
+            // Monkey patching "from ipykernel.comm import Comm"
+            sys.attr("modules")["ipykernel.comm"] = comm_module;
+
+            instanciate_ipython_shell();
+
+            m_ipython_shell_app.attr("initialize")();
+            m_ipython_shell = m_ipython_shell_app.attr("shell");
+
+            // Setting kernel property owning the CommManager and get_parent
+            m_ipython_shell.attr("kernel") = kernel_module.attr("XKernel")();
+            m_ipython_shell.attr("kernel").attr("comm_manager") = comm_module.attr("CommManager")();
+
+            // Initializing the DisplayPublisher
+            m_ipython_shell.attr("display_pub").attr("publish_display_data") = display_module.attr("publish_display_data");
+            m_ipython_shell.attr("display_pub").attr("clear_output") = display_module.attr("clear_output");
+
+            // Initializing the DisplayHook
+            m_displayhook = m_ipython_shell.attr("displayhook");
+            m_displayhook.attr("publish_execution_result") = display_module.attr("publish_execution_result");
+
+            // Needed for redirecting logging to the terminal
+            m_logger = m_ipython_shell_app.attr("log");
+            m_terminal_stream = stream_module.attr("TerminalStream")();
+            m_logger.attr("handlers") = py::list(0);
+            m_logger.attr("addHandler")(logging.attr("StreamHandler")(m_terminal_stream));
+
+            // Initializing the compiler
+            m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
+            m_ipython_shell.attr("compile").attr("get_filename") = traceback_module.attr("get_filename");
+
+            if (m_redirect_output_enabled)
+            {
+                redirect_output();
+            }
+
         }
-
-        py::gil_scoped_acquire acquire;
-
-        py::module sys = py::module::import("sys");
-        py::module logging = py::module::import("logging");
-
-        py::module display_module = get_display_module();
-        py::module traceback_module = get_traceback_module();
-        py::module stream_module = get_stream_module();
-        py::module comm_module = get_comm_module();
-        py::module kernel_module = get_kernel_module();
-
-        // Monkey patching "from ipykernel.comm import Comm"
-        sys.attr("modules")["ipykernel.comm"] = comm_module;
-
-        instanciate_ipython_shell();
-
-        m_ipython_shell_app.attr("initialize")();
-        m_ipython_shell = m_ipython_shell_app.attr("shell");
-
-        // Setting kernel property owning the CommManager and get_parent
-        m_ipython_shell.attr("kernel") = kernel_module.attr("XKernel")();
-        m_ipython_shell.attr("kernel").attr("comm_manager") = comm_module.attr("CommManager")();
-
-        // Initializing the DisplayPublisher
-        m_ipython_shell.attr("display_pub").attr("publish_display_data") = display_module.attr("publish_display_data");
-        m_ipython_shell.attr("display_pub").attr("clear_output") = display_module.attr("clear_output");
-
-        // Initializing the DisplayHook
-        m_displayhook = m_ipython_shell.attr("displayhook");
-        m_displayhook.attr("publish_execution_result") = display_module.attr("publish_execution_result");
-
-        // Needed for redirecting logging to the terminal
-        m_logger = m_ipython_shell_app.attr("log");
-        m_terminal_stream = stream_module.attr("TerminalStream")();
-        m_logger.attr("handlers") = py::list(0);
-        m_logger.attr("addHandler")(logging.attr("StreamHandler")(m_terminal_stream));
-
-        // Initializing the compiler
-        m_ipython_shell.attr("compile").attr("filename_mapper") = traceback_module.attr("register_filename_mapping");
-        m_ipython_shell.attr("compile").attr("get_filename") = traceback_module.attr("get_filename");
-
-        if (m_redirect_output_enabled)
+        catch (py::error_already_set& e)
         {
-            redirect_output();
+            std::cout<<"error: "<<e.what()<<"\n";
+        }
+        catch (std::exception & e)
+        {
+            std::cout<<"error: "<<e.what()<<"\n";
         }
     }
 
