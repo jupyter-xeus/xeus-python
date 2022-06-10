@@ -32,6 +32,8 @@ namespace xpyt
         virtual ~wasm_interpreter();
 
     protected:
+        
+        void configure_impl() override;
 
         py::scoped_interpreter m_interpreter;
     };
