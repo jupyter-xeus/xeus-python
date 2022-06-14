@@ -1,25 +1,23 @@
 """a JupyterLite addon for creating the env for xeus-python"""
 import os
-from subprocess import (
-    check_call,
-    DEVNULL
-)
+from subprocess import check_call, DEVNULL
 from tempfile import TemporaryDirectory
 import shutil
 from pathlib import Path
 
-from traitlets import List
+from traitlets import List, Unicode
 
 from empack.file_packager import pack_python_core
 
 from jupyterlite.constants import SHARE_LABEXTENSIONS
 from jupyterlite.addons.federated_extensions import FederatedExtensionAddon
 
+# TODO Make this configurable
 PYTHON_VERSION = "3.10"
 
 CHANNELS = [
     "https://repo.mamba.pm/emscripten-forge",
-    "https://repo.mamba.pm/conda-forge"
+    "https://repo.mamba.pm/conda-forge",
 ]
 PLATFORM = "emscripten-32"
 
@@ -27,6 +25,7 @@ SILENT = dict(stdout=DEVNULL, stderr=DEVNULL)
 
 try:
     from mamba.api import create as mamba_create
+
     MAMBA_PYTHON_AVAILABLE = True
 except ImportError:
     MAMBA_PYTHON_AVAILABLE = False
@@ -59,15 +58,25 @@ class XeusPythonEnv(FederatedExtensionAddon):
 
     __all__ = ["pre_build", "post_build"]
 
+    xeus_python_version = Unicode().tag(
+        config=True, description="The xeus-python version to use"
+    )
+
     packages = PackagesList([]).tag(
         config=True,
-        description="A comma-separated list of packages to install in the xeus-python env"
+        description="A comma-separated list of packages to install in the xeus-python env",
     )
 
     @property
     def specs(self):
         """The package specs to install in the environment."""
-        return [f"python={PYTHON_VERSION}", "xeus-python", *self.packages]
+        return [
+            f"python={PYTHON_VERSION}",
+            "xeus-python"
+            if not self.xeus_python_version
+            else f"xeus-python={self.xeus_python_version}",
+            *self.packages,
+        ]
 
     @property
     def prefix_path(self):
@@ -90,7 +99,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
     def pre_build(self, manager):
         """yield a doit task to create the emscripten-32 env and grab anything we need from it"""
         # Bail early if there is nothing to do
-        if not self.packages:
+        if not self.packages and not self.xeus_python_version:
             return []
 
         # Create emscripten env with the given packages
@@ -149,7 +158,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
                 base_prefix=self.root_prefix,
                 specs=self.specs,
                 channels=CHANNELS,
-                target_platform=PLATFORM
+                target_platform=PLATFORM,
             )
             return
 
@@ -191,14 +200,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
 
     def _create_env_with_config(self, conda, channels):
         check_call(
-            [
-                conda,
-                "create",
-                "--yes",
-                "--prefix",
-                self.prefix_path,
-                *channels
-            ],
+            [conda, "create", "--yes", "--prefix", self.prefix_path, *channels],
             cwd=self.cwd.name,
         )
         self._create_config()
@@ -223,7 +225,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
     def post_build(self, manager):
         """Cleanup"""
         # Bail early if there is nothing to do
-        if not self.packages:
+        if not self.packages and not self.xeus_python_version:
             return []
 
         shutil.rmtree(self.cwd.name, ignore_errors=True)
