@@ -10,7 +10,7 @@ dependencies:
   # - empack
 
   - pip:
-    - jupyterlite
-    - jupyterlite-sphinx
-    - jupyterlite-xeus-python==0.3.0
-    - empack
+      - jupyterlite
+      - jupyterlite-sphinx
+      - jupyterlite-xeus-python==0.3.0
+      - empack
