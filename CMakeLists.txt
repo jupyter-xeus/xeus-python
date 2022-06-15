@@ -96,7 +96,7 @@ set(xtl_REQUIRED_VERSION 0.7.0)
 set(xeus_REQUIRED_VERSION 2.0.0)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
-set(pyjs_REQUIRED_VERSION 0.6.1)
+set(pyjs_REQUIRED_VERSION 0.7.0)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
