@@ -122,8 +122,8 @@ jobs:
         with:
           activate-environment: xeus-python-kernel
           environment-file: environment.yml
-          python-version: "3.10"
-          mamba-version: "*"
+          python-version: '3.10'
+          mamba-version: '*'
 
       - name: Make sure the Mamba Python API is available
         run: |
@@ -153,8 +153,8 @@ jobs:
         with:
           activate-environment: xeus-python-kernel
           environment-file: environment.yml
-          python-version: "3.10"
-          mamba-version: "*"
+          python-version: '3.10'
+          mamba-version: '*'
 
       - name: Install
         run: pip install jupyterlite-xeus-python.tar.gz
@@ -177,7 +177,7 @@ jobs:
       - name: Install mamba
         uses: mamba-org/provision-with-micromamba@main
         with:
-          micromamba-version: "0.22.0"
+          micromamba-version: '0.22.0'
           environment-file: environment.yml
           environment-name: xeus-python-kernel
 
@@ -204,7 +204,7 @@ jobs:
         with:
           activate-environment: xeus-python-kernel
           environment-file: environment.yml
-          python-version: "3.10"
+          python-version: '3.10'
 
       - name: Install
         run: pip install jupyterlite-xeus-python.tar.gz

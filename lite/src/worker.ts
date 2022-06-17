@@ -6,6 +6,17 @@ declare function createXeusModule(options: any): any;
 
 globalThis.Module = {};
 
+// when a toplevel cell uses an await, the cell is implicitly
+// wrapped in a async function. Since the webloop - eventloop
+// implementation does not support `eventloop.run_until_complete(f)`
+// we need to convert the toplevel future in a javascript Promise
+// this `toplevel` promise is then awaited before we
+// execute the next cell. After the promise is awaited we need
+// to do some cleanup and delete the python proxy
+// (ie a js-wrapped python object) to avoid memory leaks
+globalThis.toplevel_promise = null;
+globalThis.toplevel_promise_py_proxy = null;
+
 // We alias self to ctx and give it our newly created type
 const ctx: Worker = self as any;
 let raw_xkernel: any;
@@ -60,6 +71,16 @@ const loadCppModulePromise = load();
 
 ctx.onmessage = async (event: MessageEvent): Promise<void> => {
   await loadCppModulePromise;
+
+  if (
+    globalThis.toplevel_promise !== null &&
+    globalThis.toplevel_promise_py_proxy !== null
+  ) {
+    await globalThis.toplevel_promise;
+    globalThis.toplevel_promise_py_proxy.delete();
+    globalThis.toplevel_promise_py_proxy = null;
+    globalThis.toplevel_promise = null;
+  }
 
   const data = event.data;
   const msg = data.msg;
