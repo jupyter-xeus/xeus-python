@@ -32,7 +32,7 @@
     "build:dockerimage": "docker build -t mydockerimage . ",
     "build:dockerimage_no_cache": "docker build -t mydockerimage --no-cache . ",
     "build:emscripten": "echo $(pwd) && docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) mydockerimage copy_output.sh",
-    "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm src/xpython_wasm.worker.js src/xpython_wasm.js src/python_data.js src/python_data.data lib",
+    "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm src/xpython_wasm.js src/python_data.js src/python_data.data lib",
     "build:wasm": "jlpm run build:dockerimage && jlpm run build:emscripten",
     "build:wasm_no_cache": "jlpm run build:dockerimage_no_cache && jlpm run build:emscripten",
     "build": "jlpm run build:lib && jlpm run copy-files && jlpm run build:labextension:dev",
@@ -56,7 +56,9 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@jupyterlite/server": "^0.1.0-alpha.14"
+    "@jupyterlite/contents": "^0.1.0-beta.9",
+    "@jupyterlite/server": "^0.1.0-beta.9",
+    "comlink": "^4.3.1"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.4.1",

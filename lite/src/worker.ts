@@ -2,6 +2,10 @@
 // Copyright (c) JupyterLite Contributors
 // Distributed under the terms of the Modified BSD License.
 
+import { expose } from 'comlink';
+
+import { DriveFS } from '@jupyterlite/contents';
+
 declare function createXeusModule(options: any): any;
 
 globalThis.Module = {};
@@ -17,27 +21,7 @@ globalThis.Module = {};
 globalThis.toplevel_promise = null;
 globalThis.toplevel_promise_py_proxy = null;
 
-// We alias self to ctx and give it our newly created type
-const ctx: Worker = self as any;
-let raw_xkernel: any;
-let raw_xserver: any;
-
-async function waitRunDependency() {
-  const promise = new Promise((r: any) => {
-    globalThis.Module.monitorRunDependencies = (n: number) => {
-      if (n === 0) {
-        console.log('all `RunDependencies` loaded');
-        r();
-      }
-    };
-  });
-  // If there are no pending dependencies left, monitorRunDependencies will
-  // never be called. Since we can't check the number of dependencies,
-  // manually trigger a call.
-  globalThis.Module.addRunDependency('dummy');
-  globalThis.Module.removeRunDependency('dummy');
-  return promise;
-}
+let resolveInputReply: any;
 
 async function get_stdin() {
   const replyPromise = new Promise(resolve => {
@@ -46,49 +30,106 @@ async function get_stdin() {
   return replyPromise;
 }
 
-// eslint-disable-next-line
-// @ts-ignore: breaks typedoc
-ctx.get_stdin = get_stdin;
+(self as any).get_stdin = get_stdin;
 
-let resolveInputReply: any;
+class XeusPythonKernel {
+  constructor() {
+    this._ready = new Promise(resolve => {
+      this.initialize(resolve);
+    });
+  }
 
-async function load() {
-  const options: any = {};
+  async ready(): Promise<void> {
+    return await this._ready;
+  }
 
-  importScripts('./xpython_wasm.js');
+  mount(driveName: string, mountpoint: string, baseUrl: string): void {
+    const { FS, PATH, ERRNO_CODES } = globalThis.Module;
 
-  globalThis.Module = await createXeusModule(options);
+    this._drive = new DriveFS({
+      FS,
+      PATH,
+      ERRNO_CODES,
+      baseUrl,
+      driveName,
+      mountpoint
+    });
 
-  importScripts('./python_data.js');
+    FS.mkdir(mountpoint);
+    FS.mount(this._drive, {}, mountpoint);
+    FS.chdir(mountpoint);
+  }
 
-  await waitRunDependency();
-  raw_xkernel = new globalThis.Module.xkernel();
-  raw_xserver = raw_xkernel.get_server();
-  raw_xkernel!.start();
+  cd(path: string) {
+    const { FS } = globalThis.Module;
+
+    FS.chdir(path);
+  }
+
+  async processMessage(msg: any): Promise<void> {
+    await this._ready;
+
+    if (
+      globalThis.toplevel_promise !== null &&
+      globalThis.toplevel_promise_py_proxy !== null
+    ) {
+      await globalThis.toplevel_promise;
+      globalThis.toplevel_promise_py_proxy.delete();
+      globalThis.toplevel_promise_py_proxy = null;
+      globalThis.toplevel_promise = null;
+    }
+
+    const msg_type = msg.header.msg_type;
+
+    if (msg_type === 'input_reply') {
+      resolveInputReply(msg);
+    } else {
+      this._raw_xserver.notify_listener(msg);
+    }
+  }
+
+  private async initialize(resolve: () => void) {
+    importScripts('./xpython_wasm.js');
+
+    globalThis.Module = await createXeusModule({});
+
+    importScripts('./python_data.js');
+
+    await this.waitRunDependency();
+
+    this._raw_xkernel = new globalThis.Module.xkernel();
+    this._raw_xserver = this._raw_xkernel.get_server();
+
+    if (!this._raw_xkernel) {
+      console.error('Failed to start kernel!');
+    }
+
+    this._raw_xkernel.start();
+
+    resolve();
+  }
+
+  private async waitRunDependency() {
+    const promise = new Promise((resolve: any) => {
+      globalThis.Module.monitorRunDependencies = (n: number) => {
+        if (n === 0) {
+          console.log('all `RunDependencies` loaded');
+          resolve();
+        }
+      };
+    });
+    // If there are no pending dependencies left, monitorRunDependencies will
+    // never be called. Since we can't check the number of dependencies,
+    // manually trigger a call.
+    globalThis.Module.addRunDependency('dummy');
+    globalThis.Module.removeRunDependency('dummy');
+    return promise;
+  }
+
+  private _raw_xkernel: any;
+  private _raw_xserver: any;
+  private _drive: DriveFS | null = null;
+  private _ready: PromiseLike<void>;
 }
 
-const loadCppModulePromise = load();
-
-ctx.onmessage = async (event: MessageEvent): Promise<void> => {
-  await loadCppModulePromise;
-
-  if (
-    globalThis.toplevel_promise !== null &&
-    globalThis.toplevel_promise_py_proxy !== null
-  ) {
-    await globalThis.toplevel_promise;
-    globalThis.toplevel_promise_py_proxy.delete();
-    globalThis.toplevel_promise_py_proxy = null;
-    globalThis.toplevel_promise = null;
-  }
-
-  const data = event.data;
-  const msg = data.msg;
-  const msg_type = msg.header.msg_type;
-
-  if (msg_type === 'input_reply') {
-    resolveInputReply(msg);
-  } else {
-    raw_xserver!.notify_listener(msg);
-  }
-};
+expose(new XeusPythonKernel());
