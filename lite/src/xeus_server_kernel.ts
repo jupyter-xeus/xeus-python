@@ -29,8 +29,6 @@ export class XeusServerKernel implements IKernel {
    *
    * @param options The instantiation options for a new XeusServerKernel
    */
-
-  xeus_interpreter: any;
   constructor(options: XeusServerKernel.IOptions) {
     const { id, name, sendMessage, location } = options;
     this._id = id;
@@ -38,7 +36,7 @@ export class XeusServerKernel implements IKernel {
     this._location = location;
     this._sendMessage = sendMessage;
     this._worker = new Worker(new URL('./worker.js', import.meta.url), {
-      type: 'module',
+      type: 'module'
     });
     this._worker.onmessage = e => {
       this._processWorkerMessage(e.data);
