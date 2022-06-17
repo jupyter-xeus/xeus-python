@@ -91,6 +91,10 @@ export class XeusServerKernel implements IKernel {
    * @param msg The worker message to process.
    */
   private _processWorkerMessage(msg: any): void {
+    if (!msg.header) {
+      return;
+    }
+
     msg.header.session = this._parentHeader?.session ?? '';
     msg.session = this._parentHeader?.session ?? '';
     this._sendMessage(msg);

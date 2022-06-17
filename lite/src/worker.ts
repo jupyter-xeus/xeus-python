@@ -46,6 +46,8 @@ class XeusPythonKernel {
   mount(driveName: string, mountpoint: string, baseUrl: string): void {
     const { FS, PATH, ERRNO_CODES } = globalThis.Module;
 
+    console.log('mounting drivefs', driveName, mountpoint, baseUrl);
+
     this._drive = new DriveFS({
       FS,
       PATH,
@@ -54,19 +56,28 @@ class XeusPythonKernel {
       driveName,
       mountpoint
     });
+    console.log('mkdir mountpoint');
 
     FS.mkdir(mountpoint);
     FS.mount(this._drive, {}, mountpoint);
+    console.log('chdir mountpoint');
     FS.chdir(mountpoint);
+    console.log('done chdir mountpoint');
   }
 
   cd(path: string) {
+    if (!path) {
+      return;
+    }
+
     const { FS } = globalThis.Module;
 
+    console.log('chdir path', path);
     FS.chdir(path);
+    console.log('done chdir path');
   }
 
-  async processMessage(msg: any): Promise<void> {
+  async processMessage(event: any): Promise<void> {
     await this._ready;
 
     if (
@@ -79,23 +90,33 @@ class XeusPythonKernel {
       globalThis.toplevel_promise = null;
     }
 
-    const msg_type = msg.header.msg_type;
+    console.log('received this in the worker', event);
+
+    const msg_type = event.msg.header.msg_type;
 
     if (msg_type === 'input_reply') {
-      resolveInputReply(msg);
+      resolveInputReply(event.msg);
     } else {
-      this._raw_xserver.notify_listener(msg);
+      this._raw_xserver.notify_listener(event.msg);
     }
   }
 
   private async initialize(resolve: () => void) {
     importScripts('./xpython_wasm.js');
 
+    console.log('init xeus kernel');
+
     globalThis.Module = await createXeusModule({});
+
+    console.log('done init xeus kernel');
 
     importScripts('./python_data.js');
 
+    console.log('loaded python data');
+
     await this.waitRunDependency();
+
+    console.log('waited run deps');
 
     this._raw_xkernel = new globalThis.Module.xkernel();
     this._raw_xserver = this._raw_xkernel.get_server();
