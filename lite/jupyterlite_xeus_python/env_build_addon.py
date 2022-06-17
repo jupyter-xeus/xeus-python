@@ -2,6 +2,7 @@
 import os
 from subprocess import check_call, DEVNULL
 from tempfile import TemporaryDirectory
+import json
 import shutil
 from pathlib import Path
 
@@ -9,8 +10,13 @@ from traitlets import List, Unicode
 
 from empack.file_packager import pack_python_core
 
-from jupyterlite.constants import SHARE_LABEXTENSIONS
-from jupyterlite.addons.federated_extensions import FederatedExtensionAddon
+from jupyterlite.constants import SHARE_LABEXTENSIONS, UTF8
+from jupyterlite.addons.federated_extensions import (
+    FederatedExtensionAddon,
+    ENV_EXTENSIONS,
+)
+
+JUPYTERLITE_XEUS_PYTHON = "@jupyterlite/xeus-python-kernel"
 
 # TODO Make this configurable
 PYTHON_VERSION = "3.10"
@@ -98,7 +104,13 @@ class XeusPythonEnv(FederatedExtensionAddon):
 
     def pre_build(self, manager):
         """yield a doit task to create the emscripten-32 env and grab anything we need from it"""
-        # Bail early if there is nothing to do
+        # Install the jupyterlite-xeus-python ourselves
+        for pkg_json in self.env_extensions(ENV_EXTENSIONS):
+            pkg_data = json.loads(pkg_json.read_text(**UTF8))
+            if pkg_data.get("name") == JUPYTERLITE_XEUS_PYTHON:
+                yield from self.safe_copy_extension(pkg_json)
+
+        # Bail early if there is no extra package to install
         if not self.packages and not self.xeus_python_version:
             return []
 
@@ -116,12 +128,12 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # Find the federated extensions in the emscripten-env and install them
         root = self.prefix_path / SHARE_LABEXTENSIONS
 
-        if not self.is_sys_prefix_ignored():
-            for pkg_json in self.env_extensions(root):
-                yield from self.copy_one_extension(pkg_json)
+        # Copy federated extensions found in the emscripten-env
+        for pkg_json in self.env_extensions(root):
+            yield from self.safe_copy_extension(pkg_json)
 
         # TODO Currently we're shamelessly overwriting the
-        # python_data.{js,data} into the labextension.
+        # python_data.{js,data} into the jupyterlite-xeus-python labextension.
         # We should really find a nicer way.
         # (make jupyterlite-xeus-python extension somewhat configurable?)
         dest = self.output_extensions / "@jupyterlite" / "xeus-python-kernel" / "static"
@@ -131,14 +143,14 @@ class XeusPythonEnv(FederatedExtensionAddon):
         for file in ["python_data.js", "python_data.data"]:
             yield dict(
                 task_dep=task_dep,
-                name=f"copy:{file}",
+                name=f"xeus:copy:{file}",
                 actions=[(self.copy_one, [Path(self.cwd.name) / file, dest / file])],
             )
 
         for file in ["xpython_wasm.js", "xpython_wasm.wasm"]:
             yield dict(
                 task_dep=task_dep,
-                name=f"copy:{file}",
+                name=f"xeus:copy:{file}",
                 actions=[
                     (
                         self.copy_one,
@@ -237,3 +249,22 @@ class XeusPythonEnv(FederatedExtensionAddon):
             del os.environ["CONDARC"]
 
         return []
+
+    def safe_copy_extension(self, pkg_json):
+        """Copy a labextension, and overwrite it
+        if it's already in the output
+        """
+        pkg_path = pkg_json.parent
+        stem = json.loads(pkg_json.read_text(**UTF8))["name"]
+        dest = self.output_extensions / stem
+        file_dep = [
+            p
+            for p in pkg_path.rglob("*")
+            if not (p.is_dir() or self.is_ignored_sourcemap(p.name))
+        ]
+
+        yield dict(
+            name=f"xeus:copy:ext:{stem}",
+            file_dep=file_dep,
+            actions=[(self.copy_one, [pkg_path, dest])],
+        )
