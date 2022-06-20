@@ -117,7 +117,6 @@ python_data.js
 python_data.data
 xpython_wasm.js
 xpython_wasm.wasm
-xeus_python.worker.js
 
 # Labextension
 share

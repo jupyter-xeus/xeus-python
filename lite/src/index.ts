@@ -3,6 +3,7 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
+  IServiceWorkerRegistrationWrapper,
   JupyterLiteServer,
   JupyterLiteServerPlugin
 } from '@jupyterlite/server';
@@ -18,8 +19,12 @@ import logo64 from '../style/logos/python-logo-64x64.png';
 const server_kernel: JupyterLiteServerPlugin<void> = {
   id: '@jupyterlite/xeus-kernel-extension:kernel',
   autoStart: true,
-  requires: [IKernelSpecs],
-  activate: (app: JupyterLiteServer, kernelspecs: IKernelSpecs) => {
+  requires: [IKernelSpecs, IServiceWorkerRegistrationWrapper],
+  activate: (
+    app: JupyterLiteServer,
+    kernelspecs: IKernelSpecs,
+    serviceWorkerRegistrationWrapper: IServiceWorkerRegistrationWrapper
+  ) => {
     kernelspecs.register({
       spec: {
         name: 'xeus-python',
@@ -41,7 +46,8 @@ const server_kernel: JupyterLiteServerPlugin<void> = {
       },
       create: async (options: IKernel.IOptions): Promise<IKernel> => {
         return new XeusServerKernel({
-          ...options
+          ...options,
+          mountDrive: serviceWorkerRegistrationWrapper.enabled
         });
       }
     });

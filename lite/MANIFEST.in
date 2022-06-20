@@ -7,6 +7,7 @@ include install.json
 include ts*.json
 include yarn.lock
 include webpack.config.js
+include worker.webpack.config.js
 include Dockerfile
 recursive-include tests *.py
 
