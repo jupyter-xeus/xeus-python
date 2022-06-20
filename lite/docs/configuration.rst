@@ -13,19 +13,19 @@ Requirements
 
 This feature requires you to have at least ``conda``, `mamba <https://github.com/mamba-org/mamba>`_ or ``micromamba`` installed.
 
-You also need to install ``emsdk``, this can be done by installing it from ``conda-forge``:
+You also need to install ``empack``, this can be done by installing it from ``conda-forge``:
 
 .. code::
 
-    conda install -c conda-forge emsdk
+    conda install -c conda-forge empack
 
     # OR
 
-    mamba install -c conda-forge emsdk
+    mamba install -c conda-forge empack
 
     # OR
 
-    micromamba install -c conda-forge emsdk
+    micromamba install -c conda-forge empack
 
 Usage
 ~~~~~
@@ -35,13 +35,13 @@ You can pre-install packages by passing the ``XeusPythonEnv.packages`` CLI optio
 .. note::
     This will automatically install any labextension that it founds, for example installing ipyleaflet will make ipyleaflet work without the need to manually install the jupyter-leaflet labextension.
 
-For example, say you want to install NumPy, Matplotlib and ipyleaflet, it can be done with the following command:
+For example, say you want to install ``NumPy``, ``Matplotlib`` and ``ipyleaflet``, it can be done with the following command:
 
 .. code::
 
     jupyter lite build --XeusPythonEnv.packages=numpy,matplotlib,ipyleaflet
 
-The same can be achieved through a `jupyterlite_config.json` file:
+The same can be achieved through a ``jupyterlite_config.json`` file:
 
 .. code::
 
