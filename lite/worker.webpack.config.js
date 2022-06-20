@@ -1,9 +1,9 @@
 const path = require('path');
 const rules = [
   {
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'source-map-loader'
+    test: /\.js$/,
+    exclude: /node_modules/,
+    loader: 'source-map-loader'
   }
 ];
 
@@ -13,7 +13,7 @@ const resolve = {
     child_process: false,
     crypto: false
   },
-  extensions: [".js"],
+  extensions: ['.js']
 };
 
 module.exports = [
@@ -28,6 +28,6 @@ module.exports = [
       rules
     },
     devtool: 'source-map',
-    resolve,
+    resolve
   }
 ];

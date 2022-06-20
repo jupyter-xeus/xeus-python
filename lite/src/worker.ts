@@ -4,7 +4,12 @@
 
 import { expose } from 'comlink';
 
-import { DriveFS, DriveFSEmscriptenNodeOps, IEmscriptenFSNode, IStats } from '@jupyterlite/contents';
+import {
+  DriveFS,
+  DriveFSEmscriptenNodeOps,
+  IEmscriptenFSNode,
+  IStats
+} from '@jupyterlite/contents';
 
 declare function createXeusModule(options: any): any;
 
@@ -14,25 +19,24 @@ globalThis.Module = {};
 // not Streams, but why is it needed??? Why do we get Streams and not Nodes from
 // emscripten in the case of xeus-python???
 class StreamNodeOps extends DriveFSEmscriptenNodeOps {
-
   private getNode(nodeOrStream: any) {
-    if (nodeOrStream["node"]) {
-      return nodeOrStream["node"];
+    if (nodeOrStream['node']) {
+      return nodeOrStream['node'];
     }
     return nodeOrStream;
-  };
+  }
 
   lookup(parent: IEmscriptenFSNode, name: string): IEmscriptenFSNode {
     return super.lookup(this.getNode(parent), name);
-  };
+  }
 
   getattr(node: IEmscriptenFSNode): IStats {
     return super.getattr(this.getNode(node));
-  };
+  }
 
   setattr(node: IEmscriptenFSNode, attr: IStats): void {
     super.setattr(this.getNode(node), attr);
-  };
+  }
 
   mknod(
     parent: IEmscriptenFSNode,
@@ -41,20 +45,23 @@ class StreamNodeOps extends DriveFSEmscriptenNodeOps {
     dev: any
   ): IEmscriptenFSNode {
     return super.mknod(this.getNode(parent), name, mode, dev);
-  };
+  }
 
-  rename(oldNode: IEmscriptenFSNode, newDir: IEmscriptenFSNode, newName: string): void {
+  rename(
+    oldNode: IEmscriptenFSNode,
+    newDir: IEmscriptenFSNode,
+    newName: string
+  ): void {
     super.rename(this.getNode(oldNode), this.getNode(newDir), newName);
-  };
+  }
 
   rmdir(parent: IEmscriptenFSNode, name: string): void {
     super.rmdir(this.getNode(parent), name);
-  };
+  }
 
   readdir(node: IEmscriptenFSNode): string[] {
     return super.readdir(this.getNode(node));
-  };
-
+  }
 }
 
 // TODO Remove this when we don't need StreamNodeOps anymore
