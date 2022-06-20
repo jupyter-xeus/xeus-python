@@ -16,6 +16,8 @@ from jupyterlite.addons.federated_extensions import (
     ENV_EXTENSIONS,
 )
 
+JUPYTERLITE_XEUS_PYTHON_DEBUG = 'JUPYTERLITE_XEUS_PYTHON_DEBUG'
+
 JUPYTERLITE_XEUS_PYTHON = "@jupyterlite/xeus-python-kernel"
 
 # TODO Make this configurable
@@ -62,7 +64,7 @@ class PackagesList(List):
 
 class XeusPythonEnv(FederatedExtensionAddon):
 
-    __all__ = ["pre_build", "post_build"]
+    __all__ = ["post_build"]
 
     xeus_python_version = Unicode().tag(
         config=True, description="The xeus-python version to use"
@@ -102,7 +104,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
 
         self.orig_config = os.environ.get("CONDARC")
 
-    def pre_build(self, manager):
+    def post_build(self, manager):
         """yield a doit task to create the emscripten-32 env and grab anything we need from it"""
         # Install the jupyterlite-xeus-python ourselves
         for pkg_json in self.env_extensions(ENV_EXTENSIONS):
@@ -138,18 +140,14 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # (make jupyterlite-xeus-python extension somewhat configurable?)
         dest = self.output_extensions / "@jupyterlite" / "xeus-python-kernel" / "static"
 
-        task_dep = ["pre_build:federated_extensions:*"]
-
         for file in ["python_data.js", "python_data.data"]:
             yield dict(
-                task_dep=task_dep,
                 name=f"xeus:copy:{file}",
                 actions=[(self.copy_one, [Path(self.cwd.name) / file, dest / file])],
             )
 
         for file in ["xpython_wasm.js", "xpython_wasm.wasm"]:
             yield dict(
-                task_dep=task_dep,
                 name=f"xeus:copy:{file}",
                 actions=[
                     (
@@ -161,6 +159,16 @@ class XeusPythonEnv(FederatedExtensionAddon):
                     )
                 ],
             )
+
+        if not os.environ.get(JUPYTERLITE_XEUS_PYTHON_DEBUG, False):
+            # Cleanup
+            shutil.rmtree(self.cwd.name, ignore_errors=True)
+            shutil.rmtree(self.root_prefix, ignore_errors=True)
+
+            if self.orig_config is not None:
+                os.environ["CONDARC"] = self.orig_config
+            elif "CONDARC" in os.environ:
+                del os.environ["CONDARC"]
 
     def create_env(self):
         """Create the xeus-python emscripten-32 env with either mamba, micromamba or conda."""
@@ -233,22 +241,6 @@ class XeusPythonEnv(FederatedExtensionAddon):
         with open(self.prefix_path / ".condarc", "w") as fobj:
             fobj.write(f"subdir: {PLATFORM}")
         os.environ["CONDARC"] = str(self.prefix_path / ".condarc")
-
-    def post_build(self, manager):
-        """Cleanup"""
-        # Bail early if there is nothing to do
-        if not self.packages and not self.xeus_python_version:
-            return []
-
-        shutil.rmtree(self.cwd.name, ignore_errors=True)
-        shutil.rmtree(self.root_prefix, ignore_errors=True)
-
-        if self.orig_config is not None:
-            os.environ["CONDARC"] = self.orig_config
-        elif "CONDARC" in os.environ:
-            del os.environ["CONDARC"]
-
-        return []
 
     def safe_copy_extension(self, pkg_json):
         """Copy a labextension, and overwrite it
