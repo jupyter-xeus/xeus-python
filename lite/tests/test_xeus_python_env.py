@@ -6,7 +6,7 @@ from pathlib import Path
 
 from jupyterlite.app import LiteStatusApp
 
-from jupyterlite_xeus_python.env_build_addon import XeusPythonEnv
+from jupyterlite_xeus_python.env_build_addon import XeusPythonEnv, JUPYTERLITE_XEUS_PYTHON_DEBUG
 
 
 def test_python_env():
@@ -17,7 +17,9 @@ def test_python_env():
     addon = XeusPythonEnv(manager)
     addon.packages = ["numpy", "ipyleaflet"]
 
-    for step in addon.pre_build(manager):
+    os.environ[JUPYTERLITE_XEUS_PYTHON_DEBUG] = "True"
+
+    for step in addon.post_build(manager):
         pass
 
     # Check env
