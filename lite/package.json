@@ -29,16 +29,16 @@
     "url": "https://github.com/jupyterlite/xeus-python-kernel.git"
   },
   "scripts": {
-    "build:dockerimage": "docker build -t mydockerimage . ",
-    "build:dockerimage_no_cache": "docker build -t mydockerimage --no-cache . ",
-    "build:emscripten": "echo $(pwd) && docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) mydockerimage copy_output.sh",
+    "build:dockerimage": "docker build -t jupyterlite-xeus-kernel . ",
+    "build:dockerimage_no_cache": "docker build -t jupyterlite-xeus-kernel --no-cache . ",
+    "build:emscripten": "echo $(pwd) && docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) jupyterlite-xeus-kernel copy_output.sh",
     "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm src/xpython_wasm.js src/python_data.js src/python_data.data lib",
     "build:wasm": "jlpm run build:dockerimage && jlpm run build:emscripten",
     "build:wasm_no_cache": "jlpm run build:dockerimage_no_cache && jlpm run build:emscripten",
     "build:worker": "webpack --config worker.webpack.config.js --mode=development",
     "build:worker:prod": "webpack --config worker.webpack.config.js --mode=production",
-    "build": "jlpm run build:worker && jlpm run build:lib && jlpm run copy-files && jlpm run build:labextension:dev",
-    "build:prod": "jlpm run clean && jlpm run build:worker:prod && jlpm run build:wasm && jlpm run build:lib && jlpm run copy-files && jlpm run build:labextension",
+    "build": "jlpm run build:lib && jlpm run build:worker && jlpm run copy-files && jlpm run build:labextension:dev",
+    "build:prod": "jlpm run clean && jlpm run build:wasm && jlpm run build:lib && jlpm run build:worker:prod && jlpm run copy-files && jlpm run build:labextension",
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
     "build:lib": "tsc",
@@ -75,7 +75,6 @@
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "ts-loader": "^9.3.0",
     "typescript": "~4.2.3"
   },
   "sideEffects": [
