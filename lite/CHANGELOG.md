@@ -10,16 +10,13 @@
 
 - Update jupyterlite and enable file-system access [#27](https://github.com/jupyterlite/xeus-python-kernel/pull/27) ([@martinRenou](https://github.com/martinRenou))
 - Fix conflicts with sys prefix packages and ignore ignore_sys_prefix flag [#23](https://github.com/jupyterlite/xeus-python-kernel/pull/23) ([@martinRenou](https://github.com/martinRenou))
+- Toplevel await [#25](https://github.com/jupyterlite/xeus-python-kernel/pull/25) ([@DerThorsten](https://github.com/DerThorsten))
+- Make xeus-python version configurable [#24](https://github.com/jupyterlite/xeus-python-kernel/pull/24) ([@martinRenou](https://github.com/martinRenou))
+- Fix hanging jupyterlite build via jupyterlite-sphinx [#21](https://github.com/jupyterlite/xeus-python-kernel/pull/21) ([@benbovy](https://github.com/benbovy))
 
 ### Documentation improvements
 
 - Improve docs [#28](https://github.com/jupyterlite/xeus-python-kernel/pull/28) ([@martinRenou](https://github.com/martinRenou))
-
-### Other merged PRs
-
-- Toplevel await [#25](https://github.com/jupyterlite/xeus-python-kernel/pull/25) ([@DerThorsten](https://github.com/DerThorsten))
-- Make xeus-python version configurable [#24](https://github.com/jupyterlite/xeus-python-kernel/pull/24) ([@martinRenou](https://github.com/martinRenou))
-- Fix hanging jupyterlite build via jupyterlite-sphinx [#21](https://github.com/jupyterlite/xeus-python-kernel/pull/21) ([@benbovy](https://github.com/benbovy))
 - Update docs using 0.3.0 [#19](https://github.com/jupyterlite/xeus-python-kernel/pull/19) ([@martinRenou](https://github.com/martinRenou))
 
 ### Contributors to this release
