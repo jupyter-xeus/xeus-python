@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.4.1
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.4.0...ca6a45ea13d665865e76cbf4741b3c193002237e))
+
+### Bugs fixed
+
+- Make sure xeus-python kernel emscripten build runs after the FederatedExtension addon [#32](https://github.com/jupyterlite/xeus-python-kernel/pull/32) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-20&to=2022-06-20&type=c))
+
+[@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-20..2022-06-20&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.4.0
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.3.0...0da0c11690c0d065c2f33b63d88064aec0b79529))
@@ -24,8 +40,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-05-24&to=2022-06-20&type=c))
 
 [@benbovy](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Abenbovy+updated%3A2022-05-24..2022-06-20&type=Issues) | [@bollwyvl](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Abollwyvl+updated%3A2022-05-24..2022-06-20&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Adavidbrochart+updated%3A2022-05-24..2022-06-20&type=Issues) | [@DerThorsten](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3ADerThorsten+updated%3A2022-05-24..2022-06-20&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-05-24..2022-06-20&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.3.0
 
