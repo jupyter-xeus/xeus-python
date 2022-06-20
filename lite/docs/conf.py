@@ -7,7 +7,7 @@ extensions = [
 master_doc = 'index'
 source_suffix = '.rst'
 
-project = 'xeus-python-kernel'
+project = 'jupyterlite-xeus-python'
 copyright = 'JupyterLite Team'
 author = 'JupyterLite Team'
 

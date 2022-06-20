@@ -1,4 +1,4 @@
-# jupyterlite-xeus-python-kernel
+# jupyterlite-xeus-python
 
 [![ci-badge]][ci] [![docs-badge]][docs]
 
