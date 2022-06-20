@@ -112,7 +112,7 @@ export class XeusServerKernel implements IKernel {
    * A promise that is fulfilled when the kernel is ready.
    */
   get ready(): Promise<void> {
-    return this._remote.ready();
+    return Promise.resolve();
   }
 
   /**
