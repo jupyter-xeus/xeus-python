@@ -4,11 +4,67 @@
 
 import { expose } from 'comlink';
 
-import { DriveFS } from '@jupyterlite/contents';
+import { DriveFS, DriveFSEmscriptenNodeOps, IEmscriptenFSNode, IStats } from '@jupyterlite/contents';
 
 declare function createXeusModule(options: any): any;
 
 globalThis.Module = {};
+
+// TODO Remove this. This is to ensure we always perform node ops on Nodes and
+// not Streams, but why is it needed??? Why do we get Streams and not Nodes from
+// emscripten in the case of xeus-python???
+class StreamNodeOps extends DriveFSEmscriptenNodeOps {
+
+  private getNode(nodeOrStream: any) {
+    if (nodeOrStream["node"]) {
+      return nodeOrStream["node"];
+    }
+    return nodeOrStream;
+  };
+
+  lookup(parent: IEmscriptenFSNode, name: string): IEmscriptenFSNode {
+    return super.lookup(this.getNode(parent), name);
+  };
+
+  getattr(node: IEmscriptenFSNode): IStats {
+    return super.getattr(this.getNode(node));
+  };
+
+  setattr(node: IEmscriptenFSNode, attr: IStats): void {
+    super.setattr(this.getNode(node), attr);
+  };
+
+  mknod(
+    parent: IEmscriptenFSNode,
+    name: string,
+    mode: number,
+    dev: any
+  ): IEmscriptenFSNode {
+    return super.mknod(this.getNode(parent), name, mode, dev);
+  };
+
+  rename(oldNode: IEmscriptenFSNode, newDir: IEmscriptenFSNode, newName: string): void {
+    super.rename(this.getNode(oldNode), this.getNode(newDir), newName);
+  };
+
+  rmdir(parent: IEmscriptenFSNode, name: string): void {
+    super.rmdir(this.getNode(parent), name);
+  };
+
+  readdir(node: IEmscriptenFSNode): string[] {
+    return super.readdir(this.getNode(node));
+  };
+
+}
+
+// TODO Remove this when we don't need StreamNodeOps anymore
+class LoggingDrive extends DriveFS {
+  constructor(options: DriveFS.IOptions) {
+    super(options);
+
+    this.node_ops = new StreamNodeOps(this);
+  }
+}
 
 // when a toplevel cell uses an await, the cell is implicitly
 // wrapped in a async function. Since the webloop - eventloop
@@ -46,9 +102,7 @@ class XeusPythonKernel {
   mount(driveName: string, mountpoint: string, baseUrl: string): void {
     const { FS, PATH, ERRNO_CODES } = globalThis.Module;
 
-    console.log('mounting drivefs', driveName, mountpoint, baseUrl);
-
-    this._drive = new DriveFS({
+    this._drive = new LoggingDrive({
       FS,
       PATH,
       ERRNO_CODES,
@@ -56,13 +110,10 @@ class XeusPythonKernel {
       driveName,
       mountpoint
     });
-    console.log('mkdir mountpoint');
 
     FS.mkdir(mountpoint);
     FS.mount(this._drive, {}, mountpoint);
-    console.log('chdir mountpoint');
     FS.chdir(mountpoint);
-    console.log('done chdir mountpoint');
   }
 
   cd(path: string) {
@@ -70,11 +121,7 @@ class XeusPythonKernel {
       return;
     }
 
-    const { FS } = globalThis.Module;
-
-    console.log('chdir path', path);
-    FS.chdir(path);
-    console.log('done chdir path');
+    globalThis.Module.FS.chdir(path);
   }
 
   async processMessage(event: any): Promise<void> {
@@ -90,8 +137,6 @@ class XeusPythonKernel {
       globalThis.toplevel_promise = null;
     }
 
-    console.log('received this in the worker', event);
-
     const msg_type = event.msg.header.msg_type;
 
     if (msg_type === 'input_reply') {
@@ -104,19 +149,11 @@ class XeusPythonKernel {
   private async initialize(resolve: () => void) {
     importScripts('./xpython_wasm.js');
 
-    console.log('init xeus kernel');
-
     globalThis.Module = await createXeusModule({});
-
-    console.log('done init xeus kernel');
 
     importScripts('./python_data.js');
 
-    console.log('loaded python data');
-
     await this.waitRunDependency();
-
-    console.log('waited run deps');
 
     this._raw_xkernel = new globalThis.Module.xkernel();
     this._raw_xserver = this._raw_xkernel.get_server();
@@ -131,10 +168,9 @@ class XeusPythonKernel {
   }
 
   private async waitRunDependency() {
-    const promise = new Promise((resolve: any) => {
+    const promise = new Promise<void>(resolve => {
       globalThis.Module.monitorRunDependencies = (n: number) => {
         if (n === 0) {
-          console.log('all `RunDependencies` loaded');
           resolve();
         }
       };
