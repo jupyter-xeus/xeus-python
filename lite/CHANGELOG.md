@@ -2,6 +2,34 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.4.0
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.3.0...0da0c11690c0d065c2f33b63d88064aec0b79529))
+
+### Enhancements made
+
+- Update jupyterlite and enable file-system access [#27](https://github.com/jupyterlite/xeus-python-kernel/pull/27) ([@martinRenou](https://github.com/martinRenou))
+- Fix conflicts with sys prefix packages and ignore ignore_sys_prefix flag [#23](https://github.com/jupyterlite/xeus-python-kernel/pull/23) ([@martinRenou](https://github.com/martinRenou))
+
+### Documentation improvements
+
+- Improve docs [#28](https://github.com/jupyterlite/xeus-python-kernel/pull/28) ([@martinRenou](https://github.com/martinRenou))
+
+### Other merged PRs
+
+- Toplevel await [#25](https://github.com/jupyterlite/xeus-python-kernel/pull/25) ([@DerThorsten](https://github.com/DerThorsten))
+- Make xeus-python version configurable [#24](https://github.com/jupyterlite/xeus-python-kernel/pull/24) ([@martinRenou](https://github.com/martinRenou))
+- Fix hanging jupyterlite build via jupyterlite-sphinx [#21](https://github.com/jupyterlite/xeus-python-kernel/pull/21) ([@benbovy](https://github.com/benbovy))
+- Update docs using 0.3.0 [#19](https://github.com/jupyterlite/xeus-python-kernel/pull/19) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-05-24&to=2022-06-20&type=c))
+
+[@benbovy](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Abenbovy+updated%3A2022-05-24..2022-06-20&type=Issues) | [@bollwyvl](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Abollwyvl+updated%3A2022-05-24..2022-06-20&type=Issues) | [@davidbrochart](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Adavidbrochart+updated%3A2022-05-24..2022-06-20&type=Issues) | [@DerThorsten](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3ADerThorsten+updated%3A2022-05-24..2022-06-20&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-05-24..2022-06-20&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.3.0
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/8166fc63fd8b4f56b39431e810dabbeae842ea83...280c7c60b77d19a161de8256ccda7b77235f5690))
@@ -19,8 +47,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-05-19&to=2022-05-24&type=c))
 
 [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2022-05-19..2022-05-24&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-05-19..2022-05-24&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## v0.2.0
 
