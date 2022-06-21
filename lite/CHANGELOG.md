@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.4.2
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.4.1...782da3882c5797985fe40fa40c730c1e59e3d06a))
+
+### Bugs fixed
+
+- Fix temporary directories cleanup so that it happens after the tasks [#34](https://github.com/jupyterlite/xeus-python-kernel/pull/34) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-20&to=2022-06-21&type=c))
+
+[@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-20..2022-06-21&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.4.1
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.4.0...ca6a45ea13d665865e76cbf4741b3c193002237e))
@@ -15,8 +31,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-20&to=2022-06-20&type=c))
 
 [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-20..2022-06-20&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.4.0
 
