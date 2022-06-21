@@ -136,6 +136,9 @@ export class XeusServerKernel implements IKernel {
     if (this.isDisposed) {
       return;
     }
+    this._worker.terminate();
+    (this._worker as any) = null;
+    (this._remote as any) = null;
     this._isDisposed = true;
     this._disposed.emit(void 0);
   }
