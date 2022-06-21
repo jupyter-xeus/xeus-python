@@ -1,6 +1,6 @@
 """a JupyterLite addon for creating the env for xeus-python"""
 import os
-from subprocess import check_call, DEVNULL
+from subprocess import check_call, run, DEVNULL
 from tempfile import TemporaryDirectory
 import json
 import shutil
@@ -15,8 +15,6 @@ from jupyterlite.addons.federated_extensions import (
     FederatedExtensionAddon,
     ENV_EXTENSIONS,
 )
-
-JUPYTERLITE_XEUS_PYTHON_DEBUG = 'JUPYTERLITE_XEUS_PYTHON_DEBUG'
 
 JUPYTERLITE_XEUS_PYTHON = "@jupyterlite/xeus-python-kernel"
 
@@ -160,16 +158,6 @@ class XeusPythonEnv(FederatedExtensionAddon):
                 ],
             )
 
-        if not os.environ.get(JUPYTERLITE_XEUS_PYTHON_DEBUG, False):
-            # Cleanup
-            shutil.rmtree(self.cwd.name, ignore_errors=True)
-            shutil.rmtree(self.root_prefix, ignore_errors=True)
-
-            if self.orig_config is not None:
-                os.environ["CONDARC"] = self.orig_config
-            elif "CONDARC" in os.environ:
-                del os.environ["CONDARC"]
-
     def create_env(self):
         """Create the xeus-python emscripten-32 env with either mamba, micromamba or conda."""
         if MAMBA_PYTHON_AVAILABLE:
@@ -192,7 +180,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
             return self._create_env_with_config("mamba", channels)
 
         if MICROMAMBA_AVAILABLE:
-            check_call(
+            run(
                 [
                     "micromamba",
                     "create",
@@ -206,6 +194,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
                     *self.specs,
                 ],
                 cwd=self.cwd.name,
+                check=True,
             )
             return
 
@@ -219,12 +208,13 @@ class XeusPythonEnv(FederatedExtensionAddon):
         )
 
     def _create_env_with_config(self, conda, channels):
-        check_call(
+        run(
             [conda, "create", "--yes", "--prefix", self.prefix_path, *channels],
             cwd=self.cwd.name,
+            check=True,
         )
         self._create_config()
-        check_call(
+        run(
             [
                 conda,
                 "install",
@@ -235,6 +225,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
                 *self.specs,
             ],
             cwd=self.cwd.name,
+            check=True,
         )
 
     def _create_config(self):
@@ -260,3 +251,12 @@ class XeusPythonEnv(FederatedExtensionAddon):
             file_dep=file_dep,
             actions=[(self.copy_one, [pkg_path, dest])],
         )
+
+    def __del__(self):
+        # Cleanup
+        shutil.rmtree(self.root_prefix, ignore_errors=True)
+
+        if self.orig_config is not None:
+            os.environ["CONDARC"] = self.orig_config
+        elif "CONDARC" in os.environ:
+            del os.environ["CONDARC"]
