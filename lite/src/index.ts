@@ -28,13 +28,13 @@ const server_kernel: JupyterLiteServerPlugin<void> = {
     kernelspecs.register({
       spec: {
         name: 'xeus-python',
-        display_name: 'xeus-python',
+        display_name: 'Python (XPython)',
         language: 'python',
         argv: [],
         spec: {
           argv: [],
           env: {},
-          display_name: 'xeus-python',
+          display_name: 'Python (XPython)',
           language: 'python',
           interrupt_mode: 'message',
           metadata: {}
