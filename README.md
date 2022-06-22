@@ -97,6 +97,10 @@ but
 This is useful when using xeus-python in [Voila](https://github.com/voila-dashboards/voila), where you should see a
 ~15% performance improvement, reducing the load of your application.
 
+## xeus-python in JupyterLite!
+
+You can install xeus-python in JupyterLite, see https://github.com/jupyterlite/xeus-python-kernel for more information.
+
 **Code execution and variable display**:
 
 ![Basic code execution](docs/source/code_exec.gif)
@@ -160,6 +164,7 @@ Long story short:
 | `xeus-python`|   `xeus`         |      `xtl`      | `cppzmq` | `nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` | `IPython` | `xeus-python-shell` |
 |--------------|------------------|-----------------|----------|-----------------|----------------|-------------------|-------------------|-----------|-----------|---------------------|
 |  master      |  >=2.0.0,<3.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   |           | >=0.4.1,<0.5.0      |
+|  0.14.2      |  >=2.0.0,<3.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   |           | >=0.4.1,<0.5.0      |
 |  0.14.1      |  >=2.0.0,<3.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   |           | >=0.4.1,<0.5.0      |
 |  0.14.0      |  >=2.0.0,<3.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   |           | >=0.4.1,<0.5.0      |
 |  0.13.9      |  >=2.0.0,<3.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   |           | >=0.3.0,<0.4.0      |
