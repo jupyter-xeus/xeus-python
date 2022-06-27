@@ -2,6 +2,35 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.0
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.4.2...7c8676a97cf64b8c3d34bfa83de4536a86744358))
+
+### Enhancements made
+
+- Rename kernel to match classic xeus-python [#38](https://github.com/jupyterlite/xeus-python-kernel/pull/38) ([@martinRenou](https://github.com/martinRenou))
+- Cleanup worker on dispose [#36](https://github.com/jupyterlite/xeus-python-kernel/pull/36) ([@martinRenou](https://github.com/martinRenou))
+
+### Bugs fixed
+
+- Fix post_build so that it populates the jupyter-lite.json properly [#40](https://github.com/jupyterlite/xeus-python-kernel/pull/40) ([@martinRenou](https://github.com/martinRenou))
+
+### Maintenance and upkeep improvements
+
+- Update empack [#39](https://github.com/jupyterlite/xeus-python-kernel/pull/39) ([@martinRenou](https://github.com/martinRenou))
+
+### Other merged PRs
+
+- Update docs so that it uses 0.4.2 [#31](https://github.com/jupyterlite/xeus-python-kernel/pull/31) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-21&to=2022-06-27&type=c))
+
+[@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2022-06-21..2022-06-27&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-21..2022-06-27&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.4.2
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.4.1...782da3882c5797985fe40fa40c730c1e59e3d06a))
@@ -15,8 +44,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-20&to=2022-06-21&type=c))
 
 [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-20..2022-06-21&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.4.1
 
