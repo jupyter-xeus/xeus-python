@@ -56,7 +56,8 @@ setup_args = dict(
     install_requires=[
         "traitlets",
         "jupyterlite",
-        "empack"
+        "requests",
+        "empack>=0.7.0",
     ],
     zip_safe=False,
     include_package_data=True,
@@ -71,6 +72,7 @@ setup_args = dict(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Framework :: Jupyter",
         "Framework :: Jupyter :: JupyterLab",
         "Framework :: Jupyter :: JupyterLab :: 3",
