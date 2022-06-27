@@ -123,6 +123,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
             outname=Path(self.cwd.name) / "python_data",
             version=PYTHON_VERSION,
             export_name="globalThis.Module",
+            download_emsdk="latest",
         )
 
         # Find the federated extensions in the emscripten-env and install them
