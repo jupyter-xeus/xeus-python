@@ -159,6 +159,8 @@ class XeusPythonEnv(FederatedExtensionAddon):
                 ],
             )
 
+        return super(XeusPythonEnv, self).post_build(manager)
+
     def create_env(self):
         """Create the xeus-python emscripten-32 env with either mamba, micromamba or conda."""
         if MAMBA_PYTHON_AVAILABLE:
