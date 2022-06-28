@@ -6,31 +6,7 @@ Configuration
 Pre-installed packages
 ----------------------
 
-xeus-python allows you to pre-install packages in the Python runtime.
-
-Requirements
-~~~~~~~~~~~~
-
-This feature requires you to have at least ``conda``, `mamba <https://github.com/mamba-org/mamba>`_ or ``micromamba`` installed.
-
-You also need to install ``empack``, this can be done by installing it from ``conda-forge``:
-
-.. code::
-
-    conda install -c conda-forge empack
-
-    # OR
-
-    mamba install -c conda-forge empack
-
-    # OR
-
-    micromamba install -c conda-forge empack
-
-Usage
-~~~~~
-
-You can pre-install packages by passing the ``XeusPythonEnv.packages`` CLI option to ``jupyter lite build``.
+xeus-python allows you to pre-install packages in the Python runtime. You can pre-install packages by passing the ``XeusPythonEnv.packages`` CLI option to ``jupyter lite build``.
 
 .. note::
     This will automatically install any labextension that it founds, for example installing ipyleaflet will make ipyleaflet work without the need to manually install the jupyter-leaflet labextension.
