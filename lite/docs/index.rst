@@ -23,7 +23,7 @@ How does it compare with JupyterLite's ``Pyolite``?
    :kernel: xeus-python
    :height: 600px
 
-    print("Hello from xeus-python!")
+   print("Hello from xeus-python!")
 
 .. toctree::
     :caption: Installation
