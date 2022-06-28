@@ -29,12 +29,25 @@ Then build your JupyterLite site:
 jupyter lite build
 ```
 
-## Uninstall
+## Pre-installed packages
 
-To remove the extension, execute:
+xeus-python allows you to pre-install packages in the Python runtime. You can pre-install packages by passing the ``XeusPythonEnv.packages`` CLI option to ``jupyter lite build``.
+This will automatically install any labextension that it founds, for example installing ipyleaflet will make ipyleaflet work without the need to manually install the jupyter-leaflet labextension.
+
+For example, say you want to install ``NumPy``, ``Matplotlib`` and ``ipyleaflet``, it can be done with the following command:
 
 ```bash
-pip uninstall jupyterlite-xeus-python
+jupyter lite build --XeusPythonEnv.packages=numpy,matplotlib,ipyleaflet
+```
+
+The same can be achieved through a ``jupyterlite_config.json`` file:
+
+```json
+{
+    "XeusPythonEnv": {
+        "packages": ["numpy", "matplotlib", "ipyleaflet"]
+    }
+}
 ```
 
 ## Contributing
