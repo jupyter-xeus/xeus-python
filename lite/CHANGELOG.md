@@ -2,6 +2,32 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.1
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.0...974e729e0a90981e7a7c11a2428c13730a4a8d90))
+
+### Bugs fixed
+
+- Add a deduplication phase that make sure the latest copied labextension is used [#46](https://github.com/jupyterlite/xeus-python-kernel/pull/46) ([@martinRenou](https://github.com/martinRenou))
+- Fix plugin id [#43](https://github.com/jupyterlite/xeus-python-kernel/pull/43) ([@jtpio](https://github.com/jtpio))
+
+### Maintenance and upkeep improvements
+
+- Simplify the kernel spec [#44](https://github.com/jupyterlite/xeus-python-kernel/pull/44) ([@jtpio](https://github.com/jtpio))
+
+### Documentation improvements
+
+- Update README with config options [#45](https://github.com/jupyterlite/xeus-python-kernel/pull/45) ([@martinRenou](https://github.com/martinRenou))
+- Build docs for 0.5.0 [#42](https://github.com/jupyterlite/xeus-python-kernel/pull/42) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-27&to=2022-06-28&type=c))
+
+[@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2022-06-27..2022-06-28&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-27..2022-06-28&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.0
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.4.2...7c8676a97cf64b8c3d34bfa83de4536a86744358))
@@ -28,8 +54,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-21&to=2022-06-27&type=c))
 
 [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2022-06-21..2022-06-27&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-21..2022-06-27&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.4.2
 
