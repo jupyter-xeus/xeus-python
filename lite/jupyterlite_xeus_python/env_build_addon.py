@@ -10,7 +10,13 @@ from traitlets import List, Unicode
 
 from empack.file_packager import pack_python_core
 
-from jupyterlite.constants import SHARE_LABEXTENSIONS, UTF8
+from jupyterlite.constants import (
+    SHARE_LABEXTENSIONS,
+    LAB_EXTENSIONS,
+    JUPYTERLITE_JSON,
+    UTF8,
+    FEDERATED_EXTENSIONS,
+)
 from jupyterlite.addons.federated_extensions import (
     FederatedExtensionAddon,
     ENV_EXTENSIONS,
@@ -159,7 +165,16 @@ class XeusPythonEnv(FederatedExtensionAddon):
                 ],
             )
 
-        return super(XeusPythonEnv, self).post_build(manager)
+        jupyterlite_json = manager.output_dir / JUPYTERLITE_JSON
+        lab_extensions_root = manager.output_dir / LAB_EXTENSIONS
+        lab_extensions = self.env_extensions(lab_extensions_root)
+
+        yield dict(
+            name="patch:xeus",
+            doc=f"ensure {JUPYTERLITE_JSON} includes the federated_extensions",
+            file_dep=[*lab_extensions, jupyterlite_json],
+            actions=[(self.patch_jupyterlite_json, [jupyterlite_json])],
+        )
 
     def create_env(self):
         """Create the xeus-python emscripten-32 env with either mamba, micromamba or conda."""
@@ -254,6 +269,21 @@ class XeusPythonEnv(FederatedExtensionAddon):
             file_dep=file_dep,
             actions=[(self.copy_one, [pkg_path, dest])],
         )
+
+    def dedupe_federated_extensions(self, config):
+        if FEDERATED_EXTENSIONS not in config:
+            return
+
+        named = {}
+
+        # Making sure to dedupe extensions by keeping the most recent ones
+        for ext in config[FEDERATED_EXTENSIONS]:
+            if os.path.exists(self.output_extensions / ext["name"] / ext["load"]):
+                named[ext["name"]] = ext
+
+        config[FEDERATED_EXTENSIONS] = sorted(named.values(), key=lambda x: x["name"])
+
+        print("--- CONFIG AFTER DEDUPE", config)
 
     def __del__(self):
         # Cleanup
