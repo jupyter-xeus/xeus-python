@@ -42,7 +42,7 @@ export class XeusServerKernel implements IKernel {
       this._processWorkerMessage(e.data);
     };
     this._remote = wrap(this._worker);
-    this.initFileSytem(options);
+    this.initFileSystem(options);
   }
 
   async handleMessage(msg: KernelMessage.IMessage): Promise<void> {
@@ -157,7 +157,7 @@ export class XeusServerKernel implements IKernel {
     return this._name;
   }
 
-  private async initFileSytem(options: XeusServerKernel.IOptions) {
+  private async initFileSystem(options: XeusServerKernel.IOptions) {
     let driveName: string;
     let localPath: string;
 
