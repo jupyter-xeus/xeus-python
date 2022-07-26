@@ -283,8 +283,6 @@ class XeusPythonEnv(FederatedExtensionAddon):
 
         config[FEDERATED_EXTENSIONS] = sorted(named.values(), key=lambda x: x["name"])
 
-        print("--- CONFIG AFTER DEDUPE", config)
-
     def __del__(self):
         # Cleanup
         shutil.rmtree(self.root_prefix, ignore_errors=True)
