@@ -65,6 +65,7 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
 
         py::module sys = py::module::import("sys");
+        py::module comm = py::module::import("comm");
         py::module logging = py::module::import("logging");
 
         py::module display_module = get_display_module();
@@ -73,8 +74,12 @@ namespace xpyt
         py::module comm_module = get_comm_module();
         py::module kernel_module = get_kernel_module();
 
-        // Monkey patching "from ipykernel.comm import Comm"
-        sys.attr("modules")["ipykernel.comm"] = comm_module;
+        // TODO Handle old ipywidgets by monkey patching ipykernel too...
+        comm.attr("register_comm_classes")(
+            comm_module.attr("Comm"),
+            comm_module.attr("CommManager")
+        );
+        m_comm_manager = comm.attr("create_comm_manager")();
 
         instanciate_ipython_shell();
 
