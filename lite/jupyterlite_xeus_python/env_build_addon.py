@@ -8,7 +8,7 @@ from pathlib import Path
 
 from traitlets import List, Unicode
 
-from empack.file_packager import pack_python_core
+from empack.file_packager import pack_environment
 
 from jupyterlite.constants import (
     SHARE_LABEXTENSIONS,
@@ -124,10 +124,9 @@ class XeusPythonEnv(FederatedExtensionAddon):
         self.create_env()
 
         # Pack the environment
-        pack_python_core(
-            self.prefix_path,
+        pack_environment(
+            env_prefix=self.prefix_path,
             outname=Path(self.cwd.name) / "python_data",
-            version=PYTHON_VERSION,
             export_name="globalThis.Module",
             download_emsdk="latest",
         )
