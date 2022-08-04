@@ -2,6 +2,31 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.2
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.1...8901f99213d6eb01be6e06dd4ba35821972c2f5e))
+
+### Maintenance and upkeep improvements
+
+- Fix typo in `initFileSystem` method name [#52](https://github.com/jupyterlite/xeus-python-kernel/pull/52) ([@jtpio](https://github.com/jtpio))
+
+### Documentation improvements
+
+- Remove leading space in the replite default example [#49](https://github.com/jupyterlite/xeus-python-kernel/pull/49) ([@jtpio](https://github.com/jtpio))
+
+### Other merged PRs
+
+- Update empack to 0.8.2 [#59](https://github.com/jupyterlite/xeus-python-kernel/pull/59) ([@martinRenou](https://github.com/martinRenou))
+- Remove print statement [#58](https://github.com/jupyterlite/xeus-python-kernel/pull/58) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-28&to=2022-08-04&type=c))
+
+[@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2022-06-28..2022-08-04&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-28..2022-08-04&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.1
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.0...974e729e0a90981e7a7c11a2428c13730a4a8d90))
@@ -25,8 +50,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-06-27&to=2022-06-28&type=c))
 
 [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2022-06-27..2022-06-28&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-06-27..2022-06-28&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.0
 
