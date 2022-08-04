@@ -57,7 +57,7 @@ setup_args = dict(
         "traitlets",
         "jupyterlite",
         "requests",
-        "empack>=0.8.2",
+        "empack>=0.8.2,<0.9",
     ],
     zip_safe=False,
     include_package_data=True,
