@@ -1,14 +1,19 @@
 """a JupyterLite addon for creating the env for xeus-python"""
+import json
 import os
+from pathlib import Path
+import requests
+import shutil
 from subprocess import check_call, run, DEVNULL
 from tempfile import TemporaryDirectory
-import json
-import shutil
-from pathlib import Path
+from urllib.parse import urlparse
+
+import yaml
 
 from traitlets import List, Unicode
 
 from empack.file_packager import pack_environment
+from empack.file_patterns import PkgFileFilter, pkg_file_filter_from_yaml
 
 from jupyterlite.constants import (
     SHARE_LABEXTENSIONS,
@@ -74,6 +79,12 @@ class XeusPythonEnv(FederatedExtensionAddon):
         config=True, description="The xeus-python version to use"
     )
 
+    empack_config = Unicode(
+        "https://raw.githubusercontent.com/emscripten-forge/recipes/main/empack_config.yaml",
+        config=True,
+        description="The path or URL to the empack config file",
+    )
+
     packages = PackagesList([]).tag(
         config=True,
         description="A comma-separated list of packages to install in the xeus-python env",
@@ -123,11 +134,22 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # Create emscripten env with the given packages
         self.create_env()
 
+        # Download env filter config
+        empack_config_is_url = urlparse(self.empack_config).scheme in ("http", "https")
+        if empack_config_is_url:
+            empack_config_content = requests.get(self.empack_config).content
+            pkg_file_filter = PkgFileFilter.parse_obj(
+                yaml.safe_load(empack_config_content)
+            )
+        else:
+            pkg_file_filter = pkg_file_filter_from_yaml(self.empack_config)
+
         # Pack the environment
         pack_environment(
             env_prefix=self.prefix_path,
             outname=Path(self.cwd.name) / "python_data",
             export_name="globalThis.Module",
+            pkg_file_filter=pkg_file_filter,
             download_emsdk="latest",
         )
 

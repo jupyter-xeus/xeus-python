@@ -32,6 +32,7 @@ Then those packages are usable directly:
 .. replite::
    :kernel: xeus-python
    :height: 600px
+   :prompt: Try it!
 
    %matplotlib inline
 
