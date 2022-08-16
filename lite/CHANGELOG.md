@@ -6,9 +6,12 @@
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.3...66ea4178110c6ce99dc75edaebe61164122ad85d))
 
-### Merged PRs
+### Maintenance
 
 - Use file-loader for the png files [#65](https://github.com/jupyterlite/xeus-python-kernel/pull/65) ([@martinRenou](https://github.com/martinRenou))
+
+### Documentation
+
 - Docs: Disable other kernels [#64](https://github.com/jupyterlite/xeus-python-kernel/pull/64) ([@martinRenou](https://github.com/martinRenou))
 
 ### Contributors to this release
