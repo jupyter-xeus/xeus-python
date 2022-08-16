@@ -12,9 +12,8 @@ import { IKernel, IKernelSpecs } from '@jupyterlite/kernel';
 
 import { XeusServerKernel } from './xeus_server_kernel';
 
-import logo32 from '../style/logos/python-logo-32x32.png';
-
-import logo64 from '../style/logos/python-logo-64x64.png';
+import logo32 from '!!file-loader?context=.!../style/logos/python-logo-32x32.png';
+import logo64 from '!!file-loader?context=.!../style/logos/python-logo-64x64.png';
 
 const server_kernel: JupyterLiteServerPlugin<void> = {
   id: '@jupyterlite/xeus-python-kernel-extension:kernel',
