@@ -2,6 +2,26 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.5.4
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.3...66ea4178110c6ce99dc75edaebe61164122ad85d))
+
+### Maintenance
+
+- Use file-loader for the png files [#65](https://github.com/jupyterlite/xeus-python-kernel/pull/65) ([@martinRenou](https://github.com/martinRenou))
+
+### Documentation
+
+- Docs: Disable other kernels [#64](https://github.com/jupyterlite/xeus-python-kernel/pull/64) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-08-05&to=2022-08-16&type=c))
+
+[@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-08-05..2022-08-16&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.3
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.2...7d1a9e87d2ec0243ef871e07238fcd3602ad7878))
@@ -15,8 +35,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-08-04&to=2022-08-05&type=c))
 
 [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-08-04..2022-08-05&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.2
 
