@@ -58,8 +58,8 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@jupyterlite/contents": "^0.1.0-beta.9",
-    "@jupyterlite/server": "^0.1.0-beta.9",
+    "@jupyterlite/contents": "^0.1.0-beta.12",
+    "@jupyterlite/server": "^0.1.0-beta.12",
     "comlink": "^4.3.1"
   },
   "devDependencies": {
