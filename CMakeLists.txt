@@ -96,7 +96,7 @@ set(xtl_REQUIRED_VERSION 0.7.0)
 set(xeus_REQUIRED_VERSION 2.0.0)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
-set(pyjs_REQUIRED_VERSION 0.7.0)
+set(pyjs_REQUIRED_VERSION 0.12.0)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
@@ -114,8 +114,17 @@ endif ()
 if(XPYT_EMSCRIPTEN_WASM_BUILD)
     if (NOT TARGET pyjs)
         find_package(pyjs ${pyjs_REQUIRED_VERSION} REQUIRED)
-    endif ()
-    configure_file(${pyjs_PRE_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/pre.js COPYONLY)
+    endif()
+    find_file(PRE_JS_PATH pyjs/pyjs_pre.js
+        PATHS pyjs_INCLUDE_DIRS
+        NO_CMAKE_FIND_ROOT_PATH
+    )
+    find_file(POST_JS_PATH pyjs/pyjs_post.js
+        PATHS pyjs_INCLUDE_DIRS
+        NO_CMAKE_FIND_ROOT_PATH
+    )
+    configure_file(${PRE_JS_PATH}  ${CMAKE_CURRENT_BINARY_DIR}/pyjs_pre.js  COPYONLY)
+    configure_file(${POST_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/pyjs_post.js COPYONLY)
 endif()
 
 # Flags
@@ -409,6 +418,10 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     add_executable(xpython_wasm ${XPYTHON_WASM_SRC})
     target_link_libraries(xpython_wasm PRIVATE ${PYTHON_UTIL_LIBS} pybind11::embed)
 
+
+    target_link_libraries(xpython_wasm PRIVATE pyjs)
+
+
     xpyt_set_common_options(xpython_wasm)
     target_compile_options(xpython_wasm PRIVATE -fPIC)
 
@@ -446,8 +459,8 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
         PUBLIC "SHELL: -s INITIAL_MEMORY=128mb"
         PUBLIC "SHELL: -s FORCE_FILESYSTEM"
         PUBLIC "SHELL: -s LZ4=1"
-        PUBLIC "SHELL: --post-js post.js"
-        PUBLIC "SHELL: --pre-js pre.js"
+        PUBLIC "SHELL: --post-js pyjs_post.js"
+        PUBLIC "SHELL: --pre-js pyjs_pre.js"
     )
 endif()
 
