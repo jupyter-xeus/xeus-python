@@ -291,7 +291,7 @@ namespace xpyt
             "\n");
 #endif
         result["banner"] = banner;
-        result["debugger"] = true;
+        result["debugger"] = false;
 
         result["language_info"]["name"] = "python";
         result["language_info"]["version"] = PY_VERSION;
