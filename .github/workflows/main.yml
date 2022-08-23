@@ -170,7 +170,7 @@ jobs:
             -c https://repo.mamba.pm/emscripten-forge \
             -c https://repo.mamba.pm/conda-forge \
             --yes \
-            python ipython pybind11 jedi xtl nlohmann_json pybind11_json numpy xeus "xeus-python-shell>=0.5" "pyjs>=0.7.0,<0.11" "wasm_requests>=0.1.5"
+            python ipython pybind11 jedi xtl nlohmann_json pybind11_json numpy xeus "xeus-python-shell>=0.5" "pyjs>=0.7.0,<0.8" "wasm_requests>=0.1.5"
 
           mkdir build
           pushd build
