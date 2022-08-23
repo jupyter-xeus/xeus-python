@@ -330,7 +330,7 @@ namespace xpyt
 
     void interpreter::instanciate_ipython_shell()
     {
-        m_ipython_shell_app = py::module::import("xeus_python_shell").attr("XPythonShellApp")();
+        m_ipython_shell_app = py::module::import("xeus_python_shell.shell").attr("XPythonShellApp")();
     }
 
 }
