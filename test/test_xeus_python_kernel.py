@@ -52,5 +52,3 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
 if __name__ == '__main__':
     unittest.main()
-
-

@@ -5,6 +5,7 @@ dependencies:
   # Build dependencies
   - cmake
   - cxx-compiler
+  - ninja
   # Host dependencies
   - xeus=2.4.1
   - nlohmann_json

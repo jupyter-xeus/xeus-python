@@ -90,15 +90,20 @@ jobs:
           environment-file: environment-dev.yml
           environment-name: xeus-python
 
+      - name: micromamba shell hook
+        shell: powershell
+        run: |
+          micromamba shell hook -s cmd.exe -p C:\Users\runneradmin\micromamba-root
+
       - name: Make build directory
         run: mkdir build
 
       - name: cmake configure
-        shell: cmd /C call {0}
+        shell: cmd
         run: |
-          micromamba activate xeus-python
+          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-python
           cmake .. ^
-            -G "NMake Makefiles" ^
+            -GNinja ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DXPYT_DOWNLOAD_GTEST=ON ^
             -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library" ^
@@ -110,11 +115,11 @@ jobs:
         working-directory: build
 
       - name: build
-        shell: cmd /C call {0}
+        shell: cmd
         run: |
-          micromamba activate xeus-python
+          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-python
           set CL=/MP
-          nmake install
+          ninja install
         working-directory: build
 
       # - name: Test xeus-python C++
@@ -126,9 +131,9 @@ jobs:
       #   working-directory: build/test
 
       - name: Test xeus-python Python
-        shell: cmd /C call {0}
+        shell: cmd
         run: |
-          micromamba activate xeus-python
+          call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-python
           pytest . -vvv
 
   test-wasm:
