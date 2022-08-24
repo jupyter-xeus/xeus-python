@@ -103,7 +103,7 @@ jobs:
         run: |
           call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-python
           cmake .. ^
-            -G "NMake Makefiles" ^
+            -GNinja ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DXPYT_DOWNLOAD_GTEST=ON ^
             -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library" ^
@@ -119,7 +119,7 @@ jobs:
         run: |
           call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-python
           set CL=/MP
-          nmake install
+          ninja install
         working-directory: build
 
       # - name: Test xeus-python C++
