@@ -6,7 +6,7 @@
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.5...fd6ab092a2820d3bd619792623d22599263ca580))
 
-### Merged PRs
+### Bug fix
 
 - Fix caching issue [#73](https://github.com/jupyterlite/xeus-python-kernel/pull/73) ([@martinRenou](https://github.com/martinRenou))
 
