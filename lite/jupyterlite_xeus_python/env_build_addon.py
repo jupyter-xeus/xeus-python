@@ -114,7 +114,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
         self.env_name = "xeus-python-kernel"
 
         # Cleanup tmp dir in case it's not empty
-        shutil.rmtree(self.root_prefix, ignore_errors=True)
+        shutil.rmtree(Path(self.root_prefix) / "envs", ignore_errors=True)
         Path(self.root_prefix).mkdir(parents=True, exist_ok=True)
 
         self.orig_config = os.environ.get("CONDARC")
@@ -306,7 +306,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
 
     def __del__(self):
         # Cleanup
-        shutil.rmtree(self.root_prefix, ignore_errors=True)
+        shutil.rmtree(Path(self.root_prefix) / "envs", ignore_errors=True)
 
         if self.orig_config is not None:
             os.environ["CONDARC"] = self.orig_config
