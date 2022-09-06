@@ -17,7 +17,7 @@ How does it compare with JupyterLite's ``Pyolite``?
 - starts faster!
 - it's lighter by default!
 - pre-installed packages! No more piplite (see :ref:`configuration` page)
-- no more piplite, but we will be working on a mambalite, stay stuned :D
+- no more piplite, but we will be working on a mambalite, stay tuned :D
 
 .. replite::
    :kernel: xeus-python
