@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11]
-        static: [true, false]
+        build_type: [static_build, shared_build]
 
     steps:
       - uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
         run: mkdir build
 
       - name: Static build option
-        if: matrix.static
+        if: matrix.build_type == 'static_build'
         run: CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF"
 
       - name: cmake configure
