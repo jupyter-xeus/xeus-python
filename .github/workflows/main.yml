@@ -42,7 +42,15 @@ jobs:
 
       - name: Static build option
         if: matrix.build_type == 'static_build'
-        run: CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF"
+        run: |
+          CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF"
+          echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
+
+      - name: Shared build option
+        if: matrix.build_type == 'shared_build'
+        run: |
+          CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_STATIC=OFF"
+          echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
 
       - name: cmake configure
         run: |
@@ -54,7 +62,7 @@ jobs:
             -D XPYT_DOWNLOAD_GTEST=ON \
             -D CMAKE_C_COMPILER=$CC \
             -D CMAKE_CXX_COMPILER=$CXX \
-            ${CMAKE_EXTRA_ARGS}
+            ${{ env.CMAKE_EXTRA_ARGS }}
         working-directory: build
 
       - name: Install
