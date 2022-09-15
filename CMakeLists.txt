@@ -283,6 +283,7 @@ macro(xpyt_target_link_libraries target_name)
             target_link_libraries(${target_name} PRIVATE ${CMAKE_DL_LIBS} util)
         endif()
     else ()
+        target_compile_definitions(${target_name} PUBLIC "XEUS_PYTHON_STATIC_LIB")
         target_link_libraries(${target_name} PRIVATE xeus-python-static)
     endif()
 
@@ -309,7 +310,11 @@ macro(xpyt_create_target target_name src headers linkage output_name)
                           SOVERSION ${XPYT_VERSION_MAJOR}
                           OUTPUT_NAME "lib${output_name}")
 
-    target_compile_definitions(${target_name} PUBLIC "XEUS_PYTHON_EXPORTS")
+    if (${linkage_upper} STREQUAL "STATIC")
+        target_compile_definitions(${target_name} PUBLIC "XEUS_PYTHON_STATIC_LIB")
+    else ()
+        target_compile_definitions(${target_name} PUBLIC "XEUS_PYTHON_EXPORTS")
+    endif ()
 
     target_include_directories(${target_name}
                                PUBLIC
