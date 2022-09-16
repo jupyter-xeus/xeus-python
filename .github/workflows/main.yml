@@ -88,6 +88,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2019, windows-2022]
+        build_type: [static_build, shared_build]
 
     steps:
       - uses: actions/checkout@v2
@@ -106,6 +107,18 @@ jobs:
       - name: Make build directory
         run: mkdir build
 
+      - name: Static build option
+        if: matrix.build_type == 'static_build'
+        run: |
+          CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF"
+          echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
+
+      - name: Shared build option
+        if: matrix.build_type == 'shared_build'
+        run: |
+          CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_STATIC=OFF"
+          echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
+
       - name: cmake configure
         shell: cmd
         run: |
@@ -119,7 +132,8 @@ jobs:
             -DXPYT_BUILD_XPYTHON_EXTENSION=ON ^
             -DXEUS_PYTHONHOME_RELPATH=..\\ ^
             -Dgtest_force_shared_crt=ON ^
-            -DCMAKE_CXX_FLAGS=/D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
+            -DCMAKE_CXX_FLAGS=/D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING ^
+            ${{ env.CMAKE_EXTRA_ARGS }}
         working-directory: build
 
       - name: build

@@ -27,10 +27,14 @@
                                   XPYT_CONCATENATE(.,XPYT_VERSION_PATCH)))))
 
 #ifdef _WIN32
-    #ifdef XEUS_PYTHON_EXPORTS
-        #define XEUS_PYTHON_API __declspec(dllexport)
+    #ifdef XEUS_PYTHON_STATIC_LIB
+        #define XEUS_PYTHON_API
     #else
-        #define XEUS_PYTHON_API __declspec(dllimport)
+        #ifdef XEUS_PYTHON_EXPORTS
+            #define XEUS_PYTHON_API __declspec(dllexport)
+        #else
+            #define XEUS_PYTHON_API __declspec(dllimport)
+        #endif
     #endif
 #else
     #define XEUS_PYTHON_API
