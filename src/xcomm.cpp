@@ -144,6 +144,16 @@ namespace xpyt
             .def(py::init<>())
             .def("register_target", &xcomm_manager::register_target);
 
+        comm_module.def("create_comm", [&comm_module](py::args objs, py::kwargs kw) {
+            return comm_module.attr("Comm")(*objs, **kw);
+        });
+
+        comm_module.def("get_comm_manager", [&comm_module]() {
+            static py::object comm_manager = comm_module.attr("CommManager")();
+
+            return comm_manager;
+        });
+
         return comm_module;
     }
 
