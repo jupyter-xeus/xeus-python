@@ -310,7 +310,7 @@ macro(xpyt_create_target target_name src headers linkage output_name)
                                $<INSTALL_INTERFACE:include>)
 
     if (XPYT_EMSCRIPTEN_WASM_BUILD)
-        set(XPY_XEUS_TARGET xeus-lite)
+        set(XPY_XEUS_TARGET xeus)
     elseif (XPYT_USE_SHARED_XEUS)
         set(XPYT_XEUS_TARGET xeus-zmq)
     else ()
@@ -407,7 +407,7 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     target_compile_options(xpython_wasm PRIVATE -fPIC)
 
     xpyt_set_kernel_options(xpython_wasm)
-    target_link_libraries(xpython_wasm PRIVATE xeus-python-wasm)
+    target_link_libraries(xpython_wasm PRIVATE xeus-python-wasm xeus-lite)
 
     target_compile_options(xpython_wasm
         PUBLIC --std=c++17

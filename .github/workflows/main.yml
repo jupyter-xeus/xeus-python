@@ -197,11 +197,12 @@ jobs:
             -c https://repo.mamba.pm/emscripten-forge \
             -c https://repo.mamba.pm/conda-forge \
             --yes \
-            python ipython pybind11 jedi xtl nlohmann_json pybind11_json numpy xeus "xeus-python-shell>=0.5" "pyjs>=0.7.0,<0.8" "wasm_requests>=0.1.5"
+            python ipython pybind11 jedi xtl nlohmann_json pybind11_json numpy xeus-lite xeus "xeus-python-shell>=0.5" "pyjs>=0.7.0,<0.8" "wasm_requests>=0.1.5"
 
           mkdir build
           pushd build
 
+          export EMPACK_PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-build-wasm
           export CMAKE_PREFIX_PATH=$PREFIX
           export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
@@ -214,7 +215,7 @@ jobs:
 
           make -j5
 
-          empack pack python core $MAMBA_ROOT_PREFIX/envs/xeus-python-build-wasm --version=3.10
+          empack pack env --env-prefix $PREFIX --outname python_data --config $EMPACK_PREFIX/share/empack/empack_config.yaml
 
           popd
 
