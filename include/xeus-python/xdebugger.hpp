@@ -24,7 +24,7 @@
 #include "nlohmann/json.hpp"
 #include "xeus/xeus_context.hpp"
 #include "pybind11/pybind11.h"
-#include "xeus/xdebugger_base.hpp"
+#include "xeus-zmq/xdebugger_base.hpp"
 #include "xeus_python_config.hpp"
 
 namespace py = pybind11;

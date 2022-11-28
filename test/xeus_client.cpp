@@ -18,8 +18,8 @@
 #include "xeus_client.hpp"
 #include "xeus/xguid.hpp"
 #include "xeus/xmessage.hpp"
-#include "xeus/xmiddleware.hpp"
-#include "xeus/xzmq_serializer.hpp"
+#include "xeus-zmq/xmiddleware.hpp"
+#include "xeus-zmq/xzmq_serializer.hpp"
 
 using namespace std::chrono_literals;
 

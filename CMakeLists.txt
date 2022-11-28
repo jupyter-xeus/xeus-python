@@ -55,8 +55,6 @@ configure_file (
 
 # Compilation options
 
-OPTION(XPYT_DISABLE_ARCH_NATIVE "disable -march=native flag" OFF)
-OPTION(XPYT_DISABLE_TUNE_GENERIC "disable -mtune=generic flag" OFF)
 OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
 
 option(XPYT_BUILD_STATIC "Build xeus-python static library" ON)
@@ -78,7 +76,6 @@ if(XPYT_EMSCRIPTEN_WASM_BUILD)
 
     add_compile_definitions(XPYT_EMSCRIPTEN_WASM_BUILD)
 
-    set(XPYT_DISABLE_ARCH_NATIVE ON)
     set(XPYT_BUILD_STATIC OFF)
     set(XPYT_BUILD_SHARED OFF)
     set(XPYT_BUILD_XPYTHON_EXECUTABLE OFF)
@@ -93,16 +90,14 @@ endif()
 # ============
 
 set(xtl_REQUIRED_VERSION 0.7.0)
-set(xeus_REQUIRED_VERSION 2.0.0)
+set(xeus-zmq_REQUIRED_VERSION 1.0.1)
+set(xeus-lite_REQUIRED_VERSION 1.0.1)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
 set(pyjs_REQUIRED_VERSION 0.7.0)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
-endif ()
-if (NOT TARGET xeus AND NOT TARGET xeus-static)
-    find_package(xeus ${xeus_REQUIRED_VERSION} REQUIRED)
 endif ()
 if (NOT TARGET pybind11::headers)
     find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
@@ -112,10 +107,17 @@ if (NOT TARGET pybind11_json)
 endif ()
 
 if(XPYT_EMSCRIPTEN_WASM_BUILD)
+    if (NOT TARGET xeus-lite)
+        find_package(xeus-lite ${xeus-lite_REQUIRED_VERSION} REQUIRED)
+    endif ()
     if (NOT TARGET pyjs)
         find_package(pyjs ${pyjs_REQUIRED_VERSION} REQUIRED)
     endif ()
     configure_file(${pyjs_PRE_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/pre.js COPYONLY)
+else ()
+    if (NOT TARGET xeus-zmq AND NOT TARGET xeus-zmq-static)
+        find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
+    endif ()
 endif()
 
 # Flags
@@ -130,13 +132,6 @@ endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder")
-    if (XPYT_DISABLE_ARCH_NATIVE AND NOT XPYT_DISABLE_TUNE_GENERIC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=generic")
-    elseif (XPYT_DISABLE_TUNE_GENERIC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    else ()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-    endif ()
 
     CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
 
@@ -248,14 +243,6 @@ macro(xpyt_set_common_options target_name)
 
         target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
 
-        # Mtune generic/native
-        if (XPYT_DISABLE_ARCH_NATIVE AND NOT XPYT_DISABLE_TUNE_GENERIC)
-            target_compile_options(${target_name} PUBLIC -mtune=generic)
-        elseif (XPYT_DISABLE_TUNE_GENERIC)
-        else ()
-            target_compile_options(${target_name} PUBLIC -march=native)
-        endif ()
-
         # C++14 flag
         CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
         if (HAS_CPP14_FLAG)
@@ -322,10 +309,12 @@ macro(xpyt_create_target target_name src headers linkage output_name)
                                $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>)
 
-    if (XPYT_USE_SHARED_XEUS)
-        set(XPYT_XEUS_TARGET xeus)
+    if (XPYT_EMSCRIPTEN_WASM_BUILD)
+        set(XPY_XEUS_TARGET xeus)
+    elseif (XPYT_USE_SHARED_XEUS)
+        set(XPYT_XEUS_TARGET xeus-zmq)
     else ()
-        set(XPYT_XEUS_TARGET xeus-static)
+        set(XPYT_XEUS_TARGET xeus-zmq-static)
     endif ()
 
     target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} xtl PRIVATE pybind11::pybind11 pybind11_json)
@@ -418,7 +407,7 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     target_compile_options(xpython_wasm PRIVATE -fPIC)
 
     xpyt_set_kernel_options(xpython_wasm)
-    target_link_libraries(xpython_wasm PRIVATE xeus-python-wasm)
+    target_link_libraries(xpython_wasm PRIVATE xeus-python-wasm xeus-lite)
 
     target_compile_options(xpython_wasm
         PUBLIC --std=c++17
