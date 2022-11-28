@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11]
+        os: [ubuntu-18.04, ubuntu-20.04, macos-11, macos-12]
         build_type: [static_build, shared_build]
 
     steps:
