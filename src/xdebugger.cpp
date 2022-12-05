@@ -122,21 +122,25 @@ namespace xpyt
         {
             // The code has stopped on a breakpoint, we use the setExpression request
             // to get the rich representation of the variable
-            std::string lvalue = var_repr_data + ',' + var_repr_metadata;
             std::string code = "get_ipython().display_formatter.format(" + var_name + ")";
             int frame_id = message["arguments"]["frameId"].get<int>();
             int seq = message["seq"].get<int>();
             nl::json request = {
                 {"type", "request"},
-                {"command", "setExpression"},
+                {"command", "evaluate"},
                 {"seq", seq+1},
                 {"arguments", {
-                    {"expression", lvalue},
-                    {"value", code},
-                    {"frameId", frame_id}
+                    {"expression", code},
+                    {"frameId", frame_id},
+                    {"context", "clipboard"}
                 }}
             };
-            forward_message(request);
+            nl::json request_reply = forward_message(request);
+            std::string result = request_reply["body"]["result"];
+
+            py::gil_scoped_acquire acquire;
+            std::string exec_code = var_repr_data + ',' + var_repr_metadata + "= eval(str(" + result + "))";
+            exec(py::str(exec_code));
         }
 
         py::gil_scoped_acquire acquire;
