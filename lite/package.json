@@ -41,7 +41,8 @@
     "build:prod": "jlpm run clean && jlpm run build:wasm && jlpm run build:lib && jlpm run build:worker:prod && jlpm run copy-files && jlpm run build:labextension",
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
-    "build:lib": "tsc",
+    "build:lib": " jlpm run sed-worker && tsc",
+    "sed-worker": "shx sed -i \"s/XEUS_KERNEL_FILE/'.\\/xlua_wasm.js'/\" src/worker.ts && shx sed -i \"s/LANGUAGE_DATA_FILE/''/\" src/worker.ts ",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
     "clean:labextension": "rimraf jupyterlite_xeus_python/labextension",
@@ -76,7 +77,8 @@
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~4.2.3"
+    "typescript": "~4.2.3",
+    "shx": "^0.3.0"
   },
   "sideEffects": [
     "style/*.css",
