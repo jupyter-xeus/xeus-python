@@ -17,12 +17,12 @@ RUN micromamba create -n xeus-python-kernel \
     -c https://repo.mamba.pm/emscripten-forge \
     -c https://repo.mamba.pm/conda-forge \
     --yes \
-    python=$PYTHON_VERSION xeus-python
+    python=$PYTHON_VERSION xeus-python xeus-lite
 
 RUN mkdir -p xeus-python-kernel && cd xeus-python-kernel && \
     cp /tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.js . && \
     cp /tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.wasm . && \
-    empack pack python core /tmp/xeus-python-kernel/envs/xeus-python-kernel --version=$PYTHON_VERSION
+    empack pack env --env-prefix /tmp/xeus-python-kernel/envs/xeus-python-kernel --outname python_data --config /opt/conda/share/empack/empack_config.yaml
 
 COPY copy_output.sh .
 

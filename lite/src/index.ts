@@ -10,7 +10,7 @@ import {
 
 import { IKernel, IKernelSpecs } from '@jupyterlite/kernel';
 
-import { XeusServerKernel } from './xeus_server_kernel';
+import { WebWorkerKernel } from './web_worker_kernel';
 
 import logo32 from '!!file-loader?context=.!../style/logos/python-logo-32x32.png';
 import logo64 from '!!file-loader?context=.!../style/logos/python-logo-64x64.png';
@@ -36,7 +36,7 @@ const server_kernel: JupyterLiteServerPlugin<void> = {
         }
       },
       create: async (options: IKernel.IOptions): Promise<IKernel> => {
-        return new XeusServerKernel({
+        return new WebWorkerKernel({
           ...options,
           mountDrive: serviceWorkerRegistrationWrapper.enabled
         });
