@@ -336,6 +336,21 @@ nl::json make_rich_inspect_variables_request(int seq, const std::string& var_nam
     return req;
 }
 
+nl::json make_copy_to_globals_request(int seq, const std::string& src_var_name, const std::string& dst_var_name, int src_frame_id)
+{
+    nl::json req = {
+        {"type", "request"},
+        {"seq", seq},
+        {"command", "copyToGlobals"},
+        {"arguments", {
+            {"srcVariableName", src_var_name},
+            {"dstVariableName", dst_var_name},
+            {"srcFrameId", src_frame_id}
+        }}
+    };
+    return req;
+}
+
 nl::json make_exception_breakpoint_request(int seq)
 {
     nl::json except_option = {
@@ -384,6 +399,7 @@ public:
     bool test_inspect_variables();
     bool test_rich_inspect_variables();
     bool test_variables();
+    bool test_copy_to_globals();
     void shutdown();
 
 private:
@@ -867,6 +883,88 @@ bool debugger_client::test_variables()
     return res;
 }
 
+bool debugger_client::test_copy_to_globals()
+{
+    std::string local_var_name = "var";
+    std::string global_var_name = "var_copy";
+    std::string code = "from IPython.core.display import HTML\ndef my_test():\n\t" + local_var_name + " = HTML(\"<p>test content</p>\")\n\tpass\nmy_test()";
+    int seq = 12;
+
+    // Init debugger and set breakpoint
+    attach();
+    m_client.send_on_control("debug_request", make_dump_cell_request(seq, code));
+    ++seq;
+    nl::json dump_res = m_client.receive_on_control();
+    std::string path = dump_res["content"]["body"]["sourcePath"].get<std::string>();
+    m_client.send_on_control("debug_request", make_breakpoint_request(seq, path, 4));
+    ++seq;
+    m_client.receive_on_control();
+
+    // Execute code
+    m_client.send_on_shell("execute_request", make_execute_request(code));
+
+    // Get breakpoint event
+    nl::json ev = m_client.wait_for_debug_event("stopped");
+    m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+    ++seq;
+    nl::json json1 = m_client.receive_on_control();
+    if(json1["content"]["body"]["stackFrames"].empty())
+    {
+        m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+        ++seq;
+        json1 = m_client.receive_on_control();
+    }
+
+    // Get local frame id
+    int frame_id = json1["content"]["body"]["stackFrames"][0]["id"].get<int>();
+
+    // Copy the variable
+    m_client.send_on_control("debug_request", make_copy_to_globals_request(seq, local_var_name, global_var_name, frame_id));
+    ++seq;
+
+    // Get the scopes
+    nl::json reply = m_client.receive_on_control();
+    m_client.send_on_control("debug_request", make_scopes_request(seq, frame_id));
+    ++seq;
+    nl::json json2 = m_client.receive_on_control();
+
+    // Get the local variable
+    int variable_ref_local = json2["content"]["body"]["scopes"][0]["variablesReference"].get<int>();
+    m_client.send_on_control("debug_request", make_variables_request(seq, variable_ref_local));
+    ++seq;
+    nl::json json3 = m_client.receive_on_control();
+    nl::json local_var = {};
+    for (auto &var: json3["content"]["body"]["variables"]){
+        if (var["evaluateName"] == local_var_name) {
+            local_var = var;
+        }
+    }
+    if (!local_var.contains("evaluateName")) {
+        std::cout << "Local variable \"" + local_var_name + "\" not found";
+        return false;
+    }
+
+    // Get the global variable (copy of the local variable)
+    nl::json global_scope = json2["content"]["body"]["scopes"].back();
+    int variable_ref_global = global_scope["variablesReference"].get<int>();
+    m_client.send_on_control("debug_request", make_variables_request(seq, variable_ref_global));
+    ++seq;
+    nl::json json4 = m_client.receive_on_control();
+    nl::json global_var = {};
+    for (auto &var: json4["content"]["body"]["variables"]){
+        if (var["evaluateName"] == global_var_name) {
+            global_var = var;
+        }
+    }
+    if (!global_var.contains("evaluateName")) {
+        std::cout << "Global variable \"" + global_var_name + "\" not found";
+        return false;
+    }
+
+    // Compare local and global variable
+    return global_var["value"] == local_var["value"] && global_var["type"] == local_var["type"];
+}
+
 void debugger_client::shutdown()
 {
     m_client.send_on_control("shutdown_request", make_shutdown_request());
@@ -1283,5 +1381,20 @@ TEST_SUITE("debugger")
             CHECK(res);
             t.notify_done();
         }
+    }
+}
+
+TEST(debugger, copy_to_globals)
+{
+    start_kernel();
+    start_timer();
+    zmq::context_t context;
+    {
+        debugger_client deb(context, KERNEL_JSON, "debugger_copy_to_globals.log");
+        bool res = deb.test_copy_to_globals();
+        deb.shutdown();
+        std::this_thread::sleep_for(2s);
+        EXPECT_TRUE(res);
+        notify_done();
     }
 }
