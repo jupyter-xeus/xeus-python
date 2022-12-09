@@ -411,36 +411,11 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     xpyt_set_kernel_options(xpython_wasm)
     target_link_libraries(xpython_wasm PRIVATE xeus-python-wasm xeus-lite)
 
-    target_compile_options(xpython_wasm
-        PUBLIC --std=c++17
-        PUBLIC -Wno-deprecated
-        PUBLIC "SHELL: --bind"
-        PUBLIC "SHELL: -s ENVIRONMENT=web"
-        PUBLIC "SHELL: -fwasm-exceptions"
-        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
-        PUBLIC "SHELL: -s LZ4=1"
-    )
-
+    include(WasmBuildOptions)
+    xeus_wasm_compile_options(xpython_wasm)
+    xeus_wasm_link_options(xpython_wasm "web")
+    xeus_wasm_fs_options(xpython_wasm)
     target_link_options(xpython_wasm
-        PUBLIC --bind
-        PUBLIC -Wno-unused-command-line-argument
-        PUBLIC "SHELL: --bind"
-        PUBLIC "SHELL: -s MODULARIZE=1"
-        PUBLIC "SHELL: -s EXPORT_NAME=\"createXeusModule\""
-        PUBLIC "SHELL: -s EXPORT_ES6=0"
-        PUBLIC "SHELL: -s USE_ES6_IMPORT_META=0"
-        PUBLIC "SHELL: -s DEMANGLE_SUPPORT=0"
-        PUBLIC "SHELL: -s ASSERTIONS=0"
-        PUBLIC "SHELL: -s ALLOW_MEMORY_GROWTH=1"
-        PUBLIC "SHELL: -s EXIT_RUNTIME=1"
-        PUBLIC "SHELL: -s WASM=1"
-        PUBLIC "SHELL: -s USE_PTHREADS=0"
-        PUBLIC "SHELL: -fwasm-exceptions"
-        PUBLIC "SHELL: -s MAIN_MODULE=1"
-        PUBLIC "SHELL: -s ENVIRONMENT=worker"
-        PUBLIC "SHELL: -s TOTAL_STACK=32mb"
-        PUBLIC "SHELL: -s INITIAL_MEMORY=128mb"
-        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
         PUBLIC "SHELL: -s LZ4=1"
         PUBLIC "SHELL: --post-js post.js"
         PUBLIC "SHELL: --pre-js pre.js"
