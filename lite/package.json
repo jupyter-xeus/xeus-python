@@ -42,7 +42,7 @@
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
     "build:lib": " jlpm run sed-worker && tsc",
-    "sed-worker": "shx sed -i \"s/XEUS_KERNEL_FILE/'.\\/xlua_wasm.js'/\" src/worker.ts && shx sed -i \"s/LANGUAGE_DATA_FILE/''/\" src/worker.ts ",
+    "sed-worker": "shx sed -i \"s/XEUS_KERNEL_FILE/'.\\/xpython_wasm.js'/\" src/worker.ts && shx sed -i \"s/LANGUAGE_DATA_FILE/'.\\/python_data.js'/\" src/worker.ts ",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
     "clean:labextension": "rimraf jupyterlite_xeus_python/labextension",
