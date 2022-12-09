@@ -114,6 +114,7 @@ if(XPYT_EMSCRIPTEN_WASM_BUILD)
         find_package(pyjs ${pyjs_REQUIRED_VERSION} REQUIRED)
     endif ()
     configure_file(${pyjs_PRE_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/pre.js COPYONLY)
+    configure_file(${pyjs_POST_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
 else ()
     if (NOT TARGET xeus-zmq AND NOT TARGET xeus-zmq-static)
         find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
@@ -353,9 +354,7 @@ if (XPYT_BUILD_STATIC)
     else ()
         xpyt_create_target(xeus-python-static "${XEUS_PYTHON_SRC}" "${XEUS_PYTHON_HEADERS}" STATIC xeus-python)
     endif ()
-    if(XPYT_EMSCRIPTEN_WASM_BUILD)
-        target_link_libraries(xeus-python-static PRIVATE pyjs)
-    endif()
+
     list(APPEND XEUS_PYTHON_TARGETS xeus-python-static)
 endif ()
 
@@ -363,6 +362,9 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     xpyt_create_target(xeus-python-wasm "${XEUS_PYTHON_WASM_SRC}" "${XEUS_PYTHON_WASM_HEADERS}" STATIC xeus-python-wasm)
     target_compile_options(xeus-python-wasm PRIVATE -fPIC)
     list(APPEND XEUS_PYTHON_TARGETS xeus-python-wasm)
+
+    target_link_libraries(xeus-python-wasm PRIVATE ${pyjs_LIBRARY})
+
 endif ()
 
 # xpython
