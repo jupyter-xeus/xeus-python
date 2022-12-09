@@ -117,6 +117,10 @@ python_data.js
 python_data.data
 xpython_wasm.js
 xpython_wasm.wasm
+xpython_wasm.hash
+
+src/worker.ts
+src/web_worker_kernel.ts
 
 # Labextension
 share
