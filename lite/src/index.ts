@@ -3,11 +3,11 @@
 // Distributed under the terms of the Modified BSD License.
 
 import {
-  IServiceWorkerRegistrationWrapper,
+  IServiceWorkerManager,
   JupyterLiteServer,
   JupyterLiteServerPlugin
 } from '@jupyterlite/server';
-
+import { IBroadcastChannelWrapper } from '@jupyterlite/contents';
 import { IKernel, IKernelSpecs } from '@jupyterlite/kernel';
 
 import { WebWorkerKernel } from './web_worker_kernel';
@@ -18,11 +18,13 @@ import logo64 from '!!file-loader?context=.!../style/logos/python-logo-64x64.png
 const server_kernel: JupyterLiteServerPlugin<void> = {
   id: '@jupyterlite/xeus-python-kernel-extension:kernel',
   autoStart: true,
-  requires: [IKernelSpecs, IServiceWorkerRegistrationWrapper],
+  requires: [IKernelSpecs],
+  optional: [IServiceWorkerManager, IBroadcastChannelWrapper],
   activate: (
     app: JupyterLiteServer,
     kernelspecs: IKernelSpecs,
-    serviceWorkerRegistrationWrapper: IServiceWorkerRegistrationWrapper
+    serviceWorker?: IServiceWorkerManager,
+    broadcastChannel?: IBroadcastChannelWrapper
   ) => {
     kernelspecs.register({
       spec: {
@@ -36,9 +38,23 @@ const server_kernel: JupyterLiteServerPlugin<void> = {
         }
       },
       create: async (options: IKernel.IOptions): Promise<IKernel> => {
+        const mountDrive = !!(
+          serviceWorker?.enabled && broadcastChannel?.enabled
+        );
+
+        if (mountDrive) {
+          console.info(
+            'xeus-python contents will be synced with Jupyter Contents'
+          );
+        } else {
+          console.warn(
+            'xeus-python contents will NOT be synced with Jupyter Contents'
+          );
+        }
+
         return new WebWorkerKernel({
           ...options,
-          mountDrive: serviceWorkerRegistrationWrapper.enabled
+          mountDrive
         });
       }
     });
