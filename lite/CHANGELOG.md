@@ -2,6 +2,29 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.0
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.6...398a03532c11d843830b74e7707ef322a88589db))
+
+### Merged PRs
+
+- Pin hard jupyterlite in docs [#93](https://github.com/jupyterlite/xeus-python-kernel/pull/93) ([@martinRenou](https://github.com/martinRenou))
+- Make the service worker optional [#92](https://github.com/jupyterlite/xeus-python-kernel/pull/92) ([@martinRenou](https://github.com/martinRenou))
+- Specify linux/amd64 for docker image [#91](https://github.com/jupyterlite/xeus-python-kernel/pull/91) ([@jzavala-gonzalez](https://github.com/jzavala-gonzalez))
+- Update empack to 2.0.2 [#89](https://github.com/jupyterlite/xeus-python-kernel/pull/89) ([@martinRenou](https://github.com/martinRenou))
+- Fixed file names in sed command [#88](https://github.com/jupyterlite/xeus-python-kernel/pull/88) ([@JohanMabille](https://github.com/JohanMabille))
+- Cache xeus-python build [#87](https://github.com/jupyterlite/xeus-python-kernel/pull/87) ([@martinRenou](https://github.com/martinRenou))
+- Upgraded to xeus-python 0.15 [#86](https://github.com/jupyterlite/xeus-python-kernel/pull/86) ([@JohanMabille](https://github.com/JohanMabille))
+- Fix typo in doc/index.rst [#78](https://github.com/jupyterlite/xeus-python-kernel/pull/78) ([@lesteve](https://github.com/lesteve))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-08-30&to=2022-12-21&type=c))
+
+[@JohanMabille](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AJohanMabille+updated%3A2022-08-30..2022-12-21&type=Issues) | [@jzavala-gonzalez](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajzavala-gonzalez+updated%3A2022-08-30..2022-12-21&type=Issues) | [@lesteve](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Alesteve+updated%3A2022-08-30..2022-12-21&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-08-30..2022-12-21&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.5.6
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.5...fd6ab092a2820d3bd619792623d22599263ca580))
@@ -15,8 +38,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-08-17&to=2022-08-30&type=c))
 
 [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-08-17..2022-08-30&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.5
 
