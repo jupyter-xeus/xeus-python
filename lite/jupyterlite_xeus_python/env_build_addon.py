@@ -80,8 +80,9 @@ class XeusPythonEnv(FederatedExtensionAddon):
     )
 
     empack_config = Unicode(
-        "https://raw.githubusercontent.com/emscripten-forge/recipes/main/empack_config.yaml",
+        None,
         config=True,
+        allow_none=True,
         description="The path or URL to the empack config file",
     )
 
@@ -134,23 +135,25 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # Create emscripten env with the given packages
         self.create_env()
 
+        pack_kwargs = {}
+
         # Download env filter config
-        empack_config_is_url = urlparse(self.empack_config).scheme in ("http", "https")
-        if empack_config_is_url:
-            empack_config_content = requests.get(self.empack_config).content
-            pkg_file_filter = PkgFileFilter.parse_obj(
-                yaml.safe_load(empack_config_content)
-            )
-        else:
-            pkg_file_filter = pkg_file_filter_from_yaml(self.empack_config)
+        if self.empack_config is not None:
+            empack_config_is_url = urlparse(self.empack_config).scheme in ("http", "https")
+            if empack_config_is_url:
+                empack_config_content = requests.get(self.empack_config).content
+                pack_kwargs["pkg_file_filter"] = PkgFileFilter.parse_obj(
+                    yaml.safe_load(empack_config_content)
+                )
+            else:
+                pack_kwargs["pkg_file_filter"] = pkg_file_filter_from_yaml(self.empack_config)
 
         # Pack the environment
         pack_environment(
             env_prefix=self.prefix_path,
             outname=Path(self.cwd.name) / "python_data",
             export_name="globalThis.Module",
-            pkg_file_filter=pkg_file_filter,
-            download_emsdk="latest",
+            **pack_kwargs,
         )
 
         # Find the federated extensions in the emscripten-env and install them

@@ -5,7 +5,7 @@ ARG PYTHON_VERSION=3.10
 
 RUN micromamba install --yes -c conda-forge \
     git pip python=$PYTHON_VERSION click typer \
-    "emsdk>=3.1.11" "empack>=0.5.3"
+    "empack>=2.0.2"
 
 ##################################################################
 # Create emscripten env and pack it
@@ -22,7 +22,7 @@ RUN micromamba create -n xeus-python-kernel \
 RUN mkdir -p xeus-python-kernel && cd xeus-python-kernel && \
     cp /tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.js . && \
     cp /tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.wasm . && \
-    empack pack env --env-prefix /tmp/xeus-python-kernel/envs/xeus-python-kernel --outname python_data --config /opt/conda/share/empack/empack_config.yaml
+    empack pack env --env-prefix /tmp/xeus-python-kernel/envs/xeus-python-kernel --outname python_data
 
 COPY copy_output.sh .
 
