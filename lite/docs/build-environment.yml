@@ -8,6 +8,6 @@ dependencies:
   - pydata-sphinx-theme
   - pip
   - pip:
-      - jupyterlite==0.1.0b16
-      - jupyterlite-sphinx
-      - jupyterlite-xeus-python==0.6.0
+    - jupyterlite==0.1.0b16
+    - jupyterlite-sphinx
+    - jupyterlite-xeus-python==0.6.1
