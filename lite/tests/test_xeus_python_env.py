@@ -29,3 +29,31 @@ def test_python_env():
     # Check empack output
     assert os.path.isfile(Path(addon.cwd.name) / "python_data.js")
     assert os.path.isfile(Path(addon.cwd.name) / "python_data.data")
+
+    os.remove(Path(addon.cwd.name) / "python_data.js")
+    os.remove(Path(addon.cwd.name) / "python_data.data")
+
+
+def test_python_env_from_file_1():
+    app = LiteStatusApp(log_level="DEBUG")
+    app.initialize()
+    manager = app.lite_manager
+
+    addon = XeusPythonEnv(manager)
+    addon.environment_file = "environment-1.yml"
+
+    for step in addon.post_build(manager):
+        pass
+
+    # Check env
+    assert os.path.isdir("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1")
+
+    assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/bin/xpython_wasm.js")
+    assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/bin/xpython_wasm.wasm")
+
+    # Check empack output
+    assert os.path.isfile(Path(addon.cwd.name) / "python_data.js")
+    assert os.path.isfile(Path(addon.cwd.name) / "python_data.data")
+
+    os.remove(Path(addon.cwd.name) / "python_data.js")
+    os.remove(Path(addon.cwd.name) / "python_data.data")

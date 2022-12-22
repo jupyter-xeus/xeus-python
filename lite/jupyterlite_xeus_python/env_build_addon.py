@@ -91,16 +91,11 @@ class XeusPythonEnv(FederatedExtensionAddon):
         description="A comma-separated list of packages to install in the xeus-python env",
     )
 
-    @property
-    def specs(self):
-        """The package specs to install in the environment."""
-        return [
-            f"python={PYTHON_VERSION}",
-            "xeus-python"
-            if not self.xeus_python_version
-            else f"xeus-python={self.xeus_python_version}",
-            *self.packages,
-        ]
+    environment_file = Unicode(
+        "environment.yml",
+        config=True,
+        description="The path to the environment file. Defaults to \"environment.yml\"",
+    )
 
     @property
     def prefix_path(self):
@@ -113,6 +108,14 @@ class XeusPythonEnv(FederatedExtensionAddon):
         self.cwd = TemporaryDirectory()
         self.root_prefix = "/tmp/xeus-python-kernel"
         self.env_name = "xeus-python-kernel"
+        self.channels = CHANNELS
+        self.specs = [
+            f"python={PYTHON_VERSION}",
+            "xeus-python"
+            if not self.xeus_python_version
+            else f"xeus-python={self.xeus_python_version}",
+            *self.packages,
+        ]
 
         # Cleanup tmp dir in case it's not empty
         shutil.rmtree(Path(self.root_prefix) / "envs", ignore_errors=True)
@@ -128,8 +131,41 @@ class XeusPythonEnv(FederatedExtensionAddon):
             if pkg_data.get("name") == JUPYTERLITE_XEUS_PYTHON:
                 yield from self.safe_copy_extension(pkg_json)
 
-        # Bail early if there is no extra package to install
-        if not self.packages and not self.xeus_python_version:
+        bail_early = True
+        if self.packages or self.xeus_python_version:
+            bail_early = False
+
+        # Process environment.yml file
+        if (Path(self.manager.lite_dir) / self.environment_file).exists():
+            bail_early = False
+
+            with open(Path(self.manager.lite_dir) / self.environment_file) as f:
+                env_data = yaml.safe_load(f)
+
+            if env_data.get("name") is not None:
+                self.env_name = env_data["name"]
+
+            if env_data.get("channels") is not None:
+                channels = env_data["channels"]
+
+                for channel in channels:
+                    if channel not in self.channels:
+                        self.channels.append(channel)
+
+            if env_data.get("dependencies") is not None:
+                dependencies = env_data["dependencies"]
+
+                for dependency in dependencies:
+                    if isinstance(dependency, str) and dependency not in self.specs:
+                        self.specs.append(dependency)
+                    elif isinstance(dependency, dict) and dependency.get("pip") is not None:
+                        raise RuntimeError(
+                            """Cannot install pip dependencies in the xeus-python Emscripten environment (yet?).
+                            """
+                        )
+
+        # Bail early if there is nothing to do
+        if bail_early:
             return []
 
         # Create emscripten env with the given packages
@@ -207,13 +243,13 @@ class XeusPythonEnv(FederatedExtensionAddon):
                 env_name=self.env_name,
                 base_prefix=self.root_prefix,
                 specs=self.specs,
-                channels=CHANNELS,
+                channels=self.channels,
                 target_platform=PLATFORM,
             )
             return
 
         channels = []
-        for channel in CHANNELS:
+        for channel in self.channels:
             channels.extend(["-c", channel])
 
         if MAMBA_AVAILABLE:

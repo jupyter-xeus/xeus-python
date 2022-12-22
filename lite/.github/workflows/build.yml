@@ -144,7 +144,8 @@ jobs:
         run: pip install jupyterlite-xeus-python.tar.gz
 
       - name: Run tests
-        run: pytest -rP tests/test_xeus_python_env.py
+        run: pytest -rP test_xeus_python_env.py
+        working-directory: tests
 
   python-tests-mamba:
     needs: build
@@ -170,7 +171,8 @@ jobs:
         run: pip install jupyterlite-xeus-python.tar.gz
 
       - name: Run tests
-        run: pytest -rP tests/test_xeus_python_env.py
+        run: pytest -rP test_xeus_python_env.py
+        working-directory: tests
 
   python-tests-micromamba:
     needs: build
@@ -195,7 +197,8 @@ jobs:
         run: pip install jupyterlite-xeus-python.tar.gz
 
       - name: Run tests
-        run: pytest -rP tests/test_xeus_python_env.py
+        run: pytest -rP test_xeus_python_env.py
+        working-directory: tests
 
   python-tests-conda:
     needs: build
@@ -220,4 +223,5 @@ jobs:
         run: pip install jupyterlite-xeus-python.tar.gz
 
       - name: Run tests
-        run: pytest -rP tests/test_xeus_python_env.py
+        run: pytest -rP test_xeus_python_env.py
+        working-directory: tests

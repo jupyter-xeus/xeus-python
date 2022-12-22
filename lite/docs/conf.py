@@ -15,5 +15,4 @@ exclude_patterns = []
 
 html_theme = "pydata_sphinx_theme"
 
-jupyterlite_config = "jupyterlite_config.json"
 jupyterlite_dir = "."

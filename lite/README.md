@@ -31,24 +31,38 @@ jupyter lite build
 
 ## Pre-installed packages
 
-xeus-python allows you to pre-install packages in the Python runtime. You can pre-install packages by passing the `XeusPythonEnv.packages` CLI option to `jupyter lite build`.
-This will automatically install any labextension that it founds, for example installing ipyleaflet will make ipyleaflet work without the need to manually install the jupyter-leaflet labextension.
+xeus-python allows you to pre-install packages in the Python runtime. You can pre-install packages by adding an `environment.yml` file in the JupyterLite build directory, this file will be found automatically by xeus-python which will pre-build the environment when running `jupyter lite build`.
 
-For example, say you want to install `NumPy`, `Matplotlib` and `ipyleaflet`, it can be done with the following command:
+Furthermore, this automatically installs any labextension that it founds, for example installing ipyleaflet will make ipyleaflet work without the need to manually install the jupyter-leaflet labextension.
+
+Say you want to install `NumPy`, `Matplotlib` and `ipyleaflet`, it can be done by creating the `environment.yml` file with the following content:
+
+```yml
+name: xeus-python-kernel
+channels:
+  - https://repo.mamba.pm/emscripten-forge
+  - https://repo.mamba.pm/conda-forge
+dependencies:
+  - numpy
+  - matplotlib
+  - ipycanvas
+```
+
+Then you only need to build JupyterLite:
 
 ```bash
-jupyter lite build --XeusPythonEnv.packages=numpy,matplotlib,ipyleaflet
+jupyter lite build
 ```
 
-The same can be achieved through a `jupyterlite_config.json` file:
+You can also pick another name for that environment file (*e.g.* `custom.yml`), by doing so, you will need to specify that name to xeus-python:
 
-```json
-{
-  "XeusPythonEnv": {
-    "packages": ["numpy", "matplotlib", "ipyleaflet"]
-  }
-}
+```bash
+jupyter lite build --XeusPythonEnv.environment_file=custom.yml
 ```
+
+#### About pip dependencies
+
+It is common to provide `pip` dependencies in a conda environment file, this is currently **not supported** by xeus-python.
 
 ## Contributing
 
