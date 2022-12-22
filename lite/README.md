@@ -35,7 +35,7 @@ xeus-python allows you to pre-install packages in the Python runtime. You can pr
 
 Furthermore, this automatically installs any labextension that it founds, for example installing ipyleaflet will make ipyleaflet work without the need to manually install the jupyter-leaflet labextension.
 
-Say you want to install `NumPy`, `Matplotlib` and `ipyleaflet`, it can be done by creating the `environment.yml` file with the following content:
+Say you want to install `NumPy`, `Matplotlib` and `ipycanvas`, it can be done by creating the `environment.yml` file with the following content:
 
 ```yml
 name: xeus-python-kernel

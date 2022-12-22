@@ -10,7 +10,7 @@ Pre-installed packages
 
 Furthermore, this automatically installs any labextension that it founds, for example installing ipyleaflet will make ipyleaflet work without the need to manually install the jupyter-leaflet labextension.
 
-Say you want to install ``NumPy``, ``Matplotlib`` and ``ipyleaflet``, it can be done by creating the ``environment.yml`` file with the following content:
+Say you want to install ``NumPy``, ``Matplotlib`` and ``ipycanvas``, it can be done by creating the ``environment.yml`` file with the following content:
 
 .. code::
 
