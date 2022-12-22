@@ -2,6 +2,24 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.1
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.6.0...a566a1154db4df359575395ef7b76735c4e27d94))
+
+### Merged PRs
+
+- Fix docs [#97](https://github.com/jupyterlite/xeus-python-kernel/pull/97) ([@martinRenou](https://github.com/martinRenou))
+- Add support for environment.yml file [#96](https://github.com/jupyterlite/xeus-python-kernel/pull/96) ([@martinRenou](https://github.com/martinRenou))
+- Hard pin jupyterlite-xeus-python in docs [#95](https://github.com/jupyterlite/xeus-python-kernel/pull/95) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-12-21&to=2022-12-22&type=c))
+
+[@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-12-21..2022-12-22&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.0
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.5.6...398a03532c11d843830b74e7707ef322a88589db))
@@ -22,8 +40,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-08-30&to=2022-12-21&type=c))
 
 [@JohanMabille](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AJohanMabille+updated%3A2022-08-30..2022-12-21&type=Issues) | [@jzavala-gonzalez](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajzavala-gonzalez+updated%3A2022-08-30..2022-12-21&type=Issues) | [@lesteve](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Alesteve+updated%3A2022-08-30..2022-12-21&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-08-30..2022-12-21&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.5.6
 
