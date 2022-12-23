@@ -26,8 +26,9 @@ How does it compare with JupyterLite's ``Pyolite``?
    print("Hello from xeus-python!")
 
 .. toctree::
-    :caption: Installation
+    :caption: Usage
     :maxdepth: 2
 
     installation
+    deploy
     configuration
