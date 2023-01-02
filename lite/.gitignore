@@ -124,3 +124,6 @@ src/web_worker_kernel.ts
 
 # Labextension
 share
+
+# venv
+.venv
