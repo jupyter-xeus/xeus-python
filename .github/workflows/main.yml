@@ -176,34 +176,28 @@ jobs:
       - name: Install mamba
         uses: mamba-org/provision-with-micromamba@main
         with:
-          environment-file: environment-dev-wasm.yml
-          environment-name: xeus-python-wasm
-          micromamba-version: "0.22.0"
+          environment-file: environment-wasm-build.yml
+          environment-name: xeus-python-wasm-build
 
       - name: Setup emsdk
         run: |
-          micromamba activate xeus-python-wasm
+          micromamba activate xeus-python-wasm-build
           emsdk install ${{matrix.emsdk_ver}}
 
       - name: Build and pack xeus-python
         run: |
-          micromamba activate xeus-python-wasm
+          micromamba activate xeus-python-wasm-build
 
           emsdk activate ${{matrix.emsdk_ver}}
           source $CONDA_EMSDK_DIR/emsdk_env.sh
 
-          micromamba create -n xeus-python-build-wasm \
-            --platform=emscripten-32 \
-            -c https://repo.mamba.pm/emscripten-forge \
-            -c https://repo.mamba.pm/conda-forge \
-            --yes \
-            python ipython pybind11 jedi xtl nlohmann_json pybind11_json numpy xeus-lite xeus "xeus-python-shell>=0.5" "pyjs>=0.7.0,<0.8" "wasm_requests>=0.1.5"
+          micromamba create -f environment-wasm-host.yml --platform=emscripten-32
 
           mkdir build
           pushd build
 
-          export EMPACK_PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm
-          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-build-wasm
+          export EMPACK_PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-build
+          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
           export CMAKE_PREFIX_PATH=$PREFIX
           export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
 
