@@ -1,4 +1,4 @@
-name: xeus-python-wasm
+name: xeus-python-wasm-build
 channels:
   - conda-forge
 dependencies:
