@@ -27,31 +27,10 @@ from jupyterlite.addons.federated_extensions import (
     ENV_EXTENSIONS,
 )
 
+from .build import build_and_pack_emscripten_env
+
 JUPYTERLITE_XEUS_PYTHON = "@jupyterlite/xeus-python-kernel"
 
-# TODO Make this configurable
-PYTHON_VERSION = "3.10"
-
-CHANNELS = [
-    "https://repo.mamba.pm/emscripten-forge",
-    "https://repo.mamba.pm/conda-forge",
-]
-PLATFORM = "emscripten-32"
-
-SILENT = dict(stdout=DEVNULL, stderr=DEVNULL)
-
-try:
-    from mamba.api import create as mamba_create
-
-    MAMBA_PYTHON_AVAILABLE = True
-except ImportError:
-    MAMBA_PYTHON_AVAILABLE = False
-
-MAMBA_COMMAND = shutil.which("mamba")
-
-MICROMAMBA_COMMAND = shutil.which("micromamba")
-
-CONDA_COMMAND = shutil.which("conda")
 
 class PackagesList(List):
     def from_string(self, s):
@@ -81,34 +60,13 @@ class XeusPythonEnv(FederatedExtensionAddon):
     environment_file = Unicode(
         "environment.yml",
         config=True,
-        description="The path to the environment file. Defaults to \"environment.yml\"",
+        description='The path to the environment file. Defaults to "environment.yml"',
     )
-
-    @property
-    def prefix_path(self):
-        """The environment prefix."""
-        return Path(self.root_prefix) / "envs" / self.env_name
 
     def __init__(self, *args, **kwargs):
         super(XeusPythonEnv, self).__init__(*args, **kwargs)
 
         self.cwd = TemporaryDirectory()
-        self.root_prefix = "/tmp/xeus-python-kernel"
-        self.env_name = "xeus-python-kernel"
-        self.channels = CHANNELS
-        self.specs = [
-            f"python={PYTHON_VERSION}",
-            "xeus-python"
-            if not self.xeus_python_version
-            else f"xeus-python={self.xeus_python_version}",
-            *self.packages,
-        ]
-
-        # Cleanup tmp dir in case it's not empty
-        shutil.rmtree(Path(self.root_prefix) / "envs", ignore_errors=True)
-        Path(self.root_prefix).mkdir(parents=True, exist_ok=True)
-
-        self.orig_config = os.environ.get("CONDARC")
 
     def post_build(self, manager):
         """yield a doit task to create the emscripten-32 env and grab anything we need from it"""
@@ -118,72 +76,16 @@ class XeusPythonEnv(FederatedExtensionAddon):
             if pkg_data.get("name") == JUPYTERLITE_XEUS_PYTHON:
                 yield from self.safe_copy_extension(pkg_json)
 
-        bail_early = True
-        if self.packages or self.xeus_python_version:
-            bail_early = False
-
-        # Process environment.yml file
-        if (Path(self.manager.lite_dir) / self.environment_file).exists():
-            bail_early = False
-
-            with open(Path(self.manager.lite_dir) / self.environment_file) as f:
-                env_data = yaml.safe_load(f)
-
-            if env_data.get("name") is not None:
-                self.env_name = env_data["name"]
-
-            if env_data.get("channels") is not None:
-                channels = env_data["channels"]
-
-                for channel in channels:
-                    if channel not in self.channels:
-                        self.channels.append(channel)
-
-            if env_data.get("dependencies") is not None:
-                dependencies = env_data["dependencies"]
-
-                for dependency in dependencies:
-                    if isinstance(dependency, str) and dependency not in self.specs:
-                        self.specs.append(dependency)
-                    elif isinstance(dependency, dict) and dependency.get("pip") is not None:
-                        raise RuntimeError(
-                            """Cannot install pip dependencies in the xeus-python Emscripten environment (yet?).
-                            """
-                        )
-
-        # Bail early if there is nothing to do
-        if bail_early:
-            return []
-
-        # Create emscripten env with the given packages
-        self.create_env()
-
-        pack_kwargs = {}
-
-        # Download env filter config
-        if self.empack_config is not None:
-            empack_config_is_url = urlparse(self.empack_config).scheme in ("http", "https")
-            if empack_config_is_url:
-                empack_config_content = requests.get(self.empack_config).content
-                pack_kwargs["pkg_file_filter"] = PkgFileFilter.parse_obj(
-                    yaml.safe_load(empack_config_content)
-                )
-            else:
-                pack_kwargs["pkg_file_filter"] = pkg_file_filter_from_yaml(self.empack_config)
-
-        # Pack the environment
-        pack_environment(
-            env_prefix=self.prefix_path,
-            outname=Path(self.cwd.name) / "python_data",
-            export_name="globalThis.Module",
-            **pack_kwargs,
+        env_prefix = build_and_pack_emscripten_env(
+            xeus_python_version=self.xeus_python_version,
+            packages=self.packages,
+            environment_file=Path(self.manager.lite_dir) / self.environment_file,
+            empack_config=self.empack_config,
+            output_path=self.cwd.name,
         )
 
         # Find the federated extensions in the emscripten-env and install them
-        root = self.prefix_path / SHARE_LABEXTENSIONS
-
-        # Copy federated extensions found in the emscripten-env
-        for pkg_json in self.env_extensions(root):
+        for pkg_json in self.env_extensions(env_prefix / SHARE_LABEXTENSIONS):
             yield from self.safe_copy_extension(pkg_json)
 
         # TODO Currently we're shamelessly overwriting the
@@ -192,24 +94,15 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # (make jupyterlite-xeus-python extension somewhat configurable?)
         dest = self.output_extensions / "@jupyterlite" / "xeus-python-kernel" / "static"
 
-        for file in ["python_data.js", "python_data.data"]:
+        for file in [
+            "python_data.js",
+            "python_data.data",
+            "xpython_wasm.js",
+            "xpython_wasm.wasm",
+        ]:
             yield dict(
                 name=f"xeus:copy:{file}",
                 actions=[(self.copy_one, [Path(self.cwd.name) / file, dest / file])],
-            )
-
-        for file in ["xpython_wasm.js", "xpython_wasm.wasm"]:
-            yield dict(
-                name=f"xeus:copy:{file}",
-                actions=[
-                    (
-                        self.copy_one,
-                        [
-                            self.prefix_path / "bin" / file,
-                            dest / file,
-                        ],
-                    )
-                ],
             )
 
         jupyterlite_json = manager.output_dir / JUPYTERLITE_JSON
@@ -222,81 +115,6 @@ class XeusPythonEnv(FederatedExtensionAddon):
             file_dep=[*lab_extensions, jupyterlite_json],
             actions=[(self.patch_jupyterlite_json, [jupyterlite_json])],
         )
-
-    def create_env(self):
-        """Create the xeus-python emscripten-32 env with either mamba, micromamba or conda."""
-        if MAMBA_PYTHON_AVAILABLE:
-            mamba_create(
-                env_name=self.env_name,
-                base_prefix=self.root_prefix,
-                specs=self.specs,
-                channels=self.channels,
-                target_platform=PLATFORM,
-            )
-            return
-
-        channels = []
-        for channel in self.channels:
-            channels.extend(["-c", channel])
-
-        if MAMBA_COMMAND:
-            # Mamba needs the directory to exist already
-            self.prefix_path.mkdir(parents=True, exist_ok=True)
-            return self._create_env_with_config(MAMBA_COMMAND, channels)
-
-        if MICROMAMBA_COMMAND:
-            run(
-                [
-                    MICROMAMBA_COMMAND,
-                    "create",
-                    "--yes",
-                    "--root-prefix",
-                    self.root_prefix,
-                    "--name",
-                    self.env_name,
-                    f"--platform={PLATFORM}",
-                    *channels,
-                    *self.specs,
-                ],
-                cwd=self.cwd.name,
-                check=True,
-            )
-            return
-
-        if CONDA_COMMAND:
-            return self._create_env_with_config(CONDA_COMMAND, channels)
-
-        raise RuntimeError(
-            """Failed to create the virtual environment for xeus-python,
-            please make sure at least mamba, micromamba or conda is installed.
-            """
-        )
-
-    def _create_env_with_config(self, conda, channels):
-        run(
-            [conda, "create", "--yes", "--prefix", self.prefix_path, *channels],
-            cwd=self.cwd.name,
-            check=True,
-        )
-        self._create_config()
-        run(
-            [
-                conda,
-                "install",
-                "--yes",
-                "--prefix",
-                self.prefix_path,
-                *channels,
-                *self.specs,
-            ],
-            cwd=self.cwd.name,
-            check=True,
-        )
-
-    def _create_config(self):
-        with open(self.prefix_path / ".condarc", "w") as fobj:
-            fobj.write(f"subdir: {PLATFORM}")
-        os.environ["CONDARC"] = str(self.prefix_path / ".condarc")
 
     def safe_copy_extension(self, pkg_json):
         """Copy a labextension, and overwrite it
@@ -329,12 +147,3 @@ class XeusPythonEnv(FederatedExtensionAddon):
                 named[ext["name"]] = ext
 
         config[FEDERATED_EXTENSIONS] = sorted(named.values(), key=lambda x: x["name"])
-
-    def __del__(self):
-        # Cleanup
-        shutil.rmtree(Path(self.root_prefix) / "envs", ignore_errors=True)
-
-        if self.orig_config is not None:
-            os.environ["CONDARC"] = self.orig_config
-        elif "CONDARC" in os.environ:
-            del os.environ["CONDARC"]

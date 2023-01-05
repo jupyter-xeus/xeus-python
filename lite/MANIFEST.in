@@ -8,7 +8,7 @@ include ts*.json
 include yarn.lock
 include webpack.config.js
 include worker.webpack.config.js
-include Dockerfile
+include build.js
 recursive-include tests *.py
 
 graft share

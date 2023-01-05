@@ -13,10 +13,7 @@
     "url": "https://github.com/jupyterlite/xeus-python-kernel/issues"
   },
   "license": "BSD-3-Clause",
-  "author": {
-    "name": "Thorsten Beier, JupyterLite Contributors",
-    "email": ""
-  },
+  "author": "JupyterLite Contributors",
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf,wasm}",
     "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
@@ -31,14 +28,13 @@
   "scripts": {
     "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm src/xpython_wasm.js src/python_data.js src/python_data.data lib",
     "build:worker": "webpack --config worker.webpack.config.js --mode=development",
-    "build": "jlpm run build:dockerimage && jlpm run build:lib && jlpm run build:worker && jlpm run copy-files && jlpm run build:labextension:dev",
-    "build:dockerimage": "node build_xeus_python.js",
+    "build": "jlpm run build:xeus-python && jlpm run build:lib && jlpm run build:worker && jlpm run copy-files && jlpm run build:labextension:dev",
+    "build:xeus-python": "python jupyterlite_xeus_python/build.py --output-path src --build-worker",
     "build:worker:prod": "webpack --config worker.webpack.config.js --mode=production",
-    "build:prod": "jlpm run clean && jlpm run build build:dockerimage && jlpm run build:lib && jlpm run build:worker:prod && jlpm run copy-files && jlpm run build:labextension",
+    "build:prod": "jlpm run clean && jlpm run build build:xeus-python && jlpm run build:lib && jlpm run build:worker:prod && jlpm run copy-files && jlpm run build:labextension",
     "build:labextension": "jupyter labextension build .",
     "build:labextension:dev": "jupyter labextension build --development True .",
-    "build:lib": "jlpm run sed-worker && tsc",
-    "sed-worker": "shx sed -i \"s/XEUS_KERNEL_FILE/'.\\/xpython_wasm.js'/\" src/worker.ts && shx sed -i \"s/LANGUAGE_DATA_FILE/'.\\/python_data.js'/\" src/worker.ts ",
+    "build:lib": "tsc",
     "clean": "jlpm run clean:lib",
     "clean:lib": "rimraf lib tsconfig.tsbuildinfo",
     "clean:labextension": "rimraf jupyterlite_xeus_python/labextension",

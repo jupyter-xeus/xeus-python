@@ -47,21 +47,8 @@ jobs:
           restore-keys: |
             yarn-
 
-      - name: Setup xeus-python build cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            src/python_data.data
-            src/python_data.js
-            src/web_worker_kernel.ts
-            src/worker.ts
-            src/xpython_wasm.js
-            src/xpython_wasm.wasm
-            src/xpython_wasm.hash
-          key: ${{ hashFiles('Dockerfile') }}
-
       - name: Install dependencies
-        run: python -m pip install -U jupyterlab~=3.1 check-manifest
+        run: python -m pip install -U jupyterlab~=3.1 check-manifest typer empack
 
       - name: Build the extension
         run: |

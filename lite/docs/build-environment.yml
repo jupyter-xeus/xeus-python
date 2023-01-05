@@ -4,10 +4,15 @@ channels:
   - conda-forge
 
 dependencies:
-  - mamba
-  - pydata-sphinx-theme
+  - python=3.10
   - pip
+  - click
+  - typer
+  - pydata-sphinx-theme
+  - yarn
+  - jupyterlab
+  - empack>=2.0.3
   - pip:
     - jupyterlite==0.1.0b16
     - jupyterlite-sphinx
-    - jupyterlite-xeus-python==0.6.1
+    - ..
