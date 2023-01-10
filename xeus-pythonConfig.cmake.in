@@ -26,7 +26,7 @@ find_dependency(xtl @xtl_REQUIRED_VERSION@)
 find_dependency(pybind11 @pybind11_REQUIRED_VERSION@)
 
 if (NOT EMSCRIPTEN)
-    find_dependency(xeus @xeus_REQUIRED_VERSION@)
+    find_dependency(xeus-zmq @xeus-zmq_REQUIRED_VERSION@)
     find_dependency(cppzmq @cppzmq_REQUIRED_VERSION@)
 endif ()
 
