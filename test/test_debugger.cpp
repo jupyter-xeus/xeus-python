@@ -8,17 +8,19 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+#include "doctest/doctest.h"
+
 #include <algorithm>
 #include <chrono>
 #include <condition_variable>
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <mutex>
 #include <thread>
 
 #include "xeus/xsystem.hpp"
 
-#include "gtest/gtest.h"
 #include "xeus_client.hpp"
 
 #include "pybind11/pybind11.h"
@@ -1038,246 +1040,248 @@ void start_kernel()
     std::this_thread::sleep_for(2s);
 }
 
-
-TEST(debugger, init)
+TEST_SUITE("debugger")
 {
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("init")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_init.log");
-        bool res = deb.test_init();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_init.log");
+            bool res = deb.test_init();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, disconnect)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("disconnect")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_disconnect.log");
-        bool res = deb.test_disconnect();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_disconnect.log");
+            bool res = deb.test_disconnect();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, attach)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("attach")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_attach.log");
-        bool res = deb.test_attach();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_attach.log");
+            bool res = deb.test_attach();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, multisession)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("multisession")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_multi_session.log");
-        bool res1 = deb.test_disconnect();
-        std::this_thread::sleep_for(2s);
-        bool res2 = deb.test_disconnect();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res1);
-        EXPECT_TRUE(res2);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_multi_session.log");
+            bool res1 = deb.test_disconnect();
+            std::this_thread::sleep_for(2s);
+            bool res2 = deb.test_disconnect();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res1);
+            CHECK(res2);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, set_external_breakpoints)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("set_external_breakpoints")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_set_external_breakpoints.log");
-        bool res = deb.test_external_set_breakpoints();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_set_external_breakpoints.log");
+            bool res = deb.test_external_set_breakpoints();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, external_next_continue)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("external_next_continue")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_external_next_continue.log");
-        bool res = deb.test_external_next_continue();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_external_next_continue.log");
+            bool res = deb.test_external_next_continue();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, set_breakpoints)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("set_breakpoints")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_set_breakpoints.log");
-        bool res = deb.test_set_breakpoints();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_set_breakpoints.log");
+            bool res = deb.test_set_breakpoints();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, set_exception_breakpoints)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("set_exception_breakpoints")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_set_exception_breakpoints.log");
-        bool res = deb.test_set_exception_breakpoints();
-        deb.shutdown();
-        std::this_thread::sleep_for(5s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_set_exception_breakpoints.log");
+            bool res = deb.test_set_exception_breakpoints();
+            deb.shutdown();
+            std::this_thread::sleep_for(5s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, source)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("source")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_source.log");
-        bool res = deb.test_source();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_source.log");
+            bool res = deb.test_source();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, next_continue)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("next_continue")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_next_continue.log");
-        bool res = deb.test_next_continue();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_next_continue.log");
+            bool res = deb.test_next_continue();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, stepin)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("stepin")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_stepin.log");
-        bool res = deb.test_step_in();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_stepin.log");
+            bool res = deb.test_step_in();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, stack_trace)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("stack_trace")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_stack_trace.log");
-        bool res = deb.test_stack_trace();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_stack_trace.log");
+            bool res = deb.test_stack_trace();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, debug_info)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("debug_info")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
-        bool res = deb.test_debug_info();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
+            bool res = deb.test_debug_info();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, inspect_variables)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("inspect_variables")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_inspect_variables.log");
-        bool res = deb.test_inspect_variables();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_inspect_variables.log");
+            bool res = deb.test_inspect_variables();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, rich_inspect_variables)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("rich_inspect_variables")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_rich_inspect_variables.log");
-        bool res = deb.test_rich_inspect_variables();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_rich_inspect_variables.log");
+            bool res = deb.test_rich_inspect_variables();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
-}
 
-TEST(debugger, variables)
-{
-    start_kernel();
-    timer t;
-    zmq::context_t context;
+    TEST_CASE("variables")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_variables.log");
-        bool res = deb.test_variables();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        t.notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_variables.log");
+            bool res = deb.test_variables();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
 }
