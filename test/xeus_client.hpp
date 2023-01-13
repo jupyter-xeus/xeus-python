@@ -12,6 +12,7 @@
 #include <mutex>
 #include <queue>
 #include <string>
+#include <thread>
 
 #include "zmq.hpp"
 #include "nlohmann/json.hpp"
@@ -120,7 +121,7 @@ private:
     void log_message(nl::json msg);
 
     std::string m_file_name;
-    bool m_iopub_stopped;
+    std::thread m_iopub_thread;
     std::queue<nl::json> m_message_queue;
     std::mutex m_file_mutex;
     mutable std::mutex m_queue_mutex;

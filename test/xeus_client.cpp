@@ -11,7 +11,6 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <thread>
 
 #include "zmq_addon.hpp"
 
@@ -176,21 +175,17 @@ xeus_logger_client::xeus_logger_client(zmq::context_t& context,
                                        const std::string& file_name)
     : xeus_client_base(context, user_name, config)
     , m_file_name(file_name)
-    , m_iopub_stopped(false)
+    , m_iopub_thread()
 {
     std::ofstream out(m_file_name);
     out << "STARTING CLIENT" << std::endl;
     base_type::subscribe_iopub("");
-    std::thread iopub_thread(&xeus_logger_client::poll_iopub, this);
-    iopub_thread.detach();
+    m_iopub_thread = std::move(std::thread(&xeus_logger_client::poll_iopub, this));
 }
 
 xeus_logger_client::~xeus_logger_client()
 {
-    while(!m_iopub_stopped)
-    {
-        std::this_thread::sleep_for(100ms);
-    }
+    m_iopub_thread.join();
 }
 
 void xeus_logger_client::send_on_shell(const std::string& msg_type, nl::json content)
@@ -297,7 +292,6 @@ void xeus_logger_client::poll_iopub()
             break;
         }
     }
-    m_iopub_stopped = true;
 }
 
 void xeus_logger_client::log_message(nl::json msg)

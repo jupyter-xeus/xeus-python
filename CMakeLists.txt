@@ -69,7 +69,6 @@ OPTION(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 
 # Test options
 OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
-OPTION(XPYT_DOWNLOAD_GTEST "build gtest from downloaded sources" OFF)
 
 if(XPYT_EMSCRIPTEN_WASM_BUILD)
     configure_file(wasm_patches/post.js ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
@@ -83,7 +82,6 @@ if(XPYT_EMSCRIPTEN_WASM_BUILD)
     set(XPYT_USE_SHARED_XEUS OFF)
     set(XPYT_USE_SHARED_XEUS_PYTHON OFF)
     set(XPYT_BUILD_TESTS OFF)
-    set(XPYT_DOWNLOAD_GTEST OFF)
 endif()
 
 # Dependencies
@@ -424,10 +422,6 @@ endif()
 
 # Tests
 # =====
-
-if(XPYT_DOWNLOAD_GTEST OR XPYT_GTEST_SRC_DIR)
-    set(XPYT_BUILD_TESTS ON)
-endif()
 
 if(XPYT_BUILD_TESTS)
     add_subdirectory(test)

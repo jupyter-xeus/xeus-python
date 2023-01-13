@@ -59,7 +59,7 @@ jobs:
             -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
             -D CMAKE_INSTALL_LIBDIR=lib \
             -D PYTHON_EXECUTABLE=`which python` \
-            -D XPYT_DOWNLOAD_GTEST=ON \
+            -D XPYT_BUILD_TESTS=ON \
             -D CMAKE_C_COMPILER=$CC \
             -D CMAKE_CXX_COMPILER=$CXX \
             ${{ env.CMAKE_EXTRA_ARGS }}
@@ -72,10 +72,10 @@ jobs:
       - name: Print version
         run: xpython --version
 
-      # - name: Test xeus-python C++
-      #   run: ./test_xeus_python
-      #   timeout-minutes: 4
-      #   working-directory: build/test
+      - name: Test xeus-python C++
+        run: ./test_xeus_python
+        timeout-minutes: 4
+        working-directory: build/test
 
       - name: Test xeus-python Python
         run: pytest . -vvv
@@ -126,7 +126,7 @@ jobs:
           cmake .. ^
             -GNinja ^
             -DCMAKE_BUILD_TYPE=Release ^
-            -DXPYT_DOWNLOAD_GTEST=ON ^
+            -DXPYT_BUILD_TESTS=ON ^
             -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library" ^
             -DXEXTRA_JUPYTER_DATA_DIR=%CONDA_PREFIX%\share\jupyter ^
             -DXPYT_BUILD_XPYTHON_EXTENSION=ON ^
@@ -144,13 +144,13 @@ jobs:
           ninja install
         working-directory: build
 
-      # - name: Test xeus-python C++
-      #   shell: cmd /C call {0}
-      #   run: |
-      #     micromamba activate xeus-python
-      #     test_xeus_python
-      #   timeout-minutes: 4
-      #   working-directory: build/test
+      - name: Test xeus-python C++
+        shell: cmd /C call {0}
+        run: |
+          micromamba activate xeus-python
+          test_xeus_python
+        timeout-minutes: 4
+        working-directory: build/test
 
       - name: Test xeus-python Python
         shell: cmd
