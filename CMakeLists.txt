@@ -33,7 +33,7 @@ message(STATUS "Building xeus-python v${${PROJECT_NAME}_VERSION}")
 include(GNUInstallDirs)
 
 if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
-    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/")
+    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_FULL_BINDIR}/")
 endif ()
 
 # Running find_package(PythonInterp) to retrieve the Python version
