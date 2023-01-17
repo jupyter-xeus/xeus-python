@@ -1382,19 +1382,19 @@ TEST_SUITE("debugger")
             t.notify_done();
         }
     }
-}
 
-TEST(debugger, copy_to_globals)
-{
-    start_kernel();
-    start_timer();
-    zmq::context_t context;
+    TEST_CASE("copy_to_globals")
     {
-        debugger_client deb(context, KERNEL_JSON, "debugger_copy_to_globals.log");
-        bool res = deb.test_copy_to_globals();
-        deb.shutdown();
-        std::this_thread::sleep_for(2s);
-        EXPECT_TRUE(res);
-        notify_done();
+        start_kernel();
+        timer t;
+        zmq::context_t context;
+        {
+            debugger_client deb(context, KERNEL_JSON, "debugger_copy_to_globals.log");
+            bool res = deb.test_copy_to_globals();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
     }
 }
