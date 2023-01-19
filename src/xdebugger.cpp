@@ -292,8 +292,8 @@ namespace xpyt
             std::string version = (eval(py::str(expression))).cast<std::string>();
 
             // Format the version to match [0-9]+(\s[0-9]+)*
-            int pos = version.find_first_of("abrc");
-            if (pos > -1 )
+            size_t pos = version.find_first_of("abrc");
+            if (pos != std::string::npos )
             {
                 version.erase(pos, version.length() - pos);
             }

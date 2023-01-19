@@ -150,7 +150,7 @@ namespace xpyt
         std::clog << "PYTHONHOME set to " << mbstr << std::endl;
     }
 
-    // Compare 2 version and return true if version1 < version2.
+    // Compares 2 versions and return true if version1 < version2.
     // The versions must be strings formatted as the regex: [0-9]+(\s[0-9]+)*
     bool less_than_version(std::string version1, std::string version2)
     {
