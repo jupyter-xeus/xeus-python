@@ -150,38 +150,17 @@ namespace xpyt
         std::clog << "PYTHONHOME set to " << mbstr << std::endl;
     }
 
-    // Parse a version string to vector of int.
-    // The string must be formatted as the regex: [0-9]+(\.[0-9]+)*
-    std::vector<int> parse_version(std::string version)
-    {
-        int value;
-        std::vector<int> result;
-        std::istringstream parser(version);
-
-        parser >> value;
-        result.push_back(value);
-        parser.get();
-        while(parser)
-        {
-            parser >> value;
-            result.push_back(value);
-            parser.get();
-        }
-        return result;
-    }
-
     // Compare 2 version and return true if version1 < version2.
-    // The versions must be strings formatted as the regex: [0-9]+(\.[0-9]+)*
+    // The versions must be strings formatted as the regex: [0-9]+(\s[0-9]+)*
     bool less_than_version(std::string version1, std::string version2)
     {
-        std::vector<int> vector1 = parse_version(version1);
-        std::vector<int> vector2 = parse_version(version2);
-
-        for (long unsigned int i=0; i < std::min(vector1.size(), vector2.size()); i++)
-        {
-            if (vector1[i] < vector2[i]) return true;
-            else if (vector1[i] > vector2[i]) return false;
-        }
-        return false;
+        using iterator_type = std::istream_iterator<int>;
+        std::istringstream iv1(version1), iv2(version2);
+        return std::lexicographical_compare(
+            iterator_type(iv1),
+            iterator_type(),
+            iterator_type(iv2),
+            iterator_type()
+        );
     }
 }

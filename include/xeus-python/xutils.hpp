@@ -69,9 +69,6 @@ namespace xpyt
     void print_pythonhome();
 
     XEUS_PYTHON_API
-    std::vector<int> parse_version(std::string version);
-
-    XEUS_PYTHON_API
     bool less_than_version(std::string a, std::string b);
 }
 

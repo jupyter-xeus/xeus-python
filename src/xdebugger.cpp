@@ -287,9 +287,20 @@ namespace xpyt
             py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
 
+            // Get debugpy version
             std::string expression = "debugpy.__version__";
             std::string version = (eval(py::str(expression))).cast<std::string>();
-            m_copy_to_globals_available = less_than_version(version, "1.6.5");
+
+            // Format the version to match [0-9]+(\s[0-9]+)*
+            int pos = version.find_first_of("abrc");
+            if (pos > -1 )
+            {
+                version.erase(pos, version.length() - pos);
+            }
+            std::replace(version.begin(), version.end(), '.', ' ');
+
+            // Check if the copy_to_globals feature is available
+            m_copy_to_globals_available = less_than_version(version, "1 6 5");
         }
         return status == "ok";
     }
