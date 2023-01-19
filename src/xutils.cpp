@@ -181,6 +181,7 @@ namespace xpyt
         {
             if (vector1[i] < vector2[i]) return true;
             else if (vector1[i] > vector2[i]) return false;
+        }
         return false;
     }
 }
