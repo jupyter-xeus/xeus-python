@@ -195,14 +195,14 @@ namespace xpyt
     nl::json debugger::copy_to_globals_request(const nl::json& message)
     {
         // This request cannot be processed if the version of debugpy is lower than 1.6.5.
-        if (less_than_version(m_debugpy_version, "1.6.5"))
+        if (m_version_lt_1_6_5)
         {
             nl::json reply = {
                 {"type", "response"},
                 {"request_seq", message["seq"]},
                 {"success", false},
                 {"command", message["command"]},
-                {"body", "The debugpy version must be greater than or equal 1.6.5 to copy a variable to the global scope."}
+                {"body", "The debugpy version must be greater than or equal 1.6.5 to allow copying a variable to the global scope."}
             };
             return reply;
         }
@@ -288,8 +288,8 @@ namespace xpyt
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
 
             std::string expression = "debugpy.__version__";
-            py::object version = eval(py::str(expression));
-            m_debugpy_version = version.cast<std::string>();
+            std::string version = (eval(py::str(expression))).cast<std::string>();
+            m_version_lt_1_6_5 = less_than_version(version, "1.6.5");
         }
         return status == "ok";
     }
