@@ -71,7 +71,7 @@ namespace xpyt
         std::string m_debugpy_port;
         nl::json m_debugger_config;
         py::object m_pydebugger;
-        bool m_version_lt_1_6_5;
+        bool m_copy_to_globals_available;
     };
 
     XEUS_PYTHON_API

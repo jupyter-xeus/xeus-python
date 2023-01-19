@@ -195,7 +195,7 @@ namespace xpyt
     nl::json debugger::copy_to_globals_request(const nl::json& message)
     {
         // This request cannot be processed if the version of debugpy is lower than 1.6.5.
-        if (m_version_lt_1_6_5)
+        if (m_copy_to_globals_available)
         {
             nl::json reply = {
                 {"type", "response"},
@@ -289,7 +289,7 @@ namespace xpyt
 
             std::string expression = "debugpy.__version__";
             std::string version = (eval(py::str(expression))).cast<std::string>();
-            m_version_lt_1_6_5 = less_than_version(version, "1.6.5");
+            m_copy_to_globals_available = less_than_version(version, "1.6.5");
         }
         return status == "ok";
     }
