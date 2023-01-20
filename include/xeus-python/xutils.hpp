@@ -67,6 +67,9 @@ namespace xpyt
 
     XEUS_PYTHON_API
     void print_pythonhome();
+
+    XEUS_PYTHON_API
+    bool less_than_version(std::string a, std::string b);
 }
 
 #endif

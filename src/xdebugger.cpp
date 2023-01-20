@@ -65,6 +65,7 @@ namespace xpyt
         register_request_handler("richInspectVariables", std::bind(&debugger::rich_inspect_variables_request, this, _1), false);
         register_request_handler("attach", std::bind(&debugger::attach_request, this, _1), true);
         register_request_handler("configurationDone", std::bind(&debugger::configuration_done_request, this, _1), true);
+        register_request_handler("copyToGlobals", std::bind(&debugger::copy_to_globals_request, this, _1), true);
     }
 
     debugger::~debugger()
@@ -191,6 +192,41 @@ namespace xpyt
         return reply;
     }
 
+    nl::json debugger::copy_to_globals_request(const nl::json& message)
+    {
+        // This request cannot be processed if the version of debugpy is lower than 1.6.5.
+        if (m_copy_to_globals_available)
+        {
+            nl::json reply = {
+                {"type", "response"},
+                {"request_seq", message["seq"]},
+                {"success", false},
+                {"command", message["command"]},
+                {"body", "The debugpy version must be greater than or equal 1.6.5 to allow copying a variable to the global scope."}
+            };
+            return reply;
+        }
+
+        std::string src_var_name = message["arguments"]["srcVariableName"].get<std::string>();
+        std::string dst_var_name = message["arguments"]["dstVariableName"].get<std::string>();
+        int src_frame_id = message["arguments"]["srcFrameId"].get<int>();
+
+        // It basically runs a setExpression in the globals dictionary of Python.
+        int seq = message["seq"].get<int>();
+        std::string expression = "globals()['" + dst_var_name + "']";
+        nl::json request = {
+            {"type", "request"},
+            {"command", "setExpression"},
+            {"seq", seq+1},
+            {"arguments", {
+                {"expression", expression},
+                {"value", src_var_name},
+                {"frameId", src_frame_id}
+            }}
+        };
+        return forward_message(request);
+    }
+
     nl::json debugger::variables_request_impl(const nl::json& message)
     {
         if (base_type::get_stopped_threads().empty())
@@ -250,6 +286,21 @@ namespace xpyt
             py::gil_scoped_acquire acquire;
             py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
+
+            // Get debugpy version
+            std::string expression = "debugpy.__version__";
+            std::string version = (eval(py::str(expression))).cast<std::string>();
+
+            // Format the version to match [0-9]+(\s[0-9]+)*
+            size_t pos = version.find_first_of("abrc");
+            if (pos != std::string::npos )
+            {
+                version.erase(pos, version.length() - pos);
+            }
+            std::replace(version.begin(), version.end(), '.', ' ');
+
+            // Check if the copy_to_globals feature is available
+            m_copy_to_globals_available = less_than_version(version, "1 6 5");
         }
         return status == "ok";
     }

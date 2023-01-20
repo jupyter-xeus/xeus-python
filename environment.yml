@@ -9,3 +9,4 @@ dependencies:
   - itkwidgets
   - matplotlib
   - ipympl
+  - debugpy>=1.6.5

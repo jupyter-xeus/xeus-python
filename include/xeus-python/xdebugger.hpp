@@ -54,6 +54,7 @@ namespace xpyt
         nl::json rich_inspect_variables_request(const nl::json& message);
         nl::json attach_request(const nl::json& message);
         nl::json configuration_done_request(const nl::json& message);
+        nl::json copy_to_globals_request(const nl::json& message);
 
         nl::json variables_request_impl(const nl::json& message) override;
 
@@ -70,6 +71,7 @@ namespace xpyt
         std::string m_debugpy_port;
         nl::json m_debugger_config;
         py::object m_pydebugger;
+        bool m_copy_to_globals_available;
     };
 
     XEUS_PYTHON_API

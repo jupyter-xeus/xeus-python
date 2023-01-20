@@ -149,4 +149,18 @@ namespace xpyt
 
         std::clog << "PYTHONHOME set to " << mbstr << std::endl;
     }
+
+    // Compares 2 versions and return true if version1 < version2.
+    // The versions must be strings formatted as the regex: [0-9]+(\s[0-9]+)*
+    bool less_than_version(std::string version1, std::string version2)
+    {
+        using iterator_type = std::istream_iterator<int>;
+        std::istringstream iv1(version1), iv2(version2);
+        return std::lexicographical_compare(
+            iterator_type(iv1),
+            iterator_type(),
+            iterator_type(iv2),
+            iterator_type()
+        );
+    }
 }
