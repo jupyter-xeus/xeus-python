@@ -131,7 +131,6 @@ jobs:
             -DXEXTRA_JUPYTER_DATA_DIR=%CONDA_PREFIX%\share\jupyter ^
             -DXPYT_BUILD_XPYTHON_EXTENSION=ON ^
             -DXEUS_PYTHONHOME_RELPATH=..\\ ^
-            -Dgtest_force_shared_crt=ON ^
             -DCMAKE_CXX_FLAGS=/D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING ^
             ${{ env.CMAKE_EXTRA_ARGS }}
         working-directory: build
