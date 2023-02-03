@@ -12,7 +12,7 @@ dependencies:
   - pybind11_json
   - numpy
   - xeus-lite
-  - xeus 
+  - xeus
   - xeus-python-shell>=0.5
-  - pyjs>=0.7.0,<0.8
-  - wasm_requests>=0.1.5
+  - pyjs>=0.18,<0.19
+  - requests-wasm-polyfill>=0.1.5
