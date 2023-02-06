@@ -15,4 +15,4 @@ dependencies:
   - xeus 
   - xeus-python-shell>=0.5
   - pyjs>=0.18.2
-  - wasm_requests>=0.1.5
+  - requests-wasm-polyfill>=0.1.5
