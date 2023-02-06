@@ -14,5 +14,5 @@ dependencies:
   - xeus-lite
   - xeus 
   - xeus-python-shell>=0.5
-  - pyjs>=0.7.0,<0.8
+  - pyjs>=0.18.2
   - wasm_requests>=0.1.5
