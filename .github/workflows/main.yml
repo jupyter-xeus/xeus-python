@@ -164,7 +164,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        emsdk_ver: ["3.1.2"]
+        emsdk_ver: ["3.1.27"]
 
     steps:
       - uses: actions/checkout@v2
