@@ -16,3 +16,7 @@ dependencies:
   - xeus-python-shell>=0.5
   - pyjs>=0.18.2
   - requests-wasm-polyfill>=0.1.5
+  - bzip2 
+  - sqlite 
+  - zlib 
+  - libffi  
