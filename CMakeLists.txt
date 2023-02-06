@@ -92,7 +92,7 @@ set(xeus-zmq_REQUIRED_VERSION 1.0.1)
 set(xeus-lite_REQUIRED_VERSION 1.0.1)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
-set(pyjs_REQUIRED_VERSION 0.18.1)
+set(pyjs_REQUIRED_VERSION 0.18.2)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
