@@ -414,6 +414,7 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     xeus_wasm_link_options(xpython_wasm "web")
     xeus_wasm_fs_options(xpython_wasm)
     target_link_options(xpython_wasm
+        PUBLIC "SHELL: -s MAIN_MODULE=1"
         PUBLIC "SHELL: -s LZ4=1"
         PUBLIC "SHELL: --post-js post.js"
         PUBLIC "SHELL: --pre-js pre.js"
