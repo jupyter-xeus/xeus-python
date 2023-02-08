@@ -414,7 +414,6 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     xeus_wasm_link_options(xpython_wasm "web,worker")
     xeus_wasm_fs_options(xpython_wasm)
     target_link_options(xpython_wasm
-        PUBLIC "SHELL: -sFORCE_FILESYSTEM"
         PUBLIC "SHELL: -s LZ4=1"
         PUBLIC "SHELL: --post-js post.js"
         PUBLIC "SHELL: --pre-js pre.js"
