@@ -3,7 +3,6 @@ channels:
   - https://repo.mamba.pm/emscripten-forge
   - https://repo.mamba.pm/conda-forge
 dependencies:
-  - python
   - ipython
   - pybind11
   - jedi
@@ -14,5 +13,6 @@ dependencies:
   - xeus-lite
   - xeus 
   - xeus-python-shell>=0.5
-  - pyjs>=0.7.0,<0.8
-  - wasm_requests>=0.1.5
+  - pyjs>=0.18.2
+  - requests-wasm-polyfill>=0.1.5
+  - libpython

@@ -92,7 +92,7 @@ set(xeus-zmq_REQUIRED_VERSION 1.0.1)
 set(xeus-lite_REQUIRED_VERSION 1.0.1)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
-set(pyjs_REQUIRED_VERSION 0.7.0)
+set(pyjs_REQUIRED_VERSION 0.18.2)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
@@ -361,7 +361,7 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     target_compile_options(xeus-python-wasm PRIVATE -fPIC)
     list(APPEND XEUS_PYTHON_TARGETS xeus-python-wasm)
 
-    target_link_libraries(xeus-python-wasm PRIVATE ${pyjs_LIBRARY})
+    target_link_libraries(xeus-python-wasm PRIVATE pyjs)
 
 endif ()
 
