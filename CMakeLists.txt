@@ -411,12 +411,16 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
 
     include(WasmBuildOptions)
     xeus_wasm_compile_options(xpython_wasm)
-    xeus_wasm_link_options(xpython_wasm "web")
+    xeus_wasm_link_options(xpython_wasm "web,worker")
     xeus_wasm_fs_options(xpython_wasm)
     target_link_options(xpython_wasm
+        PUBLIC "SHELL: -sFORCE_FILESYSTEM"
         PUBLIC "SHELL: -s LZ4=1"
         PUBLIC "SHELL: --post-js post.js"
         PUBLIC "SHELL: --pre-js pre.js"
+        PUBLIC "SHELL: -s MAIN_MODULE=1"
+        PUBLIC "SHELL: -s WASM_BIGINT"
+        PUBLIC "-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['\$Browser']\" "
     )
 endif()
 
@@ -469,7 +473,6 @@ if (XPYT_BUILD_XPYTHON_EXECUTABLE)
                 PATTERN "*.in" EXCLUDE)
     endif ()
 endif ()
-
 # Configure 'xeus-pythonConfig.cmake' for a build tree
 set(XEUS_PYTHON_CONFIG_CODE "####### Expanded from \@XEUS_PYTHON_CONFIG_CODE\@ #######\n")
 set(XEUS_PYTHON_CONFIG_CODE "${XEUS_PYTHON_CONFIG_CODE}set(CMAKE_MODULE_PATH \"${CMAKE_CURRENT_SOURCE_DIR}/cmake;\${CMAKE_MODULE_PATH}\")\n")

@@ -34,8 +34,6 @@ namespace xpyt
     protected:
         
         void configure_impl() override;
-
-        py::scoped_interpreter m_interpreter;
     };
 
 }
