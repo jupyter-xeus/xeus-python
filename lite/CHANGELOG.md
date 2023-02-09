@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.2
+
+### Docs
+
+- Update xeus-python in docs [#99](https://github.com/jupyterlite/xeus-python-kernel/pull/99) ([@martinRenou](https://github.com/martinRenou))
+- Add docs for making deployments [#101](https://github.com/jupyterlite/xeus-python-kernel/pull/101) ([@martinRenou](https://github.com/martinRenou))
+- Get rid of the dockerfile and make a dev install in the docs [#104](https://github.com/jupyterlite/xeus-python-kernel/pull/104) ([@martinRenou](https://github.com/martinRenou))
+- Update to jupyterlite==0.1.0b17 in the docs [#106](https://github.com/jupyterlite/xeus-python-kernel/pull/106) ([@jtpio](https://github.com/jtpio))
+
+### Improvements
+
+- Use shutil.which() in subprocess.check_call() when executing mamba/micromamba/conda [#103](https://github.com/jupyterlite/xeus-python-kernel/pull/103) ([@vasiljevic](https://github.com/vasiljevic))
+- New emscripten + Fix CI [#108](https://github.com/jupyterlite/xeus-python-kernel/pull/108) ([@DerThorsten](https://github.com/DerThorsten))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.1
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.6.0...a566a1154db4df359575395ef7b76735c4e27d94))
@@ -17,8 +33,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2022-12-21&to=2022-12-22&type=c))
 
 [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2022-12-21..2022-12-22&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.0
 
