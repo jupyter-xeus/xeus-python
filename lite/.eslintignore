@@ -3,3 +3,5 @@ dist
 coverage
 **/*.d.ts
 tests
+src/worker.ts
+src/web_worker_kernel.ts

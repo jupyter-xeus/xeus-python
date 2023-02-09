@@ -114,7 +114,8 @@ _output
 *.doit.db
 
 python_data.js
-python_data.data
+*.data
+src/*.js
 xpython_wasm.js
 xpython_wasm.wasm
 xpython_wasm.hash

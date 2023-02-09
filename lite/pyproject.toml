@@ -1,5 +1,5 @@
 [build-system]
-requires = ["jupyter_packaging~=0.10,<2", "jupyterlab~=3.1", "empack"]
+requires = ["jupyter_packaging~=0.10,<2", "jupyterlab~=3.1", "empack>=2.0.8,<3"]
 build-backend = "jupyter_packaging.build_api"
 
 [tool.jupyter-packaging.options]
@@ -14,4 +14,4 @@ build_cmd = "build:prod"
 npm = ["jlpm"]
 
 [tool.check-manifest]
-ignore = ["share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/**", "yarn.lock", ".*", "package-lock.json", "src/xpython_wasm.js", "src/xpython_wasm.wasm", "src/python_data.data", "src/python_data.js", "src/worker.ts", "src/web_worker_kernel.ts", "*.sh"]
+ignore = ["share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/**", "yarn.lock", ".*", "package-lock.json", "src/xpython_wasm.js", "src/xpython_wasm.wasm", "src/*.data", "src/*.js", "src/worker.ts", "src/web_worker_kernel.ts", "*.sh"]

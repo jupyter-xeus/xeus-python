@@ -26,7 +26,7 @@
     "url": "https://github.com/jupyterlite/xeus-python-kernel.git"
   },
   "scripts": {
-    "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm src/xpython_wasm.js src/python_data.js src/python_data.data lib",
+    "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm src/xpython_wasm.js src/python_data.js src/*.data src/*.js lib",
     "build:worker": "webpack --config worker.webpack.config.js --mode=development",
     "build": "jlpm run build:xeus-python && jlpm run build:lib && jlpm run build:worker && jlpm run copy-files && jlpm run build:labextension:dev",
     "build:xeus-python": "python jupyterlite_xeus_python/build.py --output-path src --build-worker",

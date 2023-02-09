@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 import yaml
 
-from empack.file_packager import pack_environment
+from empack.file_packager import split_pack_environment
 from empack.file_patterns import PkgFileFilter, pkg_file_filter_from_yaml
 
 import typer
@@ -206,10 +206,12 @@ def build_and_pack_emscripten_env(
                 )
 
         # Pack the environment
-        pack_environment(
+        split_pack_environment(
             env_prefix=prefix_path,
-            outname=Path(output_path) / "python_data",
+            outname="python_data",
+            pack_outdir=output_path,
             export_name="globalThis.Module",
+            with_export_default_statement=False,
             **pack_kwargs,
         )
 
@@ -230,9 +232,14 @@ def build_and_pack_emscripten_env(
 
             worker = worker.replace("XEUS_KERNEL_FILE", "'xpython_wasm.js'")
             worker = worker.replace("LANGUAGE_DATA_FILE", "'python_data.js'")
-
+            worker = worker.replace("importScripts(DATA_FILE);", """
+                importScripts(DATA_FILE);
+                await globalThis.Module.importPackages();
+                await globalThis.Module.init();
+            """ )
             with open(Path(output_path) / "worker.ts", "w") as fobj:
                 fobj.write(worker)
+
     except Exception as e:
         raise e
     finally:

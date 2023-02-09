@@ -13,13 +13,17 @@ module.exports = {
           to: '.'
         },
         {
-          from: 'src/python_data.data',
+          from: 'src/python_data.js',
           to: '.'
         },
         {
-          from: 'src/python_data.js',
-          to: '.'
-        }
+          from: 'src/*.data',
+          to: './[name].data'
+        },
+        {
+          from: 'src/*.js',
+          to: './[name].js'
+        },
       ]
     })
   ]

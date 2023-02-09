@@ -4,11 +4,12 @@ channels:
 dependencies:
   - python
   - pip
+  - jupyterlab
   - traitlets
   - requests
   - typer
   - pytest
   - emsdk >=3.1.11
-  - empack >=2.0.2
+  - empack >=2.0.8,<3
   - pip:
-      - jupyterlite
+    - jupyterlite
