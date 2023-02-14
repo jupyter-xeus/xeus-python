@@ -419,7 +419,7 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
         PUBLIC "SHELL: --pre-js pre.js"
         PUBLIC "SHELL: -s MAIN_MODULE=1"
         PUBLIC "SHELL: -s WASM_BIGINT"
-        PUBLIC "-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['\$Browser']\" "
+        PUBLIC "-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['\$Browser', '\$ERRNO_CODES']\" "
     )
 endif()
 
