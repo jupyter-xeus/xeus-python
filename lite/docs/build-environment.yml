@@ -8,7 +8,7 @@ dependencies:
   - pip
   - click
   - typer
-  - pydata-sphinx-theme=0.10
+  - pydata-sphinx-theme
   - yarn
   - jupyterlab
   - empack >=2.0.9,<3
