@@ -219,7 +219,7 @@ jobs:
         with:
           name: xeus-python-wasm
           path: |
-            xpython_wasm.js
-            xpython_wasm.wasm
-            python_data.js
-            python_data.data
+            build/xpython_wasm.js
+            build/xpython_wasm.wasm
+            build/python_data.js
+            build/python_data.data
