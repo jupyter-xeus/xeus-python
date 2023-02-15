@@ -112,7 +112,9 @@ if(XPYT_EMSCRIPTEN_WASM_BUILD)
         find_package(pyjs ${pyjs_REQUIRED_VERSION} REQUIRED)
     endif ()
     configure_file(${pyjs_PRE_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/pre.js COPYONLY)
-    configure_file(${pyjs_POST_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
+    # we can ignore this file, as the xeus-specific post.js contains everything from
+    # pyjs post.js
+    # configure_file(${pyjs_POST_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
 else ()
     if (NOT TARGET xeus-zmq AND NOT TARGET xeus-zmq-static)
         find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
