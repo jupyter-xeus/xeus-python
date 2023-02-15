@@ -214,3 +214,12 @@ jobs:
 
           # Patch output
           python wasm_patches/patch_it.py
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xeus-python-wasm
+          path: |
+            build/xpython_wasm.js
+            build/xpython_wasm.wasm
+            build/python_data.js
+            build/python_data.data
