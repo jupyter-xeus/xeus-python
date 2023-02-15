@@ -2,6 +2,27 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.6.3
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.6.2...0ee60d33bb46a158e6f63d52e5e5fe809d47d6dd))
+
+### Maintenance and upkeep improvements
+
+- Update to `check-release@v2` [#113](https://github.com/jupyterlite/xeus-python-kernel/pull/113) ([@jtpio](https://github.com/jtpio))
+- Add releaser workflows to the repo [#109](https://github.com/jupyterlite/xeus-python-kernel/pull/109) ([@jtpio](https://github.com/jtpio))
+
+### Other merged PRs
+
+- Update jupyterlite and empack [#112](https://github.com/jupyterlite/xeus-python-kernel/pull/112) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-02-09&to=2023-02-15&type=c))
+
+[@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-02-09..2023-02-15&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-02-09..2023-02-15&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.2
 
 ### Docs
@@ -15,8 +36,6 @@
 
 - Use shutil.which() in subprocess.check_call() when executing mamba/micromamba/conda [#103](https://github.com/jupyterlite/xeus-python-kernel/pull/103) ([@vasiljevic](https://github.com/vasiljevic))
 - New emscripten + Fix CI [#108](https://github.com/jupyterlite/xeus-python-kernel/pull/108) ([@DerThorsten](https://github.com/DerThorsten))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.1
 
