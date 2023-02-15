@@ -21,7 +21,7 @@ skip = ["check-links"]
 
 [tool.jupyter-releaser.hooks]
 before-build-npm = [
-    "python -m pip install jupyterlab~=3.1",
+    "python -m pip install jupyterlab~=3.1 empack>=2.0.9,<3 jupyter_packaging~=0.10,<2",
     "jlpm",
     "jlpm build:prod",
 ]
