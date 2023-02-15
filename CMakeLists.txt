@@ -113,6 +113,7 @@ if(XPYT_EMSCRIPTEN_WASM_BUILD)
     endif ()
     configure_file(${pyjs_PRE_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/pre.js COPYONLY)
     # we can ignore this file, as the xeus-specific post.js contains everything from
+    # TODO Move the post.js/pre.js from pyjs that is not specific to Python in xeus-lite
     # pyjs post.js
     # configure_file(${pyjs_POST_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
 else ()
