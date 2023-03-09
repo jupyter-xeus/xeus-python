@@ -20,5 +20,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `[![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://jupyterlite-xeus-python--${PR_NUMBER}.org.readthedocs.build/en/${PR_NUMBER}/_static/lab/index.html) :point_left: Try it on ReadTheDocs`
+              body: `[![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://xeus-python-kernel--${PR_NUMBER}.org.readthedocs.build/en/${PR_NUMBER}/lite/lab/index.html) :point_left: Try it on ReadTheDocs`
             })
