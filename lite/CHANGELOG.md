@@ -2,6 +2,23 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.7.0
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.6.3...aaad404083bef58d3421a4dab26e30c818fbb9c9))
+
+### Maintenance and upkeep improvements
+
+- Add ReadTheDocs preview CI workflow [#115](https://github.com/jupyterlite/xeus-python-kernel/pull/115) ([@jtpio](https://github.com/jtpio))
+- Depend on `jupyterlite-core` [#114](https://github.com/jupyterlite/xeus-python-kernel/pull/114) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-02-15&to=2023-03-15&type=c))
+
+[@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-02-15..2023-03-15&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.6.3
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.6.2...0ee60d33bb46a158e6f63d52e5e5fe809d47d6dd))
@@ -20,8 +37,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-02-09&to=2023-02-15&type=c))
 
 [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-02-09..2023-02-15&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-02-09..2023-02-15&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.2
 
