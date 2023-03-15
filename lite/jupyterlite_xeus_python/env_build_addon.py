@@ -15,14 +15,14 @@ from traitlets import List, Unicode
 from empack.file_packager import pack_environment
 from empack.file_patterns import PkgFileFilter, pkg_file_filter_from_yaml
 
-from jupyterlite.constants import (
+from jupyterlite_core.constants import (
     SHARE_LABEXTENSIONS,
     LAB_EXTENSIONS,
     JUPYTERLITE_JSON,
     UTF8,
     FEDERATED_EXTENSIONS,
 )
-from jupyterlite.addons.federated_extensions import (
+from jupyterlite_core.addons.federated_extensions import (
     FederatedExtensionAddon,
     ENV_EXTENSIONS,
 )

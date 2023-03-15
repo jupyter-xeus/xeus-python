@@ -4,7 +4,7 @@ import os
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
-from jupyterlite.app import LiteStatusApp
+from jupyterlite_core.app import LiteStatusApp
 
 from jupyterlite_xeus_python.env_build_addon import XeusPythonEnv
 

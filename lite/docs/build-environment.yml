@@ -13,6 +13,6 @@ dependencies:
   - jupyterlab
   - empack >=2.0.9,<3
   - pip:
-    - jupyterlite==0.1.0b18
+    - jupyterlite-core==0.1.0b19
     - jupyterlite-sphinx
     - ..
