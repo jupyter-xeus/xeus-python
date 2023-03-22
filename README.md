@@ -59,7 +59,7 @@ The ongoing effort to package xeus-python for pip takes place in the [xeus-pytho
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-mamba install cmake xeus nlohmann_json cppzmq xtl pybind11 pybind11_json xeus-python-shell jupyterlab -c conda-forge
+mamba install cmake xeus xeus-zmq nlohmann_json cppzmq xtl pybind11 pybind11_json xeus-python-shell jupyterlab -c conda-forge
 ```
 
 Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
