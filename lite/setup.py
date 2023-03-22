@@ -59,14 +59,14 @@ setup_args = dict(
     packages=setuptools.find_packages(exclude=["tests"]),
     install_requires=[
         "traitlets",
-        "jupyterlite-core>=0.1.0b19",
+        "jupyterlite-core>=0.1.0b20",
         "requests",
         "empack>=2.0.9,<3",
         "typer",
     ],
     zip_safe=False,
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     platforms="Linux, Mac OS X, Windows",
     keywords=["Jupyter", "JupyterLab", "JupyterLab3"],
     classifiers=[
