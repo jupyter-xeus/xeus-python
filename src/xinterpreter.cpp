@@ -73,8 +73,10 @@ namespace xpyt
         py::module comm_module = get_comm_module();
         py::module kernel_module = get_kernel_module();
 
-        // Monkey patching "from ipykernel.comm import Comm"
+        // Old approach: ipykernel provides the comm
         sys.attr("modules")["ipykernel.comm"] = comm_module;
+        // New approach: we provide our comm module
+        sys.attr("modules")["comm"] = comm_module;
 
         instanciate_ipython_shell();
 
