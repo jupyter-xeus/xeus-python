@@ -2,6 +2,26 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.8.0
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.7.0...b7c186310b2d9158be2630b409f1df8c2b450714))
+
+### Maintenance and upkeep improvements
+
+- Update to `jupyterlite-core==0.1.0b20` [#118](https://github.com/jupyterlite/xeus-python-kernel/pull/118) ([@jtpio](https://github.com/jtpio))
+
+### Other merged PRs
+
+- Update to jlite 0.1.0 [#123](https://github.com/jupyterlite/xeus-python-kernel/pull/123) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-03-15&to=2023-04-06&type=c))
+
+[@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-03-15..2023-04-06&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-03-15..2023-04-06&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-03-15..2023-04-06&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.7.0
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.6.3...aaad404083bef58d3421a4dab26e30c818fbb9c9))
@@ -16,8 +36,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-02-15&to=2023-03-15&type=c))
 
 [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-02-15..2023-03-15&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.6.3
 
