@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 extensions = [
-    'jupyterlite_sphinx'
+    'jupyterlite_sphinx',
+    'myst_parser',
 ]
 
 master_doc = 'index'

@@ -8,11 +8,12 @@ dependencies:
   - pip
   - click
   - typer
+  - myst-parser
   - pydata-sphinx-theme
   - yarn
-  - jupyterlab
+  - jupyterlab >=3.5.3,<3.6
+  - jupyterlite-core >=0.1.0,<0.2.0
   - empack >=2.0.9,<3
   - pip:
-    - jupyterlite-core==0.1.0
     - jupyterlite-sphinx
     - ..
