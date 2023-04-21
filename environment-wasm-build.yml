@@ -7,5 +7,3 @@ dependencies:
   - python=3.10
   - yarn
   - click
-  - emsdk >=3.1.11
-  - empack >=2.0.1

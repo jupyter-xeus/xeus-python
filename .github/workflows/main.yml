@@ -178,24 +178,29 @@ jobs:
           environment-file: environment-wasm-build.yml
           environment-name: xeus-python-wasm-build
 
-      - name: Setup emsdk
+
+      - name: "setup emsdk"
+        shell: bash -l {0}
         run: |
           micromamba activate xeus-python-wasm-build
-          emsdk install ${{matrix.emsdk_ver}}
+          cd $HOME
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk 
+          ./emsdk install  ${{ matrix.emsdk_ver }}
+          ./emsdk activate  ${{ matrix.emsdk_ver }}
 
       - name: Build and pack xeus-python
         run: |
           micromamba activate xeus-python-wasm-build
 
-          emsdk activate ${{matrix.emsdk_ver}}
-          source $CONDA_EMSDK_DIR/emsdk_env.sh
+          $HOME/emsdk/emsdk activate ${{matrix.emsdk_ver}}
+          source $HOME/emsdk/emsdk_env.sh
 
           micromamba create -f environment-wasm-host.yml --platform=emscripten-32
 
           mkdir build
           pushd build
 
-          export EMPACK_PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-build
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
           export CMAKE_PREFIX_PATH=$PREFIX
           export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
@@ -206,12 +211,9 @@ jobs:
             -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
             ..
 
-          make -j5
-
-          empack pack env --env-prefix $PREFIX --outname python_data --config $EMPACK_PREFIX/share/empack/empack_config.yaml
-
+          make -j5 
+          
           popd
-
           # Patch output
           python wasm_patches/patch_it.py
 
@@ -221,5 +223,4 @@ jobs:
           path: |
             build/xpython_wasm.js
             build/xpython_wasm.wasm
-            build/python_data.js
-            build/python_data.data
+
