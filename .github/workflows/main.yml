@@ -178,16 +178,22 @@ jobs:
           environment-file: environment-wasm-build.yml
           environment-name: xeus-python-wasm-build
 
-      - name: Setup emsdk
+
+      - name: "setup emsdk"
+        shell: bash -l {0}
         run: |
           micromamba activate xeus-python-wasm-build
-          emsdk install ${{matrix.emsdk_ver}}
+          cd $HOME
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk 
+          ./emsdk install  ${{ matrix.emsdk_ver }}
+          ./emsdk activate  ${{ matrix.emsdk_ver }}
 
       - name: Build and pack xeus-python
         run: |
           micromamba activate xeus-python-wasm-build
 
-          emsdk activate ${{matrix.emsdk_ver}}
+          ./$HOME/emsdk activate ${{matrix.emsdk_ver}}
           source $CONDA_EMSDK_DIR/emsdk_env.sh
 
           micromamba create -f environment-wasm-host.yml --platform=emscripten-32
