@@ -7,4 +7,3 @@ dependencies:
   - python=3.10
   - yarn
   - click
-  - empack >=3,<4
