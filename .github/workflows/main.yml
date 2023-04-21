@@ -212,7 +212,10 @@ jobs:
             ..
 
           make -j5 
-
+          
+          popd
+          # Patch output
+          python wasm_patches/patch_it.py
 
       - uses: actions/upload-artifact@v2
         with:
