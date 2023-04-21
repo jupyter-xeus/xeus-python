@@ -193,7 +193,7 @@ jobs:
         run: |
           micromamba activate xeus-python-wasm-build
 
-          $HOME/emsdk activate ${{matrix.emsdk_ver}}
+          $HOME/emsdk/emsdk activate ${{matrix.emsdk_ver}}
           source $HOME/emsdk/emsdk_env.sh
 
           micromamba create -f environment-wasm-host.yml --platform=emscripten-32
