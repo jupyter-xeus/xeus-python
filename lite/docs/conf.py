@@ -5,6 +5,10 @@ extensions = [
     'myst_parser',
 ]
 
+myst_enable_extensions = [
+    "linkify",
+]
+
 master_doc = 'index'
 source_suffix = '.rst'
 
