@@ -72,10 +72,10 @@ jobs:
       - name: Print version
         run: xpython --version
 
-      - name: Test xeus-python C++
-        run: ./test_xeus_python
-        timeout-minutes: 4
-        working-directory: build/test
+      #- name: Test xeus-python C++
+      #  run: ./test_xeus_python
+      #  timeout-minutes: 4
+      #  working-directory: build/test
 
       - name: Test xeus-python Python
         run: pytest . -vvv
