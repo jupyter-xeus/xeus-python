@@ -27,7 +27,7 @@ from jupyterlite_core.addons.federated_extensions import (
     ENV_EXTENSIONS,
 )
 
-from .build import build_and_pack_emscripten_env
+from .build import XEUS_PYTHON_VERSION, build_and_pack_emscripten_env
 
 JUPYTERLITE_XEUS_PYTHON = "@jupyterlite/xeus-python-kernel"
 
@@ -41,7 +41,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
 
     __all__ = ["post_build"]
 
-    xeus_python_version = Unicode().tag(
+    xeus_python_version = Unicode(XEUS_PYTHON_VERSION).tag(
         config=True, description="The xeus-python version to use"
     )
 
@@ -93,19 +93,19 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # We should really find a nicer way.
         # (make jupyterlite-xeus-python extension somewhat configurable?)
         dest = self.output_extensions / "@jupyterlite" / "xeus-python-kernel" / "static"
-        
+
         # copy *.data/*.js for all side packages
         for item in Path(self.cwd.name) .iterdir():
             if item.suffix == ".data":
 
-                file = item.name 
+                file = item.name
                 yield dict(
                     name=f"xeus:copy:{file}",
                     actions=[(self.copy_one, [item, dest / file])],
                 )
 
                 js_item  = Path(self.cwd.name) / (str(item.stem) + '.js')
-                js_file = js_item.name 
+                js_file = js_item.name
                 yield dict(
                     name=f"xeus:copy:{js_file}",
                     actions=[(self.copy_one, [js_item, dest / js_file])],

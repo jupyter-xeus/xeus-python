@@ -27,6 +27,8 @@ CONDA_COMMAND = shutil.which("conda")
 
 PYTHON_VERSION = "3.10"
 
+XEUS_PYTHON_VERSION = "0.15.7"
+
 CHANNELS = [
     "https://repo.mamba.pm/emscripten-forge",
     "https://repo.mamba.pm/conda-forge",
@@ -119,7 +121,7 @@ def _create_config(prefix_path):
 
 def build_and_pack_emscripten_env(
     python_version: str = PYTHON_VERSION,
-    xeus_python_version: str = "",
+    xeus_python_version: str = XEUS_PYTHON_VERSION,
     packages: List[str] = [],
     environment_file: str = "",
     root_prefix: str = "/tmp/xeus-python-kernel",
@@ -253,7 +255,7 @@ def build_and_pack_emscripten_env(
 
 def main(
     python_version: str = PYTHON_VERSION,
-    xeus_python_version: str = "",
+    xeus_python_version: str = XEUS_PYTHON_VERSION,
     packages: List[str] = typer.Option(
         [], help="The list of packages you want to install"
     ),
