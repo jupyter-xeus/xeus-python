@@ -2,6 +2,27 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.8.1
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.8.0...9af9419ab2cdf54605627c870e25391128113538))
+
+### Bugs fixed
+
+- Pin xeus-python to a known working version [#129](https://github.com/jupyterlite/xeus-python-kernel/pull/129) ([@martinRenou](https://github.com/martinRenou))
+
+### Documentation improvements
+
+- Add advanced section to the docs for providing a custom `empack_config.yaml` [#127](https://github.com/jupyterlite/xeus-python-kernel/pull/127) ([@jtpio](https://github.com/jtpio))
+- Convert docs to Markdown [#125](https://github.com/jupyterlite/xeus-python-kernel/pull/125) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-04-06&to=2023-05-02&type=c))
+
+[@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-04-06..2023-05-02&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-04-06..2023-05-02&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-04-06..2023-05-02&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.8.0
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.7.0...b7c186310b2d9158be2630b409f1df8c2b450714))
@@ -19,8 +40,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-03-15&to=2023-04-06&type=c))
 
 [@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-03-15..2023-04-06&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-03-15..2023-04-06&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-03-15..2023-04-06&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.7.0
 
