@@ -30,7 +30,6 @@ jobs:
           jlpm run build
           jlpm run eslint:check
           python -m pip install -v .
-
           jupyter labextension list 2>&1 | grep -ie "@jupyterlite/xeus-python-kernel.*OK"
 
       - name: Build the extension
@@ -68,7 +67,7 @@ jobs:
           sudo rm -rf $(which node)
           sudo rm -rf $(which node)
           pip install jupyterlite-xeus-python.tar.gz
-          pip install jupyterlab
+          pip install "jupyterlab==3"
           jupyter labextension list 2>&1 | grep -ie "@jupyterlite/xeus-python-kernel.*OK"
 
           # TODO: add JupyterLite browser check

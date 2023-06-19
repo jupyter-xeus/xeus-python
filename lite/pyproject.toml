@@ -1,5 +1,5 @@
 [build-system]
-requires = ["jupyter_packaging~=0.10,<2", "jupyterlab~=3.1", "empack>=2.0.9,<3"]
+requires = ["jupyter_packaging~=0.10,<2", "jupyterlab~=3.1", "empack>=3,<4"]
 build-backend = "jupyter_packaging.build_api"
 
 [tool.jupyter-packaging.options]
@@ -14,14 +14,14 @@ build_cmd = "build:prod"
 npm = ["jlpm"]
 
 [tool.check-manifest]
-ignore = ["share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/**", "yarn.lock", ".*", "package-lock.json", "src/xpython_wasm.js", "src/xpython_wasm.wasm", "src/*.data", "src/*.js", "src/worker.ts", "src/web_worker_kernel.ts", "*.sh"]
+ignore = ["share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/**", "yarn.lock", ".*", "package-lock.json", "src/xpython_wasm.js", "src/xpython_wasm.wasm", "src/*.tar.gz", "src/*.js", "src/worker.ts", "src/web_worker_kernel.ts", "*.sh"]
 
 [tool.jupyter-releaser.options]
 skip = ["check-links"]
 
 [tool.jupyter-releaser.hooks]
 before-build-npm = [
-    "python -m pip install jupyterlab~=3.1 empack~=2.0 jupyter_packaging~=0.10",
+    "python -m pip install jupyterlab~=3.1 empack~=3.0 jupyter_packaging~=0.10",
     "jlpm",
     "jlpm build:prod",
 ]

@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 import yaml
 
-from empack.file_packager import split_pack_environment
+from empack.pack import pack_env, DEFAULT_CONFIG_PATH
 from empack.file_patterns import PkgFileFilter, pkg_file_filter_from_yaml
 
 import typer
@@ -27,7 +27,7 @@ CONDA_COMMAND = shutil.which("conda")
 
 PYTHON_VERSION = "3.10"
 
-XEUS_PYTHON_VERSION = "0.15.7"
+XEUS_PYTHON_VERSION = "0.15.9"
 
 CHANNELS = [
     "https://repo.mamba.pm/emscripten-forge",
@@ -199,21 +199,22 @@ def build_and_pack_emscripten_env(
             empack_config_is_url = urlparse(empack_config).scheme in ("http", "https")
             if empack_config_is_url:
                 empack_config_content = requests.get(empack_config).content
-                pack_kwargs["pkg_file_filter"] = PkgFileFilter.parse_obj(
+                pack_kwargs["file_filters"] = PkgFileFilter.parse_obj(
                     yaml.safe_load(empack_config_content)
                 )
             else:
-                pack_kwargs["pkg_file_filter"] = pkg_file_filter_from_yaml(
+                pack_kwargs["file_filters"] = pkg_file_filter_from_yaml(
                     empack_config
                 )
+        else:
+            pack_kwargs["file_filters"] = pkg_file_filter_from_yaml(DEFAULT_CONFIG_PATH)
 
         # Pack the environment
-        split_pack_environment(
+        pack_env(
             env_prefix=prefix_path,
-            outname="python_data",
-            pack_outdir=output_path,
-            export_name="globalThis.Module",
-            with_export_default_statement=False,
+            relocate_prefix="/",
+            outdir=output_path,
+            use_cache=False,
             **pack_kwargs,
         )
 
@@ -235,10 +236,12 @@ def build_and_pack_emscripten_env(
             worker = worker.replace("XEUS_KERNEL_FILE", "'xpython_wasm.js'")
             worker = worker.replace("LANGUAGE_DATA_FILE", "'python_data.js'")
             worker = worker.replace("importScripts(DATA_FILE);", """
-                importScripts(DATA_FILE);
-                await globalThis.Module.importPackages();
-                await globalThis.Module.init();
-            """ )
+                await globalThis.Module.bootstrap_from_empack_packed_environment(
+                `./empack_env_meta.json`, /* packages_json_url */
+                ".",               /* package_tarballs_root_url */
+                false              /* verbose */
+            );
+            """)
             with open(Path(output_path) / "worker.ts", "w") as fobj:
                 fobj.write(worker)
 

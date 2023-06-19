@@ -19,7 +19,7 @@ lab_path = (
 # Representative files that should exist after a successful build
 ensured_targets = [
     str(lab_path / "package.json"),
-    str(lab_path / "static" / "python_data.js"),
+    str(lab_path / "static" / "empack_env_meta.json"),
     str(lab_path / "static" / "xpython_wasm.js"),
     str(lab_path / "static" / "xpython_wasm.wasm"),
     str(lab_path / "static" / "style.js"),
@@ -61,7 +61,7 @@ setup_args = dict(
         "traitlets",
         "jupyterlite-core>=0.1.0",
         "requests",
-        "empack>=2.0.9,<3",
+        "empack>=3,<4",
         "typer",
     ],
     zip_safe=False,

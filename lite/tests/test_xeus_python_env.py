@@ -27,9 +27,9 @@ def test_python_env():
     assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.wasm")
 
     # Check empack output
-    assert os.path.isfile(Path(addon.cwd.name) / "python_data.js")
+    assert os.path.isfile(Path(addon.cwd.name) / "empack_env_meta.json")
 
-    os.remove(Path(addon.cwd.name) / "python_data.js")
+    os.remove(Path(addon.cwd.name) / "empack_env_meta.json")
 
 
 def test_python_env_from_file_1():
@@ -50,6 +50,6 @@ def test_python_env_from_file_1():
     assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/bin/xpython_wasm.wasm")
 
     # Check empack output
-    assert os.path.isfile(Path(addon.cwd.name) / "python_data.js")
+    assert os.path.isfile(Path(addon.cwd.name) / "empack_env_meta.json")
 
-    os.remove(Path(addon.cwd.name) / "python_data.js")
+    os.remove(Path(addon.cwd.name) / "empack_env_meta.json")

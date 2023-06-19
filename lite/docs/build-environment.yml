@@ -14,7 +14,7 @@ dependencies:
   - yarn
   - jupyterlab >=3.5.3,<3.6
   - jupyterlite-core >=0.1.0,<0.2.0
-  - empack >=2.0.9,<3
+  - empack >=3,<4
   - pip:
     - jupyterlite-sphinx
     - ..

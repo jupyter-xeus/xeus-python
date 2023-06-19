@@ -12,7 +12,7 @@ import yaml
 
 from traitlets import List, Unicode
 
-from empack.file_packager import pack_environment
+from empack.pack import pack_env, DEFAULT_CONFIG_PATH
 from empack.file_patterns import PkgFileFilter, pkg_file_filter_from_yaml
 
 from jupyterlite_core.constants import (
@@ -94,9 +94,9 @@ class XeusPythonEnv(FederatedExtensionAddon):
         # (make jupyterlite-xeus-python extension somewhat configurable?)
         dest = self.output_extensions / "@jupyterlite" / "xeus-python-kernel" / "static"
 
-        # copy *.data/*.js for all side packages
+        # copy *.tar.gz for all side packages
         for item in Path(self.cwd.name) .iterdir():
-            if item.suffix == ".data":
+            if item.suffix == ".gz":
 
                 file = item.name
                 yield dict(
@@ -104,16 +104,10 @@ class XeusPythonEnv(FederatedExtensionAddon):
                     actions=[(self.copy_one, [item, dest / file])],
                 )
 
-                js_item  = Path(self.cwd.name) / (str(item.stem) + '.js')
-                js_file = js_item.name
-                yield dict(
-                    name=f"xeus:copy:{js_file}",
-                    actions=[(self.copy_one, [js_item, dest / js_file])],
-                )
 
 
         for file in [
-            "python_data.js",
+            "empack_env_meta.json",
             "xpython_wasm.js",
             "xpython_wasm.wasm",
         ]:

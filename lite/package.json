@@ -26,7 +26,7 @@
     "url": "https://github.com/jupyterlite/xeus-python-kernel.git"
   },
   "scripts": {
-    "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm src/xpython_wasm.js src/python_data.js src/*.data src/*.js lib",
+    "copy-files": "copyfiles -u 1 src/xpython_wasm.wasm src/xpython_wasm.js src/python_data.js src/*.tar.gz src/*.js src/*.json lib",
     "build:worker": "webpack --config worker.webpack.config.js --mode=development",
     "build": "jlpm run build:xeus-python && jlpm run build:lib && jlpm run build:worker && jlpm run copy-files && jlpm run build:labextension:dev",
     "build:xeus-python": "python jupyterlite_xeus_python/build.py --output-path src --build-worker",
@@ -51,12 +51,17 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
+    "@jupyterlab/coreutils": "^5",
+    "@jupyterlab/services": "^6",
     "@jupyterlite/contents": "^0.1.0",
+    "@jupyterlite/kernel": "^0.1.0",
     "@jupyterlite/server": "^0.1.0",
+    "@lumino/coreutils": "^1",
+    "@lumino/signaling": "^1",
     "comlink": "^4.3.1"
   },
   "devDependencies": {
-    "@jupyterlab/builder": "^3.4.1",
+    "@jupyterlab/builder": "^3.6.4",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
     "copy-webpack-plugin": "^9.0.1",
@@ -68,9 +73,12 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.1.1",
     "rimraf": "^3.0.2",
+    "shx": "^0.3.0",
     "source-map-loader": "^4.0.0",
     "typescript": "~4.2.3",
-    "shx": "^0.3.0"
+    "webpack": "^5.87.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
   },
   "sideEffects": [
     "style/*.css",
