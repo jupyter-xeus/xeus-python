@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.9.0
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.8.1...da52ac042abcd300c782e128b319719c6c197d9d))
+
+### Merged PRs
+
+- use empack 3.0 [#134](https://github.com/jupyterlite/xeus-python-kernel/pull/134) ([@DerThorsten](https://github.com/DerThorsten))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-05-02&to=2023-06-19&type=c))
+
+[@DerThorsten](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3ADerThorsten+updated%3A2023-05-02..2023-06-19&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.8.1
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.8.0...9af9419ab2cdf54605627c870e25391128113538))
@@ -20,8 +36,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-04-06&to=2023-05-02&type=c))
 
 [@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-04-06..2023-05-02&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-04-06..2023-05-02&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-04-06..2023-05-02&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.8.0
 
