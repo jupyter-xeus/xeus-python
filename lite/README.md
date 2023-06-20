@@ -17,7 +17,13 @@ The [xeus-python](https://github.com/jupyter-xeus/xeus-python) Python kernel for
 
 ## Install
 
-To install the extension, execute:
+You can install the kernel with conda/mamba:
+
+```bash
+mamba install -c conda-forge jupyterlite-xeus-python
+```
+
+Or using pip:
 
 ```bash
 pip install jupyterlite-xeus-python

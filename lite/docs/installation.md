@@ -2,7 +2,13 @@
 
 # Installation
 
-You can install `jupyterlite-xeus-python` with `pip`:
+You can install `jupyterlite-xeus-python` with conda/mamba
+
+```
+mamba install -c conda-forge jupyterlite-xeus-python
+```
+
+Or with `pip`:
 
 ```
 pip install jupyterlite-xeus-python
