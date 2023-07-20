@@ -52,6 +52,10 @@ class XeusPythonEnv(FederatedExtensionAddon):
         description="The path or URL to the empack config file",
     )
 
+    pin_packages = PackagesList([]).tag(
+        description="This property is not supposed to be used, unless you know what you're doing.",
+    )
+
     packages = PackagesList([]).tag(
         config=True,
         description="A comma-separated list of packages to install in the xeus-python env",
@@ -78,7 +82,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
 
         env_prefix = build_and_pack_emscripten_env(
             xeus_python_version=self.xeus_python_version,
-            packages=self.packages,
+            packages=[*self.packages, *self.pin_packages],
             environment_file=Path(self.manager.lite_dir) / self.environment_file,
             empack_config=self.empack_config,
             output_path=self.cwd.name,
