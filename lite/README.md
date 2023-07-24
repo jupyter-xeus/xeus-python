@@ -66,10 +66,6 @@ You can also pick another name for that environment file (*e.g.* `custom.yml`), 
 jupyter lite build --XeusPythonEnv.environment_file=custom.yml
 ```
 
-#### About pip dependencies
-
-It is common to provide `pip` dependencies in a conda environment file, this is currently **not supported** by xeus-python.
-
 ## Contributing
 
 ### Development install

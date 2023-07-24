@@ -23,8 +23,12 @@ def test_python_env():
     # Check env
     assert os.path.isdir("/tmp/xeus-python-kernel/envs/xeus-python-kernel")
 
-    assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.js")
-    assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.wasm")
+    assert os.path.isfile(
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.js"
+    )
+    assert os.path.isfile(
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel/bin/xpython_wasm.wasm"
+    )
 
     # Check empack output
     assert os.path.isfile(Path(addon.cwd.name) / "empack_env_meta.json")
@@ -46,8 +50,12 @@ def test_python_env_from_file_1():
     # Check env
     assert os.path.isdir("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1")
 
-    assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/bin/xpython_wasm.js")
-    assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/bin/xpython_wasm.wasm")
+    assert os.path.isfile(
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/bin/xpython_wasm.js"
+    )
+    assert os.path.isfile(
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/bin/xpython_wasm.wasm"
+    )
 
     # Check empack output
     assert os.path.isfile(Path(addon.cwd.name) / "empack_env_meta.json")

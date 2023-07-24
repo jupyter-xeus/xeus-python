@@ -13,12 +13,12 @@ Say you want to install `NumPy`, `Matplotlib` and `ipycanvas`, it can be done by
 ```
 name: xeus-python-kernel
 channels:
-- https://repo.mamba.pm/emscripten-forge
-- https://repo.mamba.pm/conda-forge
+  - https://repo.mamba.pm/emscripten-forge
+  - https://repo.mamba.pm/conda-forge
 dependencies:
-- numpy
-- matplotlib
-- ipycanvas
+  - numpy
+  - matplotlib
+  - ipycanvas
 ```
 
 Then you only need to build JupyterLite:
@@ -33,8 +33,8 @@ You can also pick another name for that environment file (*e.g.* `custom.yml`), 
 jupyter lite build --XeusPythonEnv.environment_file=custom.yml
 ```
 
-```{note}
-It is common to provide `pip` dependencies in a conda environment file. This is currently **not supported** by xeus-python, but there is a [work-in-progress](https://github.com/jupyterlite/xeus-python-kernel/pull/102) to support it.
+```{warning}
+It is common to provide `pip` dependencies in a conda environment file. This is currently **partially supported** by xeus-python. See "pip packages" section.
 ```
 
 Then those packages are usable directly:
@@ -53,6 +53,31 @@ Then those packages are usable directly:
    fig = plt.figure()
    plt.plot(np.sin(np.linspace(0, 20, 100)))
    plt.show();
+```
+
+### pip packages
+
+⚠ This feature is experimental. You won't have the same user-experience as when using conda/mamba in a "normal" setup ⚠
+
+`xeus-python` provides a way to install packages with pip.
+
+There are a couple of limitations that you should be aware of:
+- it can only install pure Python packages (Python code + data files)
+- it does not install the package dependencies, you should make sure to install them yourself using conda-forge/emscripten-forge.
+
+For example, if you were to install `ipycanvas` from PyPI, you would need to install the ipycanvas dependencies for it to work (`pillow`, `numpy` and `ipywidgets`):
+
+```
+name: xeus-python-kernel
+channels:
+  - https://repo.mamba.pm/emscripten-forge
+  - https://repo.mamba.pm/conda-forge
+dependencies:
+  - numpy
+  - pillow
+  - ipywidgets
+  - pip:
+    - ipycanvas
 ```
 
 ## Advanced Configuration
