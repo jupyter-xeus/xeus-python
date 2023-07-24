@@ -2,6 +2,26 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.9.2
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.1...70717e5981fcefd9f0cff7c8eb567cdbe928bef7))
+
+### Documentation improvements
+
+- Remove outdated README part [#141](https://github.com/jupyterlite/xeus-python-kernel/pull/141) ([@martinRenou](https://github.com/martinRenou))
+
+### Other merged PRs
+
+- Add support for pip dependencies [#102](https://github.com/jupyterlite/xeus-python-kernel/pull/102) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-07-20&to=2023-07-24&type=c))
+
+[@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-07-20..2023-07-24&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.9.1
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.0...f6e764fac2ca525be9686b0bddd1dcdf5590162c))
@@ -19,8 +39,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-06-19&to=2023-07-20&type=c))
 
 [@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-06-19..2023-07-20&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-06-19..2023-07-20&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.9.0
 
