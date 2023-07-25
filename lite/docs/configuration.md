@@ -62,8 +62,9 @@ Then those packages are usable directly:
 `xeus-python` provides a way to install packages with pip.
 
 There are a couple of limitations that you should be aware of:
-- it can only install pure Python packages (Python code + data files)
-- it does not install the package dependencies, you should make sure to install them yourself using conda-forge/emscripten-forge.
+- it can **only** install **pure Python packages** (Python code + data files)
+- it **does not install the package dependencies**, you should make sure to install them yourself using conda-forge/emscripten-forge.
+- it does not work (yet?) using `-r requirements.txt` in your environment file
 
 For example, if you were to install `ipycanvas` from PyPI, you would need to install the ipycanvas dependencies for it to work (`pillow`, `numpy` and `ipywidgets`):
 
