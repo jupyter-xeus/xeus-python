@@ -5,4 +5,10 @@ channels:
 dependencies:
   - numpy
   - matplotlib
-  - ipycanvas
+  - pillow
+  - ipywidgets
+  - pip:
+    # Installing a python package that ships a lab extension under share/
+    - ipycanvas
+    # Installing a pure python package
+    - py2vega

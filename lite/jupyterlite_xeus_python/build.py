@@ -171,8 +171,6 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
             record_csv = csv.reader(record_content.splitlines())
             all_files = [_file[0] for _file in record_csv]
 
-            non_supported_files = [".so", ".a", ".dylib", ".lib", ".exe" ".dll"]
-
             # List of tuples: (path: str, inside_site_packages: bool)
             files = [(_file, not _file.startswith("../../")) for _file in all_files]
 
@@ -182,6 +180,8 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
         # OVERWRITE RECORD file
         with open(package_dist_info / "RECORD", "w") as record:
             record.write(fixed_record_data)
+
+        non_supported_files = [".so", ".a", ".dylib", ".lib", ".exe" ".dll"]
 
         # COPY files under `prefix_path`
         for _file, inside_site_packages in files:
