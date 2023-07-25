@@ -240,9 +240,11 @@ def build_and_pack_emscripten_env(
 
     # Process environment.yml file
     if environment_file and Path(environment_file).exists():
+        env_file = Path(environment_file)
+
         bail_early = False
 
-        with open(Path(environment_file)) as f:
+        with open(env_file) as f:
             env_data = yaml.safe_load(f)
 
         if env_data.get("name") is not None:
@@ -260,7 +262,11 @@ def build_and_pack_emscripten_env(
                 if isinstance(dependency, str) and dependency not in specs:
                     specs.append(dependency)
                 elif isinstance(dependency, dict) and dependency.get("pip") is not None:
-                    pip_dependencies = dependency["pip"]
+                    # If it's a local Python package, make its path relative to the environment file
+                    pip_dependencies = [
+                        ((env_file.parent / pip_dep).resolve() if os.path.isdir(env_file.parent / pip_dep) else pip_dep)
+                        for pip_dep in dependency["pip"]
+                    ]
 
     # Bail early if there is nothing to do
     if bail_early and not force:
