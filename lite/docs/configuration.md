@@ -10,7 +10,7 @@ Furthermore, this automatically installs any labextension that it founds, for ex
 
 Say you want to install `NumPy`, `Matplotlib` and `ipycanvas`, it can be done by creating the `environment.yml` file with the following content:
 
-```
+```yaml
 name: xeus-python-kernel
 channels:
   - https://repo.mamba.pm/emscripten-forge
@@ -68,7 +68,7 @@ There are a couple of limitations that you should be aware of:
 
 For example, if you were to install `ipycanvas` from PyPI, you would need to install the ipycanvas dependencies for it to work (`pillow`, `numpy` and `ipywidgets`):
 
-```
+```yaml
 name: xeus-python-kernel
 channels:
   - https://repo.mamba.pm/emscripten-forge
@@ -79,6 +79,19 @@ dependencies:
   - ipywidgets
   - pip:
     - ipycanvas
+```
+
+You can also install a local Python package, this is very practical if you want to embed
+a jupyterlite deployment in your Package documentation, allowing to test the very latest dev version:
+
+```yaml
+name: xeus-python-kernel
+channels:
+  - https://repo.mamba.pm/emscripten-forge
+  - https://repo.mamba.pm/conda-forge
+dependencies:
+  - pip:
+    - ..
 ```
 
 ## Advanced Configuration
