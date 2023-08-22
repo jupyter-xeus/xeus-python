@@ -2,6 +2,26 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.9.4
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.3...fcc8d031c54efedb1c38e8f36cd20ceedd277218))
+
+### Maintenance and upkeep improvements
+
+- Bumped @jupyterlite packages [#150](https://github.com/jupyterlite/xeus-python-kernel/pull/150) ([@andeplane](https://github.com/andeplane))
+
+### Other merged PRs
+
+- Strict respect of channels specified in env file [#149](https://github.com/jupyterlite/xeus-python-kernel/pull/149) ([@martinRenou](https://github.com/martinRenou))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-08-03&to=2023-08-22&type=c))
+
+[@andeplane](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Aandeplane+updated%3A2023-08-03..2023-08-22&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-08-03..2023-08-22&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-08-03..2023-08-22&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.9.3
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.2...3f74831afeb265c8c2aed1398314181073527dad))
@@ -22,8 +42,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-07-24&to=2023-08-03&type=c))
 
 [@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-07-24..2023-08-03&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-07-24..2023-08-03&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-07-24..2023-08-03&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.9.2
 
