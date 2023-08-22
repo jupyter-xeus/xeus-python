@@ -222,7 +222,7 @@ def build_and_pack_emscripten_env(
     log=None,
 ):
     """Build a conda environment for the emscripten platform and pack it with empack."""
-    channels = copy(CHANNELS)
+    channels = CHANNELS
     specs = [
         f"python={python_version}",
         "xeus-lite",
@@ -250,10 +250,7 @@ def build_and_pack_emscripten_env(
         if env_data.get("name") is not None:
             env_name = env_data["name"]
 
-        if env_data.get("channels") is not None:
-            channels.extend(
-                [channel for channel in env_data["channels"] if channel not in CHANNELS]
-            )
+        channels = env_data.get("channels", CHANNELS)
 
         if env_data.get("dependencies") is not None:
             dependencies = env_data["dependencies"]
