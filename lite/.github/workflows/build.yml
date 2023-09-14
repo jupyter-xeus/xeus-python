@@ -18,10 +18,11 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Conda environment with Micromamba
-        uses: mamba-org/provision-with-micromamba@main
+        uses: mamba-org/setup-micromamba@v1
         with:
-          environment-name: xeus-python-kernel
+          micromamba-version: '1.5.1-0'
           environment-file: environment.yml
+          cache-environment: true
 
       - name: Dev install
         run: |
