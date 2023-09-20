@@ -97,6 +97,10 @@
         "bundled": false,
         "singleton": true
       },
+      "@jupyterlite/server": {
+        "bundled": false,
+        "singleton": true
+      },
       "@jupyterlite/contents": {
         "bundled": false,
         "singleton": true
