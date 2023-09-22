@@ -70,8 +70,17 @@ OPTION(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 # Test options
 OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 
+function(cat IN_FILE OUT_FILE)
+  file(READ ${IN_FILE} CONTENTS)
+  file(APPEND ${OUT_FILE} "\n${CONTENTS}")
+endfunction()
+
+
 if(XPYT_EMSCRIPTEN_WASM_BUILD)
-    configure_file(wasm_patches/post.js ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
+    # Prepare a temporary file to "post.js.in" to
+    # merge xeus custom post js and the pyjs post js
+    file(WRITE post.js.in "")
+    cat(wasm_patches/post.js  post.js.in)
 
     add_compile_definitions(XPYT_EMSCRIPTEN_WASM_BUILD)
 
@@ -92,7 +101,7 @@ set(xeus-zmq_REQUIRED_VERSION 1.0.1)
 set(xeus-lite_REQUIRED_VERSION 1.0.1)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
-set(pyjs_REQUIRED_VERSION 1.0.0)
+set(pyjs_REQUIRED_VERSION 1.3.2)
 
 if (NOT TARGET xtl)
     find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
@@ -112,10 +121,8 @@ if(XPYT_EMSCRIPTEN_WASM_BUILD)
         find_package(pyjs ${pyjs_REQUIRED_VERSION} REQUIRED)
     endif ()
     configure_file(${pyjs_PRE_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/pre.js COPYONLY)
-    # we can ignore this file, as the xeus-specific post.js contains everything from
-    # TODO Move the post.js/pre.js from pyjs that is not specific to Python in xeus-lite
-    # pyjs post.js
-    # configure_file(${pyjs_POST_JS_PATH} ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
+    cat(${pyjs_POST_JS_PATH}  post.js.in)
+    configure_file( post.js.in  ${CMAKE_CURRENT_BINARY_DIR}/post.js COPYONLY)
 else ()
     if (NOT TARGET xeus-zmq AND NOT TARGET xeus-zmq-static)
         find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
