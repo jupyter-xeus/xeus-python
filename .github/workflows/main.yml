@@ -164,7 +164,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        emsdk_ver: ["3.1.27"]
+        emsdk_ver: ["3.1.45"]
 
     steps:
       - uses: actions/checkout@v2
@@ -196,7 +196,7 @@ jobs:
           $HOME/emsdk/emsdk activate ${{matrix.emsdk_ver}}
           source $HOME/emsdk/emsdk_env.sh
 
-          micromamba create -f environment-wasm-host.yml --platform=emscripten-32
+          micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
 
           mkdir build
           pushd build
