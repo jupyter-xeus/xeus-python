@@ -2,6 +2,31 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.9.5
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.4...a89bdd1a4568027fc6e4e7a640a6e77b4d5c3a43))
+
+### Bugs fixed
+
+- Make sure to share all packages coming from jupyterlite [#158](https://github.com/jupyterlite/xeus-python-kernel/pull/158) ([@martinRenou](https://github.com/martinRenou))
+
+### Maintenance and upkeep improvements
+
+- Use `mamba-org/setup-micromamba` in more places [#159](https://github.com/jupyterlite/xeus-python-kernel/pull/159) ([@jtpio](https://github.com/jtpio))
+- Use `mamba-org/setup-micromamba` GitHub Action [#157](https://github.com/jupyterlite/xeus-python-kernel/pull/157) ([@jtpio](https://github.com/jtpio))
+
+### Documentation improvements
+
+- Install `jupyterlite-sphinx` from conda forge [#156](https://github.com/jupyterlite/xeus-python-kernel/pull/156) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-08-22&to=2023-09-26&type=c))
+
+[@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-08-22..2023-09-26&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-08-22..2023-09-26&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-08-22..2023-09-26&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.9.4
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.3...fcc8d031c54efedb1c38e8f36cd20ceedd277218))
@@ -19,8 +44,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-08-03&to=2023-08-22&type=c))
 
 [@andeplane](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Aandeplane+updated%3A2023-08-03..2023-08-22&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-08-03..2023-08-22&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-08-03..2023-08-22&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.9.3
 
