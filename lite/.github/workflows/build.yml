@@ -86,12 +86,12 @@ jobs:
         with:
           name: jupyterlite-xeus-python-sdist
 
-      - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
-          activate-environment: xeus-python-kernel
+          micromamba-version: '1.5.1-0'
           environment-file: environment.yml
-          python-version: '3.10'
+          cache-environment: true
 
       - name: Install mamba
         run: conda install -c conda-forge mamba
@@ -120,12 +120,12 @@ jobs:
         with:
           name: jupyterlite-xeus-python-sdist
 
-      - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
-          activate-environment: xeus-python-kernel
+          micromamba-version: '1.5.1-0'
           environment-file: environment.yml
-          python-version: '3.10'
+          cache-environment: true
 
       - name: Install mamba
         run: conda install -c conda-forge mamba
@@ -175,12 +175,12 @@ jobs:
         with:
           name: jupyterlite-xeus-python-sdist
 
-      - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
-          activate-environment: xeus-python-kernel
+          micromamba-version: '1.5.1-0'
           environment-file: environment.yml
-          python-version: '3.10'
+          cache-environment: true
 
       - name: Install
         run: pip install jupyterlite-xeus-python.tar.gz
