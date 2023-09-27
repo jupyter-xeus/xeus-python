@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 1.0.0a0
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.6...8ed06f083b2e325af748e256e8a5e7118ec29a7e))
+
+### Maintenance and upkeep improvements
+
+- Update to JupyterLab 4 and JupyterLite 0.2.0 [#155](https://github.com/jupyterlite/xeus-python-kernel/pull/155) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-09-27&to=2023-09-27&type=c))
+
+[@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-09-27..2023-09-27&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-09-27..2023-09-27&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.9.6
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.5...48c2518812d748377609a2d2da7b16b4ae417f9f))
@@ -15,8 +31,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-09-26&to=2023-09-27&type=c))
 
 [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-09-26..2023-09-27&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.9.5
 
