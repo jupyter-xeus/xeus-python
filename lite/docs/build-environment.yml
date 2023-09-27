@@ -2,18 +2,19 @@ name: xeus-python-kernel-docs
 
 channels:
   - conda-forge
+  - conda-forge/label/jupyterlite_core_alpha
 
 dependencies:
   - python=3.10
   - pip
+  - nodejs=20
   - click
   - typer
   - linkify-it-py
   - myst-parser
   - pydata-sphinx-theme
-  - yarn
-  - jupyterlab >=3.5.3,<3.6
-  - jupyterlite-core >=0.1.0,<0.2.0
+  - jupyterlab >=4.0.5,<5
+  - jupyterlite-core >=0.2.0a1,<0.3.0
   - jupyterlite-sphinx >=0.9.1
   - empack >=3.1.0
   - pip:

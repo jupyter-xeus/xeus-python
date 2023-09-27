@@ -1,15 +1,16 @@
 name: xeus-python-kernel
 channels:
   - conda-forge
+  - conda-forge/label/jupyterlite_core_alpha
 dependencies:
   - python
   - pip
-  - jupyterlab >=3.6,<4
+  - jupyterlab >=4.0,<5
+  - jupyterlite-core >=0.2.0a1,<0.3.0
   - traitlets
   - requests
   - typer
   - pytest
   - empack >=3,<4
-  - yarn =3
-  - pip:
-    - jupyterlite
+  - nodejs=20
+  - mamba

@@ -68,7 +68,7 @@ jobs:
           sudo rm -rf $(which node)
           sudo rm -rf $(which node)
           pip install jupyterlite-xeus-python.tar.gz
-          pip install "jupyterlab==3"
+          pip install "jupyterlab==4"
           jupyter labextension list 2>&1 | grep -ie "@jupyterlite/xeus-python-kernel.*OK"
 
           # TODO: add JupyterLite browser check
@@ -85,16 +85,13 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: jupyterlite-xeus-python-sdist
-
+      
       - name: Install Conda environment with Micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
           micromamba-version: '1.5.1-0'
           environment-file: environment.yml
           cache-environment: true
-
-      - name: Install mamba
-        run: conda install -c conda-forge mamba
 
       - name: Make sure the Mamba Python API is available
         run: |
@@ -119,16 +116,13 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: jupyterlite-xeus-python-sdist
-
+      
       - name: Install Conda environment with Micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
           micromamba-version: '1.5.1-0'
           environment-file: environment.yml
           cache-environment: true
-
-      - name: Install mamba
-        run: conda install -c conda-forge mamba
 
       - name: Install
         run: pip install jupyterlite-xeus-python.tar.gz
@@ -149,12 +143,12 @@ jobs:
         with:
           name: jupyterlite-xeus-python-sdist
 
-      - name: Install mamba
-        uses: mamba-org/provision-with-micromamba@main
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
-          micromamba-version: '0.22.0'
+          micromamba-version: '1.5.1-0'
           environment-file: environment.yml
-          environment-name: xeus-python-kernel
+          cache-environment: true
 
       - name: Install
         run: pip install jupyterlite-xeus-python.tar.gz
