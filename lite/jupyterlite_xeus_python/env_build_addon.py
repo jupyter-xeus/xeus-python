@@ -2,27 +2,17 @@
 import json
 import os
 from pathlib import Path
-import requests
-import shutil
-from subprocess import check_call, run, DEVNULL
 from tempfile import TemporaryDirectory
-from urllib.parse import urlparse
 
-import yaml
-
-from traitlets import List, Unicode
-
-from empack.pack import pack_env, DEFAULT_CONFIG_PATH
-from empack.file_patterns import PkgFileFilter, pkg_file_filter_from_yaml
-
-from jupyterlite_core.constants import (
-    SHARE_LABEXTENSIONS,
-    LAB_EXTENSIONS,
-    JUPYTERLITE_JSON,
-    UTF8,
-    FEDERATED_EXTENSIONS,
-)
 from jupyterlite_core.addons.federated_extensions import FederatedExtensionAddon
+from jupyterlite_core.constants import (
+    FEDERATED_EXTENSIONS,
+    JUPYTERLITE_JSON,
+    LAB_EXTENSIONS,
+    SHARE_LABEXTENSIONS,
+    UTF8,
+)
+from traitlets import List, Unicode
 
 from .build import XEUS_PYTHON_VERSION, build_and_pack_emscripten_env
 
@@ -42,9 +32,8 @@ class XeusPythonEnv(FederatedExtensionAddon):
     )
 
     empack_config = Unicode(
-        None,
+        "",
         config=True,
-        allow_none=True,
         description="The path or URL to the empack config file",
     )
 
@@ -64,7 +53,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
     )
 
     def __init__(self, *args, **kwargs):
-        super(XeusPythonEnv, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.cwd = TemporaryDirectory()
 
@@ -133,9 +122,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
         stem = json.loads(pkg_json.read_text(**UTF8))["name"]
         dest = self.output_extensions / stem
         file_dep = [
-            p
-            for p in pkg_path.rglob("*")
-            if not (p.is_dir() or self.is_ignored_sourcemap(p.name))
+            p for p in pkg_path.rglob("*") if not (p.is_dir() or self.is_ignored_sourcemap(p.name))
         ]
 
         yield dict(

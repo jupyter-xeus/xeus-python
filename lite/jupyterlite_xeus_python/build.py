@@ -1,21 +1,18 @@
 import csv
 import os
-from copy import copy
-from pathlib import Path
-import requests
 import shutil
-from subprocess import check_call, run, DEVNULL
-from tempfile import TemporaryDirectory
-from typing import List
-from urllib.parse import urlparse
 import sys
+from pathlib import Path
+from subprocess import run
+from tempfile import TemporaryDirectory
+from typing import List, Optional
+from urllib.parse import urlparse
 
-import yaml
-
-from empack.pack import pack_env, DEFAULT_CONFIG_PATH
-from empack.file_patterns import PkgFileFilter, pkg_file_filter_from_yaml
-
+import requests
 import typer
+import yaml
+from empack.file_patterns import PkgFileFilter, pkg_file_filter_from_yaml
+from empack.pack import DEFAULT_CONFIG_PATH, pack_env
 
 try:
     from mamba.api import create as mamba_create
@@ -40,6 +37,7 @@ CHANNELS = [
 ]
 
 PLATFORM = "emscripten-32"
+DEFAULT_REQUEST_TIMEOUT = 1  # in minutes
 
 
 def create_env(
@@ -131,10 +129,12 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
     if log is not None:
         log.warning(
             """
-            Installing pip dependencies. This is very much experimental so use this feature at your own risks.
+            Installing pip dependencies. This is very much experimental so use
+            this feature at your own risks.
             Note that you can only install pure-python packages.
-            pip is being run with the --no-deps option to not pull undesired system-specific dependencies, so please
-            install your package dependencies from emscripten-forge or conda-forge.
+            pip is being run with the --no-deps option to not pull undesired
+            system-specific dependencies, so please install your package dependencies
+            from emscripten-forge or conda-forge.
             """
         )
 
@@ -144,6 +144,8 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
 
     run(
         [
+            sys.executable,
+            "-m",
             "pip",
             "install",
             *dependencies,
@@ -166,7 +168,7 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
     packages_dist_info = Path(pkg_dir.name).glob("*.dist-info")
 
     for package_dist_info in packages_dist_info:
-        with open(package_dist_info / "RECORD", "r") as record:
+        with open(package_dist_info / "RECORD") as record:
             record_content = record.read()
             record_csv = csv.reader(record_content.splitlines())
             all_files = [_file[0] for _file in record_csv]
@@ -181,7 +183,7 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
         with open(package_dist_info / "RECORD", "w") as record:
             record.write(fixed_record_data)
 
-        non_supported_files = [".so", ".a", ".dylib", ".lib", ".exe" ".dll"]
+        non_supported_files = [".so", ".a", ".dylib", ".lib", ".exe.dll"]
 
         # COPY files under `prefix_path`
         for _file, inside_site_packages in files:
@@ -208,10 +210,10 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
             shutil.copy(src_path, dest_path)
 
 
-def build_and_pack_emscripten_env(
+def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
     python_version: str = PYTHON_VERSION,
     xeus_python_version: str = XEUS_PYTHON_VERSION,
-    packages: List[str] = [],
+    packages: Optional[List[str]] = None,
     environment_file: str = "",
     root_prefix: str = "/tmp/xeus-python-kernel",
     env_name: str = "xeus-python-kernel",
@@ -222,13 +224,13 @@ def build_and_pack_emscripten_env(
     log=None,
 ):
     """Build a conda environment for the emscripten platform and pack it with empack."""
+    if packages is None:
+        packages = []
     channels = CHANNELS
     specs = [
         f"python={python_version}",
         "xeus-lite",
-        "xeus-python"
-        if not xeus_python_version
-        else f"xeus-python={xeus_python_version}",
+        "xeus-python" if not xeus_python_version else f"xeus-python={xeus_python_version}",
         *packages,
     ]
     bail_early = True
@@ -261,13 +263,17 @@ def build_and_pack_emscripten_env(
                 elif isinstance(dependency, dict) and dependency.get("pip") is not None:
                     # If it's a local Python package, make its path relative to the environment file
                     pip_dependencies = [
-                        ((env_file.parent / pip_dep).resolve() if os.path.isdir(env_file.parent / pip_dep) else pip_dep)
+                        (
+                            (env_file.parent / pip_dep).resolve()
+                            if os.path.isdir(env_file.parent / pip_dep)
+                            else pip_dep
+                        )
                         for pip_dep in dependency["pip"]
                     ]
 
     # Bail early if there is nothing to do
     if bail_early and not force:
-        return []
+        return ""
 
     orig_config = os.environ.get("CONDARC")
 
@@ -294,7 +300,9 @@ def build_and_pack_emscripten_env(
         if empack_config:
             empack_config_is_url = urlparse(empack_config).scheme in ("http", "https")
             if empack_config_is_url:
-                empack_config_content = requests.get(empack_config).content
+                empack_config_content = requests.get(
+                    empack_config, timeout=DEFAULT_REQUEST_TIMEOUT
+                ).content
                 pack_kwargs["file_filters"] = PkgFileFilter.parse_obj(
                     yaml.safe_load(empack_config_content)
                 )
@@ -324,7 +332,7 @@ def build_and_pack_emscripten_env(
                 dirs_exist_ok=True,
             )
 
-            with open(Path(output_path) / "worker.ts", "r") as fobj:
+            with open(Path(output_path) / "worker.ts") as fobj:
                 worker = fobj.read()
 
             worker = worker.replace("XEUS_KERNEL_FILE", "'xpython_wasm.js'")
@@ -356,9 +364,7 @@ def build_and_pack_emscripten_env(
 def main(
     python_version: str = PYTHON_VERSION,
     xeus_python_version: str = XEUS_PYTHON_VERSION,
-    packages: List[str] = typer.Option(
-        [], help="The list of packages you want to install"
-    ),
+    packages: List[str] = typer.Option([], help="The list of packages you want to install"),
     environment_file: str = typer.Option(
         "", help="The path to the environment.yml file you want to use"
     ),

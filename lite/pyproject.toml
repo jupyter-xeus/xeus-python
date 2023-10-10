@@ -30,6 +30,12 @@ dependencies = [
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
+[project.optional-dependencies]
+dev = [
+    "black",
+    "ruff==0.0.292",
+]
+
 [project.scripts]
 jupyterlite-xeus-python-build = "jupyterlite_xeus_python.build:start"
 
@@ -85,3 +91,51 @@ before-build-python = ["jlpm clean:all"]
 
 [tool.check-wheel-contents]
 ignore = ["W002"]
+
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+[tool.ruff]
+target-version = "py38"
+exclude = [
+    "*/tests/*",
+    "docs",
+]
+line-length = 100
+select = [
+  "A", "B", "C", "DTZ", "E", "EM", "F", "FBT", "I", "ICN", "ISC", "N",
+  "PLC", "PLE", "PLR", "PLW", "Q", "RUF", "S", "SIM", "T", "TID", "UP",
+  "W", "YTT",
+]
+ignore = [
+  "D100",
+  "D104",
+  # Q000 Single quotes found but double quotes preferred
+  "Q000",
+  # FBT001 Boolean positional arg in function definition
+  "FBT001", "FBT002", "FBT003",
+  # C408 Unnecessary `dict` call (rewrite as a literal)
+  "C408", "C416",
+  # allow for using print()
+  "T201",
+  # PLR0913 Too many arguments to function call
+  "PLR0913",
+  # extended flake8 ignore
+  "D104", "D100", "EM101",
+  # Probable insecure usage of temporary file or directory
+  "S108",
+  # RUF012 Mutable class attributes should be annotated with `typing.ClassVar`
+  "RUF012",
+]
+
+[tool.ruff.per-file-ignores]
+# S101 Use of `assert` detected
+# F841 Local variable `foo` is assigned to but never used
+# PLR2004 Magic value used in comparison
+"tests/*" = ["S101", "F841", "PLR2004"]
+
+# B008 Do not perform function call `typer.Option` in argument defaults
+# E501 `subprocess` call: check for execution of untrusted input
+# S603 `subprocess` call: check for execution of untrusted input
+"jupyterlite_xeus_python/build.py" = ["B008", "E501", "S603"]

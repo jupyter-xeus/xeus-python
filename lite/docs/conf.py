@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 extensions = [
     "jupyterlite_sphinx",
     "myst_parser",

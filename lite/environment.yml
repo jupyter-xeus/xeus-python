@@ -14,3 +14,5 @@ dependencies:
   - empack >=3,<4
   - nodejs=20
   - mamba
+  - black
+  - ruff

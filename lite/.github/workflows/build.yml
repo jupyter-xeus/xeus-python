@@ -29,7 +29,7 @@ jobs:
           set -eux
           jlpm
           jlpm run build
-          jlpm run eslint:check
+          jlpm run lint:check
           python -m pip install -v .
           jupyter labextension list 2>&1 | grep -ie "@jupyterlite/xeus-python-kernel.*OK"
 
