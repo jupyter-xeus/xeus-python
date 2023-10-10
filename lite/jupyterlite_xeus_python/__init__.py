@@ -1,33 +1,16 @@
-import sys
-import json
-from pathlib import Path
-
-from ._version import __version__
-
-HERE = Path(__file__).parent.resolve()
+try:
+    from ._version import __version__
+except ImportError:
+    # Fallback when using the package in dev mode without installing
+    # in editable mode with pip. It is highly recommended to install
+    # the package from a stable release or in editable mode: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
+    import warnings
+    warnings.warn("Importing 'jupyterlite-xeus-python' outside a proper installation.")
+    __version__ = "dev"
 
 
 def _jupyter_labextension_paths():
-    prefix = sys.prefix
-    # For when in dev mode
-    if (
-        HERE.parent
-        / "share"
-        / "jupyter"
-        / "labextensions"
-        / "@jupyterlite"
-        / "xeus-python-kernel"
-    ).parent.exists():
-        prefix = HERE.parent
-
-    return [
-        {
-            "src": prefix
-            / "share"
-            / "jupyter"
-            / "labextensions"
-            / "@jupyterlite"
-            / "xeus-python-kernel",
-            "dest": "@jupyterlite/xeus-python-kernel",
-        }
-    ]
+    return [{
+        "src": "labextension",
+        "dest": "@jupyterlite/xeus-python-kernel"
+    }]

@@ -56,7 +56,7 @@ Then you only need to build JupyterLite:
 jupyter lite build
 ```
 
-You can also pick another name for that environment file (*e.g.* `custom.yml`), by doing so, you will need to specify that name to xeus-python:
+You can also pick another name for that environment file (_e.g._ `custom.yml`), by doing so, you will need to specify that name to xeus-python:
 
 ```bash
 jupyter lite build --XeusPythonEnv.environment_file=custom.yml
@@ -74,7 +74,7 @@ The `jlpm` command is JupyterLab's pinned version of
 
 ```bash
 # Clone the repo to your local environment
-# Change directory to the jupyterlite_xeus_python directory
+# Change directory to the jupyterlite-xeus-python directory
 # Install package in development mode
 python -m pip install -e .
 
@@ -99,7 +99,7 @@ With the watch command running, every saved change will immediately be built loc
 ### Development uninstall
 
 ```bash
-pip uninstall jupyterlite_xeus_python
+pip uninstall jupyterlite-xeus-python
 ```
 
 In development mode, you will also need to remove the symlink created by `jupyter labextension develop`

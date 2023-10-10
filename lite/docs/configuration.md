@@ -27,7 +27,7 @@ Then you only need to build JupyterLite:
 jupyter lite build
 ```
 
-You can also pick another name for that environment file (*e.g.* `custom.yml`), by doing so, you will need to specify that name to xeus-python:
+You can also pick another name for that environment file (_e.g._ `custom.yml`), by doing so, you will need to specify that name to xeus-python:
 
 ```
 jupyter lite build --XeusPythonEnv.environment_file=custom.yml
@@ -62,6 +62,7 @@ Then those packages are usable directly:
 `xeus-python` provides a way to install packages with pip.
 
 There are a couple of limitations that you should be aware of:
+
 - it can **only** install **pure Python packages** (Python code + data files)
 - it **does not install the package dependencies**, you should make sure to install them yourself using conda-forge/emscripten-forge.
 - it does not work (yet?) using `-r requirements.txt` in your environment file
@@ -78,7 +79,7 @@ dependencies:
   - pillow
   - ipywidgets
   - pip:
-    - ipycanvas
+      - ipycanvas
 ```
 
 You can also install a local Python package, this is very practical if you want to embed
@@ -91,7 +92,7 @@ channels:
   - https://repo.mamba.pm/conda-forge
 dependencies:
   - pip:
-    - ..
+      - ..
 ```
 
 ## Advanced Configuration

@@ -1,27 +1,87 @@
 [build-system]
-requires = ["jupyter_packaging~=0.10,<2", "jupyterlab~=4.0", "empack>=3,<4"]
-build-backend = "jupyter_packaging.build_api"
+requires = ["hatchling>=1.5.0", "jupyterlab>=4.0.0,<5", "empack>=3.0,<4", "hatch-nodejs-version>=0.3.2"]
+build-backend = "hatchling.build"
 
-[tool.jupyter-packaging.options]
-skip-if-exists = ["share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/static/style.js"]
-ensured-targets = ["share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/static/style.js", "share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/package.json"]
+[project]
+name = "jupyterlite-xeus-python"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Framework :: Jupyter",
+    "Framework :: Jupyter :: JupyterLab",
+    "Framework :: Jupyter :: JupyterLab :: 4",
+    "Framework :: Jupyter :: JupyterLab :: Extensions",
+    "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "traitlets",
+    "jupyterlite-core>=0.2.0a1,<0.3",
+    "requests",
+    "empack>=3.1,<4",
+    "typer",
+]
+dynamic = ["version", "description", "authors", "urls", "keywords"]
 
-[tool.jupyter-packaging.builder]
-factory = "jupyter_packaging.npm_builder"
+[project.scripts]
+jupyterlite-xeus-python-build = "jupyterlite_xeus_python.build:start"
 
-[tool.jupyter-packaging.build-args]
+[project.entry-points."jupyterlite.addon.v0"]
+jupyterlite-xeus-python = "jupyterlite_xeus_python.env_build_addon:XeusPythonEnv"
+
+[tool.hatch.version]
+source = "nodejs"
+
+[tool.hatch.metadata.hooks.nodejs]
+fields = ["description", "authors", "urls"]
+
+[tool.hatch.build.targets.sdist]
+artifacts = ["jupyterlite_xeus_python/labextension"]
+exclude = [".github"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"jupyterlite_xeus_python/labextension" = "share/jupyter/labextensions/@jupyterlite/xeus-python-kernel"
+"install.json" = "share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/install.json"
+
+[tool.hatch.build.hooks.version]
+path = "jupyterlite_xeus_python/_version.py"
+
+[tool.hatch.build.hooks.jupyter-builder]
+dependencies = ["hatch-jupyter-builder>=0.5"]
+build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = [
+    "jupyterlite_xeus_python/labextension/static/style.js",
+    "jupyterlite_xeus_python/labextension/package.json",
+]
+skip-if-exists = ["jupyterlite_xeus_python/labextension/static/style.js"]
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 build_cmd = "build:prod"
 npm = ["jlpm"]
 
-[tool.check-manifest]
-ignore = ["share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/**", "yarn.lock", ".*", "package-lock.json", "src/xpython_wasm.js", "src/xpython_wasm.wasm", "src/*.tar.gz", "src/*.js", "src/worker.ts", "src/web_worker_kernel.ts", "*.sh"]
+[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
+build_cmd = "install:extension"
+npm = ["jlpm"]
+source_dir = "src"
+build_dir = "jupyterlite_xeus_python/labextension"
 
 [tool.jupyter-releaser.options]
-skip = ["check-links"]
+version_cmd = "hatch version"
 
 [tool.jupyter-releaser.hooks]
 before-build-npm = [
-    "python -m pip install jupyterlab~=4.0 empack~=3.0 jupyter_packaging~=0.10",
+    "python -m pip install 'jupyterlab>=4.0.0,<5' empack~=3.0",
     "jlpm",
-    "jlpm build:prod",
+    "jlpm build:prod"
 ]
+before-build-python = ["jlpm clean:all"]
+
+[tool.check-wheel-contents]
+ignore = ["W002"]

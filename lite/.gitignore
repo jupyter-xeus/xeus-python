@@ -125,7 +125,10 @@ src/worker.ts
 src/web_worker_kernel.ts
 
 # Labextension
-share
+jupyterlite_xeus_python/labextension
+
+# Version file is handled by hatchling
+jupyterlite_xeus_python/_version.py
 
 # venv
 .venv
