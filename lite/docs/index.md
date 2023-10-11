@@ -33,4 +33,5 @@ How does it compare to the [Pyodide kernel](https://github.com/jupyterlite/pyodi
 installation
 deploy
 configuration
+changelog
 ```
