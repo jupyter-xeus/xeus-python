@@ -2,6 +2,27 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 1.0.0a1
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v1.0.0a0...2f336570200a6fec5f82c302ed6c5fda80598535))
+
+### Enhancements made
+
+- Python 3.11 and new emscripten-wasm32 platform [#164](https://github.com/jupyterlite/xeus-python-kernel/pull/164) ([@martinRenou](https://github.com/martinRenou))
+
+### Maintenance and upkeep improvements
+
+- Adopt `ruff`, `black`, fix various issues [#169](https://github.com/jupyterlite/xeus-python-kernel/pull/169) ([@jtpio](https://github.com/jtpio))
+- Align repo with the extension template [#168](https://github.com/jupyterlite/xeus-python-kernel/pull/168) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-09-27&to=2023-10-11&type=c))
+
+[@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-09-27..2023-10-11&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-09-27..2023-10-11&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-09-27..2023-10-11&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 1.0.0a0
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v0.9.6...8ed06f083b2e325af748e256e8a5e7118ec29a7e))
@@ -15,8 +36,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-09-27&to=2023-09-27&type=c))
 
 [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-09-27..2023-09-27&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-09-27..2023-09-27&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.9.6
 

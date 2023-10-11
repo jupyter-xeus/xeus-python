@@ -1,6 +1,6 @@
 {
     "name": "@jupyterlite/xeus-python-kernel",
-    "version": "1.0.0-alpha.0",
+    "version": "1.0.0-a1",
     "description": "A Python kernel for JupyterLite, powered by Xeus",
     "keywords": [
         "jupyter",
