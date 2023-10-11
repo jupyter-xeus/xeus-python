@@ -43,7 +43,7 @@ Say you want to install `NumPy`, `Matplotlib` and `ipycanvas`, it can be done by
 name: xeus-python-kernel
 channels:
   - https://repo.mamba.pm/emscripten-forge
-  - https://repo.mamba.pm/conda-forge
+  - conda-forge
 dependencies:
   - numpy
   - matplotlib

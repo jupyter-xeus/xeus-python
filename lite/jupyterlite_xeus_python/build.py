@@ -26,17 +26,17 @@ MICROMAMBA_COMMAND = shutil.which("micromamba")
 CONDA_COMMAND = shutil.which("conda")
 
 PYTHON_MAJOR = 3
-PYTHON_MINOR = 10
+PYTHON_MINOR = 11
 PYTHON_VERSION = f"{PYTHON_MAJOR}.{PYTHON_MINOR}"
 
-XEUS_PYTHON_VERSION = "0.15.9"
+XEUS_PYTHON_VERSION = "0.15.10"
 
 CHANNELS = [
     "https://repo.mamba.pm/emscripten-forge",
-    "https://repo.mamba.pm/conda-forge",
+    "conda-forge",
 ]
 
-PLATFORM = "emscripten-32"
+PLATFORM = "emscripten-wasm32"
 DEFAULT_REQUEST_TIMEOUT = 1  # in minutes
 
 
@@ -74,6 +74,7 @@ def create_env(
                 MICROMAMBA_COMMAND,
                 "create",
                 "--yes",
+                "--no-pyc",
                 "--root-prefix",
                 root_prefix,
                 "--name",

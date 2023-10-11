@@ -50,18 +50,18 @@ def test_python_env_from_file_1():
     assert os.path.isfile("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/bin/xpython_wasm.wasm")
 
     # Checking pip packages
-    assert os.path.isdir("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.10")
+    assert os.path.isdir("/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.11")
     assert os.path.isdir(
-        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.10/site-packages"
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.11/site-packages"
     )
     assert os.path.isdir(
-        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.10/site-packages/ipywidgets"
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.11/site-packages/ipywidgets"
     )
     assert os.path.isdir(
-        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.10/site-packages/ipycanvas"
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.11/site-packages/ipycanvas"
     )
     assert os.path.isdir(
-        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.10/site-packages/py2vega"
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-1/lib/python3.11/site-packages/py2vega"
     )
 
     # Checking labextensions
@@ -91,10 +91,10 @@ def test_python_env_from_file_3():
 
     # Test
     assert os.path.isdir(
-        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-3/lib/python3.10/site-packages/test_package"
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-3/lib/python3.11/site-packages/test_package"
     )
     assert os.path.isfile(
-        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-3/lib/python3.10/site-packages/test_package/hey.py"
+        "/tmp/xeus-python-kernel/envs/xeus-python-kernel-3/lib/python3.11/site-packages/test_package/hey.py"
     )
 
     os.remove(Path(addon.cwd.name) / "empack_env_meta.json")

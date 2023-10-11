@@ -4,6 +4,7 @@ channels:
   - conda-forge/label/jupyterlite_core_alpha
 dependencies:
   - python
+  - build
   - pip
   - jupyterlab >=4.0,<5
   - jupyterlite-core >=0.2.0a1,<0.3.0
