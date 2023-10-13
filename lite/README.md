@@ -76,7 +76,7 @@ The `jlpm` command is JupyterLab's pinned version of
 # Clone the repo to your local environment
 # Change directory to the jupyterlite-xeus-python directory
 # Install package in development mode
-python -m pip install -e .
+python -m pip install -e ".[dev]"
 
 # Link your development version of the extension with JupyterLab
 jupyter labextension develop . --overwrite

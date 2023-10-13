@@ -1,0 +1,5 @@
+{
+  "LiteBuildConfig": {
+    "output_dir": "ui-tests-app"
+  }
+}

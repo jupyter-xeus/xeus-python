@@ -49,7 +49,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: dist ${{ github.run_number }}
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
           path: ./dist
 
   test_isolated:
@@ -66,7 +66,7 @@ jobs:
           architecture: 'x64'
       - uses: actions/download-artifact@v2
         with:
-          name: dist ${{ github.run_number }}
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
           path: ./dist
       - name: Install and Test
         run: |
@@ -92,7 +92,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: dist ${{ github.run_number }}
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
           path: ./dist
 
       - name: Install Conda environment with Micromamba
@@ -125,7 +125,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: dist ${{ github.run_number }}
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
           path: ./dist
 
       - name: Install Conda environment with Micromamba
@@ -153,7 +153,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: dist ${{ github.run_number }}
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
           path: ./dist
 
       - name: Install Conda environment with Micromamba
@@ -181,7 +181,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: dist ${{ github.run_number }}
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
           path: ./dist
 
       - name: Install Conda environment with Micromamba

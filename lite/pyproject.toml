@@ -136,6 +136,10 @@ ignore = [
 "tests/*" = ["S101", "F841", "PLR2004"]
 
 # B008 Do not perform function call `typer.Option` in argument defaults
-# E501 `subprocess` call: check for execution of untrusted input
+# E501 Line too long
 # S603 `subprocess` call: check for execution of untrusted input
 "jupyterlite_xeus_python/build.py" = ["B008", "E501", "S603"]
+
+# E501 Line too long
+# S602 `subprocess` call with `shell=True` identified, security issue
+"ui-tests/build.py" = ["E501", "S602"]

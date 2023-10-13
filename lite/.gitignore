@@ -136,3 +136,12 @@ jupyterlite_xeus_python/_version.py
 # Yarn 3
 .pnp*
 .yarn
+
+# UI tests
+ui-tests/playwright-report
+ui-tests/test-results
+ui-tests/ui-tests-app
+
+# Lint
+.eslintcache
+.stylelintcache

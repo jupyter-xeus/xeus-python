@@ -5,3 +5,6 @@ coverage
 tests
 src/worker.ts
 src/web_worker_kernel.ts
+
+# TODO: remove
+ui-tests
