@@ -23,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "traitlets",
-    "jupyterlite-core>=0.2.0a1,<0.3",
+    "jupyterlite-core>=0.2.0rc0,<0.3",
     "requests",
     "empack>=3.1,<4",
     "typer",
@@ -52,6 +52,10 @@ fields = ["description", "authors", "urls"]
 artifacts = ["jupyterlite_xeus_python/labextension"]
 exclude = [".github"]
 
+[tool.hatch.build.targets.wheel]
+artifacts = ["jupyterlite_xeus_python/labextension"]
+include = ["jupyterlite_xeus_python/"]
+
 [tool.hatch.build.targets.wheel.shared-data]
 "jupyterlite_xeus_python/labextension" = "share/jupyter/labextensions/@jupyterlite/xeus-python-kernel"
 "install.json" = "share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/install.json"
@@ -64,6 +68,9 @@ dependencies = ["hatch-jupyter-builder>=0.5"]
 build-function = "hatch_jupyter_builder.npm_builder"
 ensured-targets = [
     "jupyterlite_xeus_python/labextension/static/style.js",
+    "jupyterlite_xeus_python/labextension/static/empack_env_meta.json",
+    "jupyterlite_xeus_python/labextension/static/xpython_wasm.js",
+    "jupyterlite_xeus_python/labextension/static/xpython_wasm.wasm",
     "jupyterlite_xeus_python/labextension/package.json",
 ]
 skip-if-exists = ["jupyterlite_xeus_python/labextension/static/style.js"]

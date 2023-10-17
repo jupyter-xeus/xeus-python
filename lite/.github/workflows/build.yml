@@ -45,42 +45,44 @@ jobs:
           cache-environment: true
 
       - name: Build the extension
-        run: python -m build
+        run: |
+          set -eux
+          python -m build
 
-      - uses: actions/upload-artifact@v2
+      - name: Upload extension packages
+        uses: actions/upload-artifact@v3
         with:
           name: jupyterlite-xeus-python-dist-${{ github.run_number }}
-          path: ./dist
+          path: dist
+          if-no-files-found: error
 
   test_isolated:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10'
-          architecture: 'x64'
-      - uses: actions/download-artifact@v2
-        with:
-          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
-          path: ./dist
-      - name: Install and Test
-        run: |
-          set -eux
-          # Remove NodeJS, twice to take care of system and locally installed node versions.
-          sudo rm -rf $(which node)
-          sudo rm -rf $(which node)
-          pip install jupyterlite_xeus_python*.tar.gz
-          pip install "jupyterlab==4"
-          jupyter labextension list 2>&1 | grep -ie "@jupyterlite/xeus-python-kernel.*OK"
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+    - uses: actions/download-artifact@v3
+      with:
+        name: jupyterlite-xeus-python-dist-${{ github.run_number }}
+    - name: Install and Test
+      run: |
+        set -eux
+        # Remove NodeJS, twice to take care of system and locally installed node versions.
+        sudo rm -rf $(which node)
+        sudo rm -rf $(which node)
 
-          # TODO: add JupyterLite browser check
-          # python -m jupyterlab.browser_check --no-chrome-test
-        working-directory: dist
+        pip install "jupyterlab>=4.0.0,<5" jupyterlite_xeus_python*.whl
+
+        jupyter labextension list
+        jupyter labextension list 2>&1 | grep -ie "@jupyterlite/xeus-python-kernel.*OK"
+        
+        python -m jupyterlab.browser_check --no-browser-test
+
 
   python-tests-mamba-python:
     needs: build
@@ -198,3 +200,13 @@ jobs:
       - name: Run tests
         run: pytest -rP test_xeus_python_env.py
         working-directory: tests
+
+
+  check_links:
+    name: Check Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+      - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+      - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
