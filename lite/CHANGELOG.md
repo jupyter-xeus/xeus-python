@@ -2,6 +2,28 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 1.0.0a2
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v1.0.0a1...e5d5d48763484fd4b6e84ff7fcf3ff26f8c3fd22))
+
+### Maintenance and upkeep improvements
+
+- Add `enforce-label` workflow [#180](https://github.com/jupyterlite/xeus-python-kernel/pull/180) ([@jtpio](https://github.com/jtpio))
+- Add missing `ensured-targets` [#179](https://github.com/jupyterlite/xeus-python-kernel/pull/179) ([@jtpio](https://github.com/jtpio))
+- Start `ui-tests` [#167](https://github.com/jupyterlite/xeus-python-kernel/pull/167) ([@jtpio](https://github.com/jtpio))
+
+### Documentation improvements
+
+- Include the changelog in the docs [#173](https://github.com/jupyterlite/xeus-python-kernel/pull/173) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-10-11&to=2023-10-17&type=c))
+
+[@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-10-11..2023-10-17&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-10-11..2023-10-17&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 1.0.0a1
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v1.0.0a0...2f336570200a6fec5f82c302ed6c5fda80598535))
@@ -20,8 +42,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-09-27&to=2023-10-11&type=c))
 
 [@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-09-27..2023-10-11&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-09-27..2023-10-11&type=Issues) | [@martinRenou](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3AmartinRenou+updated%3A2023-09-27..2023-10-11&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 1.0.0a0
 
