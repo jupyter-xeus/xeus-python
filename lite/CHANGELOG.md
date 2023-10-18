@@ -2,6 +2,22 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 1.0.0a3
+
+([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v1.0.0a2...90f5ac56c5a0ea0a5c1d21da16b11bb49ae18d28))
+
+### Maintenance and upkeep improvements
+
+- Add more `skip-if-exists`, fix wheel packaging [#181](https://github.com/jupyterlite/xeus-python-kernel/pull/181) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-10-17&to=2023-10-18&type=c))
+
+[@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-10-17..2023-10-18&type=Issues)
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 1.0.0a2
 
 ([Full Changelog](https://github.com/jupyterlite/xeus-python-kernel/compare/v1.0.0a1...e5d5d48763484fd4b6e84ff7fcf3ff26f8c3fd22))
@@ -21,8 +37,6 @@
 ([GitHub contributors page for this release](https://github.com/jupyterlite/xeus-python-kernel/graphs/contributors?from=2023-10-11&to=2023-10-17&type=c))
 
 [@github-actions](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Agithub-actions+updated%3A2023-10-11..2023-10-17&type=Issues) | [@jtpio](https://github.com/search?q=repo%3Ajupyterlite%2Fxeus-python-kernel+involves%3Ajtpio+updated%3A2023-10-11..2023-10-17&type=Issues)
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 1.0.0a1
 
