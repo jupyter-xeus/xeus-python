@@ -52,10 +52,6 @@ fields = ["description", "authors", "urls"]
 artifacts = ["jupyterlite_xeus_python/labextension"]
 exclude = [".github"]
 
-[tool.hatch.build.targets.wheel]
-artifacts = ["jupyterlite_xeus_python/labextension"]
-include = ["jupyterlite_xeus_python/"]
-
 [tool.hatch.build.targets.wheel.shared-data]
 "jupyterlite_xeus_python/labextension" = "share/jupyter/labextensions/@jupyterlite/xeus-python-kernel"
 "install.json" = "share/jupyter/labextensions/@jupyterlite/xeus-python-kernel/install.json"
@@ -73,11 +69,19 @@ ensured-targets = [
     "jupyterlite_xeus_python/labextension/static/xpython_wasm.wasm",
     "jupyterlite_xeus_python/labextension/package.json",
 ]
-skip-if-exists = ["jupyterlite_xeus_python/labextension/static/style.js"]
+skip-if-exists = [
+    "jupyterlite_xeus_python/labextension/static/style.js",
+    "jupyterlite_xeus_python/labextension/static/empack_env_meta.json",
+    "jupyterlite_xeus_python/labextension/static/xpython_wasm.js",
+    "jupyterlite_xeus_python/labextension/static/xpython_wasm.wasm",
+    "jupyterlite_xeus_python/labextension/package.json",
+]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 build_cmd = "build:prod"
 npm = ["jlpm"]
+source_dir = "src"
+build_dir = "jupyterlite_xeus_python/labextension"
 
 [tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
 build_cmd = "install:extension"

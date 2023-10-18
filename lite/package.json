@@ -15,7 +15,7 @@
     "license": "BSD-3-Clause",
     "author": "JupyterLite Contributors",
     "files": [
-        "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
+        "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf,wasm}",
         "style/**/*.{css,js,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
     ],
     "main": "lib/index.js",
@@ -31,7 +31,7 @@
         "build": "jlpm run build:xeus-python && jlpm run build:lib && jlpm run build:worker && jlpm run copy-files && jlpm run build:labextension:dev",
         "build:xeus-python": "python jupyterlite_xeus_python/build.py --output-path src --build-worker",
         "build:worker:prod": "webpack --config worker.webpack.config.js --mode=production",
-        "build:prod": "jlpm run clean && jlpm run build build:xeus-python && jlpm run build:lib:prod && jlpm run build:worker:prod && jlpm run copy-files && jlpm run build:labextension",
+        "build:prod": "jlpm run clean && jlpm run build:xeus-python && jlpm run build:lib:prod && jlpm run build:worker:prod && jlpm run copy-files && jlpm run build:labextension",
         "build:labextension": "jupyter labextension build .",
         "build:labextension:dev": "jupyter labextension build --development True .",
         "build:lib": "tsc --sourceMap",

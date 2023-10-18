@@ -4,8 +4,7 @@ node_modules/
 *.egg-info/
 .ipynb_checkpoints
 *.tsbuildinfo
-*.tar.gz
-empack_env_meta.json
+/*.tar.gz
 # Created by https://www.gitignore.io/api/python
 # Edit at https://www.gitignore.io/?templates=python
 
@@ -114,15 +113,18 @@ dmypy.json
 _output
 *.doit.db
 
-python_data.js
-*.data
+# Generated files
+src/python_data.js
+src/*.data
 src/*.js
-xpython_wasm.js
-xpython_wasm.wasm
-xpython_wasm.hash
-
+src/xpython_wasm.js
+src/xpython_wasm.wasm
+src/xpython_wasm.hash
 src/worker.ts
 src/web_worker_kernel.ts
+src/*.tar.gz
+src/empack_env_meta.json
+*.js.map
 
 # Labextension
 jupyterlite_xeus_python/labextension
