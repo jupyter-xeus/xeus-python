@@ -205,6 +205,9 @@ jobs:
           export CMAKE_PREFIX_PATH=$PREFIX
           export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
 
+          # remove all the fake pythons binaries
+          rm -f $PREFIX/bin/python*
+
           emcmake cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
