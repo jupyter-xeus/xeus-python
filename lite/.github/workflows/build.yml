@@ -1,0 +1,212 @@
+name: Build
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: '*'
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: '1.5.1-0'
+          environment-file: environment.yml
+          cache-environment: true
+
+      - name: Lint
+        run: |
+          set -eux
+          jlpm
+          jlpm run build
+          jlpm run lint:check
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: '1.5.1-0'
+          environment-file: environment.yml
+          cache-environment: true
+
+      - name: Build the extension
+        run: |
+          set -eux
+          python -m build
+
+      - name: Upload extension packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
+          path: dist
+          if-no-files-found: error
+
+  test_isolated:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        architecture: 'x64'
+    - uses: actions/download-artifact@v3
+      with:
+        name: jupyterlite-xeus-python-dist-${{ github.run_number }}
+    - name: Install and Test
+      run: |
+        set -eux
+        # Remove NodeJS, twice to take care of system and locally installed node versions.
+        sudo rm -rf $(which node)
+        sudo rm -rf $(which node)
+
+        pip install "jupyterlab>=4.0.0,<5" jupyterlite_xeus_python*.whl
+
+        jupyter labextension list
+        jupyter labextension list 2>&1 | grep -ie "@jupyterlite/xeus-python-kernel.*OK"
+        
+        python -m jupyterlab.browser_check --no-browser-test
+
+
+  python-tests-mamba-python:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
+          path: ./dist
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: '1.5.1-0'
+          environment-file: environment.yml
+          cache-environment: true
+
+      - name: Make sure the Mamba Python API is available
+        run: |
+          mamba install mamba
+          python -c "from mamba.api import create"
+
+      - name: Install
+        run: pip install jupyterlite_xeus_python*.tar.gz
+        working-directory: dist
+
+      - name: Run tests
+        run: pytest -rP test_xeus_python_env.py
+        working-directory: tests
+
+  python-tests-mamba:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
+          path: ./dist
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: '1.5.1-0'
+          environment-file: environment.yml
+          cache-environment: true
+
+      - name: Install
+        run: pip install jupyterlite_xeus_python*.tar.gz
+        working-directory: dist
+
+      - name: Run tests
+        run: pytest -rP test_xeus_python_env.py
+        working-directory: tests
+
+  python-tests-micromamba:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
+          path: ./dist
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: '1.5.1-0'
+          environment-file: environment.yml
+          cache-environment: true
+
+      - name: Install
+        run: pip install jupyterlite_xeus_python*.tar.gz
+        working-directory: dist
+
+      - name: Run tests
+        run: pytest -rP test_xeus_python_env.py
+        working-directory: tests
+
+  python-tests-conda:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jupyterlite-xeus-python-dist-${{ github.run_number }}
+          path: ./dist
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: '1.5.1-0'
+          environment-file: environment.yml
+          cache-environment: true
+
+      - name: Install
+        run: pip install jupyterlite_xeus_python*.tar.gz
+        working-directory: dist
+
+      - name: Run tests
+        run: pytest -rP test_xeus_python_env.py
+        working-directory: tests
+
+
+  check_links:
+    name: Check Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+      - uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+      - uses: jupyterlab/maintainer-tools/.github/actions/check-links@v1
