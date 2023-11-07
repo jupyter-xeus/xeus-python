@@ -1,0 +1,24 @@
+{
+  "name": "@jupyterlite/jupyterlite-xeus-python-ui-tests",
+  "private": true,
+  "version": "0.1.0",
+  "author": "JupyterLite Contributors",
+  "license": "BSD-3-Clause",
+  "description": "JupyterLite Xeus Python UI Tests",
+  "scripts": {
+    "build": "python build.py",
+    "clean": "rimraf .jupyterlite.doit.db ui-tests-app",
+    "clean:snapshots": "rimraf -g \"test/**/*-snapshots/*.png\"",
+    "start": "cd ui-tests-app && python -m http.server -b 127.0.0.1 8000",
+    "test": "playwright test",
+    "test:report": "http-server ./playwright-report -a localhost -o",
+    "test:update": "playwright test --update-snapshots"
+  },
+  "dependencies": {
+    "@jupyterlab/galata": "~5.0.5",
+    "@playwright/test": "^1.36.2"
+  },
+  "devDependencies": {
+    "rimraf": "^5"
+  }
+}
