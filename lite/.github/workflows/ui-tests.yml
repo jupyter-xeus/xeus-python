@@ -1,0 +1,107 @@
+name: UI Tests
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Conda environment with Micromamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          micromamba-version: '1.5.1-0'
+          environment-file: environment.yml
+          cache-environment: true
+
+      - name: Install jupyterlite-xeus-python
+        run: |
+          jlpm
+          jlpm run build
+          python -m pip install -v .
+
+      - name: Build UI tests
+        run: |
+          cd ui-tests
+          jlpm
+          # Build the JupyterLite website
+          jlpm build
+
+      - name: Upload the JupyterLite website
+        uses: actions/upload-artifact@v3
+        with:
+          name: jupyterlite-xeus-python-ui-tests-app-${{ github.run_number }}
+          path: ./ui-tests/ui-tests-app
+
+  ui-tests:
+    needs: [build]
+    name: Visual Regression
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [firefox, chromium]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: jupyterlite-xeus-python-ui-tests-app-${{ github.run_number }}
+          path: ./ui-tests/ui-tests-app
+
+      - name: Base Setup
+        uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+
+      - name: Install dependencies and browser
+        run: |
+          # Install JupyterLab to get jlpm
+          python -m pip install jupyterlab~=4.0
+          cd ui-tests
+          jlpm
+          jlpm playwright install ${{ matrix.browser }} --with-deps
+
+      - name: Test
+        run: |
+          cd ui-tests
+          jlpm run test --browser ${{ matrix.browser }}
+
+      - name: Upload Playwright Test assets
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: jupyterlite-xeux-python-${{ matrix.browser }}-test-assets
+          path: |
+            ui-tests/test-results
+
+      - name: Upload Playwright Test report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: jupyterlite-xeus-python-${{ matrix.browser }}-test-report
+          path: |
+            ui-tests/playwright-report
+
+      - name: Update snapshots
+        if: failure()
+        run: |
+          cd ui-tests
+          # remove previous snapshots from other browser
+          jlpm run clean:snapshots
+          # generate new snapshots
+          jlpm run test:update --browser ${{ matrix.browser }}
+
+      - name: Upload updated snapshots
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: jupyterlite-xeus-python-${{ matrix.browser }}-updated-snapshots
+          path: ui-tests/test
