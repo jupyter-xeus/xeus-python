@@ -93,11 +93,7 @@ class XeusPythonEnv(FederatedExtensionAddon):
                     actions=[(self.copy_one, [item, dest / file])],
                 )
 
-        for file in [
-            "empack_env_meta.json",
-            "xpython_wasm.js",
-            "xpython_wasm.wasm",
-        ]:
+        for file in ["empack_env_meta.json"]:
             yield dict(
                 name=f"xeus:copy:{file}",
                 actions=[(self.copy_one, [Path(self.cwd.name) / file, dest / file])],

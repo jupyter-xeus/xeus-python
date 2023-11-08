@@ -39,6 +39,25 @@ CHANNELS = [
 PLATFORM = "emscripten-wasm32"
 DEFAULT_REQUEST_TIMEOUT = 1  # in minutes
 
+# check if we are in a local build via
+# export XEUS_PYTHON_LOCAL_BUILD=1
+# export XEUS_PYTHON_BUID_DIR=$XEUS_PYTHON_BUILD_DIR
+XEUS_PYTHON_LOCAL_BUILD = True
+# if os.environ.get("XEUS_PYTHON_LOCAL_BUILD") == "1":
+#     XEUS_PYTHON_LOCAL_BUILD=True
+#     XEUS_PYTHON_BUILD_DIR=os.environ.get("XEUS_PYTHON_BUILD_DIR")
+# if XEUS_PYTHON_BUILD_DIR is None:
+#     raise RuntimeError("XEUS_PYTHON_BUILD_DIR is not set")
+# XEUS_PYTHON_BUILD_DIR=Path(XEUS_PYTHON_BUILD_DIR)
+
+
+# location of this file
+HERE = Path(__file__).parent.resolve()
+EMSDK_SETUP_DIR = HERE.parent / "emsdk"
+BUILD_SH = HERE.parent / "build.sh"
+
+XEUS_PYTHON_BUILD_DIR = HERE.parent / "build" / "xeus-python"
+
 
 def create_env(
     env_name,
@@ -228,12 +247,15 @@ def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
     if packages is None:
         packages = []
     channels = CHANNELS
-    specs = [
-        f"python={python_version}",
-        "xeus-lite",
-        "xeus-python" if not xeus_python_version else f"xeus-python={xeus_python_version}",
-        *packages,
-    ]
+    specs = [f"python={python_version}", "xeus-lite", *packages]
+
+    if not XEUS_PYTHON_LOCAL_BUILD:
+        specs.extend(
+            ["xeus-python" if not xeus_python_version else f"xeus-python={xeus_python_version}"]
+        )
+    else:
+        specs.extend(["jedi", "xeus-python-shell >=0.6.0,<0.7", "requests-wasm-polyfill >=0.3.0"])
+
     bail_early = True
 
     if packages or xeus_python_version or environment_file:
@@ -323,7 +345,10 @@ def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
 
         # Copy xeus-python output
         for file in ["xpython_wasm.js", "xpython_wasm.wasm"]:
-            shutil.copyfile(prefix_path / "bin" / file, Path(output_path) / file)
+            if not XEUS_PYTHON_LOCAL_BUILD:
+                shutil.copyfile(prefix_path / "bin" / file, Path(output_path) / file)
+            else:
+                shutil.copyfile(XEUS_PYTHON_BUILD_DIR / file, Path(output_path) / file)
 
         # Copy worker code and process it
         if build_worker:
@@ -399,9 +424,28 @@ def main(
     )
 
 
+def build_all():
+    print("Building xeus-python")
+    # use cannonical build dir
+
+    # emsdk_install_dir = Path.home() / "emsdk_pip_build"
+    # emsdk_env_sh_path = emsdk_install_dir / "emsdk_env.sh"
+    # if  emsdk_env_sh_path.exists():
+    #     print("\n\nskip emsdk installation\n\n")
+    # else:
+    #     run([EMSDK_SETUP_DIR/"setup_emsdk.sh", "3.1.45", str(emsdk_install_dir)], check=True)
+
+    # # activate emsdk (skip for now)
+
+    run([BUILD_SH], check=True)
+    start()
+
+
 def start():
     typer.run(main)
 
 
 if __name__ == "__main__":
-    start()
+    # raise NotImplementedError()
+    build_all()
+    raise NotImplementedError()

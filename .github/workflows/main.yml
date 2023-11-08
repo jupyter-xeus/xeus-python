@@ -5,9 +5,11 @@ on:
   push:
     branches:
     - main
+    - merge-xeus-python-kernel
   pull_request:
     branches:
     - main
+    - merge-xeus-python-kernel
 
 defaults:
   run:
@@ -78,7 +80,7 @@ jobs:
       #  working-directory: build/test
 
       - name: Test xeus-python Python
-        run: pytest . -vvv
+        run: pytest . -vvv  --ignore=lite 
 
   test-win:
 
@@ -155,7 +157,7 @@ jobs:
         shell: cmd
         run: |
           call C:\Users\runneradmin\micromamba-root\condabin\micromamba.bat activate xeus-python
-          pytest . -vvv
+          pytest . -vvv --ignore=lite
 
   test-wasm:
 
@@ -172,58 +174,30 @@ jobs:
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v1
 
-      - name: Install mamba
-        uses: mamba-org/provision-with-micromamba@main
+
+
+      ################################################################
+      # MAMBA
+      ################################################################
+      - name: micromamba 
+        uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-wasm-build.yml
           environment-name: xeus-python-wasm-build
+          init-shell: >-
+            bash
+          cache-environment: true
+          post-cleanup: 'all'
 
-
-      - name: "setup emsdk"
-        shell: bash -l {0}
+      - name: Build xeus-python-wasm and jupyterlite-xeus-python
         run: |
-          micromamba activate xeus-python-wasm-build
-          cd $HOME
-          git clone https://github.com/emscripten-core/emsdk.git
-          cd emsdk 
-          ./emsdk install  ${{ matrix.emsdk_ver }}
-          ./emsdk activate  ${{ matrix.emsdk_ver }}
-
-      - name: Build and pack xeus-python
-        run: |
-          micromamba activate xeus-python-wasm-build
-
-          $HOME/emsdk/emsdk activate ${{matrix.emsdk_ver}}
-          source $HOME/emsdk/emsdk_env.sh
-
-          micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
-
-          mkdir build
-          pushd build
-
-          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
-          export CMAKE_PREFIX_PATH=$PREFIX
-          export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
-
-          # remove all the fake pythons binaries
-          rm -f $PREFIX/bin/python*
-
-          emcmake cmake \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
-            -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
-            ..
-
-          make -j5 
-          
-          popd
-          # Patch output
-          python wasm_patches/patch_it.py
+          cd lite
+          python -m pip install -e . -v 
 
       - uses: actions/upload-artifact@v2
         with:
           name: xeus-python-wasm
           path: |
-            build/xpython_wasm.js
-            build/xpython_wasm.wasm
+            lite/build/xeus-python/xpython_wasm.js
+            lite/build/xeus-python/xpython_wasm.wasm
 

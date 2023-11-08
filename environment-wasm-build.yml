@@ -7,3 +7,6 @@ dependencies:
   - python=3.11
   - yarn
   - click
+  - jupyterlab
+  - nodejs
+  - empack
