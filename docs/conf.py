@@ -10,9 +10,9 @@ myst_enable_extensions = [
 master_doc = "index"
 source_suffix = ".rst"
 
-project = "jupyterlite-xeus-python"
-copyright = "JupyterLite Team"
-author = "JupyterLite Team"
+project = "xeus-python"
+copyright = "QuantStack"
+author = "QuantStack"
 
 exclude_patterns = []
 

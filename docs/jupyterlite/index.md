@@ -1,6 +1,6 @@
 # xeus-python in JupyterLite 🚀🪐
 
-The [xeus-python](https://github.com/jupyter-xeus/xeus-python) kernel compiled to WebAssembly and installable in JupyterLite!
+The xeus-python kernel is compiled to WebAssembly and installable in JupyterLite!
 
 Features:
 
@@ -33,5 +33,4 @@ How does it compare to the [Pyodide kernel](https://github.com/jupyterlite/pyodi
 installation
 deploy
 configuration
-changelog
 ```
