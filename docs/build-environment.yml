@@ -14,8 +14,8 @@ dependencies:
   - myst-parser
   - pydata-sphinx-theme
   - jupyterlab >=4.0.5,<5
-  - jupyterlite-core >=0.2.0a1,<0.3.0
-  - jupyterlite-sphinx >=0.9.1
+  - jupyterlite-core >=0.2,<0.3.0
+  - jupyterlite-sphinx >=0.10
   - empack >=3.1.0
   - pip:
     - ..
