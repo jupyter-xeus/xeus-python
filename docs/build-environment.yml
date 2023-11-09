@@ -18,4 +18,4 @@ dependencies:
   - jupyterlite-sphinx >=0.10
   - empack >=3.1.0
   - pip:
-    - ..
+    - ../lite
