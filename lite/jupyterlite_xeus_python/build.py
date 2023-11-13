@@ -242,6 +242,7 @@ def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
     build_worker: bool = False,
     force: bool = False,
     log=None,
+    extension_mode: bool = False,
 ):
     """Build a conda environment for the emscripten platform and pack it with empack."""
     if packages is None:
@@ -344,11 +345,12 @@ def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
         )
 
         # Copy xeus-python output
-        for file in ["xpython_wasm.js", "xpython_wasm.wasm"]:
-            if not XEUS_PYTHON_LOCAL_BUILD:
-                shutil.copyfile(prefix_path / "bin" / file, Path(output_path) / file)
-            else:
-                shutil.copyfile(XEUS_PYTHON_BUILD_DIR / file, Path(output_path) / file)
+        if not extension_mode:
+            for file in ["xpython_wasm.js", "xpython_wasm.wasm"]:
+                if not XEUS_PYTHON_LOCAL_BUILD:
+                    shutil.copyfile(prefix_path / "bin" / file, Path(output_path) / file)
+                else:
+                    shutil.copyfile(XEUS_PYTHON_BUILD_DIR / file, Path(output_path) / file)
 
         # Copy worker code and process it
         if build_worker:
@@ -448,4 +450,4 @@ def start():
 if __name__ == "__main__":
     # raise NotImplementedError()
     build_all()
-    raise NotImplementedError()
+    #raise NotImplementedError()
