@@ -427,18 +427,6 @@ def main(
 
 
 def build_all():
-    print("Building xeus-python")
-    # use cannonical build dir
-
-    # emsdk_install_dir = Path.home() / "emsdk_pip_build"
-    # emsdk_env_sh_path = emsdk_install_dir / "emsdk_env.sh"
-    # if  emsdk_env_sh_path.exists():
-    #     print("\n\nskip emsdk installation\n\n")
-    # else:
-    #     run([EMSDK_SETUP_DIR/"setup_emsdk.sh", "3.1.45", str(emsdk_install_dir)], check=True)
-
-    # # activate emsdk (skip for now)
-
     run([BUILD_SH], check=True)
     start()
 
@@ -448,6 +436,4 @@ def start():
 
 
 if __name__ == "__main__":
-    # raise NotImplementedError()
     build_all()
-    #raise NotImplementedError()

@@ -74,6 +74,7 @@ jobs:
 
       - name: Test
         run: |
+          cd lite
           cd ui-tests
           jlpm run test --browser ${{ matrix.browser }}
 
@@ -96,6 +97,7 @@ jobs:
       - name: Update snapshots
         if: failure()
         run: |
+          cd lite
           cd ui-tests
           # remove previous snapshots from other browser
           jlpm run clean:snapshots
