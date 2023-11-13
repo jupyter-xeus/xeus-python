@@ -50,6 +50,7 @@ jobs:
 
       - name: Install the test dependencies
         run: |
+          cd lite
           cd ui-tests
           jlpm
           jlpm build
