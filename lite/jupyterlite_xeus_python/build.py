@@ -39,17 +39,6 @@ CHANNELS = [
 PLATFORM = "emscripten-wasm32"
 DEFAULT_REQUEST_TIMEOUT = 1  # in minutes
 
-# check if we are in a local build via
-# export XEUS_PYTHON_LOCAL_BUILD=1
-# export XEUS_PYTHON_BUID_DIR=$XEUS_PYTHON_BUILD_DIR
-XEUS_PYTHON_LOCAL_BUILD = True
-# if os.environ.get("XEUS_PYTHON_LOCAL_BUILD") == "1":
-#     XEUS_PYTHON_LOCAL_BUILD=True
-#     XEUS_PYTHON_BUILD_DIR=os.environ.get("XEUS_PYTHON_BUILD_DIR")
-# if XEUS_PYTHON_BUILD_DIR is None:
-#     raise RuntimeError("XEUS_PYTHON_BUILD_DIR is not set")
-# XEUS_PYTHON_BUILD_DIR=Path(XEUS_PYTHON_BUILD_DIR)
-
 
 # location of this file
 HERE = Path(__file__).parent.resolve()
@@ -231,8 +220,7 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
 
 
 def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
-    python_version: str = PYTHON_VERSION,
-    xeus_python_version: str = XEUS_PYTHON_VERSION,
+    python_version: str = PYTHON_VERSION
     packages: Optional[List[str]] = None,
     environment_file: str = "",
     root_prefix: str = "/tmp/xeus-python-kernel",
@@ -249,17 +237,12 @@ def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
         packages = []
     channels = CHANNELS
     specs = [f"python={python_version}", "xeus-lite", *packages]
-
-    if not XEUS_PYTHON_LOCAL_BUILD:
-        specs.extend(
-            ["xeus-python" if not xeus_python_version else f"xeus-python={xeus_python_version}"]
-        )
-    else:
-        specs.extend(["jedi", "xeus-python-shell >=0.6.0,<0.7", "requests-wasm-polyfill >=0.3.0"])
+    
+    specs.extend(["jedi", "xeus-python-shell >=0.6.0,<0.7", "requests-wasm-polyfill >=0.3.0"])
 
     bail_early = True
 
-    if packages or xeus_python_version or environment_file:
+    if packages or environment_file:
         bail_early = False
 
     pip_dependencies = []
@@ -347,10 +330,7 @@ def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
         # Copy xeus-python output
         if not extension_mode:
             for file in ["xpython_wasm.js", "xpython_wasm.wasm"]:
-                if not XEUS_PYTHON_LOCAL_BUILD:
-                    shutil.copyfile(prefix_path / "bin" / file, Path(output_path) / file)
-                else:
-                    shutil.copyfile(XEUS_PYTHON_BUILD_DIR / file, Path(output_path) / file)
+                shutil.copyfile(XEUS_PYTHON_BUILD_DIR / file, Path(output_path) / file)
 
         # Copy worker code and process it
         if build_worker:
@@ -391,7 +371,6 @@ def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
 
 def main(
     python_version: str = PYTHON_VERSION,
-    xeus_python_version: str = XEUS_PYTHON_VERSION,
     packages: List[str] = typer.Option([], help="The list of packages you want to install"),
     environment_file: str = typer.Option(
         "", help="The path to the environment.yml file you want to use"
@@ -414,7 +393,6 @@ def main(
     """Build and pack an emscripten environment."""
     return build_and_pack_emscripten_env(
         python_version,
-        xeus_python_version,
         packages,
         environment_file,
         root_prefix,

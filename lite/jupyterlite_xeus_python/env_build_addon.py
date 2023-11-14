@@ -27,10 +27,6 @@ class PackagesList(List):
 class XeusPythonEnv(FederatedExtensionAddon):
     __all__ = ["post_build"]
 
-    xeus_python_version = Unicode(XEUS_PYTHON_VERSION).tag(
-        config=True, description="The xeus-python version to use"
-    )
-
     empack_config = Unicode(
         "",
         config=True,
@@ -66,7 +62,6 @@ class XeusPythonEnv(FederatedExtensionAddon):
                 yield from self.safe_copy_extension(pkg_json)
 
         env_prefix = build_and_pack_emscripten_env(
-            xeus_python_version=self.xeus_python_version,
             packages=[*self.packages, *self.pin_packages],
             environment_file=Path(self.manager.lite_dir) / self.environment_file,
             empack_config=self.empack_config,
