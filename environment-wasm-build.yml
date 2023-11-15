@@ -10,3 +10,4 @@ dependencies:
   - jupyterlab
   - nodejs
   - empack
+  - pydantic<2.5
