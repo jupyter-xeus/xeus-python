@@ -25,6 +25,7 @@ dependencies = [
     "traitlets",
     "jupyterlite-core>=0.2.0rc0,<0.3",
     "requests",
+    "pydantic<=2.5",
     "empack>=3.1,<4",
     "typer",
 ]
