@@ -220,7 +220,7 @@ def _install_pip_dependencies(prefix_path, dependencies, log=None):
 
 
 def build_and_pack_emscripten_env(  # noqa: C901, PLR0912, PLR0915
-    python_version: str = PYTHON_VERSION
+    python_version: str = PYTHON_VERSION,
     packages: Optional[List[str]] = None,
     environment_file: str = "",
     root_prefix: str = "/tmp/xeus-python-kernel",
