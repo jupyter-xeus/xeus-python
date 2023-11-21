@@ -26,7 +26,7 @@ jobs:
         build_type: [static_build, shared_build]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v1
@@ -91,7 +91,7 @@ jobs:
         build_type: [static_build, shared_build]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: install mamba
         uses: mamba-org/provision-with-micromamba@main
@@ -167,7 +167,7 @@ jobs:
         emsdk_ver: ["3.1.45"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v1
