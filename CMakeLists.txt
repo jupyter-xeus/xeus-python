@@ -76,7 +76,7 @@ function(cat IN_FILE OUT_FILE)
 endfunction()
 
 
-if(XPYT_EMSCRIPTEN_WASM_BUILD)
+if(EMSCRIPTEN)
     # Prepare a temporary file to "post.js.in" to
     # merge xeus custom post js and the pyjs post js
     file(WRITE post.js.in "")
@@ -113,7 +113,7 @@ if (NOT TARGET pybind11_json)
     find_package(pybind11_json ${pybind11_json_REQUIRED_VERSION} REQUIRED)
 endif ()
 
-if(XPYT_EMSCRIPTEN_WASM_BUILD)
+if(EMSCRIPTEN)
     if (NOT TARGET xeus-lite)
         find_package(xeus-lite ${xeus-lite_REQUIRED_VERSION} REQUIRED)
     endif ()
@@ -318,7 +318,7 @@ macro(xpyt_create_target target_name src headers linkage output_name)
                                $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>)
 
-    if (XPYT_EMSCRIPTEN_WASM_BUILD)
+    if (EMSCRIPTEN)
         set(XPY_XEUS_TARGET xeus)
     elseif (XPYT_USE_SHARED_XEUS)
         set(XPYT_XEUS_TARGET xeus-zmq)
@@ -366,7 +366,7 @@ if (XPYT_BUILD_STATIC)
     list(APPEND XEUS_PYTHON_TARGETS xeus-python-static)
 endif ()
 
-if (XPYT_EMSCRIPTEN_WASM_BUILD)
+if (EMSCRIPTEN)
     xpyt_create_target(xeus-python-wasm "${XEUS_PYTHON_WASM_SRC}" "${XEUS_PYTHON_WASM_HEADERS}" STATIC xeus-python-wasm)
     target_compile_options(xeus-python-wasm PRIVATE -fPIC)
     list(APPEND XEUS_PYTHON_TARGETS xeus-python-wasm)
@@ -401,7 +401,7 @@ endif()
 # xpython_wasm
 # ============
 
-if (XPYT_EMSCRIPTEN_WASM_BUILD)
+if (EMSCRIPTEN)
     # TODO MAKE BETTER
     SET(PYTHON_UTIL_LIBS
         $ENV{PREFIX}/lib/libbz2.a
@@ -422,10 +422,9 @@ if (XPYT_EMSCRIPTEN_WASM_BUILD)
     include(WasmBuildOptions)
     xeus_wasm_compile_options(xpython_wasm)
     xeus_wasm_link_options(xpython_wasm "web,worker")
-    xeus_wasm_fs_options(xpython_wasm)
     target_link_options(xpython_wasm
         PUBLIC "SHELL: -s LZ4=1"
-        PUBLIC "SHELL: --post-js post.js"
+        PUBLIC "SHELL: --post-js  ${CMAKE_CURRENT_BINARY_DIR}/post.js"
         PUBLIC "SHELL: --pre-js pre.js"
         PUBLIC "SHELL: -s MAIN_MODULE=1"
         PUBLIC "SHELL: -s WASM_BIGINT"
@@ -465,7 +464,9 @@ endif ()
 if (XPYT_BUILD_XPYTHON_EXECUTABLE)
     install(TARGETS xpython
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 
+if(XPYT_BUILD_XPYTHON_EXECUTABLE OR EMSCRIPTEN)
     # Configuration and data directories for jupyter and xeus-python
     set(XJUPYTER_DATA_DIR "share/jupyter"    CACHE STRING "Jupyter data directory")
 
@@ -509,11 +510,11 @@ if (XPYT_BUILD_SHARED)
             DESTINATION ${XEUS_PYTHON_CMAKECONFIG_INSTALL_DIR})
 endif ()
 
-if (XPYT_EMSCRIPTEN_WASM_BUILD)
-    install(TARGETS xpython_wasm
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_BINDIR})
+if (EMSCRIPTEN)
+ 
     install(FILES
             "$<TARGET_FILE_DIR:xpython_wasm>/xpython_wasm.js"
             "$<TARGET_FILE_DIR:xpython_wasm>/xpython_wasm.wasm"
-            DESTINATION ${CMAKE_INSTALL_BINDIR})
+            DESTINATION ${XJUPYTER_DATA_DIR}/kernels/xpython/
+    )
 endif ()

@@ -6,5 +6,5 @@
       "{connection_file}"
   ],
   "language": "python",
-  "metadata": { "debugger": true }
+  "metadata": { "debugger": true, "wasm_name" : "xpython_wasm"}
 }
