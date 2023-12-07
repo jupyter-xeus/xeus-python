@@ -398,7 +398,7 @@ if (XPYT_BUILD_XPYTHON_EXTENSION)
     xpyt_target_link_libraries(xpython_extension)
 endif()
 
-# xpython_wasm
+# xpython
 # ============
 
 if (EMSCRIPTEN)
@@ -410,19 +410,19 @@ if (EMSCRIPTEN)
         $ENV{PREFIX}/lib/libffi.a
     )
 
-    add_executable(xpython_wasm ${XPYTHON_WASM_SRC})
-    target_link_libraries(xpython_wasm PRIVATE ${PYTHON_UTIL_LIBS} pybind11::embed)
+    add_executable(xpython ${XPYTHON_WASM_SRC})
+    target_link_libraries(xpython PRIVATE ${PYTHON_UTIL_LIBS} pybind11::embed)
 
-    xpyt_set_common_options(xpython_wasm)
-    target_compile_options(xpython_wasm PRIVATE -fPIC)
+    xpyt_set_common_options(xpython)
+    target_compile_options(xpython PRIVATE -fPIC)
 
-    xpyt_set_kernel_options(xpython_wasm)
-    target_link_libraries(xpython_wasm PRIVATE xeus-python-wasm xeus-lite)
+    xpyt_set_kernel_options(xpython)
+    target_link_libraries(xpython PRIVATE xeus-python-wasm xeus-lite)
 
     include(WasmBuildOptions)
-    xeus_wasm_compile_options(xpython_wasm)
-    xeus_wasm_link_options(xpython_wasm "web,worker")
-    target_link_options(xpython_wasm
+    xeus_wasm_compile_options(xpython)
+    xeus_wasm_link_options(xpython "web,worker")
+    target_link_options(xpython
         PUBLIC "SHELL: -s LZ4=1"
         PUBLIC "SHELL: --post-js  ${CMAKE_CURRENT_BINARY_DIR}/post.js"
         PUBLIC "SHELL: --pre-js pre.js"
@@ -513,8 +513,9 @@ endif ()
 if (EMSCRIPTEN)
  
     install(FILES
-            "$<TARGET_FILE_DIR:xpython_wasm>/xpython_wasm.js"
-            "$<TARGET_FILE_DIR:xpython_wasm>/xpython_wasm.wasm"
-            DESTINATION ${XJUPYTER_DATA_DIR}/kernels/xpython/
+            "$<TARGET_FILE_DIR:xpython>/xpython.js"
+            "$<TARGET_FILE_DIR:xpython>/xpython.wasm"
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
+
 endif ()
