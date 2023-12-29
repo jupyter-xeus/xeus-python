@@ -144,7 +144,7 @@ jobs:
       - name: Test xeus-python C++
         shell: cmd /C call {0}
         run: test_xeus_python
-        timeout-minutes: 8
+        timeout-minutes: 4
         working-directory: build\test
 
   test-wasm:
