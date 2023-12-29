@@ -117,7 +117,7 @@ jobs:
           echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
 
       - name: Configure cmake
-        shell: powershell
+        shell: cmd /C call {0}
         run: |
           micromamba activate xeus-python
           cmake .. ^
@@ -132,7 +132,7 @@ jobs:
             ${{ env.CMAKE_EXTRA_ARGS }}
         working-directory: build
 
-      - name: build
+      - name: Build
         shell: powershell
         run: |
           micromamba activate xeus-python
