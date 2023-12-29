@@ -141,7 +141,7 @@ jobs:
         shell: cmd /C call {0}
         run: test_xeus_python
         timeout-minutes: 4
-        working-directory: build/test
+        working-directory: build\test
 
       - name: Test xeus-python Python
         shell: cmd /C call {0}
