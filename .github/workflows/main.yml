@@ -137,15 +137,15 @@ jobs:
           ninja install
         working-directory: build
 
-      - name: Test xeus-python C++
-        shell: cmd /C call {0}
-        run: test_xeus_python -y
-        timeout-minutes: 4
-        working-directory: build\test
-
       - name: Test xeus-python Python
         shell: cmd /C call {0}
         run: pytest . -vvv
+
+      - name: Test xeus-python C++
+        shell: cmd /C call {0}
+        run: test_xeus_python
+        timeout-minutes: 8
+        working-directory: build\test
 
   test-wasm:
 
