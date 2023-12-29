@@ -35,10 +35,6 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-dev.yml
-          environment-name: xeus-python
-
-      - name: Test micromamba env
-        run: micromamba env list
 
       - name: Make build directory
         run: mkdir build
@@ -122,7 +118,6 @@ jobs:
       - name: Configure cmake
         shell: cmd /C call {0}
         run: |
-          micromamba activate xeus-python
           cmake .. ^
             -GNinja ^
             -DCMAKE_BUILD_TYPE=Release ^
@@ -138,24 +133,19 @@ jobs:
       - name: Build
         shell: cmd /C call {0}
         run: |
-          micromamba activate xeus-python
           set CL=/MP
           ninja install
         working-directory: build
 
       - name: Test xeus-python C++
         shell: cmd /C call {0}
-        run: |
-          micromamba activate xeus-python
-          test_xeus_python
+        run: test_xeus_python
         timeout-minutes: 4
         working-directory: build/test
 
       - name: Test xeus-python Python
         shell: cmd /C call {0}
-        run: |
-          micromamba activate xeus-python
-          pytest . -vvv
+        run: pytest . -vvv
 
   test-wasm:
 
@@ -180,7 +170,6 @@ jobs:
       - name: Setup emsdk
         shell: bash -l {0}
         run: |
-          micromamba activate xeus-python-wasm-build
           cd $HOME
           git clone https://github.com/emscripten-core/emsdk.git
           cd emsdk
@@ -189,8 +178,6 @@ jobs:
 
       - name: Build and pack xeus-python
         run: |
-          micromamba activate xeus-python-wasm-build
-
           $HOME/emsdk/emsdk activate ${{matrix.emsdk_ver}}
           source $HOME/emsdk/emsdk_env.sh
 
