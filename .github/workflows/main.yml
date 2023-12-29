@@ -37,6 +37,9 @@ jobs:
           environment-file: environment-dev.yml
           environment-name: xeus-python
 
+      - name: Test micromamba env
+        run: micromamba env list
+
       - name: Make build directory
         run: mkdir build
 
@@ -133,7 +136,7 @@ jobs:
         working-directory: build
 
       - name: Build
-        shell: powershell
+        shell: cmd /C call {0}
         run: |
           micromamba activate xeus-python
           set CL=/MP
