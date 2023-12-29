@@ -31,8 +31,8 @@ jobs:
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v2
 
-      - name: Install mamba
-        uses: mamba-org/provision-with-micromamba@main
+      - name: Install micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-dev.yml
           environment-name: xeus-python
@@ -169,7 +169,7 @@ jobs:
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v2
 
-      - name: Install mamba
+      - name: Install micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-wasm-build.yml
