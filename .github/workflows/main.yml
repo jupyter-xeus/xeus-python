@@ -95,9 +95,7 @@ jobs:
       - name: Install micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          init-shell: >-
-            powershell
-            cmd.exe
+          init-shell: cmd.exe
           environment-file: environment-dev.yml
 
       - name: Make build directory
@@ -130,7 +128,7 @@ jobs:
             ${{ env.CMAKE_EXTRA_ARGS }}
         working-directory: build
 
-      - name: Build
+      - name: Build and install
         shell: cmd /C call {0}
         run: |
           set CL=/MP
