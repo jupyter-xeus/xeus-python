@@ -105,7 +105,6 @@ jobs:
 
       - name: Static build option
         if: matrix.build_type == 'static_build'
-        shell: cmd /C call {0}
         run: |
           CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_SHARED=OFF -DXPYT_USE_SHARED_XEUS_PYTHON=OFF"
           echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
@@ -117,6 +116,7 @@ jobs:
           echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
 
       - name: Configure cmake
+        shell: cmd /C call {0}
         run: |
           cmake .. ^
             -GNinja ^
