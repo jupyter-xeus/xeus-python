@@ -95,7 +95,9 @@ jobs:
       - name: Install micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          init-shell: cmd.exe
+          init-shell: >-
+            powershell
+            cmd.exe
           environment-file: environment-dev.yml
 
       - name: Make build directory
@@ -110,13 +112,11 @@ jobs:
 
       - name: Shared build option
         if: matrix.build_type == 'shared_build'
-        shell: cmd /C call {0}
         run: |
           CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_STATIC=OFF"
           echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
 
       - name: Configure cmake
-        shell: cmd /C call {0}
         run: |
           cmake .. ^
             -GNinja ^
@@ -138,11 +138,11 @@ jobs:
         working-directory: build
 
       - name: Test xeus-python Python
-        shell: cmd /C call {0}
+        shell: powershell
         run: pytest . -vvv
 
       - name: Test xeus-python C++
-        shell: cmd /C call {0}
+        shell: powershell
         run: test_xeus_python
         timeout-minutes: 4
         working-directory: build\test
