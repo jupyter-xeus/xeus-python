@@ -16,6 +16,5 @@ dependencies:
   - jupyterlab >=4.0.5,<5
   - jupyterlite-core >=0.2,<0.3.0
   - jupyterlite-sphinx >=0.10
-  - empack >=3.1.0
   - pip:
-    - ../lite
+    - jupyterlite-xeus===0.1.0a0
