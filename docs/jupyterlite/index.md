@@ -20,7 +20,7 @@ How does it compare to the [Pyodide kernel](https://github.com/jupyterlite/pyodi
 
 ```{eval-rst}
 .. replite::
-   :kernel: xeus-python
+   :kernel: xpython
    :height: 600px
 
    print("Hello from xeus-python!")

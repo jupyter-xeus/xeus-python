@@ -14,7 +14,7 @@ This software is licensed under the BSD-3-Clause license. See the LICENSE file f
 
 ```{eval-rst}
 .. replite::
-   :kernel: xeus-python
+   :kernel: xpython
    :height: 600px
 
    print("Hello from xeus-python!")
