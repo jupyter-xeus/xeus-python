@@ -28,5 +28,4 @@ installation
 usage
 dev-build-options
 jupyterlite/index
-changelog
 ```
