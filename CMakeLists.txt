@@ -97,7 +97,7 @@ endif()
 # ============
 
 set(xtl_REQUIRED_VERSION 0.7.0)
-set(xeus-zmq_REQUIRED_VERSION 1.0.1)
+set(xeus-zmq_REQUIRED_VERSION 1.2.0)
 set(xeus-lite_REQUIRED_VERSION 1.0.1)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
@@ -511,7 +511,7 @@ if (XPYT_BUILD_SHARED)
 endif ()
 
 if (EMSCRIPTEN)
- 
+
     install(FILES
             "$<TARGET_FILE_DIR:xpython>/xpython.js"
             "$<TARGET_FILE_DIR:xpython>/xpython.wasm"
