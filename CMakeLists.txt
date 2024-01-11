@@ -41,6 +41,16 @@ endif ()
 # Cf. https://github.com/pybind/pybind11/issues/2268
 find_package(PythonInterp ${PythonLibsNew_FIND_VERSION} REQUIRED)
 
+if(EMSCRIPTEN)
+    # the variables PYTHON_VERSION_MAJOR and PYTHON_VERSION_MINOR
+    # might be wrong for the EMSCRIPTEN case since it may contains
+    # the versions of build-python and not the one of the host.
+    FILE(GLOB WASM_PYTHON_LIBRARY  $ENV{PREFIX}/lib/libpython*.a)
+    STRING(REGEX MATCH "python[0-9]+[.][0-9]+" PYTHON_VERSION_STRING ${WASM_PYTHON_LIBRARY})
+    STRING(REGEX MATCH "[0-9]+" PYTHON_VERSION_MAJOR ${PYTHON_VERSION_STRING})
+    STRING(REGEX MATCH "[0-9]+$" PYTHON_VERSION_MINOR ${PYTHON_VERSION_STRING})
+endif()
+
 configure_file (
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
     "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
