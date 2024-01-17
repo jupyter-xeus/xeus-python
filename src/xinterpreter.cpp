@@ -128,11 +128,37 @@ namespace xpyt
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(allow_stdin);
 
-        py::object ipython_res = m_ipython_shell.attr("run_cell")(code, "store_history"_a=store_history, "silent"_a=silent);
+        bool exception_occurred = false;
+        try{
+            m_ipython_shell.attr("run_cell")(code, "store_history"_a=store_history, "silent"_a=silent);
+        }
+        catch(std::runtime_error& e){
+            const std::string error_msg = e.what();
+            if(!silent){
+                publish_execution_error("RuntimeError", error_msg, std::vector<std::string>());
+            }
+            kernel_res["ename"] = "std::runtime_error";
+            kernel_res["evalue"] = error_msg;
+            exception_occurred = true;
+        }
+        catch(...){
+            if(!silent){
+                publish_execution_error("unknown_error", "", std::vector<std::string>());
+            }
+            kernel_res["ename"] = "UnknownError";
+            kernel_res["evalue"] = "";
+            exception_occurred = true;
+        }
 
         // Get payload
         kernel_res["payload"] = m_ipython_shell.attr("payload_manager").attr("read_payload")();
         m_ipython_shell.attr("payload_manager").attr("clear_payload")();
+
+        if(exception_occurred){
+            kernel_res["status"] = "error";
+            kernel_res["traceback"] = std::vector<std::string>();
+            return kernel_res;
+        }
 
         if (m_ipython_shell.attr("last_error").is_none())
         {
