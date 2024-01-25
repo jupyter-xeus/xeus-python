@@ -1,4 +1,4 @@
-# ![xeus-python](docs/source/xeus-python.svg)
+# ![xeus-python](docs/xeus-python.svg)
 
 [![GitHub Action CI](https://github.com/jupyter-xeus/xeus-python/actions/workflows/main.yml/badge.svg)](https://github.com/jupyter-xeus/xeus-python/actions/workflows/main.yml)
 [![Documentation Status](http://readthedocs.org/projects/xeus-python/badge/?version=latest)](https://xeus-python.readthedocs.io/en/latest/?badge=latest)
