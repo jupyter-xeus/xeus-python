@@ -103,36 +103,36 @@ You can install xeus-python in JupyterLite, see https://github.com/jupyterlite/x
 
 **Code execution and variable display**:
 
-![Basic code execution](docs/source/code_exec.gif)
+![Basic code execution](docs/code_exec.gif)
 
 **Output streams**:
 
-![Streams](docs/source/streams.gif)
+![Streams](docs/streams.gif)
 
 **Input streams**:
 
-![Input](docs/source/input.gif)
+![Input](docs/input.gif)
 
 **Error handling**:
 
-![Erro handling](docs/source/error.gif)
+![Erro handling](docs/error.gif)
 
 **Inspect**:
 
-![Inspect](docs/source/inspect.gif)
+![Inspect](docs/inspect.gif)
 
 **Code completion**:
 
-![Completion](docs/source/code_completion.gif)
+![Completion](docs/code_completion.gif)
 
 **Rich display**:
 
-![Rich display](docs/source/rich_disp.gif)
+![Rich display](docs/rich_disp.gif)
 
 **And of course widgets**:
 
-![Widgets](docs/source/widgets.gif)
-![Widgets binary](docs/source/binary.gif)
+![Widgets](docs/widgets.gif)
+![Widgets binary](docs/binary.gif)
 
 ## Documentation
 
