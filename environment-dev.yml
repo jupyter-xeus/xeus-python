@@ -21,3 +21,4 @@ dependencies:
   - ipympl
   - jupyter_kernel_test>=0.5,<0.6
   - doctest
+  - pluggy=1.3
