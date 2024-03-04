@@ -59,14 +59,14 @@ namespace xpyt
 
     void raw_interpreter::configure_impl()
     {
-        if (m_release_gil_at_startup)
-        {
-            // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
-            // will need to acquire the GIL
-            m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
-        }
+        // if (m_release_gil_at_startup)
+        // {
+        //     // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
+        //     // will need to acquire the GIL
+        //     m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
+        // }
 
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
 
         py::module sys = py::module::import("sys");
         py::module jedi = py::module::import("jedi");
@@ -112,7 +112,7 @@ namespace xpyt
         nl::json /*user_expressions*/,
         bool allow_stdin)
     {
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         nl::json kernel_res;
         py::str code_copy;
         // Scope guard performing the temporary monkey patching of input and
@@ -203,7 +203,7 @@ namespace xpyt
         const std::string& code,
         int cursor_pos)
     {
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         nl::json kernel_res;
         std::vector<std::string> matches;
         int cursor_start = cursor_pos;
@@ -232,7 +232,7 @@ namespace xpyt
         int /*detail_level*/)
     {
 
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         nl::json kernel_res;
         nl::json pub_data;
 

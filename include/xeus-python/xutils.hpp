@@ -46,7 +46,7 @@ namespace xpyt
     }                                    \
     else                                 \
     {                                    \
-        py::gil_scoped_acquire acquire;  \
+        /* py::gil_scoped_acquire acquire;  */ \
         func;                            \
     }
 

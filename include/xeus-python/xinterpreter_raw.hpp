@@ -34,7 +34,7 @@ namespace xpyt
     {
     public:
 
-        using gil_scoped_release_ptr = std::unique_ptr<py::gil_scoped_release>;
+        // REMOVE using gil_scoped_release_ptr = std::unique_ptr<py::gil_scoped_release>;
 
         // If redirect_output_enabled is true (default) then this interpreter will
         // capture outputs and send them using publish_stream.
@@ -84,7 +84,7 @@ namespace xpyt
         // releasing it again in configure_impl().
         //
         bool m_release_gil_at_startup = true;
-        gil_scoped_release_ptr m_release_gil = nullptr;
+        // REMOVE gil_scoped_release_ptr m_release_gil = nullptr;
         bool m_redirect_display_enabled;
     };
 

@@ -55,14 +55,14 @@ namespace xpyt
 
     void interpreter::configure_impl()
     {
-        if (m_release_gil_at_startup)
-        {
-            // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
-            // will need to acquire the GIL
-            m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
-        }
+        // if (m_release_gil_at_startup)
+        // {
+        //     // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
+        //     // will need to acquire the GIL
+        //     m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
+        // }
 
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
 
         py::module sys = py::module::import("sys");
         py::module logging = py::module::import("logging");
@@ -118,7 +118,7 @@ namespace xpyt
                                                nl::json user_expressions,
                                                bool allow_stdin)
     {
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
         // Reset traceback
@@ -189,7 +189,7 @@ namespace xpyt
         const std::string& code,
         int cursor_pos)
     {
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
         py::list completion = m_ipython_shell.attr("complete_code")(code, cursor_pos);
@@ -207,7 +207,7 @@ namespace xpyt
                                                int cursor_pos,
                                                int detail_level)
     {
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         nl::json kernel_res;
         nl::json data = nl::json::object();
         bool found = false;
@@ -237,7 +237,7 @@ namespace xpyt
 
     nl::json interpreter::is_complete_request_impl(const std::string& code)
     {
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         nl::json kernel_res;
 
         py::object transformer_manager = py::getattr(m_ipython_shell, "input_transformer_manager", py::none());
@@ -312,7 +312,7 @@ namespace xpyt
 
     nl::json interpreter::internal_request_impl(const nl::json& content)
     {
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
         nl::json reply;
 

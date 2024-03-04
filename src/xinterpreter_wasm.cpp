@@ -24,7 +24,7 @@ namespace xpyt
     wasm_interpreter::wasm_interpreter()
         : interpreter(true, true)
     {
-        m_release_gil_at_startup = false;
+        // REMOVE m_release_gil_at_startup = false;
     }
 
     wasm_interpreter::~wasm_interpreter()
@@ -35,7 +35,7 @@ namespace xpyt
     {
         interpreter::configure_impl();
 
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         py::module::import("pyjs");
     }
 

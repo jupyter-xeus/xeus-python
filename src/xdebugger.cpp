@@ -76,7 +76,7 @@ namespace xpyt
 
     nl::json debugger::inspect_variables_request(const nl::json& message)
     {
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         py::object pymessage = message;
         nl::json reply = m_pydebugger.attr("inspect_variables")(pymessage);
         return reply;
@@ -116,7 +116,7 @@ namespace xpyt
             // to get the rich representation of the variable
             std::string code = "from IPython import get_ipython;";
             code += var_repr_data + ',' + var_repr_metadata + "= get_ipython().display_formatter.format(" + var_name + ")";
-            py::gil_scoped_acquire acquire;
+            // REMOVE py::gil_scoped_acquire acquire;
             exec(py::str(code));
         }
         else
@@ -139,12 +139,12 @@ namespace xpyt
             nl::json request_reply = forward_message(request);
             std::string result = request_reply["body"]["result"];
 
-            py::gil_scoped_acquire acquire;
+            // REMOVE py::gil_scoped_acquire acquire;
             std::string exec_code = var_repr_data + ',' + var_repr_metadata + "= eval(str(" + result + "))";
             exec(py::str(exec_code));
         }
 
-        py::gil_scoped_acquire acquire;
+        // REMOVE py::gil_scoped_acquire acquire;
         py::object variables = py::globals();
         py::object repr_data = variables[py::str(var_repr_data)];
         py::object repr_metadata = variables[py::str(var_repr_metadata)];
@@ -231,7 +231,7 @@ namespace xpyt
     {
         if (base_type::get_stopped_threads().empty())
         {
-            py::gil_scoped_acquire acquire;
+            // REMOVE py::gil_scoped_acquire acquire;
             py::object pymessage = message;
             nl::json reply = m_pydebugger.attr("variables")(pymessage);
             return reply;
@@ -239,7 +239,7 @@ namespace xpyt
         else
         {
             nl::json rep = base_type::variables_request_impl(message);
-            py::gil_scoped_acquire acquire;
+            // REMOVE py::gil_scoped_acquire acquire;
             py::object pymessage = message;
             py::object pyvariables = rep["body"]["variables"];
             nl::json reply = m_pydebugger.attr("build_variables_response")(pymessage, pyvariables);
@@ -283,7 +283,7 @@ namespace xpyt
         }
         else
         {
-            py::gil_scoped_acquire acquire;
+            // REMOVE py::gil_scoped_acquire acquire;
             py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
 
