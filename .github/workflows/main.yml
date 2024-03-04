@@ -141,7 +141,9 @@ jobs:
 
       - name: Test xeus-python C++
         shell: cmd /C call {0}
-        run: .\test_xeus_python
+        run: |
+          micromamba activate xeus-python
+          test_xeus_python
         timeout-minutes: 4
         working-directory: build\test
 
