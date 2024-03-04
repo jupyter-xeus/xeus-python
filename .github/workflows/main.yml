@@ -95,9 +95,7 @@ jobs:
       - name: Install micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          init-shell: >-
-            powershell
-            cmd.exe
+          init-shell: cmd.exe
           environment-file: environment-dev.yml
 
       - name: Make build directory
@@ -138,11 +136,11 @@ jobs:
         working-directory: build
 
       - name: Test xeus-python Python
-        shell: powershell
+        shell: cmd /C call {0}
         run: pytest . -vvv
 
       - name: Test xeus-python C++
-        shell: powershell
+        shell: cmd /C call {0}
         run: .\test_xeus_python
         timeout-minutes: 4
         working-directory: build\test
