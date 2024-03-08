@@ -94,8 +94,8 @@ int main(int argc, char* argv[])
 
     uv_loop_t* uv_loop_ptr{ nullptr };
 
-    {
-        py::gil_scoped_acquire acquire;
+    // {
+    //     py::gil_scoped_acquire acquire;
 
         // Instantiating the loop manually
         py::exec(R"(
@@ -109,15 +109,26 @@ int main(int argc, char* argv[])
             print('uvloop event loop created')
         )");
 
-        py::object py_loop_ptr = py::eval("libuv_get_loop_t_ptr()");
+        py::object py_loop_ptr = py::eval("libuv_get_loop_t_ptr(loop)");
         void* raw_ptr = PyCapsule_GetPointer(py_loop_ptr.ptr(), nullptr);
         if (!raw_ptr)
+        {
+            std::cout << "Got null pointer!\n";
             throw std::runtime_error("Failed to get libuv loop pointer");
+        }
 
         uv_loop_ptr = static_cast<uv_loop_t*>(raw_ptr);
-    }
+        std::cout << "Got a pointer!" << uv_loop_ptr << '\n';
+    // }
 
+    if (!uv_loop_ptr)
+    {
+        throw std::runtime_error("Failed to get libuv loop pointer");
+        std::cout << "This pointer is no good\n";
+    }
     auto loop_ptr = uvw::loop::create(uv_loop_ptr);
+
+    std::cout << "Got a loop!\n";
 
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
@@ -155,18 +166,22 @@ int main(int argc, char* argv[])
 #ifdef XEUS_PYTHON_PYPI_WARNING
     std::clog <<
         "WARNING: this instance of xeus-python has been installed from a PyPI wheel.\n"
-        "We recommend using a general-purpose package manager instead, such as Conda/Mamba.\n"
+        "We recommend using a ge7yuneral-purpose package manager instead, such as Conda/Mamba.\n"
         << std::endl;
 #endif
 
     nl::json debugger_config;
     debugger_config["python"] = executable;
 
+    std::cout << "Making a server\n";
+
     auto make_xserver = [loop_ptr](xeus::xcontext& context,
                                    const xeus::xconfiguration& config,
                                    nl::json::error_handler_t eh) {
         return xeus::make_xserver_uv_shell_main(context, config, eh, loop_ptr);
     };
+
+    std::cout << "Done with the lambda\n";
 
     if (!connection_filename.empty())
     {
@@ -179,9 +194,9 @@ int main(int argc, char* argv[])
                              make_xserver,
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
-                                                       xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
-                             xpyt::make_python_debugger,
-                             debugger_config);
+                                                       xeus::make_file_logger(xeus::xlogger::content, "xeus.log")));
+                            //  xpyt::make_python_debugger,
+                            //  debugger_config);
 
         std::clog <<
             "Starting xeus-python kernel...\n\n"
