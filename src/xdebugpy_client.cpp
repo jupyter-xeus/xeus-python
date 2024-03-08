@@ -11,6 +11,7 @@
 #include "zmq_addon.hpp"
 #include "nlohmann/json.hpp"
 #include "xeus/xmessage.hpp"
+#include "xeus/xeus_context.hpp"
 #include "xdebugpy_client.hpp"
 
 #include <thread>
@@ -20,7 +21,7 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
-    xdebugpy_client::xdebugpy_client(zmq::context_t& context,
+    xdebugpy_client::xdebugpy_client(xeus::xcontext& context,
                                      const xeus::xconfiguration& config,
                                      int socket_linger,
                                      const xdap_tcp_configuration& dap_config,
