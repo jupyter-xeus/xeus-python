@@ -21,6 +21,11 @@
 #include <unistd.h>
 #endif
 
+#ifndef UVW_AS_LIB
+#define UVW_AS_LIB
+#include <uvw.hpp>
+#endif
+
 #include "xeus/xeus_context.hpp"
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
@@ -84,8 +89,35 @@ int main(int argc, char* argv[])
     xpyt::set_pythonhome();
     xpyt::print_pythonhome();
 
-    // Instanciating the Python interpreter
-    py::scoped_interpreter guard;
+    // Instantiating the Python interpreter
+    py::scoped_interpreter guard{};
+
+    uv_loop_t* uv_loop_ptr{ nullptr };
+
+    {
+        py::gil_scoped_acquire acquire;
+
+        // Instantiating the loop manually
+        py::exec(R"(
+            import asyncio
+            import uvloop
+            from uvloop.loop import libuv_get_loop_t_ptr
+
+            print('Creating uvloop event loop')
+            loop = uvloop.new_event_loop()
+            asyncio.set_event_loop(loop)
+            print('uvloop event loop created')
+        )");
+
+        py::object py_loop_ptr = py::eval("libuv_get_loop_t_ptr()");
+        void* raw_ptr = PyCapsule_GetPointer(py_loop_ptr.ptr(), nullptr);
+        if (!raw_ptr)
+            throw std::runtime_error("Failed to get libuv loop pointer");
+
+        uv_loop_ptr = static_cast<uv_loop_t*>(raw_ptr);
+    }
+
+    auto loop_ptr = uvw::loop::create(uv_loop_ptr);
 
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
@@ -130,6 +162,12 @@ int main(int argc, char* argv[])
     nl::json debugger_config;
     debugger_config["python"] = executable;
 
+    auto make_xserver = [loop_ptr](xeus::xcontext& context,
+                                   const xeus::xconfiguration& config,
+                                   nl::json::error_handler_t eh) {
+        return xeus::make_xserver_uv_shell_main(context, config, eh, loop_ptr);
+    };
+
     if (!connection_filename.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
@@ -138,7 +176,7 @@ int main(int argc, char* argv[])
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main,
+                             make_xserver,
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
@@ -158,7 +196,7 @@ int main(int argc, char* argv[])
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main,
+                             make_xserver,
                              std::move(hist),
                              nullptr,
                              xpyt::make_python_debugger,
