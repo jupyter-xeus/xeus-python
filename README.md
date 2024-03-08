@@ -99,7 +99,7 @@ This is useful when using xeus-python in [Voila](https://github.com/voila-dashbo
 
 ## xeus-python in JupyterLite!
 
-You can install xeus-python in JupyterLite, see https://github.com/jupyterlite/xeus-python-kernel for more information.
+You can install xeus-python in JupyterLite, see https://github.com/jupyterlite/xeus for more information.
 
 **Code execution and variable display**:
 
