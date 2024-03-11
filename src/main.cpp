@@ -33,6 +33,7 @@
 
 #include "xeus-zmq/xserver_zmq.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
+#include "xeus-zmq/hook_base.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -45,6 +46,51 @@
 #include "xeus-python/xutils.hpp"
 
 namespace py = pybind11;
+
+class py_hook : public xeus::hook_base
+{
+public:
+    py_hook() = default;
+
+    void pre_hook() override
+    {
+        std::cout << "pre_handle\n";
+        p_acquire = new py::gil_scoped_acquire();
+        p_release = new py::gil_scoped_release();
+    }
+
+    void post_hook() override
+    {
+        std::cout << "post_handle\n";
+        if (p_acquire)
+        {
+            delete p_release;
+            p_release = nullptr;
+            delete p_acquire;
+            p_acquire = nullptr;
+            std::cout << "done deleting post\n";
+        }
+        std::cout << "post_handle done\n";
+
+    }
+
+    void run(std::shared_ptr<uvw::loop>) override
+    {
+        std::cout << "Running\n";
+        py::gil_scoped_acquire acquire;
+        py::exec(R"(
+            import asyncio
+            loop = asyncio.get_event_loop()
+            loop.run_forever()
+        )");
+    }
+
+private:
+    py::gil_scoped_acquire* p_acquire = nullptr;
+    py::gil_scoped_release* p_release = nullptr;
+};
+
+
 
 
 int main(int argc, char* argv[])
@@ -94,8 +140,8 @@ int main(int argc, char* argv[])
 
     uv_loop_t* uv_loop_ptr{ nullptr };
 
-    // {
-    //     py::gil_scoped_acquire acquire;
+    {
+        py::gil_scoped_acquire acquire;
 
         // Instantiating the loop manually
         py::exec(R"(
@@ -119,7 +165,7 @@ int main(int argc, char* argv[])
 
         uv_loop_ptr = static_cast<uv_loop_t*>(raw_ptr);
         std::cout << "Got a pointer!" << uv_loop_ptr << '\n';
-    // }
+    }
 
     if (!uv_loop_ptr)
     {
@@ -166,19 +212,21 @@ int main(int argc, char* argv[])
 #ifdef XEUS_PYTHON_PYPI_WARNING
     std::clog <<
         "WARNING: this instance of xeus-python has been installed from a PyPI wheel.\n"
-        "We recommend using a ge7yuneral-purpose package manager instead, such as Conda/Mamba.\n"
+        "We recommend using a general-purpose package manager instead, such as Conda/Mamba.\n"
         << std::endl;
 #endif
 
     nl::json debugger_config;
     debugger_config["python"] = executable;
 
+    auto hook = std::make_unique<py_hook>();
+
     std::cout << "Making a server\n";
 
-    auto make_xserver = [loop_ptr](xeus::xcontext& context,
+    auto make_xserver = [&](xeus::xcontext& context,
                                    const xeus::xconfiguration& config,
                                    nl::json::error_handler_t eh) {
-        return xeus::make_xserver_uv_shell_main(context, config, eh, loop_ptr);
+        return xeus::make_xserver_uv_shell_main(context, config, eh, loop_ptr, std::move(hook));
     };
 
     std::cout << "Done with the lambda\n";
@@ -204,7 +252,21 @@ int main(int argc, char* argv[])
             " the " + connection_filename + " file."
             << std::endl;
 
+        std::cout << "Starting kernel\n";
+
         kernel.start();
+
+        std::cout << "Kernel started\n";
+
+        py::gil_scoped_acquire acquire;
+        py::exec(R"(
+            import asyncio
+            loop = asyncio.get_event_loop()
+            loop.run_forever()
+        )");
+
+
+        std::cout << "Ran the loop\n";
     }
     else
     {

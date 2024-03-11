@@ -91,7 +91,7 @@ namespace xpyt
         // is started, m_release_gil_at_startup has to be set to false to prevent
         // releasing it again in configure_impl().
         //
-        bool m_release_gil_at_startup = true;
+        bool m_release_gil_at_startup = false;
         gil_scoped_release_ptr m_release_gil = nullptr;
 
         bool m_redirect_output_enabled;
