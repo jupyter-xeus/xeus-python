@@ -55,16 +55,17 @@ public:
     void pre_hook() override
     {
         // p_release = new py::gil_scoped_release();
-        // p_acquire = new py::gil_scoped_acquire();
-        std::cout << "Prehook\n";
+        if (!p_acquire)
+        {
+            std::cout << "Acquiring GIL\n";
+            p_acquire = new py::gil_scoped_acquire();
+        }
     }
 
     void post_hook() override
     {
-        // delete p_acquire;
-        // delete p_release;
-        // p_acquire = nullptr;
-        // p_release = nullptr;
+        delete p_acquire;
+        p_acquire = nullptr;
         std::cout << "Posthook\n";
 
     }
@@ -85,7 +86,6 @@ public:
 
 private:
     py::gil_scoped_acquire* p_acquire{ nullptr };
-    py::gil_scoped_release* p_release{ nullptr };
 };
 
 
