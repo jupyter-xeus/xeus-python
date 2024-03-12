@@ -54,42 +54,39 @@ public:
 
     void pre_hook() override
     {
-        std::cout << "pre_handle\n";
-        p_acquire = new py::gil_scoped_acquire();
-        p_release = new py::gil_scoped_release();
+        // p_release = new py::gil_scoped_release();
+        // p_acquire = new py::gil_scoped_acquire();
+        std::cout << "Prehook\n";
     }
 
     void post_hook() override
     {
-        std::cout << "post_handle\n";
-        if (p_acquire)
-        {
-            delete p_release;
-            p_release = nullptr;
-            delete p_acquire;
-            p_acquire = nullptr;
-            std::cout << "done deleting post\n";
-        }
-        std::cout << "post_handle done\n";
+        // delete p_acquire;
+        // delete p_release;
+        // p_acquire = nullptr;
+        // p_release = nullptr;
+        std::cout << "Posthook\n";
 
     }
 
     void run(std::shared_ptr<uvw::loop>) override
     {
-        std::cout << "Running\n";
+        std::cout << "Overriden run\n";
+
         py::gil_scoped_acquire acquire;
+        std::cout << "After acquire gil\n";
         py::exec(R"(
             import asyncio
             loop = asyncio.get_event_loop()
+            print('got a loop', loop)
             loop.run_forever()
         )");
     }
 
 private:
-    py::gil_scoped_acquire* p_acquire = nullptr;
-    py::gil_scoped_release* p_release = nullptr;
+    py::gil_scoped_acquire* p_acquire{ nullptr };
+    py::gil_scoped_release* p_release{ nullptr };
 };
-
 
 
 
@@ -258,15 +255,6 @@ int main(int argc, char* argv[])
 
         std::cout << "Kernel started\n";
 
-        py::gil_scoped_acquire acquire;
-        py::exec(R"(
-            import asyncio
-            loop = asyncio.get_event_loop()
-            loop.run_forever()
-        )");
-
-
-        std::cout << "Ran the loop\n";
     }
     else
     {
