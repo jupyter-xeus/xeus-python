@@ -33,7 +33,7 @@
 
 #include "xeus-zmq/xserver_zmq.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
-#include "xeus-zmq/hook_base.hpp"
+#include "xeus-zmq/xhook_base.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -47,7 +47,7 @@
 
 namespace py = pybind11;
 
-class py_hook : public xeus::hook_base
+class py_hook : public xeus::xhook_base
 {
 public:
     py_hook() = default;
