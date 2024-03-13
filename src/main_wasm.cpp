@@ -18,7 +18,7 @@
 #include "xeus/xembind.hpp"
 #include "xeus-python/xinterpreter_wasm.hpp"
 
-PYBIND11_EMBEDDED_MODULE(pyjs, m) {
+PYBIND11_EMBEDDED_MODULE(pyjs_core, m) {
     pyjs::export_pyjs_module(m);
 }
 
