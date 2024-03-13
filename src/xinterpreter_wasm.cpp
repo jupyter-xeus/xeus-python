@@ -30,6 +30,7 @@ namespace xpyt
     wasm_interpreter::~wasm_interpreter()
     {
     }
+
     void wasm_interpreter::configure_impl()
     {
         interpreter::configure_impl();
