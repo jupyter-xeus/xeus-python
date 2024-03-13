@@ -143,7 +143,9 @@ nl::json xeus_client_base::receive_message(zmq::socket_t& socket,
                                            const xeus::xauthentication& auth)
 {
     zmq::multipart_t wire_msg;
+    std::cout << "DEBUG: receive_message" << std::endl;
     wire_msg.recv(socket);
+    std::cout << "DEBUG: receive_message after recv" << std::endl;
     xeus::xmessage msg = xeus::xzmq_serializer::deserialize(wire_msg, auth);
 
     return aggregate(msg.header(),
