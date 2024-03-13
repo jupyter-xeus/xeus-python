@@ -113,7 +113,7 @@ namespace xpyt
         void* array[10];
 
         // get void*'s for all entries on the stack
-        size_t size = backtrace(array, 10);
+        int size = backtrace(array, 10);
 
         // print out all the frames to stderr
         fprintf(stderr, "Error: signal %d:\n", sig);
