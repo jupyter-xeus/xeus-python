@@ -14,6 +14,6 @@ Module['async_init'] = async function(
     return Module['bootstrap_from_empack_packed_environment'](
     `${kernel_root_url}/empack_env_meta.json`, /* packages_json_url */
     pkg_root_url,               /* package_tarballs_root_url */
-    false                 /* verbose */
+    verbose                     /* verbose */
     );
 }
