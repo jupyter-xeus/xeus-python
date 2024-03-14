@@ -95,12 +95,12 @@ nl::json xeus_client_base::receive_on_control()
 
 void xeus_client_base::subscribe_iopub(const std::string& filter)
 {
-    m_iopub.setsockopt(ZMQ_SUBSCRIBE, filter.c_str(), filter.length());
+    m_iopub.set(zmq::sockopt::subscribe, filter);
 }
 
 void xeus_client_base::unsubscribe_iopub(const std::string& filter)
 {
-    m_iopub.setsockopt(ZMQ_UNSUBSCRIBE, filter.c_str(), filter.length());
+    m_iopub.set(zmq::sockopt::unsubscribe, filter);
 }
 
 nl::json xeus_client_base::receive_on_iopub()
