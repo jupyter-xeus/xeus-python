@@ -44,51 +44,9 @@
 #include "xeus-python/xpaths.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-python/xutils.hpp"
+#include "xeus-python/xhook.hpp"
 
 namespace py = pybind11;
-
-class py_hook : public xeus::xhook_base
-{
-public:
-    py_hook() = default;
-
-    void pre_hook() override
-    {
-        // p_release = new py::gil_scoped_release();
-        if (!p_acquire)
-        {
-            std::cout << "Acquiring GIL\n";
-            p_acquire = new py::gil_scoped_acquire();
-        }
-    }
-
-    void post_hook() override
-    {
-        delete p_acquire;
-        p_acquire = nullptr;
-        std::cout << "Posthook\n";
-
-    }
-
-    void run(std::shared_ptr<uvw::loop>) override
-    {
-        std::cout << "Overriden run\n";
-
-        py::gil_scoped_acquire acquire;
-        std::cout << "After acquire gil\n";
-        py::exec(R"(
-            import asyncio
-            loop = asyncio.get_event_loop()
-            print('got a loop', loop)
-            loop.run_forever()
-        )");
-    }
-
-private:
-    py::gil_scoped_acquire* p_acquire{ nullptr };
-};
-
-
 
 int main(int argc, char* argv[])
 {
@@ -216,14 +174,14 @@ int main(int argc, char* argv[])
     nl::json debugger_config;
     debugger_config["python"] = executable;
 
-    auto hook = std::make_unique<py_hook>();
+    auto py_hook = std::make_unique<xpyt::hook>();
 
     std::cout << "Making a server\n";
 
     auto make_xserver = [&](xeus::xcontext& context,
                                    const xeus::xconfiguration& config,
                                    nl::json::error_handler_t eh) {
-        return xeus::make_xserver_uv_shell_main(context, config, eh, loop_ptr, std::move(hook));
+        return xeus::make_xserver_uv_shell_main(context, config, eh, loop_ptr, std::move(py_hook));
     };
 
     std::cout << "Done with the lambda\n";

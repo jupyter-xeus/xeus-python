@@ -150,6 +150,7 @@ set(XEUS_PYTHON_SRC
     src/xdebugpy_client.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
+    src/xhook.cpp
     src/xinput.cpp
     src/xinput.hpp
     src/xinspect.cpp
@@ -175,6 +176,7 @@ set(XEUS_PYTHON_HEADERS
     include/xeus-python/xinterpreter_raw.hpp
     include/xeus-python/xtraceback.hpp
     include/xeus-python/xutils.hpp
+    include/xeus-python/xhook.hpp
 )
 
 set(XPYTHON_SRC
