@@ -13,8 +13,6 @@
 #include <uvw.hpp>
 #endif
 
-#include <iostream> // REMOVE
-
 #include "xeus-python/xhook.hpp"
 
 #include "pybind11/embed.h"
@@ -28,7 +26,6 @@ namespace xpyt
     {
         if (!p_acquire)
         {
-            std::cout << "Acquiring GIL" << std::endl;
             p_acquire = new py::gil_scoped_acquire();
         }
     }
@@ -37,12 +34,10 @@ namespace xpyt
     {
         delete p_acquire;
         p_acquire = nullptr;
-        std::cout << "Deleted GIL" << std::endl;
     }
 
     void hook::run(std::shared_ptr<uvw::loop> /* loop */)
     {
-        std::cout << "Running loop" << std::endl;
         py::gil_scoped_acquire acquire;
         py::module asyncio = py::module::import("asyncio");
         py::object loop = asyncio.attr("get_event_loop")();
