@@ -11,6 +11,15 @@
 #ifndef XPYT_HOOK_HPP
 #define XPYT_HOOK_HPP
 
+// pybind11 code internally forces hidden visibility on all internal code, but
+// if non-hidden (and thus exported) code attempts to include a pybind type
+// this warning occurs:
+// 'xpyt::hook' declared with greater visibility than the type of its
+// field 'xpyt::hook::p_acquire' [-Wattributes]
+#ifdef __GNUC__
+    #pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-zmq/xhook_base.hpp"
 
