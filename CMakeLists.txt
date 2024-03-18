@@ -139,6 +139,9 @@ else ()
     endif ()
 endif()
 
+find_library(UVW_LIBRARY uvw)
+find_path(UVW_INCLUDE_DIR uvw.hpp)
+
 # Source files
 # ============
 
@@ -306,7 +309,10 @@ macro(xpyt_create_target target_name src headers linkage output_name)
         set(XPYT_XEUS_TARGET xeus-zmq-static)
     endif ()
 
-    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} xtl PRIVATE pybind11::pybind11 pybind11_json)
+    target_link_libraries(${target_name}
+        PUBLIC ${XPYT_XEUS_TARGET} xtl ${UVW_LIBRARY}
+        PRIVATE pybind11::pybind11 pybind11_json
+    )
     if (WIN32 OR CYGWIN)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)

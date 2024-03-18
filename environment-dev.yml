@@ -15,6 +15,7 @@ dependencies:
   - pybind11_json>=0.2.6,<0.3
   - xeus-python-shell>=0.5.0,<0.6
   - debugpy>=1.6.5
+  - libuvw
   # Test dependencies
   - pytest
   - nbval
