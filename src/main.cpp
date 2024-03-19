@@ -98,38 +98,27 @@ int main(int argc, char* argv[])
     {
         py::gil_scoped_acquire acquire;
 
-        // Instantiating the loop manually
-        py::exec(R"(
-            import asyncio
-            import uvloop
-            from uvloop.loop import libuv_get_loop_t_ptr
+        // Create a uvloop and get pointer to the loop
+        py::module asyncio = py::module::import("asyncio");
+        py::module uvloop = py::module::import("uvloop");
+        py::object loop = uvloop.attr("new_event_loop")();
+        asyncio.attr("set_event_loop")(loop);
+        py::object py_loop_ptr = uvloop.attr("loop").attr("libuv_get_loop_t_ptr")(loop);
 
-            print('Creating uvloop event loop')
-            loop = uvloop.new_event_loop()
-            asyncio.set_event_loop(loop)
-            print('uvloop event loop created')
-        )");
-
-        py::object py_loop_ptr = py::eval("libuv_get_loop_t_ptr(loop)");
         void* raw_ptr = PyCapsule_GetPointer(py_loop_ptr.ptr(), nullptr);
         if (!raw_ptr)
         {
-            std::cout << "Got null pointer!\n";
-            throw std::runtime_error("Failed to get libuv loop pointer");
+            throw std::runtime_error("Failed to get uvloop pointer");
         }
 
         uv_loop_ptr = static_cast<uv_loop_t*>(raw_ptr);
-        std::cout << "Got a pointer!" << uv_loop_ptr << '\n';
     }
 
     if (!uv_loop_ptr)
     {
         throw std::runtime_error("Failed to get libuv loop pointer");
-        std::cout << "This pointer is no good\n";
     }
     auto loop_ptr = uvw::loop::create(uv_loop_ptr);
-
-    std::cout << "Got a loop!\n";
 
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
@@ -176,15 +165,11 @@ int main(int argc, char* argv[])
 
     auto py_hook = std::make_unique<xpyt::hook>();
 
-    std::cout << "Making a server\n";
-
     auto make_xserver = [&](xeus::xcontext& context,
                                    const xeus::xconfiguration& config,
                                    nl::json::error_handler_t eh) {
         return xeus::make_xserver_uv_shell_main(context, config, eh, loop_ptr, std::move(py_hook));
     };
-
-    std::cout << "Done with the lambda\n";
 
     if (!connection_filename.empty())
     {
@@ -207,12 +192,7 @@ int main(int argc, char* argv[])
             " the " + connection_filename + " file."
             << std::endl;
 
-        std::cout << "Starting kernel\n";
-
         kernel.start();
-
-        std::cout << "Kernel started\n";
-
     }
     else
     {
