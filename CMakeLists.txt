@@ -139,6 +139,9 @@ else ()
     endif ()
 endif()
 
+find_library(UVW_LIBRARY uvw)
+find_path(UVW_INCLUDE_DIR uvw.hpp)
+
 # Source files
 # ============
 
@@ -150,6 +153,7 @@ set(XEUS_PYTHON_SRC
     src/xdebugpy_client.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
+    src/xhook.cpp
     src/xinput.cpp
     src/xinput.hpp
     src/xinspect.cpp
@@ -175,6 +179,7 @@ set(XEUS_PYTHON_HEADERS
     include/xeus-python/xinterpreter_raw.hpp
     include/xeus-python/xtraceback.hpp
     include/xeus-python/xutils.hpp
+    include/xeus-python/xhook.hpp
 )
 
 set(XPYTHON_SRC
@@ -304,7 +309,10 @@ macro(xpyt_create_target target_name src headers linkage output_name)
         set(XPYT_XEUS_TARGET xeus-zmq-static)
     endif ()
 
-    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} xtl PRIVATE pybind11::pybind11 pybind11_json)
+    target_link_libraries(${target_name}
+        PUBLIC ${XPYT_XEUS_TARGET} xtl ${UVW_LIBRARY}
+        PRIVATE pybind11::pybind11 pybind11_json
+    )
     if (WIN32 OR CYGWIN)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)

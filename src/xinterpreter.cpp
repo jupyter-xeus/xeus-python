@@ -182,6 +182,7 @@ namespace xpyt
             kernel_res["traceback"] = error.m_traceback;
         }
 
+        kernel_res["status"] = "error";
         return kernel_res;
     }
 

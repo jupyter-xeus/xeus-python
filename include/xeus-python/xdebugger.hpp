@@ -40,7 +40,7 @@ namespace xpyt
 
         using base_type = xeus::xdebugger_base;
 
-        debugger(zmq::context_t& context,
+        debugger(xeus::xcontext& context,
                  const xeus::xconfiguration& config,
                  const std::string& user_name,
                  const std::string& session_id,
