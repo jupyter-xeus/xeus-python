@@ -12,8 +12,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "zmq_addon.hpp"
-
 #include "xeus_client.hpp"
 #include "xeus/xguid.hpp"
 #include "xeus/xmessage.hpp"
@@ -26,7 +24,7 @@ using namespace std::chrono_literals;
  * xeus-client_base implementation *
  ***********************************/
 
-xeus_client_base::xeus_client_base(zmq::context_t& context,
+xeus_client_base::xeus_client_base(xeus::xcontext& context,
                                    const std::string& user_name,
                                    const xeus::xconfiguration& config)
     : p_shell_authentication(xeus::make_xauthentication(config.m_signature_scheme, config.m_key))
@@ -169,7 +167,7 @@ nl::json xeus_client_base::aggregate(const nl::json& header,
  * xeus_logger_client implementation *
  *************************************/
 
-xeus_logger_client::xeus_logger_client(zmq::context_t& context,
+xeus_logger_client::xeus_logger_client(xeus::xcontext& context,
                                        const std::string& user_name,
                                        const xeus::xconfiguration& config,
                                        const std::string& file_name)

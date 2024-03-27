@@ -21,7 +21,6 @@
 #include <unistd.h>
 #endif
 
-#include "xeus/xeus_context.hpp"
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus/xinterpreter.hpp"
@@ -99,7 +98,7 @@ int main(int argc, char* argv[])
     }
     delete[] argw;
 
-    using context_type = xeus::xcontext_impl<zmq::context_t>;
+    using context_type = xeus::xcontext_impl<xeus::xcontext>;
     using context_ptr = std::unique_ptr<context_type>;
     context_ptr context = context_ptr(new context_type());
 
