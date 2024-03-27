@@ -20,9 +20,7 @@
 #include <mutex>
 #include <set>
 
-#include "zmq.hpp"
 #include "nlohmann/json.hpp"
-#include "xeus/xeus_context.hpp"
 #include "pybind11/pybind11.h"
 #include "xeus-zmq/xdebugger_base.hpp"
 #include "xeus_python_config.hpp"
@@ -40,7 +38,7 @@ namespace xpyt
 
         using base_type = xeus::xdebugger_base;
 
-        debugger(zmq::context_t& context,
+        debugger(xeus::xcontext& context,
                  const xeus::xconfiguration& config,
                  const std::string& user_name,
                  const std::string& session_id,

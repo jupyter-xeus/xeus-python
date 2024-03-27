@@ -42,7 +42,7 @@ using namespace std::placeholders;
 
 namespace xpyt
 {
-    debugger::debugger(zmq::context_t& context,
+    debugger::debugger(xeus::xcontext& context,
                        const xeus::xconfiguration& config,
                        const std::string& user_name,
                        const std::string& session_id,
@@ -373,7 +373,7 @@ namespace xpyt
                                                           const std::string& session_id,
                                                           const nl::json& debugger_config)
     {
-        return std::unique_ptr<xeus::xdebugger>(new debugger(context.get_wrapped_context<zmq::context_t>(),
+        return std::unique_ptr<xeus::xdebugger>(new debugger(context.get_wrapped_context<xeus::xcontext>(),
                                                              config, user_name, session_id, debugger_config));
     }
 }

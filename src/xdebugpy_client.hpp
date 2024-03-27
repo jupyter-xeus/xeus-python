@@ -25,7 +25,7 @@ namespace xpyt
         using base_type = xdap_tcp_client;
         using event_callback = base_type::event_callback;
 
-        xdebugpy_client(zmq::context_t& context,
+        xdebugpy_client(xeus::xcontext& context,
                         const xeus::xconfiguration& config,
                         int socket_linger,
                         const xdap_tcp_configuration& dap_config,
