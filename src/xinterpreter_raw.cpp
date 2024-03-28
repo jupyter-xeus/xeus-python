@@ -105,6 +105,7 @@ namespace xpyt
     }
 
     nl::json raw_interpreter::execute_request_impl(
+        xeus::xrequest_context context,
         int execution_count,
         const std::string& code,
         bool silent,
@@ -182,7 +183,7 @@ namespace xpyt
 
             if (!silent)
             {
-                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+                publish_execution_error(context, error.m_ename, error.m_evalue, error.m_traceback);
             }
 
             kernel_res["status"] = "error";

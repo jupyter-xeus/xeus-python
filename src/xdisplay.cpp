@@ -43,7 +43,7 @@ namespace xpyt_ipython
      * xpublish_display_data implementation *
      ****************************************/
 
-    void xpublish_display_data(xeus::xrequest_context request_context,
+    void xpublish_display_data(xeus::xrequest_context context,
                                const py::object& data,
                                const py::object& metadata,
                                const py::object& transient,
@@ -60,11 +60,11 @@ namespace xpyt_ipython
 
         if (update)
         {
-            interp.update_display_data(request_context, data, metadata, transient_);
+            interp.update_display_data(context, data, metadata, transient_);
         }
         else
         {
-            interp.display_data(request_context, data, metadata, transient_);
+            interp.display_data(context, data, metadata, transient_);
         }
     }
 
@@ -72,7 +72,7 @@ namespace xpyt_ipython
      * xpublish_execution_result implementation *
      ********************************************/
 
-    void xpublish_execution_result(xeus::xrequest_context request_context,
+    void xpublish_execution_result(xeus::xrequest_context context,
                                    const py::int_& execution_count,
                                    const py::object& data,
                                    const py::object& metadata)
@@ -82,7 +82,7 @@ namespace xpyt_ipython
         nl::json cpp_data = data;
         if (cpp_data.size() != 0)
         {
-            interp.publish_execution_result(request_context, execution_count, std::move(cpp_data), metadata);
+            interp.publish_execution_result(context, execution_count, std::move(cpp_data), metadata);
         }
     }
 
