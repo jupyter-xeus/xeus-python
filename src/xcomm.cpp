@@ -37,10 +37,13 @@ namespace xpyt
      * xcomm implementation *
      ************************/
 
-    xcomm::xcomm(const py::object& target_name, const py::object& data, const py::object& metadata, const py::object& buffers, const py::kwargs& kwargs)
+    xcomm::xcomm(const py::object& target_name,
+                 const py::object& data,
+                 const py::object& metadata,
+                 const py::object& buffers,
+                 const py::kwargs& kwargs)
         : m_comm(target(target_name), id(kwargs))
     {
-        m_comm.open(metadata, data, pylist_to_cpp_buffers(buffers));
     }
 
     xcomm::xcomm(xeus::xcomm&& comm)
@@ -62,14 +65,19 @@ namespace xpyt
         return true;
     }
 
-    void xcomm::close(const py::object& data, const py::object& metadata, const py::object& buffers)
+    void xcomm::open(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers)
     {
-        m_comm.close(metadata, data, pylist_to_cpp_buffers(buffers));
+        m_comm.open(parent_header, metadata, data, pylist_to_cpp_buffers(buffers));
     }
 
-    void xcomm::send(const py::object& data, const py::object& metadata, const py::object& buffers)
+    void xcomm::close(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers)
     {
-        m_comm.send(metadata, data, pylist_to_cpp_buffers(buffers));
+        m_comm.close(parent_header, metadata, data, pylist_to_cpp_buffers(buffers));
+    }
+
+    void xcomm::send(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers)
+    {
+        m_comm.send(parent_header, metadata, data, pylist_to_cpp_buffers(buffers));
     }
 
     void xcomm::on_msg(const python_callback_type& callback)

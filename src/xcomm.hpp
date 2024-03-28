@@ -33,8 +33,9 @@ namespace xpyt
         std::string comm_id() const;
         bool kernel() const;
 
-        void close(const py::object& data, const py::object& metadata, const py::object& buffers);
-        void send(const py::object& data, const py::object& metadata, const py::object& buffers);
+        void open(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers);
+        void close(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers);
+        void send(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers);
         void on_msg(const python_callback_type& callback);
         void on_close(const python_callback_type& callback);
 
