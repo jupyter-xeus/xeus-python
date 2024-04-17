@@ -34,13 +34,16 @@ namespace xpyt
     class hook : public xeus::xhook_base
     {
     public:
-        hook() = default;
 
-        void pre_hook() override;
-        void post_hook() override;
-        void run(std::shared_ptr<uvw::loop> loop) override;
+        hook() = default;
+        virtual ~hook();
 
     private:
+
+        void pre_hook_impl() override;
+        void post_hook_impl() override;
+        void run_impl(std::shared_ptr<uvw::loop> loop) override;
+
         py::gil_scoped_acquire* p_acquire{ nullptr};
     };
 

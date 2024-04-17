@@ -22,7 +22,12 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    void hook::pre_hook()
+    hook::~hook()
+    {
+        delete p_acquire;
+    }
+
+    void hook::pre_hook_impl()
     {
         if (!p_acquire)
         {
@@ -30,13 +35,13 @@ namespace xpyt
         }
     }
 
-    void hook::post_hook()
+    void hook::post_hook_impl()
     {
         delete p_acquire;
         p_acquire = nullptr;
     }
 
-    void hook::run(std::shared_ptr<uvw::loop> /* loop */)
+    void hook::run_impl(std::shared_ptr<uvw::loop> /* loop */)
     {
         py::gil_scoped_acquire acquire;
         py::module asyncio = py::module::import("asyncio");
