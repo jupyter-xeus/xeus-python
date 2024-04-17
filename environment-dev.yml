@@ -9,7 +9,7 @@ dependencies:
   # Host dependencies
   - xeus>=4.0.2
   - xeus-zmq>=1.3.0,<2.0
-  - nlohmann_json
+  - nlohmann_json=3.11.3
   - xtl>=0.7, <0.8
   - pybind11>=2.6.1,<3.0
   - pybind11_json>=0.2.6,<0.3
