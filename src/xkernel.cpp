@@ -51,15 +51,6 @@ namespace xpyt_ipython
         py::object m_comm_manager;
     };
 
-    /**************************
-     * xkernel implementation *
-     **************************/
-
-    py::dict xkernel::get_parent()
-    {
-        return py::dict(py::arg("header") = xeus::get_interpreter().parent_header().get<py::object>());
-    }
-
     /*****************
      * kernel module *
      *****************/
@@ -70,8 +61,6 @@ namespace xpyt_ipython
 
         py::class_<xkernel>(kernel_module, "XKernel")
             .def(py::init<>())
-            .def("get_parent", &xkernel::get_parent)
-            .def_property_readonly("_parent_header", &xkernel::get_parent)
             .def_readwrite("comm_manager", &xkernel::m_comm_manager);
 
         return kernel_module;
@@ -94,11 +83,6 @@ namespace xpyt_raw
     struct xmock_kernel
     {
         xmock_kernel() = default;
-
-        inline py::object parent_header() const
-        {
-            return py::dict(py::arg("header") = xeus::get_interpreter().parent_header().get<py::object>());
-        }
 
         xpyt::xcomm_manager m_comm_manager;
     };
@@ -183,7 +167,6 @@ namespace xpyt_raw
     {
         py::class_<xmock_kernel>(kernel_module, "MockKernel", py::dynamic_attr())
             .def(py::init<>())
-            .def_property_readonly("_parent_header", &xmock_kernel::parent_header)
             .def_readwrite("comm_manager", &xmock_kernel::m_comm_manager);
 
         py::class_<xmock_ipython>(kernel_module, "MockIPython")
