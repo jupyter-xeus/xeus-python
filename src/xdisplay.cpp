@@ -72,7 +72,7 @@ namespace xpyt_ipython
      * xpublish_execution_result implementation *
      ********************************************/
 
-    void xpublish_execution_result(xeus::xrequest_context context,
+    void xpublish_execution_result(xeus::xrequest_context request_context,
                                    const py::int_& execution_count,
                                    const py::object& data,
                                    const py::object& metadata)
@@ -82,7 +82,7 @@ namespace xpyt_ipython
         nl::json cpp_data = data;
         if (cpp_data.size() != 0)
         {
-            interp.publish_execution_result(context, execution_count, std::move(cpp_data), metadata);
+            interp.publish_execution_result(request_context, execution_count, std::move(cpp_data), metadata);
         }
     }
 
@@ -115,6 +115,7 @@ namespace xpyt_ipython
 
         display_module.def("publish_execution_result",
             xpublish_execution_result,
+            "request_context"_a,
             "execution_count"_a,
             "data"_a,
             "metadata"_a=py::dict()
@@ -272,8 +273,9 @@ namespace xpyt_raw
                 pub_data = repr[0];
                 pub_metadata = repr[1];
             }
-
-            interp.publish_execution_result(m_execution_count, pub_data, pub_metadata);
+            // TODO: get request context
+            xeus::xrequest_context request_context{};
+            interp.publish_execution_result(request_context, m_execution_count, pub_data, pub_metadata);
         }
     }
 
