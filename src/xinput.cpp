@@ -13,6 +13,7 @@
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xinput.hpp"
+#include "xeus/xrequest_context.hpp"
 
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
@@ -24,14 +25,16 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    std::string cpp_input(const std::string& prompt)
+    std::string cpp_input(xeus::xrequest_context request_context,
+                          const std::string& prompt)
     {
-        return xeus::blocking_input_request(prompt, false);
+        return xeus::blocking_input_request(request_context, prompt, false);
     }
 
-    std::string cpp_getpass(const std::string& prompt)
+    std::string cpp_getpass(xeus::xrequest_context request_context,
+                            const std::string& prompt)
     {
-        return xeus::blocking_input_request(prompt, true);
+        return xeus::blocking_input_request(request_context, prompt, true);
     }
 
     void notimplemented(const std::string&)
@@ -43,13 +46,13 @@ namespace xpyt
     {
         // Forward input()
         py::module builtins = py::module::import("builtins");
-        m_sys_input = builtins.attr("input");
+        m_sys_input = builtins.attr("input"); // TODO: may need to include request_context here
         builtins.attr("input") = allow_stdin ? py::cpp_function(&cpp_input, py::arg("prompt") = "")
                                              : py::cpp_function(&notimplemented, py::arg("prompt") = "");
 
         // Forward getpass()
         py::module getpass = py::module::import("getpass");
-        m_sys_getpass = getpass.attr("getpass");
+        m_sys_getpass = getpass.attr("getpass"); // TODO: may need to include request_context here
         getpass.attr("getpass") = allow_stdin ? py::cpp_function(&cpp_getpass, py::arg("prompt") = "")
                                               : py::cpp_function(&notimplemented, py::arg("prompt") = "");
     }
