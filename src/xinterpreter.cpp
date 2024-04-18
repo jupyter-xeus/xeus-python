@@ -111,12 +111,12 @@ namespace xpyt
         }
     }
 
-    nl::json interpreter::execute_request_impl(int /*execution_count*/,
+    nl::json interpreter::execute_request_impl(xeus::xrequest_context request_context,
+                                               send_reply_callback cb,
+                                               int execution_counter,
                                                const std::string& code,
-                                               bool silent,
-                                               bool store_history,
-                                               nl::json user_expressions,
-                                               bool allow_stdin)
+                                               xeus::execute_request_config config,
+                                               nl::json user_expressions)
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;

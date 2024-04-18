@@ -49,13 +49,12 @@ namespace xpyt
 
         void configure_impl() override;
 
-        nl::json execute_request_impl(xeus::xrequest_context context,
+        nl::json execute_request_impl(xeus::xrequest_context request_context,
+                                      send_reply_callback cb,
                                       int execution_counter,
                                       const std::string& code,
-                                      bool silent,
-                                      bool store_history,
-                                      nl::json user_expressions,
-                                      bool allow_stdin) override;
+                                      xeus::execute_request_config config,
+                                      nl::json user_expressions) override;
 
         nl::json complete_request_impl(const std::string& code, int cursor_pos) override;
 

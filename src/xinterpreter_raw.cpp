@@ -104,14 +104,12 @@ namespace xpyt
         py::globals()["_iii"] = "";
     }
 
-    nl::json raw_interpreter::execute_request_impl(
-        xeus::xrequest_context context,
-        int execution_count,
-        const std::string& code,
-        bool silent,
-        bool /*store_history*/,
-        nl::json /*user_expressions*/,
-        bool allow_stdin)
+    nl::json raw_interpreter::execute_request_impl(xeus::xrequest_context request_context,
+                                                   send_reply_callback cb,
+                                                   int execution_counter,
+                                                   const std::string& code,
+                                                   xeus::execute_request_config config,
+                                                   nl::json user_expressions)
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
@@ -183,7 +181,7 @@ namespace xpyt
 
             if (!silent)
             {
-                publish_execution_error(context, error.m_ename, error.m_evalue, error.m_traceback);
+                publish_execution_error(request_context, error.m_ename, error.m_evalue, error.m_traceback);
             }
 
             kernel_res["status"] = "error";
