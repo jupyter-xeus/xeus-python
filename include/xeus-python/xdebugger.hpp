@@ -57,10 +57,8 @@ namespace xpyt
         nl::json variables_request_impl(const nl::json& message) override;
 
         bool start_debugpy();
-        bool start(zmq::socket_t& header_socket,
-                   zmq::socket_t& request_socket) override;
-        void stop(zmq::socket_t& header_socket,
-                  zmq::socket_t& request_socket) override;
+        bool start() override;
+        void stop() override;
         xeus::xdebugger_info get_debugger_info() const override;
         std::string get_cell_temporary_file(const std::string& code) const override;
 
