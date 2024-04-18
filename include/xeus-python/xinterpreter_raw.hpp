@@ -20,6 +20,7 @@
 #include "nlohmann/json.hpp"
 
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xrequest_context.hpp"
 
 #include "pybind11/pybind11.h"
 

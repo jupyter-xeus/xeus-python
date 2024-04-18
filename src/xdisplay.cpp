@@ -16,6 +16,7 @@
 #include "nlohmann/json.hpp"
 
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xrequest_context.hpp"
 
 #include "pybind11_json/pybind11_json.hpp"
 

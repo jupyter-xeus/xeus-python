@@ -19,6 +19,7 @@
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xsystem.hpp"
+#include "xeus/xrequest_context.hpp"
 
 #include "pybind11/functional.h"
 
