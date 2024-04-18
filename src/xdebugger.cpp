@@ -305,7 +305,7 @@ namespace xpyt
         return status == "ok";
     }
 
-    bool debugger::start(zmq::socket_t& header_socket, zmq::socket_t& request_socket)
+    bool debugger::start()
     {
         std::string temp_dir = xeus::get_temp_directory_path();
         std::string log_dir = temp_dir + "/" + "xpython_debug_logs_" + std::to_string(xeus::get_current_pid());
@@ -322,8 +322,7 @@ namespace xpyt
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
         std::string publisher_end_point = xeus::get_publisher_end_point();
 
-        request_socket.bind(controller_end_point);
-        header_socket.bind(controller_header_end_point);
+        bind_sockets(controller_end_point, controller_header_end_point);
 
         std::string debugpy_end_point = "tcp://" + m_debugpy_host + ':' + m_debugpy_port;
         std::thread client(&xdap_tcp_client::start_debugger,
@@ -334,22 +333,19 @@ namespace xpyt
                            controller_header_end_point);
         client.detach();
 
-        request_socket.send(zmq::message_t("REQ", 3), zmq::send_flags::none);
-        zmq::message_t ack;
-        (void)request_socket.recv(ack);
+        send_recv_request("REQ");
 
-        std::string tmp_folder =  get_tmp_prefix();
+        std::string tmp_folder = get_tmp_prefix();
         xeus::create_directory(tmp_folder);
 
         return true;
     }
 
-    void debugger::stop(zmq::socket_t& header_socket, zmq::socket_t& request_socket)
+    void debugger::stop()
     {
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
-        request_socket.unbind(controller_end_point);
-        header_socket.unbind(controller_header_end_point);
+        unbind_sockets(controller_end_point, controller_header_end_point);
     }
 
     xeus::xdebugger_info debugger::get_debugger_info() const
