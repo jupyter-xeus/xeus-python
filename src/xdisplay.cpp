@@ -222,7 +222,7 @@ namespace xpyt_raw
     {
     public:
 
-        xdisplayhook();
+        xdisplayhook(xeus::xreuqest_context request_context);
         virtual ~xdisplayhook();
 
         void set_execution_count(int execution_count);
@@ -231,14 +231,16 @@ namespace xpyt_raw
     private:
 
         int m_execution_count;
+        xeus::xrequest_context m_request_context;
     };
 
     /*******************************
      * xdisplayhook implementation *
      *******************************/
 
-    xdisplayhook::xdisplayhook()
+    xdisplayhook::xdisplayhook(xeus::xrequest_context request_context)
         : m_execution_count(0)
+        , m_request_context(request_context)
     {
     }
 
@@ -275,9 +277,8 @@ namespace xpyt_raw
                 pub_data = repr[0];
                 pub_metadata = repr[1];
             }
-            // TODO: get request context
-            xeus::xrequest_context request_context;
-            interp.publish_execution_result(request_context, m_execution_count, pub_data, pub_metadata);
+
+            interp.publish_execution_result(m_request_context, m_execution_count, pub_data, pub_metadata);
         }
     }
 
