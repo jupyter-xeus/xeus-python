@@ -42,19 +42,19 @@ namespace xpyt
         throw std::runtime_error("This frontend does not support input requests");
     }
 
-    input_redirection::input_redirection(bool allow_stdin)
+    input_redirection::input_redirection(xeus::xrequest_context request_context, bool allow_stdin)
     {
         // Forward input()
         py::module builtins = py::module::import("builtins");
-        m_sys_input = builtins.attr("input"); // TODO: may need to include request_context here
-        builtins.attr("input") = allow_stdin ? py::cpp_function(&cpp_input, py::arg("prompt") = "")
-                                             : py::cpp_function(&notimplemented, py::arg("prompt") = "");
+        m_sys_input = builtins.attr("input");
+        builtins.attr("input") = allow_stdin ? py::cpp_function(&cpp_input, request_context, py::arg("prompt") = "")
+                                             : py::cpp_function(&notimplemented, request_context, py::arg("prompt") = "");
 
         // Forward getpass()
         py::module getpass = py::module::import("getpass");
-        m_sys_getpass = getpass.attr("getpass"); // TODO: may need to include request_context here
-        getpass.attr("getpass") = allow_stdin ? py::cpp_function(&cpp_getpass, py::arg("prompt") = "")
-                                              : py::cpp_function(&notimplemented, py::arg("prompt") = "");
+        m_sys_getpass = getpass.attr("getpass");
+        getpass.attr("getpass") = allow_stdin ? py::cpp_function(&cpp_getpass, request_context, py::arg("prompt") = "")
+                                              : py::cpp_function(&notimplemented, request_context, py::arg("prompt") = "");
     }
 
     input_redirection::~input_redirection()

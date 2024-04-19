@@ -18,6 +18,8 @@
 
 #include "pybind11/pybind11.h"
 
+#include "xeus/xrequest_context.hpp"
+
 namespace py = pybind11;
 
 namespace xpyt
@@ -32,7 +34,7 @@ namespace xpyt
     {
     public:
 
-        input_redirection(bool allow_stdin);
+        input_redirection(xeus::xrequest_context request_context, bool allow_stdin);
         ~input_redirection();
 
     private:
