@@ -47,14 +47,18 @@ namespace xpyt
         // Forward input()
         py::module builtins = py::module::import("builtins");
         m_sys_input = builtins.attr("input");
-        builtins.attr("input") = allow_stdin ? py::cpp_function(&cpp_input, request_context, py::arg("prompt") = "")
-                                             : py::cpp_function(&notimplemented, request_context, py::arg("prompt") = "");
+        builtins.attr("input") = allow_stdin ? py::cpp_function(&cpp_input,
+                                                                py::arg("request_context") = request_context,
+                                                                py::arg("prompt") = "")
+                                             : py::cpp_function(&notimplemented, py::arg("prompt") = "");
 
         // Forward getpass()
         py::module getpass = py::module::import("getpass");
         m_sys_getpass = getpass.attr("getpass");
-        getpass.attr("getpass") = allow_stdin ? py::cpp_function(&cpp_getpass, request_context, py::arg("prompt") = "")
-                                              : py::cpp_function(&notimplemented, request_context, py::arg("prompt") = "");
+        getpass.attr("getpass") = allow_stdin ? py::cpp_function(&cpp_getpass,
+                                                                 py::arg("request_context") = request_context,
+                                                                 py::arg("prompt") = "")
+                                              : py::cpp_function(&notimplemented, py::arg("prompt") = "");
     }
 
     input_redirection::~input_redirection()
