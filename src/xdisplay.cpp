@@ -222,7 +222,7 @@ namespace xpyt_raw
     {
     public:
 
-        xdisplayhook(xeus::xreuqest_context request_context);
+        xdisplayhook(xeus::xrequest_context request_context);
         virtual ~xdisplayhook();
 
         void set_execution_count(int execution_count);
