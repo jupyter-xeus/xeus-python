@@ -20,6 +20,7 @@
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xsystem.hpp"
 #include "xeus/xrequest_context.hpp"
+#include "xeus/xserver.hpp" // for channel
 
 #include "pybind11/functional.h"
 
@@ -339,7 +340,7 @@ namespace xpyt
             xerror error = extract_error(pyerror);
 
             // For internal requests, the context is not required.
-            xeus::xrequest_context request_context(nl::json::object(), channel::SHELL, {});
+            xeus::xrequest_context request_context(nl::json::object(), xeus::channel::SHELL, {});
             publish_execution_error(request_context, error.m_ename, error.m_evalue, error.m_traceback);
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
