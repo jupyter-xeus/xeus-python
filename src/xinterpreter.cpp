@@ -336,7 +336,8 @@ namespace xpyt
 
             xerror error = extract_error(pyerror);
 
-            // TODO: get the request context
+            // TODO: where to get request context??
+            xeus::xrequest_context request_context(nl::json::object(), 1, 1);  // FIXME:
             publish_execution_error(request_context, error.m_ename, error.m_evalue, error.m_traceback);
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
