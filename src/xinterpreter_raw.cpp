@@ -130,7 +130,7 @@ namespace xpyt
             py::list expressions = code_ast.attr("body");
 
             std::string filename = get_cell_tmp_file(code);
-            register_filename_mapping(filename, execution_count);
+            register_filename_mapping(filename, execution_counter);
 
 
             // If the last statement is an expression, we compile it separately
@@ -151,7 +151,7 @@ namespace xpyt
 
                 if (m_displayhook.ptr() != nullptr)
                 {
-                    m_displayhook.attr("set_execution_count")(execution_count);
+                    m_displayhook.attr("set_execution_count")(execution_counter);
                 }
 
                 exec(compiled_code);
