@@ -108,6 +108,7 @@ namespace xpyt_ipython
 
         display_module.def("publish_display_data",
             xpublish_display_data,
+            "request_context"_a,
             "data"_a,
             "metadata"_a=py::dict(),
             "transient"_a=py::dict(),
@@ -1186,6 +1187,7 @@ namespace xpyt_raw
 
         display_module.def("publish_display_data",
             xpublish_display_data,
+            py::arg("request_context") = py::dict(), // TODO: verify default value
             py::arg("data"),
             py::arg("metadata") = py::dict(),
             py::arg("source") = py::str(),
