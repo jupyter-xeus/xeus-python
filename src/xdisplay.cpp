@@ -124,6 +124,7 @@ namespace xpyt_ipython
 
         display_module.def("clear_output",
             xclear,
+            "request_context"_a,
             "wait"_a=false
         );
 
@@ -446,10 +447,10 @@ namespace xpyt_raw
      * xclear implementation *
      *************************/
 
-    void xclear(bool wait = false)
+    void xclear(xeus::xrequest_context request_context, bool wait = false)
     {
         auto& interp = xeus::get_interpreter();
-        interp.clear_output(wait);
+        interp.clear_output(request_context, wait);
     }
 
     /*******************************
@@ -1191,6 +1192,7 @@ namespace xpyt_raw
 
         display_module.def("clear_output",
             xclear,
+            py::arg("request_context") = py::dict(), // TODO: verify default value
             py::arg("wait") = false);
 
         display_module.def("display_html", xdisplay_html);
