@@ -29,7 +29,7 @@ namespace xpyt
     std::string green_text(const std::string& text);
     std::string blue_text(const std::string& text);
     std::string highlight(const std::string& code);
-    
+
     py::list cpp_buffers_to_pylist(const xeus::buffer_sequence& buffers);
     xeus::buffer_sequence pylist_to_cpp_buffers(const py::object& bufferlist);
 

@@ -44,7 +44,7 @@ namespace xpyt_ipython
      * xpublish_display_data implementation *
      ****************************************/
 
-    void xpublish_display_data(xeus::xrequest_context context,
+    void xpublish_display_data(xeus::xrequest_context request_context,
                                const py::object& data,
                                const py::object& metadata,
                                const py::object& transient,
@@ -61,11 +61,11 @@ namespace xpyt_ipython
 
         if (update)
         {
-            interp.update_display_data(context, data, metadata, transient_);
+            interp.update_display_data(request_context, data, metadata, transient_);
         }
         else
         {
-            interp.display_data(context, data, metadata, transient_);
+            interp.display_data(request_context, data, metadata, transient_);
         }
     }
 
@@ -328,11 +328,13 @@ namespace xpyt_raw
                 }
                 if (update)
                 {
-                    interp.update_display_data(pub_data, pub_metadata, std::move(cpp_transient));
+                    // TODO: get request context
+                    // interp.update_display_data(request_context, pub_data, pub_metadata, std::move(cpp_transient));
                 }
                 else
                 {
-                    interp.display_data(pub_data, pub_metadata, std::move(cpp_transient));
+                    // TODO: get request context
+                    // interp.display_data(request_context, pub_data, pub_metadata, std::move(cpp_transient));
                 }
             }
         }
@@ -362,11 +364,15 @@ namespace xpyt_raw
         xdisplay_impl(objs, include, exclude, metadata, transient, display_id, true, raw);
     }
 
-    void xpublish_display_data(const py::object& data, const py::object& metadata, const py::str& /*source*/, const py::object& transient)
+    void xpublish_display_data(xeus::xrequest_context request_context,
+                               const py::object& data,
+                               const py::object& metadata,
+                               const py::str& /*source*/,
+                               const py::object& transient)
     {
         auto& interp = xeus::get_interpreter();
 
-        interp.display_data(data, metadata, transient);
+        interp.display_data(request_context, data, metadata, transient);
     }
 
     void xdisplay_mimetype(const std::string& mimetype, py::args objs, py::kwargs kw)
@@ -1023,7 +1029,7 @@ namespace xpyt_raw
     {
     public:
 
-        xprogressbar(std::ptrdiff_t total);
+        xprogressbar(xeus::xrequest_context request_context, std::ptrdiff_t total);
 
         std::string repr() const;
         std::string repr_html() const;
@@ -1046,11 +1052,14 @@ namespace xpyt_raw
         std::size_t m_text_width = 60;
 
         xeus::xguid m_id;
+        xeus::xrequest_context m_request_context;
 
     };
 
-    xprogressbar::xprogressbar(std::ptrdiff_t total)
-        : m_total(total), m_id(xeus::new_xguid())
+    xprogressbar::xprogressbar(xeus::xrequest_context request_context, std::ptrdiff_t total)
+        : m_total(total)
+        , m_id(xeus::new_xguid())
+        , m_request_context(request_context)
     {
     }
 
@@ -1132,15 +1141,17 @@ namespace xpyt_raw
 
         if (!update)
         {
-            interp.display_data(
-                std::move(pub_data), nl::json::object(), std::move(cpp_transient)
-            );
+            interp.display_data(m_request_context,
+                                std::move(pub_data),
+                                nl::json::object(),
+                                std::move(cpp_transient));
         }
         else
         {
-            interp.update_display_data(
-                std::move(pub_data), nl::json::object(), std::move(cpp_transient)
-            );
+            interp.update_display_data(m_request_context,
+                                       std::move(pub_data),
+                                       nl::json::object(),
+                                       std::move(cpp_transient));
         }
     }
 

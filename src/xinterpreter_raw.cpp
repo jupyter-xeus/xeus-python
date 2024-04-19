@@ -117,7 +117,7 @@ namespace xpyt
         py::str code_copy;
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
-        auto input_guard = input_redirection(allow_stdin);
+        auto input_guard = input_redirection(true); // TODO: verify this
         code_copy = code;
         try
         {
