@@ -127,15 +127,17 @@ namespace xpyt
 
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
-        auto input_guard = input_redirection(true); // TODO: verify this
+        auto input_guard = input_redirection(request_context, config.allow_stdin);
 
         bool exception_occurred = false;
         try{
-            m_ipython_shell.attr("run_cell")(code, "store_history"_a=store_history, "silent"_a=silent);
+            m_ipython_shell.attr("run_cell")(code,
+                                             "store_history"_a=config.store_history,
+                                             "silent"_a=config.silent);
         }
         catch(std::runtime_error& e){
             const std::string error_msg = e.what();
-            if(!silent){
+            if(!config.silent){
                 publish_execution_error(request_context, "RuntimeError", error_msg, std::vector<std::string>());
             }
             kernel_res["ename"] = "std::runtime_error";
@@ -143,7 +145,7 @@ namespace xpyt
             exception_occurred = true;
         }
         catch(...){
-            if(!silent){
+            if(!config.silent){
                 publish_execution_error(request_context, "unknown_error", "", std::vector<std::string>());
             }
             kernel_res["ename"] = "UnknownError";
@@ -173,7 +175,7 @@ namespace xpyt
 
             xerror error = extract_error(pyerror);
 
-            if (!silent)
+            if (!config.silent)
             {
                 publish_execution_error(request_context, error.m_ename, error.m_evalue, error.m_traceback);
             }
