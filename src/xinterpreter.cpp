@@ -136,7 +136,7 @@ namespace xpyt
         catch(std::runtime_error& e){
             const std::string error_msg = e.what();
             if(!silent){
-                publish_execution_error("RuntimeError", error_msg, std::vector<std::string>());
+                publish_execution_error(request_context, "RuntimeError", error_msg, std::vector<std::string>());
             }
             kernel_res["ename"] = "std::runtime_error";
             kernel_res["evalue"] = error_msg;
@@ -144,7 +144,7 @@ namespace xpyt
         }
         catch(...){
             if(!silent){
-                publish_execution_error("unknown_error", "", std::vector<std::string>());
+                publish_execution_error(request_context, "unknown_error", "", std::vector<std::string>());
             }
             kernel_res["ename"] = "UnknownError";
             kernel_res["evalue"] = "";
@@ -175,7 +175,7 @@ namespace xpyt
 
             if (!silent)
             {
-                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+                publish_execution_error(request_context, error.m_ename, error.m_evalue, error.m_traceback);
             }
 
             kernel_res["status"] = "error";
@@ -336,7 +336,8 @@ namespace xpyt
 
             xerror error = extract_error(pyerror);
 
-            publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+            // TODO: get the request context
+            publish_execution_error(request_context, error.m_ename, error.m_evalue, error.m_traceback);
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
 
