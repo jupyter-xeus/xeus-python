@@ -100,7 +100,7 @@ namespace xpyt
 
     private:
 
-        virtual void instanciate_ipython_shell();
+        virtual void instantiate_ipython_shell();
     };
 }
 

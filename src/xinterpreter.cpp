@@ -79,7 +79,7 @@ namespace xpyt
         // New approach: we provide our comm module
         sys.attr("modules")["comm"] = comm_module;
 
-        instanciate_ipython_shell();
+        instantiate_ipython_shell();
 
         m_ipython_shell_app.attr("initialize")();
         m_ipython_shell = m_ipython_shell_app.attr("shell");
@@ -362,7 +362,7 @@ namespace xpyt
         sys.attr("stderr") = stream_module.attr("Stream")("stderr");
     }
 
-    void interpreter::instanciate_ipython_shell()
+    void interpreter::instantiate_ipython_shell()
     {
         m_ipython_shell_app = py::module::import("xeus_python_shell.shell").attr("XPythonShellApp")();
     }
