@@ -13,6 +13,7 @@
 #include <sstream>
 
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xrequest_context.hpp"
 
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
@@ -36,7 +37,8 @@ namespace xpyt
         xstream(std::string stream_name);
         virtual ~xstream();
 
-        void write(const std::string& message);
+        void write(xeus::xrequest_context request_context, 
+                   const std::string& message);
         void flush();
         bool isatty();
 
@@ -58,9 +60,12 @@ namespace xpyt
     {
     }
 
-    void xstream::write(const std::string& message)
+    void xstream::write(xeus::xrequest_context request_context, 
+                        const std::string& message)
     {
-        xeus::get_interpreter().publish_stream(m_stream_name, message);
+        xeus::get_interpreter().publish_stream(request_context,
+                                               m_stream_name, 
+                                               message);
     }
 
     void xstream::flush()

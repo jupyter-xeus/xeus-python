@@ -112,12 +112,12 @@ namespace xpyt
         }
     }
 
-    nl::json interpreter::execute_request_impl(xeus::xrequest_context request_context,
-                                               send_reply_callback cb,
-                                               int execution_counter,
-                                               const std::string& code,
-                                               xeus::execute_request_config config,
-                                               nl::json user_expressions)
+    void interpreter::execute_request_impl(xeus::xrequest_context request_context,
+                                           send_reply_callback cb,
+                                           int execution_counter,
+                                           const std::string& code,
+                                           xeus::execute_request_config config,
+                                           nl::json user_expressions)
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
@@ -158,7 +158,8 @@ namespace xpyt
         if(exception_occurred){
             kernel_res["status"] = "error";
             kernel_res["traceback"] = std::vector<std::string>();
-            return kernel_res;
+            cb(kernel_res);
+            return;
         }
 
         if (m_ipython_shell.attr("last_error").is_none())
@@ -183,7 +184,7 @@ namespace xpyt
             kernel_res["traceback"] = error.m_traceback;
         }
 
-        return kernel_res;
+        cb(kernel_res);
     }
 
     nl::json interpreter::complete_request_impl(

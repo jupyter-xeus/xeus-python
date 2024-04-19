@@ -105,12 +105,12 @@ namespace xpyt
         py::globals()["_iii"] = "";
     }
 
-    nl::json raw_interpreter::execute_request_impl(xeus::xrequest_context request_context,
-                                                   send_reply_callback cb,
-                                                   int execution_counter,
-                                                   const std::string& code,
-                                                   xeus::execute_request_config config,
-                                                   nl::json user_expressions)
+    void raw_interpreter::execute_request_impl(xeus::xrequest_context request_context,
+                                               send_reply_callback cb,
+                                               int execution_counter,
+                                               const std::string& code,
+                                               xeus::execute_request_config config,
+                                               nl::json user_expressions)
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
@@ -196,7 +196,7 @@ namespace xpyt
         py::globals()["_ii"] = py::globals()["_i"];
         py::globals()["_i"] = code;
 
-        return kernel_res;
+        cb(kernel_res);
     }
 
     nl::json raw_interpreter::complete_request_impl(

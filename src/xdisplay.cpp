@@ -91,11 +91,11 @@ namespace xpyt_ipython
      * xclear implementation *
      *************************/
 
-    void xclear(bool wait = false)
+    void xclear(xeus::xrequest_context request_context, bool wait = false)
     {
         auto& interp = xeus::get_interpreter();
 
-        interp.clear_output(wait);
+        interp.clear_output(request_context, wait);
     }
 
     /******************
@@ -275,7 +275,7 @@ namespace xpyt_raw
                 pub_metadata = repr[1];
             }
             // TODO: get request context
-            xeus::xrequest_context request_context{};
+            xeus::xrequest_context request_context;
             interp.publish_execution_result(request_context, m_execution_count, pub_data, pub_metadata);
         }
     }
