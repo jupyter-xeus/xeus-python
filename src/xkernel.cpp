@@ -151,8 +151,18 @@ namespace xpyt_raw
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&, py::kwargs>(),
                 "target_name"_a="", "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list()
             )
-            .def("close", &xpyt::xcomm::close, "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list())
-            .def("send", &xpyt::xcomm::send, "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list())
+            .def("open", &xpyt::xcomm::open, "parent_header"_a=py::dict(),
+                                             "data"_a=py::dict(),
+                                             "metadata"_a=py::dict(),
+                                             "buffers"_a=py::list())
+            .def("close", &xpyt::xcomm::close, "parent_header"_a=py::dict(),
+                                               "data"_a=py::dict(),
+                                               "metadata"_a=py::dict(),
+                                               "buffers"_a=py::list())
+            .def("send", &xpyt::xcomm::send, "parent_header"_a=py::dict(),
+                                             "data"_a=py::dict(),
+                                             "metadata"_a=py::dict(),
+                                             "buffers"_a=py::list())
             .def("on_msg", &xpyt::xcomm::on_msg)
             .def("on_close", &xpyt::xcomm::on_close)
             .def_property_readonly("comm_id", &xpyt::xcomm::comm_id)
