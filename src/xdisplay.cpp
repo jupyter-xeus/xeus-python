@@ -17,6 +17,7 @@
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xrequest_context.hpp"
+#include "xeus/xserver.hpp" // for channel
 
 #include "pybind11_json/pybind11_json.hpp"
 
@@ -296,7 +297,8 @@ namespace xpyt_raw
         const py::object& transient,
         const py::object& display_id,
         bool update,
-        bool raw)
+        bool raw,
+        const xeus::xrequest_context& request_context)
     {
         auto& interp = xeus::get_interpreter();
 
@@ -333,13 +335,11 @@ namespace xpyt_raw
                 }
                 if (update)
                 {
-                    // TODO: get request context
-                    // interp.update_display_data(request_context, pub_data, pub_metadata, std::move(cpp_transient));
+                    interp.update_display_data(request_context, pub_data, pub_metadata, std::move(cpp_transient));
                 }
                 else
                 {
-                    // TODO: get request context
-                    // interp.display_data(request_context, pub_data, pub_metadata, std::move(cpp_transient));
+                    interp.display_data(request_context, pub_data, pub_metadata, std::move(cpp_transient));
                 }
             }
         }
@@ -353,8 +353,11 @@ namespace xpyt_raw
         auto metadata = kw.contains("metadata") ? py::object(kw["metadata"]) : py::dict();
         auto transient = kw.contains("transient") ? py::object(kw["transient"]) : py::none();
         auto display_id = kw.contains("display_id") ? py::object(kw["display_id"]) : py::none();
+        auto request_context = kw.contains("request_context")
+                             ? kw["request_context"].cast<xeus::xrequest_context>()
+                             : xeus::xrequest_context(nl::json::object(), xeus::channel::SHELL, {}); // empty context TODO: verify
 
-        xdisplay_impl(objs, include, exclude, metadata, transient, display_id, false, raw);
+        xdisplay_impl(objs, include, exclude, metadata, transient, display_id, false, raw, request_context);
     }
 
     void xupdate_display(py::args objs, py::kwargs kw)
@@ -365,8 +368,11 @@ namespace xpyt_raw
         auto metadata = kw.contains("metadata") ? py::object(kw["metadata"]) : py::dict();
         auto transient = kw.contains("transient") ? py::object(kw["transient"]) : py::none();
         auto display_id = kw.contains("display_id") ? py::object(kw["display_id"]) : py::none();
+        auto request_context = kw.contains("request_context")
+                             ? kw["request_context"].cast<xeus::xrequest_context>()
+                             : xeus::xrequest_context(nl::json::object(), xeus::channel::SHELL, {}); // empty context TODO: verify
 
-        xdisplay_impl(objs, include, exclude, metadata, transient, display_id, true, raw);
+        xdisplay_impl(objs, include, exclude, metadata, transient, display_id, true, raw, request_context);
     }
 
     void xpublish_display_data(xeus::xrequest_context request_context,
@@ -385,6 +391,9 @@ namespace xpyt_raw
         bool raw = kw.contains("raw") ? kw["raw"].cast<bool>() : false;
         py::object metadata = kw.contains("metadata") ? kw["metadata"] : py::dict();
         py::object p_metadata = py::dict();
+        auto request_context = kw.contains("request_context")
+                             ? kw["request_context"].cast<xeus::xrequest_context>()
+                             : xeus::xrequest_context(nl::json::object(), xeus::channel::SHELL, {}); // empty context TODO: verify
 
         if (!metadata.is_none())
         {
@@ -399,7 +408,7 @@ namespace xpyt_raw
                 disp_objs[i] = py::dict(py::arg(mimetype.c_str()) = objs[i]);
             }
         }
-        xdisplay_impl(disp_objs, { mimetype }, {}, p_metadata, py::none(), py::none(), false, raw);
+        xdisplay_impl(disp_objs, { mimetype }, {}, p_metadata, py::none(), py::none(), false, raw, request_context);
     }
 
     void xdisplay_html(py::args objs, py::kwargs kw)
@@ -1034,7 +1043,7 @@ namespace xpyt_raw
     {
     public:
 
-        xprogressbar(xeus::xrequest_context request_context, std::ptrdiff_t total);
+        xprogressbar(std::ptrdiff_t total, const py::object& request_context);
 
         std::string repr() const;
         std::string repr_html() const;
@@ -1042,10 +1051,10 @@ namespace xpyt_raw
         std::ptrdiff_t next();
 
         std::ptrdiff_t get_progress() const;
-        void set_progress(std::ptrdiff_t);
+        void set_progress(std::ptrdiff_t progress);
 
         std::ptrdiff_t get_total() const;
-        void set_total(std::ptrdiff_t);
+        void set_total(std::ptrdiff_t total);
 
     private:
 
@@ -1061,10 +1070,10 @@ namespace xpyt_raw
 
     };
 
-    xprogressbar::xprogressbar(xeus::xrequest_context request_context, std::ptrdiff_t total)
+    xprogressbar::xprogressbar(std::ptrdiff_t total, const py::object& request_context)
         : m_total(total)
         , m_id(xeus::new_xguid())
-        , m_request_context(request_context)
+        , m_request_context(request_context.cast<xeus::xrequest_context>())
     {
     }
 
@@ -1183,13 +1192,9 @@ namespace xpyt_raw
             .def("set_execution_count", &xdisplayhook::set_execution_count)
             .def("__call__", &xdisplayhook::operator(), py::arg("obj"), py::arg("request_context"), py::arg("raw") = false);
 
-        display_module.def("display",
-            xdisplay,
-            py::arg("request_context") = py::dict()); // TODO: verify
+        display_module.def("display", xdisplay);
 
-        display_module.def("update_display",
-            xupdate_display,
-            py::arg("request_context") = py::dict()); // TODO: verify
+        display_module.def("update_display", xupdate_display);
 
         display_module.def("publish_display_data",
             xpublish_display_data,
@@ -1280,7 +1285,7 @@ namespace xpyt_raw
             .def("_ipython_display_", &xgeojson::ipython_display);
 
         py::class_<xprogressbar>(display_module, "ProgressBar")
-            .def(py::init<std::ptrdiff_t>(), py::arg("request_context") = py::dict(), py::arg("total"))
+            .def(py::init<std::ptrdiff_t>(), py::arg("total"), py::arg("request_context") = py::dict()) // TODO: verify
             .def("__repr__", &xprogressbar::repr)
             .def("_repr_html_", &xprogressbar::repr_html)
             .def("__iter__", &xprogressbar::iter)
