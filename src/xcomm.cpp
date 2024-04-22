@@ -65,17 +65,26 @@ namespace xpyt
         return true;
     }
 
-    void xcomm::open(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers)
+    void xcomm::open(const py::object& parent_header,
+                     const py::object& data,
+                     const py::object& metadata,
+                     const py::object& buffers)
     {
         m_comm.open(parent_header, metadata, data, pylist_to_cpp_buffers(buffers));
     }
 
-    void xcomm::close(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers)
+    void xcomm::close(const py::object& parent_header,
+                      const py::object& data,
+                      const py::object& metadata,
+                      const py::object& buffers)
     {
         m_comm.close(parent_header, metadata, data, pylist_to_cpp_buffers(buffers));
     }
 
-    void xcomm::send(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers)
+    void xcomm::send(const py::object& parent_header,
+                     const py::object& data,
+                     const py::object& metadata,
+                     const py::object& buffers)
     {
         m_comm.send(parent_header, metadata, data, pylist_to_cpp_buffers(buffers));
     }
@@ -141,8 +150,18 @@ namespace xpyt
                 py::init<const py::object&, const py::object&, const py::object&, const py::object&, py::kwargs>(),
                 "target_name"_a="", "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list()
             )
-            .def("close", &xcomm::close, "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list())
-            .def("send", &xcomm::send, "data"_a=py::dict(), "metadata"_a=py::dict(), "buffers"_a=py::list())
+            .def("open", &xcomm::open, "parent_header"_a=py::dict(),
+                                       "data"_a=py::dict(),
+                                       "metadata"_a=py::dict(),
+                                       "buffers"_a=py::list())
+            .def("close", &xcomm::close, "parent_header"_a=py::dict(),
+                                         "data"_a=py::dict(),
+                                         "metadata"_a=py::dict(),
+                                         "buffers"_a=py::list())
+            .def("send", &xcomm::send, "parent_header"_a=py::dict(),
+                                       "data"_a=py::dict(),
+                                       "metadata"_a=py::dict(),
+                                       "buffers"_a=py::list())
             .def("on_msg", &xcomm::on_msg)
             .def("on_close", &xcomm::on_close)
             .def_property_readonly("comm_id", &xcomm::comm_id)

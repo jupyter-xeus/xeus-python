@@ -23,9 +23,13 @@ namespace xpyt
 
         using python_callback_type = std::function<void(py::object)>;
         using cpp_callback_type = std::function<void(const xeus::xmessage&)>;
-        using buffers_sequence = xeus::buffer_sequence;
 
-        xcomm(const py::object& target_name, const py::object& data, const py::object& metadata, const py::object& buffers, const py::kwargs& kwargs);
+        xcomm(const py::object& target_name,
+              const py::object& data,
+              const py::object& metadata,
+              const py::object& buffers,
+              const py::kwargs& kwargs);
+
         xcomm(xeus::xcomm&& comm);
         xcomm(xcomm&& comm) = default;
         virtual ~xcomm();
@@ -33,9 +37,21 @@ namespace xpyt
         std::string comm_id() const;
         bool kernel() const;
 
-        void open(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers);
-        void close(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers);
-        void send(nl::json parent_header, const py::object& data, const py::object& metadata, const py::object& buffers);
+        void open(const py::object& parent_header,
+                  const py::object& data,
+                  const py::object& metadata,
+                  const py::object& buffers);
+
+        void close(const py::object& parent_header,
+                   const py::object& data,
+                   const py::object& metadata,
+                   const py::object& buffers);
+
+        void send(const py::object& parent_header,
+                  const py::object& data,
+                  const py::object& metadata,
+                  const py::object& buffers);
+
         void on_msg(const python_callback_type& callback);
         void on_close(const python_callback_type& callback);
 
