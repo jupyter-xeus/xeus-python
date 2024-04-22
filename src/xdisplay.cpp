@@ -1285,7 +1285,7 @@ namespace xpyt_raw
             .def("_ipython_display_", &xgeojson::ipython_display);
 
         py::class_<xprogressbar>(display_module, "ProgressBar")
-            .def(py::init<std::ptrdiff_t>(), py::arg("total"), py::arg("request_context") = py::dict()) // TODO: verify
+            .def(py::init<std::ptrdiff_t, const py::object&>(), py::arg("total"), py::arg("request_context") = py::dict()) // TODO: verify
             .def("__repr__", &xprogressbar::repr)
             .def("_repr_html_", &xprogressbar::repr_html)
             .def("__iter__", &xprogressbar::iter)
