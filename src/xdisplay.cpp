@@ -223,25 +223,25 @@ namespace xpyt_raw
     {
     public:
 
-        xdisplayhook(xeus::xrequest_context request_context);
+        xdisplayhook();
         virtual ~xdisplayhook();
 
         void set_execution_count(int execution_count);
-        void operator()(const py::object& obj, bool raw) const;
+        void operator()(const py::object& obj,
+                        xeus::xrequest_context request_context,
+                        bool raw) const;
 
     private:
 
         int m_execution_count;
-        xeus::xrequest_context m_request_context;
     };
 
     /*******************************
      * xdisplayhook implementation *
      *******************************/
 
-    xdisplayhook::xdisplayhook(xeus::xrequest_context request_context)
+    xdisplayhook::xdisplayhook()
         : m_execution_count(0)
-        , m_request_context(request_context)
     {
     }
 
@@ -254,7 +254,9 @@ namespace xpyt_raw
         m_execution_count = execution_count;
     }
 
-    void xdisplayhook::operator()(const py::object& obj, bool raw = false) const
+    void xdisplayhook::operator()(const py::object& obj,
+                                  xeus::xrequest_context request_context,
+                                  bool raw = false) const
     {
         auto& interp = xeus::get_interpreter();
 
@@ -279,7 +281,7 @@ namespace xpyt_raw
                 pub_metadata = repr[1];
             }
 
-            interp.publish_execution_result(m_request_context, m_execution_count, pub_data, pub_metadata);
+            interp.publish_execution_result(request_context, m_execution_count, pub_data, pub_metadata);
         }
     }
 
@@ -1179,11 +1181,15 @@ namespace xpyt_raw
         py::class_<xdisplayhook>(display_module, "DisplayHook")
             .def(py::init<>())
             .def("set_execution_count", &xdisplayhook::set_execution_count)
-            .def("__call__", &xdisplayhook::operator(), py::arg("obj"), py::arg("raw") = false);
+            .def("__call__", &xdisplayhook::operator(), py::arg("obj"), py::arg("request_context"), py::arg("raw") = false);
 
-        display_module.def("display", xdisplay);
+        display_module.def("display",
+            xdisplay,
+            py::arg("request_context") = py::dict()); // TODO: verify
 
-        display_module.def("update_display", xupdate_display);
+        display_module.def("update_display",
+            xupdate_display,
+            py::arg("request_context") = py::dict()); // TODO: verify
 
         display_module.def("publish_display_data",
             xpublish_display_data,
@@ -1274,7 +1280,7 @@ namespace xpyt_raw
             .def("_ipython_display_", &xgeojson::ipython_display);
 
         py::class_<xprogressbar>(display_module, "ProgressBar")
-            .def(py::init<std::ptrdiff_t>(), py::arg("total"))
+            .def(py::init<std::ptrdiff_t>(), py::arg("request_context") = py::dict(), py::arg("total"))
             .def("__repr__", &xprogressbar::repr)
             .def("_repr_html_", &xprogressbar::repr_html)
             .def("__iter__", &xprogressbar::iter)
