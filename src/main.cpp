@@ -25,7 +25,7 @@
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus/xinterpreter.hpp"
 
-#include "xeus-zmq/xserver_zmq.hpp"
+#include "xeus-zmq/xserver_zmq_split.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
 
 #include "pybind11/embed.h"
