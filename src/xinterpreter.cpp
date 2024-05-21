@@ -109,14 +109,15 @@ namespace xpyt
         {
             redirect_output();
         }
+
+        py::module context_module = get_request_context_module();
     }
 
-    nl::json interpreter::execute_request_impl(int /*execution_count*/,
-                                               const std::string& code,
-                                               bool silent,
-                                               bool store_history,
-                                               nl::json user_expressions,
-                                               bool allow_stdin)
+    void interpreter::execute_request_impl(send_reply_callback cb,
+                                           int /*execution_count*/,
+                                           const std::string& code,
+                                           xeus::execute_request_config config,
+                                           nl::json user_expressions)
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
@@ -126,23 +127,28 @@ namespace xpyt
 
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
-        auto input_guard = input_redirection(allow_stdin);
+        auto input_guard = input_redirection(config.allow_stdin);
 
         bool exception_occurred = false;
-        try{
-            m_ipython_shell.attr("run_cell")(code, "store_history"_a=store_history, "silent"_a=silent);
+        try
+        {
+            m_ipython_shell.attr("run_cell")(code, "store_history"_a=config.store_history, "silent"_a=config.silent);
         }
-        catch(std::runtime_error& e){
+        catch(std::runtime_error& e)
+        {
             const std::string error_msg = e.what();
-            if(!silent){
+            if(!config.silent)
+            {
                 publish_execution_error("RuntimeError", error_msg, std::vector<std::string>());
             }
             kernel_res["ename"] = "std::runtime_error";
             kernel_res["evalue"] = error_msg;
             exception_occurred = true;
         }
-        catch(...){
-            if(!silent){
+        catch(...)
+        {
+            if(!config.silent)
+            {
                 publish_execution_error("unknown_error", "", std::vector<std::string>());
             }
             kernel_res["ename"] = "UnknownError";
@@ -154,10 +160,12 @@ namespace xpyt
         kernel_res["payload"] = m_ipython_shell.attr("payload_manager").attr("read_payload")();
         m_ipython_shell.attr("payload_manager").attr("clear_payload")();
 
-        if(exception_occurred){
+        if(exception_occurred)
+        {
             kernel_res["status"] = "error";
             kernel_res["traceback"] = std::vector<std::string>();
-            return kernel_res;
+            cb(kernel_res);
+            return;
         }
 
         if (m_ipython_shell.attr("last_error").is_none())
@@ -171,7 +179,7 @@ namespace xpyt
 
             xerror error = extract_error(pyerror);
 
-            if (!silent)
+            if (!config.silent)
             {
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
@@ -181,8 +189,7 @@ namespace xpyt
             kernel_res["evalue"] = error.m_evalue;
             kernel_res["traceback"] = error.m_traceback;
         }
-
-        return kernel_res;
+        cb(kernel_res);
     }
 
     nl::json interpreter::complete_request_impl(
@@ -345,6 +352,21 @@ namespace xpyt
         }
 
         return reply;
+    }
+
+    void interpreter::set_request_context(xeus::xrequest_context context)
+    {
+        py::gil_scoped_acquire acquire;
+        py::module context_module = get_request_context_module();
+        context_module.attr("set_request_context")(context);
+    }
+
+    const xeus::xrequest_context& interpreter::get_request_context() const noexcept
+    {
+        py::gil_scoped_acquire acquire;
+        py::module context_module = get_request_context_module();
+        py::object res = context_module.attr("get_request_context")();
+        return *(res.cast<xeus::xrequest_context*>());
     }
 
     void interpreter::redirect_output()

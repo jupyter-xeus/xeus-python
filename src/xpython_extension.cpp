@@ -24,7 +24,8 @@
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 
-#include "xeus-zmq/xserver_shell_main.hpp"
+#include "xeus-zmq/xserver_zmq_split.hpp"
+#include "xeus-zmq/xzmq_context.hpp"
 
 #include "pybind11/pybind11.h"
 
@@ -66,9 +67,7 @@ void launch(const py::list args_list)
     bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv.data());
     std::string connection_filename = xpyt::extract_parameter("-f", argc, argv.data());
 
-    using context_type = xeus::xcontext_impl<xeus::xcontext>;
-    using context_ptr = std::unique_ptr<context_type>;
-    context_ptr context = context_ptr(new context_type());
+    std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
     // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xeus::xinterpreter>;

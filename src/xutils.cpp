@@ -39,10 +39,7 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/eval.h"
 
-#include "xtl/xhash.hpp"
-
 #include "xeus-python/xutils.hpp"
-
 
 namespace py = pybind11;
 namespace nl = nlohmann;

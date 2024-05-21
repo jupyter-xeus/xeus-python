@@ -25,7 +25,8 @@
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus/xinterpreter.hpp"
 
-#include "xeus-zmq/xserver_shell_main.hpp"
+#include "xeus-zmq/xserver_zmq_split.hpp"
+#include "xeus-zmq/xzmq_context.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -98,9 +99,7 @@ int main(int argc, char* argv[])
     }
     delete[] argw;
 
-    using context_type = xeus::xcontext_impl<xeus::xcontext>;
-    using context_ptr = std::unique_ptr<context_type>;
-    context_ptr context = context_ptr(new context_type());
+    std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
     // Instantiating the xeus xinterpreter
     bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv);
@@ -155,6 +154,7 @@ int main(int argc, char* argv[])
     }
     else
     {
+        std::clog << "Instantiating kernel" << std::endl;
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
@@ -164,6 +164,7 @@ int main(int argc, char* argv[])
                              xpyt::make_python_debugger,
                              debugger_config);
 
+        std::cout << "Getting config" << std::endl;
         const auto& config = kernel.get_config();
         std::clog <<
             "Starting xeus-python kernel...\n\n"

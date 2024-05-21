@@ -369,7 +369,7 @@ namespace xpyt
                                                           const std::string& session_id,
                                                           const nl::json& debugger_config)
     {
-        return std::unique_ptr<xeus::xdebugger>(new debugger(context.get_wrapped_context<xeus::xcontext>(),
+        return std::unique_ptr<xeus::xdebugger>(new debugger(context,
                                                              config, user_name, session_id, debugger_config));
     }
 }
