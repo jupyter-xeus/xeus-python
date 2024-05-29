@@ -44,7 +44,8 @@ using namespace pybind11::literals;
 namespace xpyt
 {
 
-    raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/) :m_redirect_display_enabled{ redirect_display_enabled }
+    raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
+        :m_redirect_display_enabled{ redirect_display_enabled }
     {
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
@@ -102,22 +103,23 @@ namespace xpyt
         py::globals()["_i"] = "";
         py::globals()["_ii"] = "";
         py::globals()["_iii"] = "";
+
+        py::module context_module = get_request_context_module();
     }
 
-    nl::json raw_interpreter::execute_request_impl(
+    void raw_interpreter::execute_request_impl(
+        send_reply_callback cb,
         int execution_count,
         const std::string& code,
-        bool silent,
-        bool /*store_history*/,
-        nl::json /*user_expressions*/,
-        bool allow_stdin)
+        xeus::execute_request_config config,
+        nl::json /*user_expressions*/)
     {
         py::gil_scoped_acquire acquire;
         nl::json kernel_res;
         py::str code_copy;
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
-        auto input_guard = input_redirection(allow_stdin);
+        auto input_guard = input_redirection(config.allow_stdin);
         code_copy = code;
         try
         {
@@ -180,7 +182,7 @@ namespace xpyt
                 }
             }
 
-            if (!silent)
+            if (!config.silent)
             {
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
@@ -196,7 +198,7 @@ namespace xpyt
         py::globals()["_ii"] = py::globals()["_i"];
         py::globals()["_i"] = code;
 
-        return kernel_res;
+        cb(kernel_res);
     }
 
     nl::json raw_interpreter::complete_request_impl(
@@ -314,6 +316,20 @@ namespace xpyt
     {
     }
 
+    void raw_interpreter::set_request_context(xeus::xrequest_context context)
+    {
+        py::gil_scoped_acquire acquire;
+        py::module context_module = get_request_context_module();
+        context_module.attr("set_request_context")(context);
+    }
+
+    const xeus::xrequest_context& raw_interpreter::get_request_context() const noexcept
+    {
+        py::gil_scoped_acquire acquire;
+        py::module context_module = get_request_context_module();
+        py::object res = context_module.attr("get_request_context")();
+        return *(res.cast<xeus::xrequest_context*>());
+    }
 
     void raw_interpreter::redirect_output()
     {

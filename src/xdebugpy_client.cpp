@@ -8,7 +8,6 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include "zmq_addon.hpp"
 #include "nlohmann/json.hpp"
 #include "xeus/xmessage.hpp"
 #include "xdebugpy_client.hpp"
@@ -20,7 +19,7 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
-    xdebugpy_client::xdebugpy_client(zmq::context_t& context,
+    xdebugpy_client::xdebugpy_client(xeus::xcontext& context,
                                      const xeus::xconfiguration& config,
                                      int socket_linger,
                                      const xdap_tcp_configuration& dap_config,

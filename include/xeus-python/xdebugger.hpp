@@ -20,9 +20,7 @@
 #include <mutex>
 #include <set>
 
-#include "zmq.hpp"
 #include "nlohmann/json.hpp"
-#include "xeus/xeus_context.hpp"
 #include "pybind11/pybind11.h"
 #include "xeus-zmq/xdebugger_base.hpp"
 #include "xeus_python_config.hpp"
@@ -40,7 +38,7 @@ namespace xpyt
 
         using base_type = xeus::xdebugger_base;
 
-        debugger(zmq::context_t& context,
+        debugger(xeus::xcontext& context,
                  const xeus::xconfiguration& config,
                  const std::string& user_name,
                  const std::string& session_id,
@@ -59,10 +57,8 @@ namespace xpyt
         nl::json variables_request_impl(const nl::json& message) override;
 
         bool start_debugpy();
-        bool start(zmq::socket_t& header_socket,
-                   zmq::socket_t& request_socket) override;
-        void stop(zmq::socket_t& header_socket,
-                  zmq::socket_t& request_socket) override;
+        bool start() override;
+        void stop() override;
         xeus::xdebugger_info get_debugger_info() const override;
         std::string get_cell_temporary_file(const std::string& code) const override;
 

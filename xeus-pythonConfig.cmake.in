@@ -22,7 +22,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR};${CMAKE_MODULE_PATH}")
 @XEUS_PYTHON_CONFIG_CODE@
 
 include(CMakeFindDependencyMacro)
-find_dependency(xtl @xtl_REQUIRED_VERSION@)
 find_dependency(pybind11 @pybind11_REQUIRED_VERSION@)
 
 if (NOT @XPYT_EMSCRIPTEN_WASM_BUILD@)

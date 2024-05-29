@@ -14,7 +14,6 @@
 #include <string>
 #include <thread>
 
-#include "zmq.hpp"
 #include "nlohmann/json.hpp"
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus-zmq/xauthentication.hpp"
@@ -24,11 +23,13 @@
 
 namespace nl = nlohmann;
 
+// TODO: rewrite this class with the new client framework from xeus-zmq
+/*
 class xeus_client_base
 {
 public:
 
-    xeus_client_base(zmq::context_t& context,
+    xeus_client_base(xeus::xcontext& context,
                      const std::string& user_name,
                      const xeus::xconfiguration& config);
 
@@ -95,7 +96,7 @@ class xeus_logger_client : public xeus_client_base
 {
 public:
 
-    xeus_logger_client(zmq::context_t& context,
+    xeus_logger_client(xeus::xcontext& context,
                        const std::string& user_name,
                        const xeus::xconfiguration& config,
                        const std::string& file_name);
@@ -128,4 +129,4 @@ private:
     std::mutex m_notify_mutex;
     std::condition_variable m_notify_cond;
 };
-
+*/

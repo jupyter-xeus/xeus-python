@@ -6,7 +6,6 @@ dependencies:
   - ipython
   - pybind11
   - jedi
-  - xtl
   - nlohmann_json
   - pybind11_json
   - numpy

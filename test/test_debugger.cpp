@@ -380,7 +380,7 @@ class debugger_client
 {
 public:
 
-    debugger_client(zmq::context_t& context,
+    debugger_client(xeus::xcontext& context,
                     const std::string& connection_file,
                     const std::string& log_file);
 
@@ -425,7 +425,7 @@ private:
     xeus_logger_client m_client;
 };
 
-debugger_client::debugger_client(zmq::context_t& context,
+debugger_client::debugger_client(xeus::xcontext& context,
                                  const std::string& connection_file,
                                  const std::string& log_file)
     : m_client(context, "debugger_client",
@@ -1144,7 +1144,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_init.log");
             bool res = deb.test_init();
@@ -1159,7 +1159,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_disconnect.log");
             bool res = deb.test_disconnect();
@@ -1174,7 +1174,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_attach.log");
             bool res = deb.test_attach();
@@ -1189,7 +1189,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_multi_session.log");
             bool res1 = deb.test_disconnect();
@@ -1207,7 +1207,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_set_external_breakpoints.log");
             bool res = deb.test_external_set_breakpoints();
@@ -1222,7 +1222,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_external_next_continue.log");
             bool res = deb.test_external_next_continue();
@@ -1237,7 +1237,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_set_breakpoints.log");
             bool res = deb.test_set_breakpoints();
@@ -1252,7 +1252,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_set_exception_breakpoints.log");
             bool res = deb.test_set_exception_breakpoints();
@@ -1267,7 +1267,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_source.log");
             bool res = deb.test_source();
@@ -1282,7 +1282,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_next_continue.log");
             bool res = deb.test_next_continue();
@@ -1297,7 +1297,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_stepin.log");
             bool res = deb.test_step_in();
@@ -1312,7 +1312,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_stack_trace.log");
             bool res = deb.test_stack_trace();
@@ -1327,7 +1327,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_debug_info.log");
             bool res = deb.test_debug_info();
@@ -1342,7 +1342,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_inspect_variables.log");
             bool res = deb.test_inspect_variables();
@@ -1357,7 +1357,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_rich_inspect_variables.log");
             bool res = deb.test_rich_inspect_variables();
@@ -1372,7 +1372,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_variables.log");
             bool res = deb.test_variables();
@@ -1387,7 +1387,7 @@ TEST_SUITE("debugger")
     {
         start_kernel();
         timer t;
-        zmq::context_t context;
+        xeus::xcontext context;
         {
             debugger_client deb(context, KERNEL_JSON, "debugger_copy_to_globals.log");
             bool res = deb.test_copy_to_globals();
