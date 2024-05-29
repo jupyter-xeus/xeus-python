@@ -23,6 +23,8 @@
 
 namespace nl = nlohmann;
 
+// TODO: rewrite this class with the new client framework from xeus-zmq
+/*
 class xeus_client_base
 {
 public:
@@ -127,4 +129,4 @@ private:
     std::mutex m_notify_mutex;
     std::condition_variable m_notify_cond;
 };
-
+*/
