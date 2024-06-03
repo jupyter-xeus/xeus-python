@@ -13,7 +13,7 @@
 
 // Project version
 #define XPYT_VERSION_MAJOR 0
-#define XPYT_VERSION_MINOR 16
+#define XPYT_VERSION_MINOR 17
 #define XPYT_VERSION_PATCH 0
 
 // Composing the version string from major, minor and patch

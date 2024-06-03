@@ -154,15 +154,20 @@ Long story short:
 ``xeus-python`` depends on
 
  - [xeus-zmq](https://github.com/jupyter-xeus/xeus-zmq)
- - [xtl](https://github.com/xtensor-stack/xtl)
  - [pybind11](https://github.com/pybind/pybind11)
  - [pybind11_json](https://github.com/pybind/pybind11_json)
  - [nlohmann_json](https://github.com/nlohmann/json)
  - [xeus-python-shell](https://github.com/jupyter-xeus/xeus-python-shell)
 
+| `xeus-python`|   `xeus-zmq`     | `cppzmq` | `nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` |`xeus-python-shell` |
+|--------------|------------------|----------|-----------------|----------------|-------------------|-------------------|-----------|---------------------|
+|  main        |  >=3.0,<4.0      | ~4.4.1   | >=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0      |
+|  0.17.x      |  >=3.0,<4.0      | ~4.4.1   | >=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0      |
+
+Prior vo version 0.17, ``xeus-python`` was also depending on [xtl](https://github.com/xtensor-stack/xtl):
+
 | `xeus-python`|   `xeus-zmq`     |      `xtl`      | `cppzmq` | `nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` |`xeus-python-shell` |
 |--------------|------------------|-----------------|----------|-----------------|----------------|-------------------|-------------------|-----------|---------------------|
-|  main        |  >=1.0.0,<2.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.5.0,<0.7.0      |
 |  0.16.x      |  >=1.0.0,<2.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.5.0,<0.7.0      |
 |  0.15.x      |  >=1.0.0,<2.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.5.0,<0.7.0      |
 
