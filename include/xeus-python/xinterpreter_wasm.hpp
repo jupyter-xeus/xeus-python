@@ -34,6 +34,10 @@ namespace xpyt
     protected:
         
         void configure_impl() override;
+
+    private:
+
+        bool use_jedi_for_completion() const override;
     };
 
 }

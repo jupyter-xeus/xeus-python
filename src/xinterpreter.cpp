@@ -80,7 +80,7 @@ namespace xpyt
 
         instanciate_ipython_shell();
 
-        m_ipython_shell_app.attr("initialize")();
+        m_ipython_shell_app.attr("initialize")(use_jedi_for_completion());
         m_ipython_shell = m_ipython_shell_app.attr("shell");
 
         // Setting kernel property owning the CommManager and get_parent
@@ -383,4 +383,8 @@ namespace xpyt
         m_ipython_shell_app = py::module::import("xeus_python_shell.shell").attr("XPythonShellApp")();
     }
 
+    bool interpreter::use_jedi_for_completion() const
+    {
+        return true;
+    }
 }

@@ -11,7 +11,7 @@ dependencies:
   - numpy
   - xeus-lite
   - xeus 
-  - xeus-python-shell>=0.5
+  - xeus-python-shell>=0.6.3
   - pyjs>=2.0.0
   - requests-wasm-polyfill>=0.3.0
   - libpython
