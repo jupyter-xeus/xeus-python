@@ -102,6 +102,7 @@ namespace xpyt
     private:
 
         virtual void instanciate_ipython_shell();
+        virtual bool use_jedi_for_completion() const;
     };
 }
 
