@@ -11,7 +11,6 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <Python.h>
 
 #include "pybind11/pybind11.h"
 

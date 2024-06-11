@@ -12,7 +12,6 @@
 #define XPYT_PATHS_HPP
 
 #include <string>
-#include <Python.h>
 
 #include "xeus_python_config.hpp"
 
