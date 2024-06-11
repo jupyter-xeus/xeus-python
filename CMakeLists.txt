@@ -8,12 +8,12 @@
 # The full license is in the file LICENSE, distributed with this software. #
 ############################################################################
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
 project(xeus-python)
 
 set(XEUS_PYTHON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Versionning
+# Versioning
 # ===========
 
 file(STRINGS "${XEUS_PYTHON_INCLUDE_DIR}/xeus-python/xeus_python_config.hpp" xpyt_version_defines
@@ -35,11 +35,6 @@ include(GNUInstallDirs)
 if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
     set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_FULL_BINDIR}/")
 endif ()
-
-# Running find_package(PythonInterp) to retrieve the Python version
-# which is not exported by Pybind11's cmake.
-# Cf. https://github.com/pybind/pybind11/issues/2268
-find_package(PythonInterp ${PythonLibsNew_FIND_VERSION} REQUIRED)
 
 if(EMSCRIPTEN)
     # the variables PYTHON_VERSION_MAJOR and PYTHON_VERSION_MINOR
@@ -112,7 +107,12 @@ set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
 set(pyjs_REQUIRED_VERSION 2.0.0)
 
+find_package(Python COMPONENTS Interpreter REQUIRED)
+
 if (NOT TARGET pybind11::headers)
+    # Defaults to ON for cmake >= 3.18
+    # https://github.com/pybind/pybind11/blob/35ff42b56e9d34d9a944266eb25f2c899dbdfed7/CMakeLists.txt#L96
+    set(PYBIND11_FINDPYTHON OFF)
     find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
 endif ()
 if (NOT TARGET pybind11_json)
