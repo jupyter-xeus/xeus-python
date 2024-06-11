@@ -14,7 +14,7 @@ project(xeus-python)
 set(XEUS_PYTHON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Versioning
-# ===========
+# ==========
 
 file(STRINGS "${XEUS_PYTHON_INCLUDE_DIR}/xeus-python/xeus_python_config.hpp" xpyt_version_defines
      REGEX "#define XPYT_VERSION_(MAJOR|MINOR|PATCH)")
@@ -60,20 +60,20 @@ configure_file (
 
 # Compilation options
 
-OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
+option(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
 
 option(XPYT_BUILD_STATIC "Build xeus-python static library" ON)
-OPTION(XPYT_BUILD_SHARED "Split xpython build into executable and library" ON)
-OPTION(XPYT_BUILD_XPYTHON_EXECUTABLE "Build the xpython executable" ON)
-OPTION(XPYT_BUILD_XPYTHON_EXTENSION "Build the xpython extension module" OFF)
+option(XPYT_BUILD_SHARED "Split xpython build into executable and library" ON)
+option(XPYT_BUILD_XPYTHON_EXECUTABLE "Build the xpython executable" ON)
+option(XPYT_BUILD_XPYTHON_EXTENSION "Build the xpython extension module" OFF)
 
-OPTION(XPYT_USE_SHARED_XEUS "Link xpython or xpython_extension with the xeus shared library (instead of the static library)" ON)
-OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the xeus-python shared library (instead of the static library)" ON)
+option(XPYT_USE_SHARED_XEUS "Link xpython or xpython_extension with the xeus shared library (instead of the static library)" ON)
+option(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the xeus-python shared library (instead of the static library)" ON)
 
-OPTION(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
+option(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 
 # Test options
-OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
+option(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 
 function(cat IN_FILE OUT_FILE)
   file(READ ${IN_FILE} CONTENTS)
