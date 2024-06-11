@@ -91,13 +91,13 @@ int main(int argc, char* argv[])
     static const std::string pythonhome{ xpyt::get_python_prefix() };
     static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
     config.home = const_cast<wchar_t*>(wstr.c_str());
-    // xpyt::print_pythonhome(); FIXME:
+    // Py_GetPythonHome will return NULL if called before Py_Initialize()
+    // xpyt::print_pythonhome();
 
     // Implicitly pre-initialize Python
     status = PyConfig_SetBytesArgv(&config, argc, argv);
     if (PyStatus_Exception(status)) {
-        // TODO: handle error;
-        std::cout << "Error" << std::endl;
+        std::cerr << "Error:" << status.err_msg << std::endl;
     }
 
     // TODO: may need to use safe_path
