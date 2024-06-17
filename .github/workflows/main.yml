@@ -22,14 +22,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-12, macos-13]
         build_type: [static_build, shared_build]
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v2
 
       - name: Install micromamba
         uses: mamba-org/setup-micromamba@v1
@@ -65,7 +62,7 @@ jobs:
         working-directory: build
 
       - name: Install
-        run: make -j ${{ steps.cpu-cores.outputs.count }} install
+        run: make -j ${{ runner.os == 'macOS' && 3 || 4 }} install
         working-directory: build
 
       - name: Print version
@@ -159,9 +156,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v2
-
       - name: Install micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
@@ -199,4 +193,4 @@ jobs:
             -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
             ..
 
-          make -j5
+          make -j4
