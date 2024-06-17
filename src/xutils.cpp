@@ -139,12 +139,19 @@ namespace xpyt
     void print_pythonhome()
     {
         std::setlocale(LC_ALL, "en_US.utf8");
+        // Py_GetPythonHome will return NULL if called before Py_Initialize()
         wchar_t* ph = Py_GetPythonHome();
 
-        char mbstr[1024];
-        std::wcstombs(mbstr, ph, 1024);
-
-        std::clog << "PYTHONHOME set to " << mbstr << std::endl;
+        if (ph)
+        {
+            char mbstr[1024];
+            std::wcstombs(mbstr, ph, 1024);
+            std::clog << "PYTHONHOME set to " << mbstr << std::endl;
+        }
+        else
+        {
+            std::clog << "PYTHONHOME not set or not initialized." << std::endl;
+        }
     }
 
     // Compares 2 versions and return true if version1 < version2.
