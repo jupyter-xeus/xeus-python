@@ -26,7 +26,6 @@ find_dependency(pybind11 @pybind11_REQUIRED_VERSION@)
 
 if (NOT @XPYT_EMSCRIPTEN_WASM_BUILD@)
     find_dependency(xeus-zmq @xeus-zmq_REQUIRED_VERSION@)
-    find_dependency(cppzmq @cppzmq_REQUIRED_VERSION@)
 endif ()
 
 if (NOT TARGET xeus-python AND NOT TARGET xeus-python-static)

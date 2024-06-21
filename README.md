@@ -59,7 +59,7 @@ The ongoing effort to package xeus-python for pip takes place in the [xeus-pytho
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-mamba install cmake xeus xeus-zmq nlohmann_json cppzmq xtl pybind11 pybind11_json xeus-python-shell jupyterlab -c conda-forge
+mamba install cmake xeus xeus-zmq nlohmann_json pybind11 pybind11_json xeus-python-shell jupyterlab -c conda-forge
 ```
 
 Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
@@ -159,12 +159,12 @@ Long story short:
  - [nlohmann_json](https://github.com/nlohmann/json)
  - [xeus-python-shell](https://github.com/jupyter-xeus/xeus-python-shell)
 
-| `xeus-python`|   `xeus-zmq`     | `cppzmq` | `nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` |`xeus-python-shell` |
-|--------------|------------------|----------|-----------------|----------------|-------------------|-------------------|-----------|---------------------|
-|  main        |  >=3.0,<4.0      | ~4.4.1   | >=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0      |
-|  0.17.x      |  >=3.0,<4.0      | ~4.4.1   | >=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0      |
+| `xeus-python`|   `xeus-zmq`     |`nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` |`xeus-python-shell` |
+|--------------|------------------|----------------|----------------|-------------------|-------------------|-----------|--------------------|
+|  main        |  >=3.0,<4.0      |>=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0   |
+|  0.17.x      |  >=3.0,<4.0      |>=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0   |
 
-Prior vo version 0.17, ``xeus-python`` was also depending on [xtl](https://github.com/xtensor-stack/xtl):
+Prior vo version 0.17, ``xeus-python`` was also depending on [xtl](https://github.com/xtensor-stack/xtl) & [cppzmq](https://github.com/zeromq/cppzmq):
 
 | `xeus-python`|   `xeus-zmq`     |      `xtl`      | `cppzmq` | `nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` |`xeus-python-shell` |
 |--------------|------------------|-----------------|----------|-----------------|----------------|-------------------|-------------------|-----------|---------------------|
