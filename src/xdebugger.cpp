@@ -322,7 +322,7 @@ namespace xpyt
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
         std::string publisher_end_point = xeus::get_publisher_end_point();
 
-        bind_sockets(controller_end_point, controller_header_end_point);
+        bind_sockets(controller_header_end_point, controller_end_point);
 
         std::string debugpy_end_point = "tcp://" + m_debugpy_host + ':' + m_debugpy_port;
         std::thread client(&xdap_tcp_client::start_debugger,
