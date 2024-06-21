@@ -329,7 +329,6 @@ namespace xpyt
         try
         {
             exec(py::str(code));
-
             reply["status"] = "ok";
         }
         catch (py::error_already_set& e)
@@ -361,12 +360,31 @@ namespace xpyt
         context_module.attr("set_request_context")(context);
     }
 
+    namespace
+    {
+        xeus::xrequest_context empty_request_context{};
+    }
+
     const xeus::xrequest_context& interpreter::get_request_context() const noexcept
     {
         py::gil_scoped_acquire acquire;
         py::module context_module = get_request_context_module();
-        py::object res = context_module.attr("get_request_context")();
-        return *(res.cast<xeus::xrequest_context*>());
+        // When the debugger is started, it send some python code to execute, that triggers
+        // a call to publish_stream, and ultimately to this function. However:
+        // - we are out of the handling of an execute_request, therefore set_request_context
+        // has not been called
+        // - we cannot set it from another thread (the context of the context variable would
+        // be different)
+        // Therefore, we have to catch the exception thrown when the context variable is empty.
+        try
+        {
+            py::object res = context_module.attr("get_request_context")();
+            return *(res.cast<xeus::xrequest_context*>());
+        }
+        catch (py::error_already_set& e)
+        {
+            return empty_request_context;
+        }
     }
 
     void interpreter::redirect_output()
