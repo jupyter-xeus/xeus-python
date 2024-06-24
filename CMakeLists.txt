@@ -8,13 +8,13 @@
 # The full license is in the file LICENSE, distributed with this software. #
 ############################################################################
 
-cmake_minimum_required(VERSION 3.4.3)
+cmake_minimum_required(VERSION 3.20)
 project(xeus-python)
 
 set(XEUS_PYTHON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Versionning
-# ===========
+# Versioning
+# ==========
 
 file(STRINGS "${XEUS_PYTHON_INCLUDE_DIR}/xeus-python/xeus_python_config.hpp" xpyt_version_defines
      REGEX "#define XPYT_VERSION_(MAJOR|MINOR|PATCH)")
@@ -35,11 +35,6 @@ include(GNUInstallDirs)
 if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
     set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_FULL_BINDIR}/")
 endif ()
-
-# Running find_package(PythonInterp) to retrieve the Python version
-# which is not exported by Pybind11's cmake.
-# Cf. https://github.com/pybind/pybind11/issues/2268
-find_package(PythonInterp ${PythonLibsNew_FIND_VERSION} REQUIRED)
 
 if(EMSCRIPTEN)
     # the variables PYTHON_VERSION_MAJOR and PYTHON_VERSION_MINOR
@@ -65,20 +60,20 @@ configure_file (
 
 # Compilation options
 
-OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
+option(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
 
 option(XPYT_BUILD_STATIC "Build xeus-python static library" ON)
-OPTION(XPYT_BUILD_SHARED "Split xpython build into executable and library" ON)
-OPTION(XPYT_BUILD_XPYTHON_EXECUTABLE "Build the xpython executable" ON)
-OPTION(XPYT_BUILD_XPYTHON_EXTENSION "Build the xpython extension module" OFF)
+option(XPYT_BUILD_SHARED "Split xpython build into executable and library" ON)
+option(XPYT_BUILD_XPYTHON_EXECUTABLE "Build the xpython executable" ON)
+option(XPYT_BUILD_XPYTHON_EXTENSION "Build the xpython extension module" OFF)
 
-OPTION(XPYT_USE_SHARED_XEUS "Link xpython or xpython_extension with the xeus shared library (instead of the static library)" ON)
-OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the xeus-python shared library (instead of the static library)" ON)
+option(XPYT_USE_SHARED_XEUS "Link xpython or xpython_extension with the xeus shared library (instead of the static library)" ON)
+option(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the xeus-python shared library (instead of the static library)" ON)
 
-OPTION(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
+option(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 
 # Test options
-OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
+option(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 
 function(cat IN_FILE OUT_FILE)
   file(READ ${IN_FILE} CONTENTS)
@@ -112,7 +107,12 @@ set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
 set(pyjs_REQUIRED_VERSION 2.0.0)
 
+find_package(Python COMPONENTS Interpreter REQUIRED)
+
 if (NOT TARGET pybind11::headers)
+    # Defaults to ON for cmake >= 3.18
+    # https://github.com/pybind/pybind11/blob/35ff42b56e9d34d9a944266eb25f2c899dbdfed7/CMakeLists.txt#L96
+    set(PYBIND11_FINDPYTHON OFF)
     find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
 endif ()
 if (NOT TARGET pybind11_json)

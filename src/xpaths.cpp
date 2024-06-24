@@ -68,10 +68,12 @@ namespace xpyt
 #endif
     }
 
+    [[deprecated]]
     void set_pythonhome()
     {
-        static const std::string pythonhome = get_python_prefix();
-        static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
-        Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
+        // static const std::string pythonhome = get_python_prefix();
+        // static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
+        // Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
     }
+
 }

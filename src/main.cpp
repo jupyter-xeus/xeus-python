@@ -69,22 +69,29 @@ int main(int argc, char* argv[])
 #endif
     signal(SIGINT, xpyt::sigkill_handler);
 
+    // Python initialization
+    PyStatus status;
+
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    // config.isolated = 1;
+
     // Setting Program Name
     static const std::string executable(xpyt::get_python_path());
     static const std::wstring wexecutable(executable.cbegin(), executable.cend());
+    config.program_name = const_cast<wchar_t*>(wexecutable.c_str());
 
-    // On windows, sys.executable is not properly set with Py_SetProgramName
-    // Cf. https://bugs.python.org/issue34725
-    // A private undocumented API was added as a workaround in Python 3.7.2.
-    // _Py_SetProgramFullPath(const_cast<wchar_t*>(wexecutable.c_str()));
-    Py_SetProgramName(const_cast<wchar_t*>(wexecutable.c_str()));
-
-    // Setting PYTHONHOME
-    xpyt::set_pythonhome();
+    // Setting Python Home
+    static const std::string pythonhome{ xpyt::get_python_prefix() };
+    static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
+    config.home = const_cast<wchar_t*>(wstr.c_str());
     xpyt::print_pythonhome();
 
-    // Instanciating the Python interpreter
-    py::scoped_interpreter guard;
+    // Implicitly pre-initialize Python
+    status = PyConfig_SetBytesArgv(&config, argc, argv);
+    if (PyStatus_Exception(status)) {
+        std::cerr << "Error:" << status.err_msg << std::endl;
+    }
 
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
@@ -92,12 +99,21 @@ int main(int argc, char* argv[])
     {
         argw[i] = Py_DecodeLocale(argv[i], nullptr);
     }
-    PySys_SetArgvEx(argc, argw, 0);
+    PyWideStringList py_argw;
+    py_argw.length = argc;
+    py_argw.items = argw;
+
+    config.argv = py_argw;
+    config.parse_argv = 1;
+
     for(auto i = 0; i < argc; ++i)
     {
         PyMem_RawFree(argw[i]);
     }
     delete[] argw;
+
+    // Instantiating the Python interpreter
+    py::scoped_interpreter guard;
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
