@@ -345,7 +345,7 @@ namespace xpyt
     {
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
-        unbind_sockets(controller_end_point, controller_header_end_point);
+        unbind_sockets(controller_header_end_point, controller_end_point);
     }
 
     xeus::xdebugger_info debugger::get_debugger_info() const
