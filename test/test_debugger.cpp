@@ -104,7 +104,7 @@ nl::json make_disconnect_request(int seq)
         {"command", "disconnect"},
         {"arguments", {
             {"restart", false},
-            {"terminateDebugger", false}
+            {"terminateDebuggee", false}
         }}
     };
     return req;
