@@ -101,7 +101,8 @@ endif()
 # Dependencies
 # ============
 
-set(xeus-zmq_REQUIRED_VERSION 1.2.0)
+set(xeus_REQUIRED_VERSION 5.0.0)
+set(xeus_zmq_REQUIRED_VERSION 3.0.0)
 set(xeus-lite_REQUIRED_VERSION 1.0.1)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
