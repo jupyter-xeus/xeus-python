@@ -404,6 +404,7 @@ public:
     bool test_copy_to_globals();
     void start();
     void shutdown();
+    void disconnect_debugger();
 
 private:
 
@@ -521,9 +522,6 @@ bool debugger_client::test_set_exception_breakpoints()
 
     nl::json ev = m_client.wait_for_debug_event("stopped");
     std::string reason = ev["content"]["body"]["reason"].get<std::string>();
-
-    m_client.send_on_control("debug_request", make_disconnect_request(6));
-    nl::json rep = m_client.receive_on_control();
 
     return reason == "exception";
 }
@@ -973,6 +971,12 @@ void debugger_client::start()
     m_client.start();
 }
 
+void debugger_client::disconnect_debugger()
+{
+    m_client.send_on_control("debug_request", make_disconnect_request(INT_MAX));
+    m_client.receive_on_control();
+}
+
 void debugger_client::shutdown()
 {
     if (m_client.kernel_dead)
@@ -1162,6 +1166,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_init.log");
             deb.start();
             bool res = deb.test_init();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1194,6 +1199,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_attach.log");
             deb.start();
             bool res = deb.test_attach();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1229,6 +1235,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_set_external_breakpoints.log");
             deb.start();
             bool res = deb.test_external_set_breakpoints();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1245,6 +1252,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_external_next_continue.log");
             deb.start();
             bool res = deb.test_external_next_continue();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1261,6 +1269,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_set_breakpoints.log");
             deb.start();
             bool res = deb.test_set_breakpoints();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1277,6 +1286,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_set_exception_breakpoints.log");
             deb.start();
             bool res = deb.test_set_exception_breakpoints();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(5s);
             CHECK(res);
@@ -1293,6 +1303,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_source.log");
             deb.start();
             bool res = deb.test_source();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1309,6 +1320,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_next_continue.log");
             deb.start();
             bool res = deb.test_next_continue();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1325,6 +1337,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_stepin.log");
             deb.start();
             bool res = deb.test_step_in();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1341,6 +1354,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_stack_trace.log");
             deb.start();
             bool res = deb.test_stack_trace();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1357,6 +1371,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_debug_info.log");
             deb.start();
             bool res = deb.test_debug_info();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1373,6 +1388,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_inspect_variables.log");
             deb.start();
             bool res = deb.test_inspect_variables();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1408,6 +1424,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_variables.log");
             deb.start();
             bool res = deb.test_variables();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
@@ -1424,6 +1441,7 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_copy_to_globals.log");
             deb.start();
             bool res = deb.test_copy_to_globals();
+            deb.disconnect_debugger();
             deb.shutdown();
             std::this_thread::sleep_for(2s);
             CHECK(res);
