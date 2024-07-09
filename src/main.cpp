@@ -24,6 +24,7 @@
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xhelper.hpp"
 
 #include "xeus-zmq/xserver_zmq_split.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
@@ -43,7 +44,7 @@ namespace py = pybind11;
 
 int main(int argc, char* argv[])
 {
-    if (xpyt::should_print_version(argc, argv))
+    if (xeus::should_print_version(argc, argv))
     {
         std::clog << "xpython " << XPYT_VERSION << std::endl;
         return 0;
@@ -133,7 +134,7 @@ int main(int argc, char* argv[])
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
 
-    std::string connection_filename = xpyt::extract_parameter("-f", argc, argv);
+    std::string connection_filename = xeus::extract_filename(argc, argv);
 
 #ifdef XEUS_PYTHON_PYPI_WARNING
     std::clog <<
