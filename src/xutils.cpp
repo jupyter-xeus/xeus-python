@@ -66,25 +66,6 @@ namespace xpyt
         return py::eval(code, scope);
     }
 
-    std::string extract_parameter(std::string param, int argc, char* argv[])
-    {
-        std::string res = "";
-        for (int i = 0; i < argc; ++i)
-        {
-            if ((std::string(argv[i]) == param) && (i + 1 < argc))
-            {
-                res = argv[i + 1];
-                for (int j = i; j < argc - 2; ++j)
-                {
-                    argv[j] = argv[j + 2];
-                }
-                argc -= 2;
-                break;
-            }
-        }
-        return res;
-    }
-
     bool extract_option(std::string short_opt, std::string long_opt, int argc, char* argv[])
     {
         bool res = false;
@@ -122,18 +103,6 @@ namespace xpyt
     void sigkill_handler(int /*sig*/)
     {
         exit(0);
-    }
-
-    bool should_print_version(int argc, char* argv[])
-    {
-        for (int i = 0; i < argc; ++i)
-        {
-            if (std::string(argv[i]) == "--version")
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     void print_pythonhome()

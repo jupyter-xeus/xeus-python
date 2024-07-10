@@ -23,6 +23,7 @@
 
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
+#include "xeus/xhelper.hpp"
 
 #include "xeus-zmq/xserver_zmq_split.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
@@ -48,7 +49,7 @@ void launch(const py::list args_list)
         argv[i] = (char*)PyUnicode_AsUTF8(args_list[i].ptr());
     }
 
-    if (xpyt::should_print_version(argc, argv.data()))
+    if (xeus::should_print_version(argc, argv.data()))
     {
         std::clog << "xpython " << XPYT_VERSION << std::endl;
         return;
@@ -65,7 +66,7 @@ void launch(const py::list args_list)
     signal(SIGINT, xpyt::sigkill_handler);
 
     bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv.data());
-    std::string connection_filename = xpyt::extract_parameter("-f", argc, argv.data());
+    std::string connection_filename = xeus::extract_filename(argc, argv.data());
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
