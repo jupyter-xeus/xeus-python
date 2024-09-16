@@ -10,7 +10,7 @@ Module['async_init'] = async function(
     kernel_root_url, 
     pkg_root_url,
     verbose,
-    url_empack_env_meta = '') {
+    empack_env_meta_link = '') {
 
     /* It should work with any kernel so we have to keep logic for this too
        by default it will work with local empack_env_meta.json
@@ -19,8 +19,8 @@ Module['async_init'] = async function(
     let isEmpackEnvMetaHosted = false;
 
     // if we host empack_env_meta somewhere else then we have to proceed it
-    if (url_empack_env_meta) {
-     packages_json_url = url_empack_env_meta;
+    if (empack_env_meta_link) {
+     packages_json_url = empack_env_meta_link;
      isEmpackEnvMetaHosted = true;
     }
      
