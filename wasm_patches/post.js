@@ -16,12 +16,10 @@ Module['async_init'] = async function(
        by default it will work with local empack_env_meta.json
     */
     let packages_json_url = `${kernel_root_url}/empack_env_meta.json`;
-    let isEmpackEnvMetaHosted = false;
 
     // if we host empack_env_meta somewhere else then we have to proceed it
     if (empack_env_meta_link) {
      packages_json_url = empack_env_meta_link;
-     isEmpackEnvMetaHosted = true;
     }
      
 
@@ -29,7 +27,6 @@ Module['async_init'] = async function(
     return Module['bootstrap_from_empack_packed_environment'](
     packages_json_url,
     pkg_root_url,               /* package_tarballs_root_url */
-    verbose,                    /* verbose */
-    isEmpackEnvMetaHosted      /* if we host empack_env_meta somewhere else */             
+    verbose,                    /* verbose */          
     );
 }
