@@ -22,11 +22,10 @@ Module['async_init'] = async function(
      packages_json_url = empack_env_meta_link;
     }
      
-
     Module['bootstrap_from_empack_packed_environment']
     return Module['bootstrap_from_empack_packed_environment'](
     packages_json_url,
     pkg_root_url,               /* package_tarballs_root_url */
-    verbose,                    /* verbose */          
+    verbose,                    /* verbose */
     );
 }
