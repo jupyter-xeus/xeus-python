@@ -382,6 +382,7 @@ if (EMSCRIPTEN)
         $ENV{PREFIX}/lib/libz.a
         $ENV{PREFIX}/lib/libsqlite3.a
         $ENV{PREFIX}/lib/libffi.a
+        $ENV{PREFIX}/lib/libzstd.a
     )
 
     add_executable(xpython ${XPYTHON_WASM_SRC})
