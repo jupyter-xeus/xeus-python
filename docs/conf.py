@@ -19,6 +19,7 @@ exclude_patterns = []
 html_theme = "pydata_sphinx_theme"
 
 jupyterlite_dir = "."
+jupyterlite_silence = False
 
 html_theme_options = {
     "logo": {
