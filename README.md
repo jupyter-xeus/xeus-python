@@ -146,7 +146,7 @@ Check-out this blog post for the answer: https://blog.jupyter.org/a-new-python-k
 Long story short:
 
 - xeus-python is a lot lighter than ipykernel, which makes it a lot easier to implement new features on top of it.
-- xeus-python already works with the **Jupyter Lab debugger**: https://github.com/jupyterlab/debugger
+- xeus-python already works with the **Jupyter Lab debugger**: https://github.com/jupyterlab/jupyterlab/tree/main/packages/debugger
 - xeus-based kernels are more versatile in that one can overload e.g. the concurrency model. This is something that Kitware’s SlicerJupyter project takes advantage of to integrate with the Qt event loop of their Qt-based desktop application.
 
 ## Dependencies
