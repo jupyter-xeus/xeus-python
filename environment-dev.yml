@@ -6,6 +6,7 @@ dependencies:
   - cmake
   - cxx-compiler
   - ninja
+  - cmake < 4  # TODO: remove pin on CMake
   # Host dependencies
   - xeus>=5.0.0
   - xeus-zmq>=3.0,<4.0
@@ -15,7 +16,7 @@ dependencies:
   - xeus-python-shell>=0.6.3,<0.7
   - debugpy>=1.6.5
   - python <3.13  # TODO: remove pin on Python
-  - ipython <9
+  - ipython <9   # TODO: remove pin on IPython
   # Test dependencies
   - pytest
   - nbval
