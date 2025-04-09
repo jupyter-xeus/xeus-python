@@ -109,7 +109,9 @@ namespace xpyt
     {
         std::setlocale(LC_ALL, "en_US.utf8");
         // Py_GetPythonHome will return NULL if called before Py_Initialize()
-        wchar_t* ph = Py_GetPythonHome();
+        PyConfig config;
+        PyConfig_InitPythonConfig(&config);
+        wchar_t* ph = config.home;
 
         if (ph)
         {
