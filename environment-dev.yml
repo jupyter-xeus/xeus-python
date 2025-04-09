@@ -15,6 +15,7 @@ dependencies:
   - xeus-python-shell>=0.6.3,<0.7
   - debugpy>=1.6.5
   - python <3.13  # TODO: remove pin on Python
+  - ipython <9
   # Test dependencies
   - pytest
   - nbval
