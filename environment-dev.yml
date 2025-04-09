@@ -14,6 +14,7 @@ dependencies:
   - pybind11_json>=0.2.6,<0.3
   - xeus-python-shell>=0.6.3,<0.7
   - debugpy>=1.6.5
+  - python <3.13  # TODO: remove pin on Python
   # Test dependencies
   - pytest
   - nbval
