@@ -10,4 +10,4 @@ conda:
 
 sphinx:
   # Path to Sphinx configuration file
-  configuration: docs/source/conf.py
+  configuration: docs/conf.py
