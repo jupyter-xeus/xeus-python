@@ -144,7 +144,6 @@ namespace xpyt
             kernel_res["ename"] = "std::runtime_error";
             kernel_res["evalue"] = error_msg;
             exception_occurred = true;
-            std::cout << "error!!" << std::endl;
         }
         catch (py::error_already_set& e)
         {
