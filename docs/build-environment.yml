@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - micromamba
+  - micromamba=2.0.5
   - python=3.10
   - pip
   - nodejs=20
