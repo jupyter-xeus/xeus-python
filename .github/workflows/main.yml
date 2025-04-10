@@ -156,25 +156,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install micromamba
-        uses: mamba-org/setup-micromamba@v1
+      - name: install mamba
+        uses: mamba-org/setup-micromamba@main
         with:
           environment-file: environment-wasm-build.yml
-
-      - name: Setup emsdk
-        shell: bash -l {0}
-        run: |
-          cd $HOME
-          git clone https://github.com/emscripten-core/emsdk.git
-          cd emsdk
-          ./emsdk install  ${{ matrix.emsdk_ver }}
-          ./emsdk activate  ${{ matrix.emsdk_ver }}
+          init-shell: bash
 
       - name: Build and pack xeus-python
+        shell: bash -l {0}
         run: |
-          $HOME/emsdk/emsdk activate ${{matrix.emsdk_ver}}
-          source $HOME/emsdk/emsdk_env.sh
-
           micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
 
           mkdir build
