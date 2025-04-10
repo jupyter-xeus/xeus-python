@@ -178,6 +178,8 @@ jobs:
           rm -f $PREFIX/bin/python*
 
           emcmake cmake \
+            -DCMAKE_PREFIX_PATH=$PREFIX \
+            -DCMAKE_INSTALL_PREFIX=$PREFIX \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
             -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
