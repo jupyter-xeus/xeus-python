@@ -145,6 +145,20 @@ namespace xpyt
             kernel_res["evalue"] = error_msg;
             exception_occurred = true;
         }
+        catch (py::error_already_set& e)
+        {
+            xerror error = extract_already_set_error(e);
+            if (!config.silent)
+            {
+                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+            }
+
+            kernel_res["status"] = "error";
+            kernel_res["ename"] = error.m_ename;
+            kernel_res["evalue"] = error.m_evalue;
+            kernel_res["traceback"] = error.m_traceback;
+            exception_occurred = true;
+        }
         catch(...)
         {
             if(!config.silent)
