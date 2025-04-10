@@ -16,3 +16,4 @@ dependencies:
   - requests-wasm-polyfill>=0.3.0
   - libpython
   - zstd
+  - openssl
