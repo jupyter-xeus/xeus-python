@@ -37,7 +37,7 @@ namespace xpyt
         virtual ~xstream();
 
         py::object get_write();
-        void set_write(py::object func);
+        void set_write(const py::object& func);
         void flush();
         bool isatty();
 
@@ -52,7 +52,7 @@ namespace xpyt
      **************************/
 
     xstream::xstream(std::string stream_name)
-        : m_stream_name(stream_name), m_write_func(py::cpp_function([&](const std::string& message) {
+        : m_stream_name(stream_name), m_write_func(py::cpp_function([stream_name](const std::string& message) {
             xeus::get_interpreter().publish_stream(stream_name, message);
         }))
     {
@@ -67,7 +67,7 @@ namespace xpyt
         return m_write_func;
     }
 
-    void xstream::set_write(py::object func)
+    void xstream::set_write(const py::object& func)
     {
         m_write_func = func;
     }
@@ -93,7 +93,7 @@ namespace xpyt
         virtual ~xterminal_stream();
 
         py::object get_write();
-        void set_write(py::object func);
+        void set_write(const py::object& func);
         void flush();
 
     private:
@@ -106,7 +106,7 @@ namespace xpyt
      ***********************************/
 
     xterminal_stream::xterminal_stream()
-        : m_write_func(py::cpp_function([&](const std::string& message) {
+        : m_write_func(py::cpp_function([](const std::string& message) {
             std::cout << message;
         }))
     {
@@ -121,7 +121,7 @@ namespace xpyt
         return m_write_func;
     }
 
-    void xterminal_stream::set_write(py::object func)
+    void xterminal_stream::set_write(const py::object& func)
     {
         m_write_func = func;
     }
