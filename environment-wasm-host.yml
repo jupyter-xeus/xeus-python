@@ -10,9 +10,9 @@ dependencies:
   - pybind11_json
   - numpy
   - xeus-lite
-  - xeus 
+  - xeus
   - xeus-python-shell>=0.6.3
-  - pyjs>=2.0.0
+  - pyjs >=2,<3
   - requests-wasm-polyfill>=0.3.0
   - libpython
   - zstd

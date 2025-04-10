@@ -6,6 +6,6 @@ dependencies:
   - cmake
   - emscripten_emscripten-wasm32==3.1.73
   - pip
-  - python=3.11
+  - python=3.13
   - yarn
   - click
