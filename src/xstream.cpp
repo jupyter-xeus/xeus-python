@@ -92,8 +92,13 @@ namespace xpyt
         xterminal_stream();
         virtual ~xterminal_stream();
 
-        void write(const std::string& message);
+        py::object get_write();
+        void set_write(py::object func);
         void flush();
+
+    private:
+
+        py::object m_write_func;
     };
 
     /***********************************
@@ -101,6 +106,9 @@ namespace xpyt
      ***********************************/
 
     xterminal_stream::xterminal_stream()
+        : m_write_func(py::cpp_function([&](const std::string& message) {
+            std::cout << message;
+        }))
     {
     }
 
@@ -108,9 +116,14 @@ namespace xpyt
     {
     }
 
-    void xterminal_stream::write(const std::string& message)
+    py::object xterminal_stream::get_write()
     {
-        std::cout << message;
+        return m_write_func;
+    }
+
+    void xterminal_stream::set_write(py::object func)
+    {
+        m_write_func = func;
     }
 
     void xterminal_stream::flush()
@@ -133,7 +146,7 @@ namespace xpyt
 
         py::class_<xterminal_stream>(stream_module, "TerminalStream")
             .def(py::init<>())
-            .def("write", &xterminal_stream::write)
+            .def_property("write", &xterminal_stream::get_write, &xterminal_stream::set_write)
             .def("flush", &xterminal_stream::flush);
 
         return stream_module;
