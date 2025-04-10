@@ -378,11 +378,14 @@ endif()
 if (EMSCRIPTEN)
     # TODO MAKE BETTER
     SET(PYTHON_UTIL_LIBS
-        $ENV{PREFIX}/lib/libbz2.a
-        $ENV{PREFIX}/lib/libz.a
-        $ENV{PREFIX}/lib/libsqlite3.a
-        $ENV{PREFIX}/lib/libffi.a
-        $ENV{PREFIX}/lib/libzstd.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libbz2.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libz.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libsqlite3.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libffi.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libzstd.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libssl.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libcrypto.a
+        ${CMAKE_INSTALL_PREFIX}/lib/liblzma.a
     )
 
     add_executable(xpython ${XPYTHON_WASM_SRC})
