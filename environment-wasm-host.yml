@@ -17,3 +17,4 @@ dependencies:
   - libpython
   - zstd
   - openssl
+  - xz
