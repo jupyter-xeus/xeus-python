@@ -44,16 +44,23 @@ if(EMSCRIPTEN)
     STRING(REGEX MATCH "python[0-9]+[.][0-9]+" PYTHON_VERSION_STRING ${WASM_PYTHON_LIBRARY})
     STRING(REGEX MATCH "[0-9]+" PYTHON_VERSION_MAJOR ${PYTHON_VERSION_STRING})
     STRING(REGEX MATCH "[0-9]+$" PYTHON_VERSION_MINOR ${PYTHON_VERSION_STRING})
+
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/wasm_kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
+    )
+else()
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
+    )
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json"
+    )
 endif()
 
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
-)
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json"
-)
+
 
 # Build options
 # =============
@@ -88,12 +95,12 @@ if(EMSCRIPTEN)
     cat(wasm_patches/post.js  post.js.in)
 
     add_compile_definitions(XPYT_EMSCRIPTEN_WASM_BUILD)
+    set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
 
     set(XPYT_BUILD_STATIC OFF)
     set(XPYT_BUILD_SHARED OFF)
     set(XPYT_BUILD_XPYTHON_EXECUTABLE OFF)
     set(XPYT_BUILD_XPYTHON_EXTENSION OFF)
-    set(XPYT_USE_SHARED_XEUS OFF)
     set(XPYT_USE_SHARED_XEUS_PYTHON OFF)
     set(XPYT_BUILD_TESTS OFF)
 endif()
