@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-13, macos-14]
+        os: [ubuntu-22.04, ubuntu-24.04, macos-13, macos-14]
         build_type: [static_build, shared_build]
 
     steps:
@@ -83,7 +83,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2022, windows-2025]
         build_type: [static_build, shared_build]
 
     steps:
