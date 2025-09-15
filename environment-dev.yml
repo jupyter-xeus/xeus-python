@@ -8,7 +8,6 @@ dependencies:
   - ninja
   - cmake < 4  # TODO: remove pin on CMake
   # Host dependencies
-  - xeus>=5.0.0
   - xeus-zmq>=3.1,<4.0
   - nlohmann_json=3.12.0
   - pybind11>=2.6.1,<3.0
