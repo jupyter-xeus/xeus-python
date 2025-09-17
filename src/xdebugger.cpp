@@ -70,8 +70,6 @@ namespace xpyt
 
     debugger::~debugger()
     {
-        delete p_debugpy_client;
-        p_debugpy_client = nullptr;
     }
 
     nl::json debugger::inspect_variables_request(const nl::json& message)
@@ -325,13 +323,12 @@ namespace xpyt
         bind_sockets(controller_header_end_point, controller_end_point);
 
         std::string debugpy_end_point = "tcp://" + m_debugpy_host + ':' + m_debugpy_port;
-        std::thread client(&xdap_tcp_client::start_debugger,
-                           p_debugpy_client,
+        m_client_runner = xeus::xthread(&xdap_tcp_client::start_debugger,
+                           p_debugpy_client.get(),
                            debugpy_end_point,
                            publisher_end_point,
                            controller_end_point,
                            controller_header_end_point);
-        client.detach();
 
         send_recv_request("REQ");
 

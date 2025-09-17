@@ -17,12 +17,14 @@
 #endif
 
 #include <map>
+#include <memory>
 #include <mutex>
 #include <set>
 
 #include "nlohmann/json.hpp"
 #include "pybind11/pybind11.h"
 #include "xeus-zmq/xdebugger_base.hpp"
+#include "xeus-zmq/xthread.hpp"
 #include "xeus_python_config.hpp"
 
 namespace py = pybind11;
@@ -62,11 +64,12 @@ namespace xpyt
         xeus::xdebugger_info get_debugger_info() const override;
         std::string get_cell_temporary_file(const std::string& code) const override;
 
-        xdebugpy_client* p_debugpy_client;
+        std::unique_ptr<xdebugpy_client> p_debugpy_client;
         std::string m_debugpy_host;
         std::string m_debugpy_port;
         nl::json m_debugger_config;
         py::object m_pydebugger;
+        xeus::xthread m_client_runner;
         bool m_copy_to_globals_available;
     };
 
