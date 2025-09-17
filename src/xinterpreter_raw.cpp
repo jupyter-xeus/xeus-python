@@ -107,6 +107,37 @@ namespace xpyt
         py::module context_module = get_request_context_module();
     }
 
+    namespace
+    {
+        class splinter_cell
+        {
+        public:
+
+            splinter_cell()
+            {
+                auto null_out = py::cpp_function([](const std::string&) {});
+
+                py::module sys = py::module::import("sys");
+                m_stdout_func = sys.attr("stdout").attr("write");
+                m_stderr_func = sys.attr("stderr").attr("write");
+                sys.attr("stdout").attr("write") = null_out;
+                sys.attr("stderr").attr("write") = null_out;
+            }
+
+            ~splinter_cell()
+            {
+                py::module sys = py::module::import("sys");
+                sys.attr("stdout").attr("write") = m_stdout_func;
+                sys.attr("stderr").attr("write") = m_stderr_func;
+            }
+
+        private:
+
+            py::object m_stdout_func;
+            py::object m_stderr_func;
+        };
+    }
+
     void raw_interpreter::execute_request_impl(
         send_reply_callback cb,
         int execution_count,
@@ -138,7 +169,7 @@ namespace xpyt
             // If the last statement is an expression, we compile it separately
             // in an interactive mode (This will trigger the display hook)
             py::object last_stmt = expressions[py::len(expressions) - 1];
-            if (py::isinstance(last_stmt, ast.attr("Expr")))
+            if (py::isinstance(last_stmt, ast.attr("Expr")) && !config.silent)
             {
                 code_ast.attr("body").attr("pop")();
 
@@ -161,6 +192,7 @@ namespace xpyt
             }
             else
             {
+                splinter_cell guard;
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
                 exec(compiled_code);
             }
