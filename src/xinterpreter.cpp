@@ -310,7 +310,7 @@ namespace xpyt
               "\n");
 #endif
         result["banner"] = banner;
-        result["debugger"] = true;
+        result["debugger"] = (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13);
 
         result["language_info"]["name"] = "python";
         result["language_info"]["version"] = PY_VERSION;
