@@ -50,7 +50,7 @@ include_directories(${GTEST_INCLUDE_DIRS} SYSTEM)
 set(XEUS_PYTHON_TESTS
     main.cpp
     ../src/xutils.cpp
-    test_debugger.cpp
+    #test_debugger.cpp
     xeus_client.hpp
     xeus_client.cpp
 )

@@ -27,41 +27,6 @@ set(${PROJECT_NAME}_VERSION
     ${XPYT_VERSION_MAJOR}.${XPYT_VERSION_MINOR}.${XPYT_VERSION_PATCH})
 message(STATUS "Building xeus-python v${${PROJECT_NAME}_VERSION}")
 
-# Configuration
-# =============
-
-include(GNUInstallDirs)
-
-if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
-    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_FULL_BINDIR}/")
-endif ()
-
-if(EMSCRIPTEN)
-    # the variables PYTHON_VERSION_MAJOR and PYTHON_VERSION_MINOR
-    # might be wrong for the EMSCRIPTEN case since it may contains
-    # the versions of build-python and not the one of the host.
-    FILE(GLOB WASM_PYTHON_LIBRARY  $ENV{PREFIX}/lib/libpython*.a)
-    STRING(REGEX MATCH "python[0-9]+[.][0-9]+" PYTHON_VERSION_STRING ${WASM_PYTHON_LIBRARY})
-    STRING(REGEX MATCH "[0-9]+" PYTHON_VERSION_MAJOR ${PYTHON_VERSION_STRING})
-    STRING(REGEX MATCH "[0-9]+$" PYTHON_VERSION_MINOR ${PYTHON_VERSION_STRING})
-
-    configure_file (
-        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/wasm_kernel.json.in"
-        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
-    )
-else()
-    configure_file (
-        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
-        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
-    )
-    configure_file (
-        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json.in"
-        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json"
-    )
-endif()
-
-
-
 # Build options
 # =============
 
@@ -141,6 +106,51 @@ else ()
         find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
     endif ()
 endif()
+
+# Configuration
+# =============
+
+include(GNUInstallDirs)
+
+if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
+    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_FULL_BINDIR}/")
+endif ()
+
+if (NOT DEFINED XPYTHON_DEBUGGER_AVAILABLE)
+    message(STATUS "PYTHON_VERSION = ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+    if ((PYTHON_VERSION_MAJOR EQUAL 3) AND (PYTHON_VERSION_MINOR EQUAL 13))
+        set(XPYTHON_DEBUGGER_AVAILABLE "false")
+    else ()
+        set(XPYTHON_DEBUGGER_AVAILABLE "true")
+    endif ()
+    message(STATUS "XPYTHON_DEBUGGER_AVAILABLE=${XPYTHON_DEBUGGER_AVAILABLE}")
+endif ()
+
+if(EMSCRIPTEN)
+    # the variables PYTHON_VERSION_MAJOR and PYTHON_VERSION_MINOR
+    # might be wrong for the EMSCRIPTEN case since it may contains
+    # the versions of build-python and not the one of the host.
+    FILE(GLOB WASM_PYTHON_LIBRARY  $ENV{PREFIX}/lib/libpython*.a)
+    STRING(REGEX MATCH "python[0-9]+[.][0-9]+" PYTHON_VERSION_STRING ${WASM_PYTHON_LIBRARY})
+    STRING(REGEX MATCH "[0-9]+" PYTHON_VERSION_MAJOR ${PYTHON_VERSION_STRING})
+    STRING(REGEX MATCH "[0-9]+$" PYTHON_VERSION_MINOR ${PYTHON_VERSION_STRING})
+
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/wasm_kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
+    )
+else()
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
+    )
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json"
+    )
+endif()
+
+
 
 # Source files
 # ============
