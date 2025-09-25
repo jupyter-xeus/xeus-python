@@ -62,7 +62,7 @@ jobs:
         run: |
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
-              --contents notebooks/xeus-python.ipynb \
+              --contents notebooks/ \
               --output-dir dist
 
       - name: Upload artifact
