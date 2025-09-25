@@ -48,12 +48,11 @@ jobs:
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
           emcmake cmake . \
+            -DCMAKE_PREFIX_PATH=$PREFIX \
+            -DCMAKE_INSTALL_PREFIX=$PREFIX \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH="$PREFIX" \
-            -DCMAKE_SYSTEM_PREFIX_PATH="$PREFIX" \
-            -DCMAKE_INSTALL_PREFIX="$PREFIX" \
-            -DCMAKE_FIND_ROOT_PATH="$PREFIX" \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
+            -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
             -DCMAKE_VERBOSE_MAKEFILE=ON
 
           emmake make -j${{ env.ncpus }} install
@@ -63,7 +62,6 @@ jobs:
         run: |
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
-              --XeusAddon.mounts=$PREFIX/share/xeus-python:/share/xeus-python \
               --contents notebooks/xeus-python.ipynb \
               --output-dir dist
 
