@@ -310,7 +310,7 @@ macro(xpyt_create_target target_name src headers linkage output_name)
                                $<INSTALL_INTERFACE:include>)
 
     if (EMSCRIPTEN)
-        set(XPY_XEUS_TARGET xeus)
+        set(XPYT_XEUS_TARGET xeus)
     elseif (XPYT_USE_SHARED_XEUS)
         set(XPYT_XEUS_TARGET xeus-zmq)
     else ()
