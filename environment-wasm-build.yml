@@ -10,6 +10,6 @@ dependencies:
   - yarn
   - click
   # JupyterLite
-  - jupyterlite-core
+  - jupyterlite-core >0.6
   - jupyter_server
   - jupyterlite-xeus
