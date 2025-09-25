@@ -9,3 +9,7 @@ dependencies:
   - python=3.13
   - yarn
   - click
+  # JupyterLite
+  - jupyterlite-core
+  - jupyter_server
+  - jupyterlite-xeus
