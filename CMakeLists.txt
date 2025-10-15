@@ -415,7 +415,7 @@ if (EMSCRIPTEN)
     target_link_libraries(xpython PRIVATE xeus-python-wasm xeus-lite)
 
     include(WasmBuildOptions)
-    xeus_wasm_compile_options(xpython)
+    # xeus_wasm_compile_options(xpython)
     xeus_wasm_link_options(xpython "web,worker")
     target_link_options(xpython
         PUBLIC "SHELL: -s LZ4=1"
@@ -424,6 +424,11 @@ if (EMSCRIPTEN)
         PUBLIC "SHELL: -s MAIN_MODULE=1"
         PUBLIC "SHELL: -s WASM_BIGINT"
         PUBLIC "-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['\$Browser', '\$ERRNO_CODES']\" "
+        PUBLIC "-fwasm-exceptions"
+        PUBLIC "-lembind"
+    )
+    target_compile_options(xpython     
+        PUBLIC "-fwasm-exceptions"
     )
 endif()
 
