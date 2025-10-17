@@ -374,6 +374,7 @@ namespace xpyt
 
     nl::json debugger::modules(const nl::json& message)
     {
+        py::gil_scoped_acquire acquire;
         py::module sys = py::module::import("sys");
         py::list modules = sys.attr("modules").attr("values")();
 
