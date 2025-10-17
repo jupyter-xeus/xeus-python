@@ -55,6 +55,7 @@ namespace xpyt
         nl::json attach_request(const nl::json& message);
         nl::json configuration_done_request(const nl::json& message);
         nl::json copy_to_globals_request(const nl::json& message);
+        nl::json modules(const nl::json& message);
 
         nl::json variables_request_impl(const nl::json& message) override;
 
