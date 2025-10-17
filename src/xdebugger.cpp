@@ -66,6 +66,8 @@ namespace xpyt
         register_request_handler("attach", std::bind(&debugger::attach_request, this, _1), true);
         register_request_handler("configurationDone", std::bind(&debugger::configuration_done_request, this, _1), true);
         register_request_handler("copyToGlobals", std::bind(&debugger::copy_to_globals_request, this, _1), true);
+        register_request_handler("modules", std::bind(&debugger::modules, this, _1), false);
+
     }
 
     debugger::~debugger()
