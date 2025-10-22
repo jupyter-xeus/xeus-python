@@ -273,9 +273,7 @@ namespace xpyt
 
     nl::json raw_interpreter::is_complete_request_impl(const std::string&)
     {
-        nl::json result;
-        result["status"] = "complete";
-        return result;
+        return xeus::create_is_complete_reply("complete", "");
     }
 
     nl::json raw_interpreter::kernel_info_request_impl()

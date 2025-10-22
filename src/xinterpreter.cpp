@@ -249,7 +249,6 @@ namespace xpyt
     nl::json interpreter::is_complete_request_impl(const std::string& code)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
 
         py::object transformer_manager = py::getattr(m_ipython_shell, "input_transformer_manager", py::none());
         if (transformer_manager.is_none())
@@ -258,14 +257,15 @@ namespace xpyt
         }
 
         py::list result = transformer_manager.attr("check_complete")(code);
-        auto status = result[0].cast<std::string>();
+        std::string status = result[0].cast<std::string>();
+        std::string indent;
 
-        kernel_res["status"] = status;
-        if (status.compare("incomplete") == 0)
+        if (status == "incomplete")
         {
-            kernel_res["indent"] = std::string(result[1].cast<std::size_t>(), ' ');
+            indent = std::string(result[1].cast<std::size_t>(), ' ');
         }
-        return kernel_res;
+
+        return xeus::create_is_complete_reply(status, indent);
     }
 
     nl::json interpreter::kernel_info_request_impl()
