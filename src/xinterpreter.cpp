@@ -318,7 +318,6 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
-        nl::json reply;
 
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
@@ -326,7 +325,7 @@ namespace xpyt
         try
         {
             exec(py::str(code));
-            reply["status"] = "ok";
+            return xeus::create_successful_reply();
         }
         catch (py::error_already_set& e)
         {
@@ -341,13 +340,8 @@ namespace xpyt
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
 
-            reply["status"] = "error";
-            reply["ename"] = error.m_ename;
-            reply["evalue"] = error.m_evalue;
-            reply["traceback"] = error.m_traceback;
+            return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
         }
-
-        return reply;
     }
 
     void interpreter::set_request_context(xeus::xrequest_context context)
