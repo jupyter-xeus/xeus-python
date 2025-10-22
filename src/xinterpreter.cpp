@@ -209,17 +209,14 @@ namespace xpyt
         int cursor_pos)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
 
         py::list completion = m_ipython_shell.attr("complete_code")(code, cursor_pos);
 
-        kernel_res["matches"] = completion[0];
-        kernel_res["cursor_start"] = completion[1];
-        kernel_res["cursor_end"] = completion[2];
-        kernel_res["metadata"] = nl::json::object();
-        kernel_res["status"] = "ok";
+        nl::json matches = completion[0];
+        int cursor_start = completion[1].cast<int>();
+        int cursor_end = completion[2].cast<int>();
 
-        return kernel_res;
+        return xeus::create_complete_reply(matches, cursor_start, cursor_end, nl::json::object());
     }
 
     nl::json interpreter::inspect_request_impl(const std::string& code,

@@ -233,7 +233,6 @@ namespace xpyt
         int cursor_pos)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
         std::vector<std::string> matches;
         int cursor_start = cursor_pos;
 
@@ -248,12 +247,7 @@ namespace xpyt
             }
         }
 
-        kernel_res["cursor_start"] = cursor_start;
-        kernel_res["cursor_end"] = cursor_pos;
-        kernel_res["matches"] = matches;
-        kernel_res["metadata"] = nl::json::object();
-        kernel_res["status"] = "ok";
-        return kernel_res;
+        return xeus::create_complete_reply(matches, cursor_start, cursor_pos, nl::json::object());
     }
 
     nl::json raw_interpreter::inspect_request_impl(const std::string& code,
