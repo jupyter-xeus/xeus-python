@@ -270,6 +270,16 @@ namespace xpyt
 
     nl::json interpreter::kernel_info_request_impl()
     {
+
+        /* The jupyter-console banner for xeus-python is the following:
+          __  _____ _   _ ___
+          \ \/ / _ \ | | / __|
+           >  <  __/ |_| \__ \
+          /_/\_\___|\__,_|___/
+
+          xeus-python: a Jupyter kernel for Python
+        */
+
         std::string banner = ""
               "  __  _____ _   _ ___\n"
               "  \\ \\/ / _ \\ | | / __|\n"
@@ -294,7 +304,7 @@ namespace xpyt
         });
 
         return xeus::create_info_reply(
-            "",                 // protocol_version
+            "5.3",                 // protocol_version
             "xeus-python",      // implementation
             XPYT_VERSION,       // implementation_version
             "python",           // language_name

@@ -312,7 +312,7 @@ namespace xpyt
         });
 
         return xeus::create_info_reply(
-            "",                 // protocol_version
+            "5.3",                 // protocol_version
             "xeus-python",      // implementation
             XPYT_VERSION,       // implementation_version
             "python",           // language_name
