@@ -19,6 +19,7 @@
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xsystem.hpp"
+#include "xeus/xhelper.hpp"
 
 #include "pybind11/functional.h"
 
@@ -176,16 +177,17 @@ namespace xpyt
 
         if(exception_occurred)
         {
-            kernel_res["status"] = "error";
-            kernel_res["traceback"] = std::vector<std::string>();
-            cb(kernel_res);
+            nl::json tb = kernel_res.value("traceback", nl::json::array());
+            cb(xeus::create_error_reply(kernel_res.value("ename", std::string()),
+                                        kernel_res.value("evalue", std::string()),
+                                        tb));
             return;
         }
 
         if (m_ipython_shell.attr("last_error").is_none())
         {
-            kernel_res["status"] = "ok";
-            kernel_res["user_expressions"] = m_ipython_shell.attr("user_expressions")(user_expressions);
+            nl::json user_exprs = m_ipython_shell.attr("user_expressions")(user_expressions);
+            cb(xeus::create_successful_reply(kernel_res["payload"], user_exprs));
         }
         else
         {
@@ -198,12 +200,8 @@ namespace xpyt
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
 
-            kernel_res["status"] = "error";
-            kernel_res["ename"] = error.m_ename;
-            kernel_res["evalue"] = error.m_evalue;
-            kernel_res["traceback"] = error.m_traceback;
+            cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
         }
-        cb(kernel_res);
     }
 
     nl::json interpreter::complete_request_impl(

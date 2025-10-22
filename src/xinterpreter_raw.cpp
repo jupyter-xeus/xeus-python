@@ -19,6 +19,7 @@
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xsystem.hpp"
+#include "xeus/xhelper.hpp"
 
 #include "pybind11/functional.h"
 
@@ -197,10 +198,8 @@ namespace xpyt
                 exec(compiled_code);
             }
 
-            kernel_res["status"] = "ok";
-            kernel_res["user_expressions"] = nl::json::object();
-            kernel_res["payload"] = nl::json::array();
-
+            cb(xeus::create_successful_reply(nl::json::array(), nl::json::object()));
+            return;
         }
         catch (py::error_already_set& e)
         {
@@ -219,18 +218,14 @@ namespace xpyt
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
 
-            kernel_res["status"] = "error";
-            kernel_res["ename"] = error.m_ename;
-            kernel_res["evalue"] = error.m_evalue;
-            kernel_res["traceback"] = error.m_traceback;
+            cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
+            return;
         }
 
         // Cache inputs
         py::globals()["_iii"] = py::globals()["_ii"];
         py::globals()["_ii"] = py::globals()["_i"];
         py::globals()["_i"] = code;
-
-        cb(kernel_res);
     }
 
     nl::json raw_interpreter::complete_request_impl(

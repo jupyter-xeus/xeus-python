@@ -404,11 +404,11 @@ namespace xpyt
             }
         }
 
-        nl::json body = {
-            {"modules", mods},
-            {"totalModules", py::len(modules)}
+        return {
+            {"body", {
+                {"modules", mods},
+                {"totalModules", py::len(modules)}
+            }}
         };
-
-        return xeus::create_successful_reply(nl::json::array(), body);
     }
 }
