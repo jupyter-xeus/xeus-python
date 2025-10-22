@@ -305,12 +305,6 @@ namespace xpyt
             "\n");
 #endif
 
-
-        nl::json codemirror_mode = {
-            {"name", "ipython"},
-            {"version", PY_MAJOR_VERSION}
-        };
-
         nl::json help_links = nl::json::array();
         help_links.push_back({
             {"text", "Xeus-Python Reference"},
@@ -326,7 +320,7 @@ namespace xpyt
             "text/x-python",    // language_mimetype
             ".py",              // language_file_extension
             "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-            codemirror_mode,    // language_codemirror_mode
+            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
             "python",           // language_nbconvert_exporter
             banner,             // banner
             false,              // debugger
