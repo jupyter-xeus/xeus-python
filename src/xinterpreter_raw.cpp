@@ -285,7 +285,7 @@ namespace xpyt
            >  <  __/ |_| \__ \
           /_/\_\___|\__,_|___/
 
-          xeus-python: a Jupyter lernel for Python
+          xeus-python: a Jupyter kernel for Python
         */
 
         std::string banner = ""
