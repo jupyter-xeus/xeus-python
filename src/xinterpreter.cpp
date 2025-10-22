@@ -303,19 +303,24 @@ namespace xpyt
             {"url", "https://xeus-python.readthedocs.io"}
         });
 
+        nl::json codemirror_mode = {
+            {"name", "ipython"},
+            {"version", PY_MAJOR_VERSION}
+        };
+
         return xeus::create_info_reply(
-            "5.3",                 // protocol_version
+            "5.3",              // protocol_version
             "xeus-python",      // implementation
             XPYT_VERSION,       // implementation_version
             "python",           // language_name
             PY_VERSION,         // language_version
             "text/x-python",    // language_mimetype
             ".py",              // language_file_extension
-            "",                 // pygments_lexer
-            "",                 // language_codemirror_mode
-            "",                 // language_nbconvert_exporter
+            "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
+            codemirror_mode,    // language_codemirror_mode
+            "python",           // language_nbconvert_exporter
             banner,             // banner
-            (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13), // debugger
+            (PY_MAJOR_VERSION != 3) || (PY_MINOR_VERSION != 13), // debugger
             help_links          // help_links
         );
     }
