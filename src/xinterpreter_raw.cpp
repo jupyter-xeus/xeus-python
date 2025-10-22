@@ -278,9 +278,6 @@ namespace xpyt
 
     nl::json raw_interpreter::kernel_info_request_impl()
     {
-        nl::json result;
-        result["implementation"] = "xeus-python";
-        result["implementation_version"] = XPYT_VERSION;
 
         /* The jupyter-console banner for xeus-python is the following:
           __  _____ _   _ ___
@@ -307,24 +304,28 @@ namespace xpyt
             "We recommend using a general-purpose package manager instead, such as Conda/Mamba."
             "\n");
 #endif
-        result["banner"] = banner;
-        result["debugger"] = false;
 
-        result["language_info"]["name"] = "python";
-        result["language_info"]["version"] = PY_VERSION;
-        result["language_info"]["mimetype"] = "text/x-python";
-        result["language_info"]["file_extension"] = ".py";
+        nl::json help_links = nl::json::array();
+        help_links.push_back({
+            {"text", "Xeus-Python Reference"},
+            {"url", "https://xeus-python.readthedocs.io"}
+        });
 
-        result["help_links"] = nl::json::array();
-        result["help_links"][0] = nl::json::object(
-            {
-                {"text", "Xeus-Python Reference"},
-                {"url", "https://xeus-python.readthedocs.io"}
-            }
+        return xeus::create_info_reply(
+            "",                 // protocol_version
+            "xeus-python",      // implementation
+            XPYT_VERSION,       // implementation_version
+            "python",           // language_name
+            PY_VERSION,         // language_version
+            "text/x-python",    // language_mimetype
+            ".py",              // language_file_extension
+            "",                 // pygments_lexer
+            "",                 // language_codemirror_mode
+            "",                 // language_nbconvert_exporter
+            banner,             // banner
+            false,              // debugger
+            help_links          // help_links
         );
-
-        result["status"] = "ok";
-        return result;
     }
 
     void raw_interpreter::shutdown_request_impl()

@@ -270,19 +270,6 @@ namespace xpyt
 
     nl::json interpreter::kernel_info_request_impl()
     {
-        nl::json result;
-        result["implementation"] = "xeus-python";
-        result["implementation_version"] = XPYT_VERSION;
-
-        /* The jupyter-console banner for xeus-python is the following:
-          __  _____ _   _ ___
-          \ \/ / _ \ | | / __|
-           >  <  __/ |_| \__ \
-          /_/\_\___|\__,_|___/
-
-          xeus-python: a Jupyter lernel for Python
-        */
-
         std::string banner = ""
               "  __  _____ _   _ ___\n"
               "  \\ \\/ / _ \\ | | / __|\n"
@@ -299,22 +286,28 @@ namespace xpyt
               "We recommend using a general-purpose package manager instead, such as Conda/Mamba."
               "\n");
 #endif
-        result["banner"] = banner;
-        result["debugger"] = (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13);
 
-        result["language_info"]["name"] = "python";
-        result["language_info"]["version"] = PY_VERSION;
-        result["language_info"]["mimetype"] = "text/x-python";
-        result["language_info"]["file_extension"] = ".py";
-
-        result["help_links"] = nl::json::array();
-        result["help_links"][0] = nl::json::object({
+        nl::json help_links = nl::json::array();
+        help_links.push_back({
             {"text", "Xeus-Python Reference"},
             {"url", "https://xeus-python.readthedocs.io"}
         });
 
-        result["status"] = "ok";
-        return result;
+        return xeus::create_info_reply(
+            "",                 // protocol_version
+            "xeus-python",      // implementation
+            XPYT_VERSION,       // implementation_version
+            "python",           // language_name
+            PY_VERSION,         // language_version
+            "text/x-python",    // language_mimetype
+            ".py",              // language_file_extension
+            "",                 // pygments_lexer
+            "",                 // language_codemirror_mode
+            "",                 // language_nbconvert_exporter
+            banner,             // banner
+            (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13), // debugger
+            help_links          // help_links
+        );
     }
 
     void interpreter::shutdown_request_impl()
