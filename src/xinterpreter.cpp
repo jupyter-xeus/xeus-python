@@ -224,7 +224,6 @@ namespace xpyt
                                                int detail_level)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
         nl::json data = nl::json::object();
         bool found = false;
 
@@ -244,11 +243,7 @@ namespace xpyt
             // pass
         }
 
-        kernel_res["data"] = data;
-        kernel_res["metadata"] = nl::json::object();
-        kernel_res["found"] = found;
-        kernel_res["status"] = "ok";
-        return kernel_res;
+        return xeus::create_inspect_reply(found, data, nl::json::object());
     }
 
     nl::json interpreter::is_complete_request_impl(const std::string& code)

@@ -268,11 +268,7 @@ namespace xpyt
             pub_data["text/plain"] = docstring;
         }
 
-        kernel_res["data"] = pub_data;
-        kernel_res["metadata"] = nl::json::object();
-        kernel_res["found"] = found;
-        kernel_res["status"] = "ok";
-        return kernel_res;
+        return xeus::create_inspect_reply(found, pub_data, nl::json::object());
     }
 
     nl::json raw_interpreter::is_complete_request_impl(const std::string&)
