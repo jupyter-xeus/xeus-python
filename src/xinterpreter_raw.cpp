@@ -225,9 +225,7 @@ namespace xpyt
         py::globals()["_ii"] = py::globals()["_i"];
         py::globals()["_i"] = code;
 
-        kernel_res = xeus::create_successful_reply(execution_count);
-
-        return kernel_res;
+        cb(kernel_res);
     }
 
     nl::json raw_interpreter::complete_request_impl(
