@@ -198,8 +198,6 @@ namespace xpyt
                 exec(compiled_code);
             }
 
-            cb(xeus::create_successful_reply(nl::json::array(), nl::json::object()));
-            return;
         }
         catch (py::error_already_set& e)
         {
