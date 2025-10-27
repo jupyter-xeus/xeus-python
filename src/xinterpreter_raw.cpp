@@ -224,6 +224,8 @@ namespace xpyt
         py::globals()["_iii"] = py::globals()["_ii"];
         py::globals()["_ii"] = py::globals()["_i"];
         py::globals()["_i"] = code;
+
+        cb(kernel_res);
     }
 
     nl::json raw_interpreter::complete_request_impl(
