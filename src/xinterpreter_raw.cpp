@@ -225,6 +225,8 @@ namespace xpyt
         py::globals()["_ii"] = py::globals()["_i"];
         py::globals()["_i"] = code;
 
+        kernel_res = xeus::create_successful_reply(execution_count);
+
         cb(kernel_res);
     }
 
