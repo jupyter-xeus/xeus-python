@@ -227,7 +227,7 @@ namespace xpyt
 
         kernel_res = xeus::create_successful_reply(execution_count);
 
-        return cb(kernel_res);
+        return kernel_res;
     }
 
     nl::json raw_interpreter::complete_request_impl(
