@@ -226,6 +226,7 @@ namespace xpyt
         py::globals()["_i"] = code;
 
         cb(kernel_res);
+        return;
     }
 
     nl::json raw_interpreter::complete_request_impl(
