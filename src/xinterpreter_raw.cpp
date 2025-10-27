@@ -147,7 +147,6 @@ namespace xpyt
         nl::json /*user_expressions*/)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
         py::str code_copy;
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
