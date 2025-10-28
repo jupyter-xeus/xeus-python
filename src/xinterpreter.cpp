@@ -19,6 +19,7 @@
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xsystem.hpp"
+#include "xeus/xhelper.hpp"
 
 #include "pybind11/functional.h"
 
@@ -120,7 +121,6 @@ namespace xpyt
                                            nl::json user_expressions)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
 
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
@@ -130,6 +130,10 @@ namespace xpyt
         auto input_guard = input_redirection(config.allow_stdin);
 
         bool exception_occurred = false;
+        std::string ename;
+        std::string evalue;
+        std::vector<std::string> traceback;
+
         try
         {
             m_ipython_shell.attr("run_cell")(code, "store_history"_a=config.store_history, "silent"_a=config.silent);
@@ -141,8 +145,6 @@ namespace xpyt
             {
                 publish_execution_error("RuntimeError", error_msg, std::vector<std::string>());
             }
-            kernel_res["ename"] = "std::runtime_error";
-            kernel_res["evalue"] = error_msg;
             exception_occurred = true;
         }
         catch (py::error_already_set& e)
@@ -153,10 +155,9 @@ namespace xpyt
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
 
-            kernel_res["status"] = "error";
-            kernel_res["ename"] = error.m_ename;
-            kernel_res["evalue"] = error.m_evalue;
-            kernel_res["traceback"] = error.m_traceback;
+            ename = error.m_ename;
+            evalue = error.m_evalue;
+            traceback = error.m_traceback;
             exception_occurred = true;
         }
         catch(...)
@@ -165,27 +166,25 @@ namespace xpyt
             {
                 publish_execution_error("unknown_error", "", std::vector<std::string>());
             }
-            kernel_res["ename"] = "UnknownError";
-            kernel_res["evalue"] = "";
+            ename = "UnknownError";
+            evalue = "";
             exception_occurred = true;
         }
 
         // Get payload
-        kernel_res["payload"] = m_ipython_shell.attr("payload_manager").attr("read_payload")();
+        nl::json payload = m_ipython_shell.attr("payload_manager").attr("read_payload")();
         m_ipython_shell.attr("payload_manager").attr("clear_payload")();
 
         if(exception_occurred)
         {
-            kernel_res["status"] = "error";
-            kernel_res["traceback"] = std::vector<std::string>();
-            cb(kernel_res);
+            cb(xeus::create_error_reply(ename, evalue, traceback));
             return;
         }
 
         if (m_ipython_shell.attr("last_error").is_none())
         {
-            kernel_res["status"] = "ok";
-            kernel_res["user_expressions"] = m_ipython_shell.attr("user_expressions")(user_expressions);
+            nl::json user_exprs = m_ipython_shell.attr("user_expressions")(user_expressions);
+            cb(xeus::create_successful_reply(payload, user_exprs));
         }
         else
         {
@@ -198,12 +197,8 @@ namespace xpyt
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
 
-            kernel_res["status"] = "error";
-            kernel_res["ename"] = error.m_ename;
-            kernel_res["evalue"] = error.m_evalue;
-            kernel_res["traceback"] = error.m_traceback;
+            cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
         }
-        cb(kernel_res);
     }
 
     nl::json interpreter::complete_request_impl(
@@ -211,17 +206,14 @@ namespace xpyt
         int cursor_pos)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
 
         py::list completion = m_ipython_shell.attr("complete_code")(code, cursor_pos);
 
-        kernel_res["matches"] = completion[0];
-        kernel_res["cursor_start"] = completion[1];
-        kernel_res["cursor_end"] = completion[2];
-        kernel_res["metadata"] = nl::json::object();
-        kernel_res["status"] = "ok";
+        nl::json matches = completion[0];
+        int cursor_start = completion[1].cast<int>();
+        int cursor_end = completion[2].cast<int>();
 
-        return kernel_res;
+        return xeus::create_complete_reply(matches, cursor_start, cursor_end, nl::json::object());
     }
 
     nl::json interpreter::inspect_request_impl(const std::string& code,
@@ -229,7 +221,6 @@ namespace xpyt
                                                int detail_level)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
         nl::json data = nl::json::object();
         bool found = false;
 
@@ -249,17 +240,12 @@ namespace xpyt
             // pass
         }
 
-        kernel_res["data"] = data;
-        kernel_res["metadata"] = nl::json::object();
-        kernel_res["found"] = found;
-        kernel_res["status"] = "ok";
-        return kernel_res;
+        return xeus::create_inspect_reply(found, data, nl::json::object());
     }
 
     nl::json interpreter::is_complete_request_impl(const std::string& code)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
 
         py::object transformer_manager = py::getattr(m_ipython_shell, "input_transformer_manager", py::none());
         if (transformer_manager.is_none())
@@ -268,21 +254,19 @@ namespace xpyt
         }
 
         py::list result = transformer_manager.attr("check_complete")(code);
-        auto status = result[0].cast<std::string>();
+        std::string status = result[0].cast<std::string>();
+        std::string indent;
 
-        kernel_res["status"] = status;
-        if (status.compare("incomplete") == 0)
+        if (status == "incomplete")
         {
-            kernel_res["indent"] = std::string(result[1].cast<std::size_t>(), ' ');
+            indent = std::string(result[1].cast<std::size_t>(), ' ');
         }
-        return kernel_res;
+
+        return xeus::create_is_complete_reply(status, indent);
     }
 
     nl::json interpreter::kernel_info_request_impl()
     {
-        nl::json result;
-        result["implementation"] = "xeus-python";
-        result["implementation_version"] = XPYT_VERSION;
 
         /* The jupyter-console banner for xeus-python is the following:
           __  _____ _   _ ___
@@ -290,7 +274,7 @@ namespace xpyt
            >  <  __/ |_| \__ \
           /_/\_\___|\__,_|___/
 
-          xeus-python: a Jupyter lernel for Python
+          xeus-python: a Jupyter kernel for Python
         */
 
         std::string banner = ""
@@ -309,22 +293,28 @@ namespace xpyt
               "We recommend using a general-purpose package manager instead, such as Conda/Mamba."
               "\n");
 #endif
-        result["banner"] = banner;
-        result["debugger"] = (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13);
 
-        result["language_info"]["name"] = "python";
-        result["language_info"]["version"] = PY_VERSION;
-        result["language_info"]["mimetype"] = "text/x-python";
-        result["language_info"]["file_extension"] = ".py";
-
-        result["help_links"] = nl::json::array();
-        result["help_links"][0] = nl::json::object({
+        nl::json help_links = nl::json::array();
+        help_links.push_back({
             {"text", "Xeus-Python Reference"},
             {"url", "https://xeus-python.readthedocs.io"}
         });
 
-        result["status"] = "ok";
-        return result;
+        return xeus::create_info_reply(
+            "5.3",              // protocol_version
+            "xeus-python",      // implementation
+            XPYT_VERSION,       // implementation_version
+            "python",           // language_name
+            PY_VERSION,         // language_version
+            "text/x-python",    // language_mimetype
+            ".py",              // language_file_extension
+            "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
+            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
+            "python",           // language_nbconvert_exporter
+            banner,             // banner
+            (PY_MAJOR_VERSION != 3) || (PY_MINOR_VERSION != 13), // debugger
+            help_links          // help_links
+        );
     }
 
     void interpreter::shutdown_request_impl()
@@ -335,7 +325,6 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
-        nl::json reply;
 
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
@@ -343,7 +332,7 @@ namespace xpyt
         try
         {
             exec(py::str(code));
-            reply["status"] = "ok";
+            return xeus::create_successful_reply();
         }
         catch (py::error_already_set& e)
         {
@@ -358,13 +347,8 @@ namespace xpyt
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
 
-            reply["status"] = "error";
-            reply["ename"] = error.m_ename;
-            reply["evalue"] = error.m_evalue;
-            reply["traceback"] = error.m_traceback;
+            return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
         }
-
-        return reply;
     }
 
     void interpreter::set_request_context(xeus::xrequest_context context)
