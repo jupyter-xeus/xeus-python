@@ -121,7 +121,6 @@ namespace xpyt
                                            nl::json user_expressions)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
 
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
@@ -131,6 +130,10 @@ namespace xpyt
         auto input_guard = input_redirection(config.allow_stdin);
 
         bool exception_occurred = false;
+        std::string ename;
+        std::string evalue;
+        std::vector<std::string> traceback;
+
         try
         {
             m_ipython_shell.attr("run_cell")(code, "store_history"_a=config.store_history, "silent"_a=config.silent);
@@ -142,8 +145,6 @@ namespace xpyt
             {
                 publish_execution_error("RuntimeError", error_msg, std::vector<std::string>());
             }
-            kernel_res["ename"] = "std::runtime_error";
-            kernel_res["evalue"] = error_msg;
             exception_occurred = true;
         }
         catch (py::error_already_set& e)
@@ -154,10 +155,9 @@ namespace xpyt
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
 
-            kernel_res["status"] = "error";
-            kernel_res["ename"] = error.m_ename;
-            kernel_res["evalue"] = error.m_evalue;
-            kernel_res["traceback"] = error.m_traceback;
+            ename = error.m_ename;
+            evalue = error.m_evalue;
+            traceback = error.m_traceback;
             exception_occurred = true;
         }
         catch(...)
@@ -166,28 +166,25 @@ namespace xpyt
             {
                 publish_execution_error("unknown_error", "", std::vector<std::string>());
             }
-            kernel_res["ename"] = "UnknownError";
-            kernel_res["evalue"] = "";
+            ename = "UnknownError";
+            evalue = "";
             exception_occurred = true;
         }
 
         // Get payload
-        kernel_res["payload"] = m_ipython_shell.attr("payload_manager").attr("read_payload")();
+        nl::json payload = m_ipython_shell.attr("payload_manager").attr("read_payload")();
         m_ipython_shell.attr("payload_manager").attr("clear_payload")();
 
         if(exception_occurred)
         {
-            nl::json tb = kernel_res.value("traceback", nl::json::array());
-            cb(xeus::create_error_reply(kernel_res.value("ename", std::string()),
-                                        kernel_res.value("evalue", std::string()),
-                                        tb));
+            cb(xeus::create_error_reply(ename, evalue, traceback));
             return;
         }
 
         if (m_ipython_shell.attr("last_error").is_none())
         {
             nl::json user_exprs = m_ipython_shell.attr("user_expressions")(user_expressions);
-            cb(xeus::create_successful_reply(kernel_res["payload"], user_exprs));
+            cb(xeus::create_successful_reply(payload, user_exprs));
         }
         else
         {
