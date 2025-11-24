@@ -425,9 +425,6 @@ if (EMSCRIPTEN)
         PUBLIC "SHELL: -s WASM_BIGINT"
         PUBLIC "-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['\$Browser', '\$ERRNO_CODES']\" "
     )
-    target_compile_options(xpython     
-        PUBLIC "-fwasm-exceptions"
-    )
 endif()
 
 # Tests
