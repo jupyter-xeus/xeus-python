@@ -4,8 +4,14 @@ Module.wasmTable = wasmTable;
 // Emscripten has a bug where it accidentally exposes an empty object as Module.ERRNO_CODES
 Module.ERRNO_CODES = ERRNO_CODES;
 
-Module['getCppExceptionTag'] = getCppExceptionTag;
-Module['getExceptionMessage'] = getExceptionMessage;
+// these are only defined for emscripten>=4.0.0
+if (typeof getCppExceptionTag !== 'undefined') {
+    Module['getCppExceptionTag'] = getCppExceptionTag;
+}
+
+if (typeof getExceptionMessage !== 'undefined') {
+    Module['getExceptionMessage'] = getExceptionMessage;
+}
 
 Module['async_init'] = async function(
     kernel_root_url,
