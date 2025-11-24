@@ -417,6 +417,17 @@ if (EMSCRIPTEN)
     include(WasmBuildOptions)
     xeus_wasm_compile_options(xpython)
     xeus_wasm_link_options(xpython "web,worker")
+    target_link_options(xpython
+        PUBLIC "SHELL: -s LZ4=1"
+        PUBLIC "SHELL: --post-js  ${CMAKE_CURRENT_BINARY_DIR}/post.js"
+        PUBLIC "SHELL: --pre-js pre.js"
+        PUBLIC "SHELL: -s MAIN_MODULE=1"
+        PUBLIC "SHELL: -s WASM_BIGINT"
+        PUBLIC "-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['\$Browser', '\$ERRNO_CODES']\" "
+    )
+    target_compile_options(xpython     
+        PUBLIC "-fwasm-exceptions"
+    )
 endif()
 
 # Tests
