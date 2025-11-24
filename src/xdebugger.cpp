@@ -66,6 +66,8 @@ namespace xpyt
         register_request_handler("attach", std::bind(&debugger::attach_request, this, _1), true);
         register_request_handler("configurationDone", std::bind(&debugger::configuration_done_request, this, _1), true);
         register_request_handler("copyToGlobals", std::bind(&debugger::copy_to_globals_request, this, _1), true);
+        register_request_handler("modules", std::bind(&debugger::modules, this, _1), false);
+
     }
 
     debugger::~debugger()
@@ -368,5 +370,45 @@ namespace xpyt
     {
         return std::unique_ptr<xeus::xdebugger>(new debugger(context,
                                                              config, user_name, session_id, debugger_config));
+    }
+
+    nl::json debugger::modules(const nl::json& message)
+    {
+        py::gil_scoped_acquire acquire;
+        py::module sys = py::module::import("sys");
+        py::list modules = sys.attr("modules").attr("values")();
+
+        int start_module = message.value("startModule", 0);
+        int module_count = message.value("moduleCount", static_cast<int>(py::len(modules)));
+
+        nl::json mods = nl::json::array();
+        for (int i = start_module; i < module_count && i < static_cast<int>(py::len(modules)); ++i)
+        {
+            py::object module = modules[i];
+            py::object spec = getattr(module, "__spec__", py::none());
+            py::object origin = py::none();
+            if (!spec.is_none())
+                origin = getattr(spec, "origin", py::none());
+
+            if (!origin.is_none())
+            {
+                std::string filename = py::str(origin);
+                if (filename.size() > 3 && filename.substr(filename.size() - 3) == ".py")
+                {
+                    mods.push_back({
+                        {"id", i},
+                        {"name", py::str(module.attr("__name__"))},
+                        {"path", filename}
+                    });
+                }
+            }
+        }
+
+        return {
+            {"body", {
+                {"modules", mods},
+                {"totalModules", py::len(modules)}
+            }}
+        };
     }
 }
