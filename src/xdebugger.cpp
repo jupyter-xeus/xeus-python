@@ -60,6 +60,7 @@ namespace xpyt
         , m_debugpy_port("")
         , m_debugger_config(debugger_config)
     {
+        std::cout << "Debugger Config: " << m_debugger_config << std::endl;
         m_debugpy_port = xeus::find_free_port(100, 5678, 5900);
         register_request_handler("inspectVariables", std::bind(&debugger::inspect_variables_request, this, _1), false);
         register_request_handler("richInspectVariables", std::bind(&debugger::rich_inspect_variables_request, this, _1), false);
@@ -68,6 +69,25 @@ namespace xpyt
         register_request_handler("copyToGlobals", std::bind(&debugger::copy_to_globals_request, this, _1), true);
         register_request_handler("modules", std::bind(&debugger::modules, this, _1), false);
 
+        // Load internal module paths from debugger_config
+        if (m_debugger_config.contains("internalModulePaths"))
+        {
+            for (const auto& p : m_debugger_config["internalModulePaths"])
+            {
+                m_internal_modules.push_back(p.get<std::string>());
+            }
+        }
+
+        // Load options
+        if (m_debugger_config.contains("justMyCode"))
+        {
+            m_just_my_code = m_debugger_config["justMyCode"].get<bool>();
+        }
+
+        if (m_debugger_config.contains("filterInternalFrames"))
+        {
+            m_filter_internal_frames = m_debugger_config["filterInternalFrames"].get<bool>();
+        }
     }
 
     debugger::~debugger()
@@ -176,6 +196,24 @@ namespace xpyt
             {"port", std::stoi(m_debugpy_port)}
         };
         new_message["arguments"]["logToFile"] = true;
+
+        // Add DebugStdLib when not just-my-code
+        if (!m_just_my_code)
+        {
+            new_message["arguments"]["debugOptions"] = {"DebugStdLib"};
+        }
+
+        // Dynamic skip rules
+        if (m_filter_internal_frames)
+        {
+            nl::json rules = nl::json::array();
+            for (const auto& path : m_internal_modules)
+            {
+                rules.push_back({{"path", path}, {"include", false}});
+            }
+            new_message["arguments"]["rules"] = rules;
+        }
+
         return forward_message(new_message);
     }
 
