@@ -40,7 +40,10 @@ jobs:
       - name: Build xeus-python
         shell: bash -l {0}
         run: |
-          micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
+          micromamba create \
+            -f environment-wasm-host.yml --platform=emscripten-wasm32 \
+            -c https://prefix.dev/emscripten-forge-dev \
+            -c https://prefix.dev/conda-forge
 
           set -eux
 
