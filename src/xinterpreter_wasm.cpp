@@ -39,4 +39,8 @@ namespace xpyt
         py::module::import("pyjs");
     }
 
+    bool wasm_interpreter::use_jedi_for_completion() const
+    {
+        return false;
+    }
 }

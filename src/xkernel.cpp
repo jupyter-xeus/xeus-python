@@ -265,6 +265,34 @@ namespace xpyt
 
         return kernel_module;
     }
+
+    py::module make_request_context_module()
+    {
+        py::module context_module = create_module("request_context_module");
+
+        py::class_<xeus::xrequest_context>(context_module, "RequestContext")
+            .def(py::init<>())
+            .def_property_readonly("header", &xeus::xrequest_context::header);
+
+        exec(py::str(R"(
+import contextvars as cv
+request_context = cv.ContextVar('request_context')
+
+def set_request_context(ctx):
+    request_context.set(ctx)
+
+def get_request_context():
+    return request_context.get()
+        )"), context_module.attr("__dict__"));
+
+        return context_module;
+    }
+
+    py::module get_request_context_module()
+    {
+        static py::module rc_module = make_request_context_module();
+        return rc_module;
+    }
 }
 
 #ifdef __GNUC__

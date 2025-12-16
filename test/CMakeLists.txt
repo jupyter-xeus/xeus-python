@@ -11,7 +11,7 @@
 # Unit tests
 # ==========
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.20)
 
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     project(xeus-python-test)
@@ -56,6 +56,8 @@ set(XEUS_PYTHON_TESTS
 )
 
 add_executable(test_xeus_python ${XEUS_PYTHON_TESTS})
+
+target_compile_features(test_xeus_python PRIVATE cxx_std_17)
 
 if (APPLE)
     set_target_properties(test_xeus_python PROPERTIES

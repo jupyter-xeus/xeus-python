@@ -51,12 +51,11 @@ namespace xpyt
 
         void configure_impl() override;
 
-        nl::json execute_request_impl(int execution_counter,
-                                      const std::string& code,
-                                      bool silent,
-                                      bool store_history,
-                                      nl::json user_expressions,
-                                      bool allow_stdin) override;
+        void execute_request_impl(send_reply_callback cb,
+                                  int execution_counter,
+                                  const std::string& code,
+                                  xeus::execute_request_config config,
+                                  nl::json user_expressions) override;
 
         nl::json complete_request_impl(const std::string& code, int cursor_pos) override;
 
@@ -71,6 +70,9 @@ namespace xpyt
         void shutdown_request_impl() override;
 
         nl::json internal_request_impl(const nl::json& content) override;
+
+        void set_request_context(xeus::xrequest_context context) override;
+        const xeus::xrequest_context& get_request_context() const noexcept override;
 
         void redirect_output();
 
@@ -100,6 +102,7 @@ namespace xpyt
     private:
 
         virtual void instanciate_ipython_shell();
+        virtual bool use_jedi_for_completion() const;
     };
 }
 

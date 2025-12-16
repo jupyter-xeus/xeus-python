@@ -1,0 +1,13 @@
+{
+  "display_name": "Python @PYTHON_VERSION_MAJOR@.@PYTHON_VERSION_MINOR@ (XPython)",
+  "argv": [
+      "@XPYTHON_KERNELSPEC_PATH@xpython"
+  ],
+  "language": "python",
+  "metadata": {
+    "debugger": false,
+    "shared": {
+      "libxeus.so": "lib/libxeus.so"
+    }
+  }
+}

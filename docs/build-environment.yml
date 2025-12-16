@@ -4,6 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
+  - micromamba=2.0.5
   - python=3.10
   - pip
   - nodejs=20
@@ -13,6 +14,6 @@ dependencies:
   - myst-parser
   - pydata-sphinx-theme
   - jupyterlab >=4.0.5,<5
-  - jupyterlite-core >=0.2,<0.3.0
-  - jupyterlite-sphinx >=0.10
-  - jupyterlite-xeus >=0.1.8,<0.2.0
+  - jupyterlite-core
+  - jupyterlite-sphinx
+  - jupyterlite-xeus

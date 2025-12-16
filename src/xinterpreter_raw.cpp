@@ -19,6 +19,7 @@
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xsystem.hpp"
+#include "xeus/xhelper.hpp"
 
 #include "pybind11/functional.h"
 
@@ -44,7 +45,8 @@ using namespace pybind11::literals;
 namespace xpyt
 {
 
-    raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/) :m_redirect_display_enabled{ redirect_display_enabled }
+    raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
+        :m_redirect_display_enabled{ redirect_display_enabled }
     {
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
@@ -102,22 +104,53 @@ namespace xpyt
         py::globals()["_i"] = "";
         py::globals()["_ii"] = "";
         py::globals()["_iii"] = "";
+
+        py::module context_module = get_request_context_module();
     }
 
-    nl::json raw_interpreter::execute_request_impl(
+    namespace
+    {
+        class splinter_cell
+        {
+        public:
+
+            splinter_cell()
+            {
+                auto null_out = py::cpp_function([](const std::string&) {});
+
+                py::module sys = py::module::import("sys");
+                m_stdout_func = sys.attr("stdout").attr("write");
+                m_stderr_func = sys.attr("stderr").attr("write");
+                sys.attr("stdout").attr("write") = null_out;
+                sys.attr("stderr").attr("write") = null_out;
+            }
+
+            ~splinter_cell()
+            {
+                py::module sys = py::module::import("sys");
+                sys.attr("stdout").attr("write") = m_stdout_func;
+                sys.attr("stderr").attr("write") = m_stderr_func;
+            }
+
+        private:
+
+            py::object m_stdout_func;
+            py::object m_stderr_func;
+        };
+    }
+
+    void raw_interpreter::execute_request_impl(
+        send_reply_callback cb,
         int execution_count,
         const std::string& code,
-        bool silent,
-        bool /*store_history*/,
-        nl::json /*user_expressions*/,
-        bool allow_stdin)
+        xeus::execute_request_config config,
+        nl::json /*user_expressions*/)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
         py::str code_copy;
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
-        auto input_guard = input_redirection(allow_stdin);
+        auto input_guard = input_redirection(config.allow_stdin);
         code_copy = code;
         try
         {
@@ -136,7 +169,7 @@ namespace xpyt
             // If the last statement is an expression, we compile it separately
             // in an interactive mode (This will trigger the display hook)
             py::object last_stmt = expressions[py::len(expressions) - 1];
-            if (py::isinstance(last_stmt, ast.attr("Expr")))
+            if (py::isinstance(last_stmt, ast.attr("Expr")) && !config.silent)
             {
                 code_ast.attr("body").attr("pop")();
 
@@ -159,13 +192,10 @@ namespace xpyt
             }
             else
             {
+                splinter_cell guard;
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
                 exec(compiled_code);
             }
-
-            kernel_res["status"] = "ok";
-            kernel_res["user_expressions"] = nl::json::object();
-            kernel_res["payload"] = nl::json::array();
 
         }
         catch (py::error_already_set& e)
@@ -180,15 +210,13 @@ namespace xpyt
                 }
             }
 
-            if (!silent)
+            if (!config.silent)
             {
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
 
-            kernel_res["status"] = "error";
-            kernel_res["ename"] = error.m_ename;
-            kernel_res["evalue"] = error.m_evalue;
-            kernel_res["traceback"] = error.m_traceback;
+            cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
+            return;
         }
 
         // Cache inputs
@@ -196,7 +224,7 @@ namespace xpyt
         py::globals()["_ii"] = py::globals()["_i"];
         py::globals()["_i"] = code;
 
-        return kernel_res;
+        cb(xeus::create_successful_reply(nl::json::array(), nl::json::object()));
     }
 
     nl::json raw_interpreter::complete_request_impl(
@@ -204,7 +232,6 @@ namespace xpyt
         int cursor_pos)
     {
         py::gil_scoped_acquire acquire;
-        nl::json kernel_res;
         std::vector<std::string> matches;
         int cursor_start = cursor_pos;
 
@@ -219,12 +246,7 @@ namespace xpyt
             }
         }
 
-        kernel_res["cursor_start"] = cursor_start;
-        kernel_res["cursor_end"] = cursor_pos;
-        kernel_res["matches"] = matches;
-        kernel_res["metadata"] = nl::json::object();
-        kernel_res["status"] = "ok";
-        return kernel_res;
+        return xeus::create_complete_reply(matches, cursor_start, cursor_pos, nl::json::object());
     }
 
     nl::json raw_interpreter::inspect_request_impl(const std::string& code,
@@ -245,25 +267,16 @@ namespace xpyt
             pub_data["text/plain"] = docstring;
         }
 
-        kernel_res["data"] = pub_data;
-        kernel_res["metadata"] = nl::json::object();
-        kernel_res["found"] = found;
-        kernel_res["status"] = "ok";
-        return kernel_res;
+        return xeus::create_inspect_reply(found, pub_data, nl::json::object());
     }
 
     nl::json raw_interpreter::is_complete_request_impl(const std::string&)
     {
-        nl::json result;
-        result["status"] = "complete";
-        return result;
+        return xeus::create_is_complete_reply("complete", "");
     }
 
     nl::json raw_interpreter::kernel_info_request_impl()
     {
-        nl::json result;
-        result["implementation"] = "xeus-python";
-        result["implementation_version"] = XPYT_VERSION;
 
         /* The jupyter-console banner for xeus-python is the following:
           __  _____ _   _ ___
@@ -271,7 +284,7 @@ namespace xpyt
            >  <  __/ |_| \__ \
           /_/\_\___|\__,_|___/
 
-          xeus-python: a Jupyter lernel for Python
+          xeus-python: a Jupyter kernel for Python
         */
 
         std::string banner = ""
@@ -290,30 +303,48 @@ namespace xpyt
             "We recommend using a general-purpose package manager instead, such as Conda/Mamba."
             "\n");
 #endif
-        result["banner"] = banner;
-        result["debugger"] = false;
 
-        result["language_info"]["name"] = "python";
-        result["language_info"]["version"] = PY_VERSION;
-        result["language_info"]["mimetype"] = "text/x-python";
-        result["language_info"]["file_extension"] = ".py";
+        nl::json help_links = nl::json::array();
+        help_links.push_back({
+            {"text", "Xeus-Python Reference"},
+            {"url", "https://xeus-python.readthedocs.io"}
+        });
 
-        result["help_links"] = nl::json::array();
-        result["help_links"][0] = nl::json::object(
-            {
-                {"text", "Xeus-Python Reference"},
-                {"url", "https://xeus-python.readthedocs.io"}
-            }
+        return xeus::create_info_reply(
+            "5.3",                 // protocol_version
+            "xeus-python",      // implementation
+            XPYT_VERSION,       // implementation_version
+            "python",           // language_name
+            PY_VERSION,         // language_version
+            "text/x-python",    // language_mimetype
+            ".py",              // language_file_extension
+            "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
+            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
+            "python",           // language_nbconvert_exporter
+            banner,             // banner
+            false,              // debugger
+            help_links          // help_links
         );
-
-        result["status"] = "ok";
-        return result;
     }
 
     void raw_interpreter::shutdown_request_impl()
     {
     }
 
+    void raw_interpreter::set_request_context(xeus::xrequest_context context)
+    {
+        py::gil_scoped_acquire acquire;
+        py::module context_module = get_request_context_module();
+        context_module.attr("set_request_context")(context);
+    }
+
+    const xeus::xrequest_context& raw_interpreter::get_request_context() const noexcept
+    {
+        py::gil_scoped_acquire acquire;
+        py::module context_module = get_request_context_module();
+        py::object res = context_module.attr("get_request_context")();
+        return *(res.cast<xeus::xrequest_context*>());
+    }
 
     void raw_interpreter::redirect_output()
     {

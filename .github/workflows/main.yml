@@ -22,17 +22,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-22.04, ubuntu-24.04, macos-13, macos-14]
         build_type: [static_build, shared_build]
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v2
+      - uses: actions/checkout@v5
 
       - name: Install micromamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
 
@@ -65,16 +62,16 @@ jobs:
         working-directory: build
 
       - name: Install
-        run: make -j ${{ steps.cpu-cores.outputs.count }} install
+        run: make -j ${{ runner.os == 'macOS' && 3 || 4 }} install
         working-directory: build
 
       - name: Print version
         run: xpython --version
 
-      # - name: Test xeus-python C++
-      #   run: ./test_xeus_python
-      #   timeout-minutes: 4
-      #   working-directory: build/test
+      - name: Test xeus-python C++
+        run: ./test_xeus_python
+        timeout-minutes: 4
+        working-directory: build/test
 
       - name: Test xeus-python Python
         run: pytest . -vvv
@@ -86,14 +83,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2022, windows-2025]
         build_type: [static_build, shared_build]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install micromamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           init-shell: cmd.exe
           environment-file: environment-dev.yml
@@ -147,56 +144,3 @@ jobs:
         timeout-minutes: 4
         working-directory: build\test
 
-  test-wasm:
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        emsdk_ver: ["3.1.45"]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v2
-
-      - name: Install micromamba
-        uses: mamba-org/setup-micromamba@v1
-        with:
-          environment-file: environment-wasm-build.yml
-
-      - name: Setup emsdk
-        shell: bash -l {0}
-        run: |
-          cd $HOME
-          git clone https://github.com/emscripten-core/emsdk.git
-          cd emsdk
-          ./emsdk install  ${{ matrix.emsdk_ver }}
-          ./emsdk activate  ${{ matrix.emsdk_ver }}
-
-      - name: Build and pack xeus-python
-        run: |
-          $HOME/emsdk/emsdk activate ${{matrix.emsdk_ver}}
-          source $HOME/emsdk/emsdk_env.sh
-
-          micromamba create -f environment-wasm-host.yml --platform=emscripten-wasm32
-
-          mkdir build
-          pushd build
-
-          export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
-          export CMAKE_PREFIX_PATH=$PREFIX
-          export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
-
-          # remove all the fake pythons binaries
-          rm -f $PREFIX/bin/python*
-
-          emcmake cmake \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
-            -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
-            ..
-
-          make -j5

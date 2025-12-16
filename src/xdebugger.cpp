@@ -67,12 +67,12 @@ namespace xpyt
         register_request_handler("attach", std::bind(&debugger::attach_request, this, _1), true);
         register_request_handler("configurationDone", std::bind(&debugger::configuration_done_request, this, _1), true);
         register_request_handler("copyToGlobals", std::bind(&debugger::copy_to_globals_request, this, _1), true);
+        register_request_handler("modules", std::bind(&debugger::modules, this, _1), false);
+
     }
 
     debugger::~debugger()
     {
-        delete p_debugpy_client;
-        p_debugpy_client = nullptr;
     }
 
     nl::json debugger::inspect_variables_request(const nl::json& message)
@@ -306,7 +306,7 @@ namespace xpyt
         return status == "ok";
     }
 
-    bool debugger::start(zmq::socket_t& header_socket, zmq::socket_t& request_socket)
+    bool debugger::start()
     {
         std::string temp_dir = xeus::get_temp_directory_path();
         std::string log_dir = temp_dir + "/" + "xpython_debug_logs_" + std::to_string(xeus::get_current_pid());
@@ -323,34 +323,29 @@ namespace xpyt
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
         std::string publisher_end_point = xeus::get_publisher_end_point();
 
-        request_socket.bind(controller_end_point);
-        header_socket.bind(controller_header_end_point);
+        bind_sockets(controller_header_end_point, controller_end_point);
 
         std::string debugpy_end_point = "tcp://" + m_debugpy_host + ':' + m_debugpy_port;
-        std::thread client(&xdap_tcp_client::start_debugger,
-                           p_debugpy_client,
+        m_client_runner = xeus::xthread(&xdap_tcp_client::start_debugger,
+                           p_debugpy_client.get(),
                            debugpy_end_point,
                            publisher_end_point,
                            controller_end_point,
                            controller_header_end_point);
-        client.detach();
 
-        request_socket.send(zmq::message_t("REQ", 3), zmq::send_flags::none);
-        zmq::message_t ack;
-        (void)request_socket.recv(ack);
+        send_recv_request("REQ");
 
-        std::string tmp_folder =  get_tmp_prefix();
+        std::string tmp_folder = get_tmp_prefix();
         xeus::create_directory(tmp_folder);
 
         return true;
     }
 
-    void debugger::stop(zmq::socket_t& header_socket, zmq::socket_t& request_socket)
+    void debugger::stop()
     {
         std::string controller_end_point = xeus::get_controller_end_point("debugger");
         std::string controller_header_end_point = xeus::get_controller_end_point("debugger_header");
-        request_socket.unbind(controller_end_point);
-        header_socket.unbind(controller_header_end_point);
+        unbind_sockets(controller_header_end_point, controller_end_point);
     }
 
     xeus::xdebugger_info debugger::get_debugger_info() const
@@ -374,7 +369,47 @@ namespace xpyt
                                                           const std::string& session_id,
                                                           const nl::json& debugger_config)
     {
-        return std::unique_ptr<xeus::xdebugger>(new debugger(context.get_wrapped_context<xeus::xcontext>(),
+        return std::unique_ptr<xeus::xdebugger>(new debugger(context,
                                                              config, user_name, session_id, debugger_config));
+    }
+
+    nl::json debugger::modules(const nl::json& message)
+    {
+        py::gil_scoped_acquire acquire;
+        py::module sys = py::module::import("sys");
+        py::list modules = sys.attr("modules").attr("values")();
+
+        int start_module = message.value("startModule", 0);
+        int module_count = message.value("moduleCount", static_cast<int>(py::len(modules)));
+
+        nl::json mods = nl::json::array();
+        for (int i = start_module; i < module_count && i < static_cast<int>(py::len(modules)); ++i)
+        {
+            py::object module = modules[i];
+            py::object spec = getattr(module, "__spec__", py::none());
+            py::object origin = py::none();
+            if (!spec.is_none())
+                origin = getattr(spec, "origin", py::none());
+
+            if (!origin.is_none())
+            {
+                std::string filename = py::str(origin);
+                if (filename.size() > 3 && filename.substr(filename.size() - 3) == ".py")
+                {
+                    mods.push_back({
+                        {"id", i},
+                        {"name", py::str(module.attr("__name__"))},
+                        {"path", filename}
+                    });
+                }
+            }
+        }
+
+        return {
+            {"body", {
+                {"modules", mods},
+                {"totalModules", py::len(modules)}
+            }}
+        };
     }
 }

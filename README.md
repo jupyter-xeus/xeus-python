@@ -3,7 +3,8 @@
 [![GitHub Action CI](https://github.com/jupyter-xeus/xeus-python/actions/workflows/main.yml/badge.svg)](https://github.com/jupyter-xeus/xeus-python/actions/workflows/main.yml)
 [![Documentation Status](http://readthedocs.org/projects/xeus-python/badge/?version=latest)](https://xeus-python.readthedocs.io/en/latest/?badge=latest)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyter-xeus/xeus-python/stable?urlpath=/lab/tree/notebooks/xeus-python.ipynb)
-[![Join the Gitter Chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/QuantStack/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![lite-badge](https://jupyterlite.rtfd.io/en/latest/_static/badge.svg)](https://jupyter-xeus.github.io/xeus-python/)
+[![Zulip](https://img.shields.io/badge/social_chat-zulip-blue.svg)](https://jupyter.zulipchat.com/#narrow/channel/539737-Jupyter-Kernels)
 
 `xeus-python` is a Jupyter kernel for Python based on the native implementation of the Jupyter protocol [xeus](https://github.com/jupyter-xeus/xeus).
 
@@ -59,7 +60,7 @@ The ongoing effort to package xeus-python for pip takes place in the [xeus-pytho
 Or you can install it from the sources, you will first need to install dependencies
 
 ```bash
-mamba install cmake xeus xeus-zmq nlohmann_json cppzmq xtl pybind11 pybind11_json xeus-python-shell jupyterlab -c conda-forge
+mamba install cmake xeus xeus-zmq nlohmann_json pybind11 pybind11_json xeus-python-shell jupyterlab -c conda-forge
 ```
 
 Then you can compile the sources (replace `$CONDA_PREFIX` with a custom installation prefix if need be)
@@ -146,7 +147,7 @@ Check-out this blog post for the answer: https://blog.jupyter.org/a-new-python-k
 Long story short:
 
 - xeus-python is a lot lighter than ipykernel, which makes it a lot easier to implement new features on top of it.
-- xeus-python already works with the **Jupyter Lab debugger**: https://github.com/jupyterlab/debugger
+- xeus-python already works with the **Jupyter Lab debugger**: https://github.com/jupyterlab/jupyterlab/tree/main/packages/debugger
 - xeus-based kernels are more versatile in that one can overload e.g. the concurrency model. This is something that Kitware’s SlicerJupyter project takes advantage of to integrate with the Qt event loop of their Qt-based desktop application.
 
 ## Dependencies
@@ -154,15 +155,21 @@ Long story short:
 ``xeus-python`` depends on
 
  - [xeus-zmq](https://github.com/jupyter-xeus/xeus-zmq)
- - [xtl](https://github.com/xtensor-stack/xtl)
  - [pybind11](https://github.com/pybind/pybind11)
  - [pybind11_json](https://github.com/pybind/pybind11_json)
  - [nlohmann_json](https://github.com/nlohmann/json)
  - [xeus-python-shell](https://github.com/jupyter-xeus/xeus-python-shell)
 
+| `xeus-python`|   `xeus-zmq`     |`nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` |`xeus-python-shell` |
+|--------------|------------------|----------------|----------------|-------------------|-------------------|-----------|--------------------|
+|  main        |  >=3.1,<4.0      |>=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0   |
+|  0.17.1      |  >=3.1,<4.0      |>=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0   |
+|  0.17.0      |  >=3.0,<4.0      |>=3.11.3        | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.6.3.0,<0.7.0   |
+
+Prior vo version 0.17, ``xeus-python`` was also depending on [xtl](https://github.com/xtensor-stack/xtl) & [cppzmq](https://github.com/zeromq/cppzmq):
+
 | `xeus-python`|   `xeus-zmq`     |      `xtl`      | `cppzmq` | `nlohmann_json` | `pybind11`     | `pybind11_json`   | `pygments`        | `debugpy` |`xeus-python-shell` |
 |--------------|------------------|-----------------|----------|-----------------|----------------|-------------------|-------------------|-----------|---------------------|
-|  main        |  >=1.0.0,<2.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.5.0,<0.7.0      |
 |  0.16.x      |  >=1.0.0,<2.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.5.0,<0.7.0      |
 |  0.15.x      |  >=1.0.0,<2.0    |  >=0.7.0,<0.8   | ~4.4.1   | >=3.6.1,<3.10   | >=2.6.1,<3.0   | >=0.2.8,<0.3      | >=2.3.1,<3.0.0    | >=1.1.0   | >=0.5.0,<0.7.0      |
 

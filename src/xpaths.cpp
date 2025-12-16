@@ -14,7 +14,7 @@
 
 #include "pybind11/pybind11.h"
 
-#include "xtl/xsystem.hpp"
+#include "xeus/xsystem.hpp"
 
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-python/xpaths.hpp"
@@ -40,11 +40,11 @@ namespace xpyt
             // The XEUS_PYTHONHOME_RELPATH compile-time definition can be used.
             // to specify the PYTHONHOME location as a relative path to the PREFIX.
 #if defined(XEUS_PYTHONHOME_RELPATH)
-            static const std::string pythonhome = xtl::prefix_path() + XPYT_STRINGIFY(XEUS_PYTHONHOME_RELPATH);
+            static const std::string pythonhome = xeus::prefix_path() + XPYT_STRINGIFY(XEUS_PYTHONHOME_RELPATH);
 #elif defined(XEUS_PYTHONHOME_ABSPATH)
             static const std::string pythonhome = XPYT_STRINGIFY(XEUS_PYTHONHOME_ABSPATH);
 #else
-            static const std::string pythonhome = xtl::prefix_path();
+            static const std::string pythonhome = xeus::prefix_path();
 #endif
             return pythonhome;
         }
@@ -68,10 +68,12 @@ namespace xpyt
 #endif
     }
 
+    [[deprecated]]
     void set_pythonhome()
     {
-        static const std::string pythonhome = get_python_prefix();
-        static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
-        Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
+        // static const std::string pythonhome = get_python_prefix();
+        // static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
+        // Py_SetPythonHome(const_cast<wchar_t*>(wstr.c_str()));
     }
+
 }

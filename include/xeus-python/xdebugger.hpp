@@ -17,14 +17,14 @@
 #endif
 
 #include <map>
+#include <memory>
 #include <mutex>
 #include <set>
 
-#include "zmq.hpp"
 #include "nlohmann/json.hpp"
-#include "xeus/xeus_context.hpp"
 #include "pybind11/pybind11.h"
 #include "xeus-zmq/xdebugger_base.hpp"
+#include "xeus-zmq/xthread.hpp"
 #include "xeus_python_config.hpp"
 
 namespace py = pybind11;
@@ -55,22 +55,22 @@ namespace xpyt
         nl::json attach_request(const nl::json& message);
         nl::json configuration_done_request(const nl::json& message);
         nl::json copy_to_globals_request(const nl::json& message);
+        nl::json modules(const nl::json& message);
 
         nl::json variables_request_impl(const nl::json& message) override;
 
         bool start_debugpy();
-        bool start(zmq::socket_t& header_socket,
-                   zmq::socket_t& request_socket) override;
-        void stop(zmq::socket_t& header_socket,
-                  zmq::socket_t& request_socket) override;
+        bool start() override;
+        void stop() override;
         xeus::xdebugger_info get_debugger_info() const override;
         std::string get_cell_temporary_file(const std::string& code) const override;
 
-        xdebugpy_client* p_debugpy_client;
+        std::unique_ptr<xdebugpy_client> p_debugpy_client;
         std::string m_debugpy_host;
         std::string m_debugpy_port;
         nl::json m_debugger_config;
         py::object m_pydebugger;
+        xeus::xthread m_client_runner;
         bool m_copy_to_globals_available;
     };
 

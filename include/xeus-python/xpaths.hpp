@@ -23,6 +23,8 @@ namespace xpyt
 
     XEUS_PYTHON_API std::string get_python_prefix();
     XEUS_PYTHON_API std::string get_python_path();
+
+    [[deprecated("Use PyConfig.home instead")]]
     XEUS_PYTHON_API void set_pythonhome();
 }
 

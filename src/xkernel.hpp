@@ -18,6 +18,8 @@ namespace py = pybind11;
 namespace xpyt
 {
     py::module get_kernel_module(bool raw_mode = false);
+
+    py::module get_request_context_module();
 }
 
 #endif

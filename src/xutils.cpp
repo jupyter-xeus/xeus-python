@@ -39,10 +39,7 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/eval.h"
 
-#include "xtl/xhash.hpp"
-
 #include "xeus-python/xutils.hpp"
-
 
 namespace py = pybind11;
 namespace nl = nlohmann;
@@ -67,25 +64,6 @@ namespace xpyt
     py::object eval(const py::object& code, const py::object& scope)
     {
         return py::eval(code, scope);
-    }
-
-    std::string extract_parameter(std::string param, int argc, char* argv[])
-    {
-        std::string res = "";
-        for (int i = 0; i < argc; ++i)
-        {
-            if ((std::string(argv[i]) == param) && (i + 1 < argc))
-            {
-                res = argv[i + 1];
-                for (int j = i; j < argc - 2; ++j)
-                {
-                    argv[j] = argv[j + 2];
-                }
-                argc -= 2;
-                break;
-            }
-        }
-        return res;
     }
 
     bool extract_option(std::string short_opt, std::string long_opt, int argc, char* argv[])
@@ -127,27 +105,24 @@ namespace xpyt
         exit(0);
     }
 
-    bool should_print_version(int argc, char* argv[])
-    {
-        for (int i = 0; i < argc; ++i)
-        {
-            if (std::string(argv[i]) == "--version")
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     void print_pythonhome()
     {
         std::setlocale(LC_ALL, "en_US.utf8");
-        wchar_t* ph = Py_GetPythonHome();
+        // Py_GetPythonHome will return NULL if called before Py_Initialize()
+        PyConfig config;
+        PyConfig_InitPythonConfig(&config);
+        wchar_t* ph = config.home;
 
-        char mbstr[1024];
-        std::wcstombs(mbstr, ph, 1024);
-
-        std::clog << "PYTHONHOME set to " << mbstr << std::endl;
+        if (ph)
+        {
+            char mbstr[1024];
+            std::wcstombs(mbstr, ph, 1024);
+            std::clog << "PYTHONHOME set to " << mbstr << std::endl;
+        }
+        else
+        {
+            std::clog << "PYTHONHOME not set or not initialized." << std::endl;
+        }
     }
 
     // Compares 2 versions and return true if version1 < version2.

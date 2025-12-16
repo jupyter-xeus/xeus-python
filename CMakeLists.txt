@@ -8,13 +8,13 @@
 # The full license is in the file LICENSE, distributed with this software. #
 ############################################################################
 
-cmake_minimum_required(VERSION 3.4.3)
+cmake_minimum_required(VERSION 3.20)
 project(xeus-python)
 
 set(XEUS_PYTHON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Versionning
-# ===========
+# Versioning
+# ==========
 
 file(STRINGS "${XEUS_PYTHON_INCLUDE_DIR}/xeus-python/xeus_python_config.hpp" xpyt_version_defines
      REGEX "#define XPYT_VERSION_(MAJOR|MINOR|PATCH)")
@@ -27,58 +27,25 @@ set(${PROJECT_NAME}_VERSION
     ${XPYT_VERSION_MAJOR}.${XPYT_VERSION_MINOR}.${XPYT_VERSION_PATCH})
 message(STATUS "Building xeus-python v${${PROJECT_NAME}_VERSION}")
 
-# Configuration
-# =============
-
-include(GNUInstallDirs)
-
-if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
-    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_FULL_BINDIR}/")
-endif ()
-
-# Running find_package(PythonInterp) to retrieve the Python version
-# which is not exported by Pybind11's cmake.
-# Cf. https://github.com/pybind/pybind11/issues/2268
-find_package(PythonInterp ${PythonLibsNew_FIND_VERSION} REQUIRED)
-
-if(EMSCRIPTEN)
-    # the variables PYTHON_VERSION_MAJOR and PYTHON_VERSION_MINOR
-    # might be wrong for the EMSCRIPTEN case since it may contains
-    # the versions of build-python and not the one of the host.
-    FILE(GLOB WASM_PYTHON_LIBRARY  $ENV{PREFIX}/lib/libpython*.a)
-    STRING(REGEX MATCH "python[0-9]+[.][0-9]+" PYTHON_VERSION_STRING ${WASM_PYTHON_LIBRARY})
-    STRING(REGEX MATCH "[0-9]+" PYTHON_VERSION_MAJOR ${PYTHON_VERSION_STRING})
-    STRING(REGEX MATCH "[0-9]+$" PYTHON_VERSION_MINOR ${PYTHON_VERSION_STRING})
-endif()
-
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
-)
-configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json"
-)
-
 # Build options
 # =============
 
 # Compilation options
 
-OPTION(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
+option(XPYT_ENABLE_PYPI_WARNING "Enable warning on PyPI wheels" OFF)
 
 option(XPYT_BUILD_STATIC "Build xeus-python static library" ON)
-OPTION(XPYT_BUILD_SHARED "Split xpython build into executable and library" ON)
-OPTION(XPYT_BUILD_XPYTHON_EXECUTABLE "Build the xpython executable" ON)
-OPTION(XPYT_BUILD_XPYTHON_EXTENSION "Build the xpython extension module" OFF)
+option(XPYT_BUILD_SHARED "Split xpython build into executable and library" ON)
+option(XPYT_BUILD_XPYTHON_EXECUTABLE "Build the xpython executable" ON)
+option(XPYT_BUILD_XPYTHON_EXTENSION "Build the xpython extension module" OFF)
 
-OPTION(XPYT_USE_SHARED_XEUS "Link xpython or xpython_extension with the xeus shared library (instead of the static library)" ON)
-OPTION(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the xeus-python shared library (instead of the static library)" ON)
+option(XPYT_USE_SHARED_XEUS "Link xpython or xpython_extension with the xeus shared library (instead of the static library)" ON)
+option(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the xeus-python shared library (instead of the static library)" ON)
 
-OPTION(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
+option(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 
 # Test options
-OPTION(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
+option(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 
 function(cat IN_FILE OUT_FILE)
   file(READ ${IN_FILE} CONTENTS)
@@ -93,12 +60,12 @@ if(EMSCRIPTEN)
     cat(wasm_patches/post.js  post.js.in)
 
     add_compile_definitions(XPYT_EMSCRIPTEN_WASM_BUILD)
+    set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
 
     set(XPYT_BUILD_STATIC OFF)
     set(XPYT_BUILD_SHARED OFF)
     set(XPYT_BUILD_XPYTHON_EXECUTABLE OFF)
     set(XPYT_BUILD_XPYTHON_EXTENSION OFF)
-    set(XPYT_USE_SHARED_XEUS OFF)
     set(XPYT_USE_SHARED_XEUS_PYTHON OFF)
     set(XPYT_BUILD_TESTS OFF)
 endif()
@@ -106,17 +73,18 @@ endif()
 # Dependencies
 # ============
 
-set(xtl_REQUIRED_VERSION 0.7.0)
-set(xeus-zmq_REQUIRED_VERSION 1.2.0)
+set(xeus_zmq_REQUIRED_VERSION 3.0.0)
 set(xeus-lite_REQUIRED_VERSION 1.0.1)
 set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
 set(pyjs_REQUIRED_VERSION 2.0.0)
 
-if (NOT TARGET xtl)
-    find_package(xtl ${xtl_REQUIRED_VERSION} REQUIRED)
-endif ()
+find_package(Python COMPONENTS Interpreter REQUIRED)
+
 if (NOT TARGET pybind11::headers)
+    # Defaults to ON for cmake >= 3.18
+    # https://github.com/pybind/pybind11/blob/35ff42b56e9d34d9a944266eb25f2c899dbdfed7/CMakeLists.txt#L96
+    set(PYBIND11_FINDPYTHON OFF)
     find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
 endif ()
 if (NOT TARGET pybind11_json)
@@ -141,6 +109,51 @@ endif()
 
 find_library(UVW_LIBRARY uvw)
 find_path(UVW_INCLUDE_DIR uvw.hpp)
+
+# Configuration
+# =============
+
+include(GNUInstallDirs)
+
+if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
+    set(XPYTHON_KERNELSPEC_PATH "${CMAKE_INSTALL_FULL_BINDIR}/")
+endif ()
+
+if (NOT DEFINED XPYTHON_DEBUGGER_AVAILABLE)
+    message(STATUS "PYTHON_VERSION = ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+    if ((PYTHON_VERSION_MAJOR EQUAL 3) AND (PYTHON_VERSION_MINOR EQUAL 13))
+        set(XPYTHON_DEBUGGER_AVAILABLE "false")
+    else ()
+        set(XPYTHON_DEBUGGER_AVAILABLE "true")
+    endif ()
+    message(STATUS "XPYTHON_DEBUGGER_AVAILABLE=${XPYTHON_DEBUGGER_AVAILABLE}")
+endif ()
+
+if(EMSCRIPTEN)
+    # the variables PYTHON_VERSION_MAJOR and PYTHON_VERSION_MINOR
+    # might be wrong for the EMSCRIPTEN case since it may contains
+    # the versions of build-python and not the one of the host.
+    FILE(GLOB WASM_PYTHON_LIBRARY  $ENV{PREFIX}/lib/libpython*.a)
+    STRING(REGEX MATCH "python[0-9]+[.][0-9]+" PYTHON_VERSION_STRING ${WASM_PYTHON_LIBRARY})
+    STRING(REGEX MATCH "[0-9]+" PYTHON_VERSION_MAJOR ${PYTHON_VERSION_STRING})
+    STRING(REGEX MATCH "[0-9]+$" PYTHON_VERSION_MINOR ${PYTHON_VERSION_STRING})
+
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/wasm_kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
+    )
+else()
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/kernel.json"
+    )
+    configure_file (
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython-raw/kernel.json"
+    )
+endif()
+
+
 
 # Source files
 # ============
@@ -302,7 +315,7 @@ macro(xpyt_create_target target_name src headers linkage output_name)
                                $<INSTALL_INTERFACE:include>)
 
     if (EMSCRIPTEN)
-        set(XPY_XEUS_TARGET xeus)
+        set(XPYT_XEUS_TARGET xeus)
     elseif (XPYT_USE_SHARED_XEUS)
         set(XPYT_XEUS_TARGET xeus-zmq)
     else ()
@@ -390,10 +403,14 @@ endif()
 if (EMSCRIPTEN)
     # TODO MAKE BETTER
     SET(PYTHON_UTIL_LIBS
-        $ENV{PREFIX}/lib/libbz2.a
-        $ENV{PREFIX}/lib/libz.a
-        $ENV{PREFIX}/lib/libsqlite3.a
-        $ENV{PREFIX}/lib/libffi.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libbz2.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libz.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libsqlite3.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libffi.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libzstd.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libssl.a
+        ${CMAKE_INSTALL_PREFIX}/lib/libcrypto.a
+        ${CMAKE_INSTALL_PREFIX}/lib/liblzma.a
     )
 
     add_executable(xpython ${XPYTHON_WASM_SRC})
