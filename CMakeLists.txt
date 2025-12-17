@@ -107,10 +107,11 @@ else ()
     endif ()
 
     find_package(xeus-uv REQUIRED)
+    find_library(UVW_LIBRARY uvw)
+    find_path(UVW_INCLUDE_DIR uvw.hpp)
 endif()
 
-find_library(UVW_LIBRARY uvw)
-find_path(UVW_INCLUDE_DIR uvw.hpp)
+
 
 # Configuration
 # =============
