@@ -33,7 +33,11 @@
 
 #include "xeus-zmq/xserver_zmq.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
-#include "xeus-zmq/xhook_base.hpp"
+
+
+#include "xeus-uv/xserver_uv.hpp"
+#include "xeus-uv/xhook_base.hpp"
+
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -143,8 +147,7 @@ int main(int argc, char* argv[])
     }
     delete[] argw;
 
-    // Instantiating the Python interpreter
-    py::scoped_interpreter guard;
+
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
@@ -178,10 +181,12 @@ int main(int argc, char* argv[])
 
     auto py_hook = std::make_unique<xpyt::hook>();
 
+
+    
     auto make_xserver = [&](xeus::xcontext& context,
                                    const xeus::xconfiguration& config,
                                    nl::json::error_handler_t eh) {
-        return xeus::make_xserver_uv_shell_main(context, config, eh, loop_ptr, std::move(py_hook));
+        return xeus::make_xserver_uv(context, config, eh, loop_ptr, std::move(py_hook));
     };
 
     if (!connection_filename.empty())

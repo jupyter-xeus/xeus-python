@@ -105,6 +105,8 @@ else ()
     if (NOT TARGET xeus-zmq AND NOT TARGET xeus-zmq-static)
         find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
     endif ()
+
+    find_package(xeus-uv REQUIRED)
 endif()
 
 find_library(UVW_LIBRARY uvw)
@@ -323,7 +325,7 @@ macro(xpyt_create_target target_name src headers linkage output_name)
     endif ()
 
     target_link_libraries(${target_name}
-        PUBLIC ${XPYT_XEUS_TARGET} xtl ${UVW_LIBRARY}
+        PUBLIC ${XPYT_XEUS_TARGET}  ${UVW_LIBRARY}
         PRIVATE pybind11::pybind11 pybind11_json
     )
     if (WIN32 OR CYGWIN)
@@ -379,7 +381,7 @@ endif ()
 
 if (XPYT_BUILD_XPYTHON_EXECUTABLE)
     add_executable(xpython ${XPYTHON_SRC})
-    target_link_libraries(xpython PRIVATE pybind11::embed)
+    target_link_libraries(xpython PRIVATE xeus-uv pybind11::embed )
 
     xpyt_set_common_options(xpython)
     xpyt_set_kernel_options(xpython)

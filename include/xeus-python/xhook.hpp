@@ -21,7 +21,7 @@
 #endif
 
 #include "xeus-python/xeus_python_config.hpp"
-#include "xeus-zmq/xhook_base.hpp"
+#include "xeus-uv/xhook_base.hpp"
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
