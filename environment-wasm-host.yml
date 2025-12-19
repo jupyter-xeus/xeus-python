@@ -17,4 +17,6 @@ dependencies:
   - zstd
   - openssl
   - xz
+  - ipywidgets
   # - xeus-python-shell>=0.6.3
+
