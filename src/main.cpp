@@ -111,9 +111,12 @@ int main(int argc, char* argv[])
         py::module uvloop = py::module::import("uvloop");
         py::object loop = uvloop.attr("new_event_loop")();
         asyncio.attr("set_event_loop")(loop);
+
+        std::cout<<"getting uv loop pointer from uvloop"<<std::endl;
         py::object py_loop_ptr = uvloop.attr("loop").attr("libuv_get_loop_t_ptr")(loop);
 
         void* raw_ptr = PyCapsule_GetPointer(py_loop_ptr.ptr(), nullptr);
+        std::cout<<"got raw pointer: "<< raw_ptr <<std::endl;
         if (!raw_ptr)
         {
             throw std::runtime_error("Failed to get uvloop pointer");
@@ -244,7 +247,9 @@ int main(int argc, char* argv[])
             "}\n```"
             << std::endl;
 
+        std::cout << "Starting kernel..." << std::endl;
         kernel.start();
+        std::cout << "Kernel stopped." << std::endl;
     }
 
     return 0;
