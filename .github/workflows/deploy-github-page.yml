@@ -49,8 +49,8 @@ jobs:
 
 
           URL=https://github.com/DerThorsten/xeus-python-shell/archive/refs/heads/libuv.zip 
-          curl -L $URL -o xeus-python-shell.zip
-          unzip xeus-python-shell.zip
+          curl -L $URL -o xeus-python-shell-libuv.zip
+          unzip xeus-python-shell-libuv.zip
         
 
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
@@ -76,7 +76,7 @@ jobs:
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --contents notebooks/ \
               --output-dir dist \
-              --XeusAddon.mounts=/home/runner/xeus-python/xeus-python-shell/xeus_python_shell/:"/lib/python3.13/site-packages/xeus_python_shell/"
+              --XeusAddon.mounts=/home/runner/xeus-python/xeus-python-shell-libuv/xeus_python_shell/:"/lib/python3.13/site-packages/xeus_python_shell/"
 
 
       - name: Upload artifact
