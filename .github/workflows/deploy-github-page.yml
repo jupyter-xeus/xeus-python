@@ -76,7 +76,7 @@ jobs:
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --contents notebooks/ \
               --output-dir dist \
-              --XeusAddon.mounts=/home/runner/xeus-python/xeus-python-shell-libuv/xeus_python_shell/:"/lib/python3.13/site-packages/xeus_python_shell/"
+              --XeusAddon.mounts=/home/runner/work/xeus-python/xeus-python-shell-libuv/xeus_python_shell/:"/lib/python3.13/site-packages/xeus_python_shell/"
 
 
       - name: Upload artifact
