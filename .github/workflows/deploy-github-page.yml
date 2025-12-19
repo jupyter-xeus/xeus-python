@@ -33,7 +33,7 @@ jobs:
           environment-file: environment-wasm-build.yml
           init-shell: bash
           environment-name: xeus-python-wasm-build
-
+ 
       - name: Set ncpus
         run: echo "ncpus=$(nproc --all)" >> $GITHUB_ENV
 
@@ -72,11 +72,12 @@ jobs:
       - name: Jupyter Lite integration
         shell: bash -l {0}
         run: |
+          THIS_DIR=$(pwd)
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --contents notebooks/ \
               --output-dir dist \
-              --XeusAddon.mounts=/home/runner/work/xeus-python/xeus-python-shell-libuv/xeus_python_shell/:"/lib/python3.13/site-packages/xeus_python_shell/"
+              --XeusAddon.mounts=$THIS_DIR/xeus-python-shell-libuv/xeus_python_shell/:/lib/python3.13/site-packages/xeus_python_shell/
 
 
       - name: Upload artifact
