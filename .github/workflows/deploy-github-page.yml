@@ -47,6 +47,12 @@ jobs:
 
           set -eux
 
+
+          URL=https://github.com/DerThorsten/xeus-python-shell/archive/refs/heads/libuv.zip 
+          curl -L $URL -o xeus-python-shell.zip
+          unzip xeus-python-shell.zip
+        
+
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
@@ -60,13 +66,18 @@ jobs:
 
           emmake make -j${{ env.ncpus }} install
 
+
+          
+
       - name: Jupyter Lite integration
         shell: bash -l {0}
         run: |
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --contents notebooks/ \
-              --output-dir dist
+              --output-dir dist \
+              --XeusAddon.mounts=/home/runner/xeus-python/xeus-python-shell/xeus_python_shell/:"/lib/python3.13/site-packages/xeus_python_shell/"
+
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
