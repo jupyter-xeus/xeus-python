@@ -51,6 +51,8 @@ jobs:
             -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
             -D CMAKE_INSTALL_LIBDIR=lib
           make -j 2 install
+          cd ../..
+          rm -rf xeus-uv
 
       - name: Make build directory
         run: mkdir build
@@ -137,6 +139,8 @@ jobs:
             -DCMAKE_PREFIX_PATH="%CONDA_PREFIX%\Library" ^
             -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library"
           ninja install
+          cd ../..
+          rm -rf xeus-uv
 
       - name: Static build option
         if: matrix.build_type == 'static_build'
