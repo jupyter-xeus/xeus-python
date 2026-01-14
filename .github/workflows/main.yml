@@ -114,7 +114,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           init-shell: cmd.exe
-          environment-file: environment-dev.yml
+          environment-file: environment-dev-win.yml
 
       - name: Make build directory
         run: mkdir build
