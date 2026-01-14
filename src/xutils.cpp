@@ -104,8 +104,7 @@ namespace xpyt
     void sigkill_handler(int /*sig*/)
     {
         std::cout << "Received termination signal. Exiting..." << std::endl;
-        // make sure to aquire the gil before exiting
-        //exit(0);
+        exit(0);
     }
 
     void print_pythonhome()
