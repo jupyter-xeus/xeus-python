@@ -18,6 +18,7 @@ dependencies:
   #- xeus-python-shell>=0.6.3,<0.7 # we need an unreleased version
   - debugpy>=1.6.5
   - libuvw
+  - uvloop
   - ipython
   # Test dependencies
   - pytest
