@@ -109,7 +109,12 @@ int main(int argc, char* argv[])
 
         // Create a uvloop and get pointer to the loop
         py::module asyncio = py::module::import("asyncio");
+        // ifdef for **not win**
+#ifdef _WIN32
+        py::module uvloop = py::module::import("winloop");
+#else
         py::module uvloop = py::module::import("uvloop");
+#endif
         py::object loop = uvloop.attr("new_event_loop")();
         asyncio.attr("set_event_loop")(loop);
 
