@@ -127,15 +127,18 @@ int main(int argc, char* argv[])
         {
             throw std::runtime_error("Failed to get uvloop pointer");
         }
-
+        std::cout<<"casting to uv_loop_t*"<<std::endl;
         uv_loop_ptr = static_cast<uv_loop_t*>(raw_ptr);
+
     }
 
     if (!uv_loop_ptr)
     {
         throw std::runtime_error("Failed to get libuv loop pointer");
     }
+    std::cout<<"create loop from ptr "<< uv_loop_ptr <<std::endl;
     auto loop_ptr = uvw::loop::create(uv_loop_ptr);
+    std::cout<<"created uvw loop"<<std::endl;
 
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
