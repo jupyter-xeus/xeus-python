@@ -204,9 +204,9 @@ int main(int argc, char* argv[])
                              make_xserver,
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
-                                                       xeus::make_file_logger(xeus::xlogger::content, "xeus.log")));
-                            //  xpyt::make_python_debugger,
-                            //  debugger_config);
+                                                       xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
+                             xpyt::make_python_debugger,
+                             debugger_config);
 
         std::clog <<
             "Starting xeus-python kernel...\n\n"
