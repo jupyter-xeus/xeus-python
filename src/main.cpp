@@ -21,13 +21,23 @@
 #include <unistd.h>
 #endif
 
+#ifndef UVW_AS_LIB
+#define UVW_AS_LIB
+#include <uvw.hpp>
+#endif
+
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xhelper.hpp"
 
-#include "xeus-zmq/xserver_zmq_split.hpp"
+#include "xeus-zmq/xserver_zmq.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
+
+
+#include "xeus-uv/xserver_uv.hpp"
+#include "xeus-uv/xhook_base.hpp"
+
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -38,9 +48,9 @@
 #include "xeus-python/xpaths.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-python/xutils.hpp"
+#include "xeus-python/xhook.hpp"
 
 namespace py = pybind11;
-
 
 int main(int argc, char* argv[])
 {
@@ -88,11 +98,47 @@ int main(int argc, char* argv[])
     config.home = const_cast<wchar_t*>(wstr.c_str());
     xpyt::print_pythonhome();
 
-    // Implicitly pre-initialize Python
-    status = PyConfig_SetBytesArgv(&config, argc, argv);
-    if (PyStatus_Exception(status)) {
-        std::cerr << "Error:" << status.err_msg << std::endl;
+    // Instantiating the Python interpreter
+    py::scoped_interpreter guard{};
+    py::gil_scoped_acquire acquire;
+
+    uv_loop_t* uv_loop_ptr{ nullptr };
+
+    {
+        //py::gil_scoped_acquire acquire;
+
+        // Create a uvloop and get pointer to the loop
+        py::module asyncio = py::module::import("asyncio");
+        // ifdef for **not win**
+#ifdef _WIN32
+        py::module uvloop = py::module::import("winloop");
+#else
+        py::module uvloop = py::module::import("uvloop");
+#endif
+        py::object loop = uvloop.attr("new_event_loop")();
+        asyncio.attr("set_event_loop")(loop);
+
+        std::cout<<"getting uv loop pointer from uvloop"<<std::endl;
+        py::object py_loop_ptr = uvloop.attr("loop").attr("libuv_get_loop_t_ptr")(loop);
+
+        void* raw_ptr = PyCapsule_GetPointer(py_loop_ptr.ptr(), nullptr);
+        std::cout<<"got raw pointer: "<< raw_ptr <<std::endl;
+        if (!raw_ptr)
+        {
+            throw std::runtime_error("Failed to get uvloop pointer");
+        }
+        std::cout<<"casting to uv_loop_t*"<<std::endl;
+        uv_loop_ptr = static_cast<uv_loop_t*>(raw_ptr);
+
     }
+
+    if (!uv_loop_ptr)
+    {
+        throw std::runtime_error("Failed to get libuv loop pointer");
+    }
+    std::cout<<"create loop from ptr "<< uv_loop_ptr <<std::endl;
+    auto loop_ptr = uvw::loop::create(uv_loop_ptr);
+    std::cout<<"created uvw loop"<<std::endl;
 
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
@@ -113,8 +159,7 @@ int main(int argc, char* argv[])
     }
     delete[] argw;
 
-    // Instantiating the Python interpreter
-    py::scoped_interpreter guard;
+
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
@@ -146,6 +191,16 @@ int main(int argc, char* argv[])
     nl::json debugger_config;
     debugger_config["python"] = executable;
 
+    auto py_hook = std::make_unique<xpyt::hook>();
+
+
+    
+    auto make_xserver = [&](xeus::xcontext& context,
+                                   const xeus::xconfiguration& config,
+                                   nl::json::error_handler_t eh) {
+        return xeus::make_xserver_uv(context, config, eh, loop_ptr, std::move(py_hook));
+    };
+
     if (!connection_filename.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
@@ -154,7 +209,7 @@ int main(int argc, char* argv[])
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main,
+                             make_xserver,
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
@@ -166,8 +221,10 @@ int main(int argc, char* argv[])
             "If you want to connect to this kernel from an other client, you can use"
             " the " + connection_filename + " file."
             << std::endl;
-
+            
+        std::cout << "Starting kernel..." << std::endl;
         kernel.start();
+        std::cout << "Kernel stopped." << std::endl;
     }
     else
     {
@@ -175,7 +232,7 @@ int main(int argc, char* argv[])
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main,
+                             make_xserver,
                              std::move(hist),
                              nullptr,
                              xpyt::make_python_debugger,
@@ -201,7 +258,9 @@ int main(int argc, char* argv[])
             "}\n```"
             << std::endl;
 
+        std::cout << "Starting kernel..." << std::endl;
         kernel.start();
+        std::cout << "Kernel stopped." << std::endl;
     }
 
     return 0;

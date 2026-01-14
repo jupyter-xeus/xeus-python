@@ -93,13 +93,27 @@ namespace xpyt
         // is started, m_release_gil_at_startup has to be set to false to prevent
         // releasing it again in configure_impl().
         //
-        bool m_release_gil_at_startup = true;
+        bool m_release_gil_at_startup = false;
         gil_scoped_release_ptr m_release_gil = nullptr;
 
         bool m_redirect_output_enabled;
         bool m_redirect_display_enabled;
 
     private:
+
+        // helper methods:
+        void execute_request_impl_sync(send_reply_callback cb,
+                                  int execution_counter,
+                                  const std::string& code,
+                                  xeus::execute_request_config config,
+                                  nl::json user_expressions);
+        
+        void execute_request_impl_async(send_reply_callback cb,
+                                  int execution_counter,
+                                  const std::string& code,
+                                  xeus::execute_request_config config,
+                                  nl::json user_expressions);
+                                
 
         virtual void instanciate_ipython_shell();
         virtual bool use_jedi_for_completion() const;

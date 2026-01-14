@@ -58,6 +58,7 @@ namespace xpyt
     {
         if (m_release_gil_at_startup)
         {
+            std::cout << "Releasing GIL at startup." << std::endl;
             // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
             // will need to acquire the GIL
             m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
@@ -114,6 +115,10 @@ namespace xpyt
         py::module context_module = get_request_context_module();
     }
 
+
+
+
+
     void interpreter::execute_request_impl(send_reply_callback cb,
                                            int /*execution_count*/,
                                            const std::string& code,
@@ -134,9 +139,50 @@ namespace xpyt
         std::string evalue;
         std::vector<std::string> traceback;
 
+
+        auto when_done_callback_lambda = [this, cb, config, user_expressions]() {
+            py::gil_scoped_acquire acquire;
+            // Placeholder for any actions to perform when execution is done
+
+
+                
+
+            // Get payload
+            nl::json payload = this->m_ipython_shell.attr("payload_manager").attr("read_payload")();
+            this->m_ipython_shell.attr("payload_manager").attr("clear_payload")();
+
+            // if(exception_occurred)
+            // {
+            //     cb(xeus::create_error_reply(ename, evalue, traceback));
+            //     return;
+            // }
+
+            if (this->m_ipython_shell.attr("last_error").is_none())
+            {
+                nl::json user_exprs = this->m_ipython_shell.attr("user_expressions")(user_expressions);
+                cb(xeus::create_successful_reply(payload, user_exprs));
+            }
+            else
+            {
+                py::list pyerror = this->m_ipython_shell.attr("last_error");
+
+                xerror error = extract_error(pyerror);
+
+                if (!config.silent)
+                {
+                    publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+                }
+
+                cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
+            }
+        };
+        std::function<void()> when_done_callback = when_done_callback_lambda;
+
+
+
         try
         {
-            m_ipython_shell.attr("run_cell")(code, "store_history"_a=config.store_history, "silent"_a=config.silent);
+            m_ipython_shell.attr("run_cell_async")(code, when_done_callback, "store_history"_a=config.store_history, "silent"_a=config.silent);
         }
         catch(std::runtime_error& e)
         {
@@ -171,34 +217,12 @@ namespace xpyt
             exception_occurred = true;
         }
 
-        // Get payload
-        nl::json payload = m_ipython_shell.attr("payload_manager").attr("read_payload")();
-        m_ipython_shell.attr("payload_manager").attr("clear_payload")();
 
-        if(exception_occurred)
-        {
-            cb(xeus::create_error_reply(ename, evalue, traceback));
-            return;
-        }
 
-        if (m_ipython_shell.attr("last_error").is_none())
-        {
-            nl::json user_exprs = m_ipython_shell.attr("user_expressions")(user_expressions);
-            cb(xeus::create_successful_reply(payload, user_exprs));
-        }
-        else
-        {
-            py::list pyerror = m_ipython_shell.attr("last_error");
 
-            xerror error = extract_error(pyerror);
 
-            if (!config.silent)
-            {
-                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
-            }
 
-            cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
-        }
+
     }
 
     nl::json interpreter::complete_request_impl(
@@ -266,8 +290,7 @@ namespace xpyt
     }
 
     nl::json interpreter::kernel_info_request_impl()
-    {
-
+    {   
         /* The jupyter-console banner for xeus-python is the following:
           __  _____ _   _ ___
           \ \/ / _ \ | | / __|
@@ -300,25 +323,44 @@ namespace xpyt
             {"url", "https://xeus-python.readthedocs.io"}
         });
 
-        return xeus::create_info_reply(
-            "5.3",              // protocol_version
-            "xeus-python",      // implementation
-            XPYT_VERSION,       // implementation_version
-            "python",           // language_name
-            PY_VERSION,         // language_version
-            "text/x-python",    // language_mimetype
-            ".py",              // language_file_extension
-            "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
-            "python",           // language_nbconvert_exporter
-            banner,             // banner
-            (PY_MAJOR_VERSION != 3) || (PY_MINOR_VERSION != 13), // debugger
-            help_links          // help_links
-        );
+        // return xeus::create_info_reply(
+        //     "5.3",              // protocol_version
+        //     "xeus-python",      // implementation
+        //     XPYT_VERSION,       // implementation_version
+        //     "python",           // language_name
+        //     PY_VERSION,         // language_version
+        //     "text/x-python",    // language_mimetype
+        //     ".py",              // language_file_extension
+        //     "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
+        //     R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
+        //     "python",           // language_nbconvert_exporter
+        //     banner,             // banner
+        //     (PY_MAJOR_VERSION != 3) || (PY_MINOR_VERSION != 13), // debugger
+        //     help_links          // help_links
+        // );
+
+        nl::json kernel_res;
+        kernel_res["status"] = "ok";
+        kernel_res["protocol_version"] = "5.3";
+        kernel_res["implementation"] = "xeus-python";
+        kernel_res["implementation_version"] = XPYT_VERSION;
+        kernel_res["language_info"]["name"] = "python";
+        kernel_res["language_info"]["version"] = PY_VERSION;
+        kernel_res["language_info"]["mimetype"] = "text/x-python";
+        kernel_res["language_info"]["file_extension"] = ".py";
+        kernel_res["language_info"]["pygments_lexer"] = "ipython" + std::to_string(PY_MAJOR_VERSION);
+        //kernel_res["language_info"]["codemirror_mode"] = R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}";
+        kernel_res["language_info"]["nbconvert_exporter"] = "python";
+        kernel_res["banner"] = banner;
+        kernel_res["debugger"] = false;
+        kernel_res["help_links"] = help_links;
+        return kernel_res;
+
     }
 
     void interpreter::shutdown_request_impl()
     {
+        std::cout<<"Shutting down interpreter..."<<std::endl;
     }
 
     nl::json interpreter::internal_request_impl(const nl::json& content)

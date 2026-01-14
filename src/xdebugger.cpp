@@ -26,6 +26,7 @@
 #include "pybind11/stl.h"
 
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xeus_context.hpp"
 #include "xeus/xsystem.hpp"
 #include "xeus-zmq/xmiddleware.hpp"
 

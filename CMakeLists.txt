@@ -79,7 +79,7 @@ set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
 set(pyjs_REQUIRED_VERSION 2.0.0)
 
-find_package(Python COMPONENTS Interpreter REQUIRED)
+# find_package(Python COMPONENTS Interpreter REQUIRED)
 
 if (NOT TARGET pybind11::headers)
     # Defaults to ON for cmake >= 3.18
@@ -105,7 +105,13 @@ else ()
     if (NOT TARGET xeus-zmq AND NOT TARGET xeus-zmq-static)
         find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
     endif ()
+
+    find_package(xeus-uv REQUIRED)
+    find_library(UVW_LIBRARY uvw)
+    find_path(UVW_INCLUDE_DIR uvw.hpp)
 endif()
+
+
 
 # Configuration
 # =============
@@ -163,6 +169,7 @@ set(XEUS_PYTHON_SRC
     src/xdebugpy_client.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
+    src/xhook.cpp
     src/xinput.cpp
     src/xinput.hpp
     src/xinspect.cpp
@@ -188,6 +195,7 @@ set(XEUS_PYTHON_HEADERS
     include/xeus-python/xinterpreter_raw.hpp
     include/xeus-python/xtraceback.hpp
     include/xeus-python/xutils.hpp
+    include/xeus-python/xhook.hpp
 )
 
 set(XPYTHON_SRC
@@ -317,7 +325,10 @@ macro(xpyt_create_target target_name src headers linkage output_name)
         set(XPYT_XEUS_TARGET xeus-zmq-static)
     endif ()
 
-    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} PRIVATE pybind11::pybind11 pybind11_json)
+    target_link_libraries(${target_name}
+        PUBLIC ${XPYT_XEUS_TARGET}  ${UVW_LIBRARY}
+        PRIVATE pybind11::pybind11 pybind11_json
+    )
     if (WIN32 OR CYGWIN)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)
@@ -371,7 +382,7 @@ endif ()
 
 if (XPYT_BUILD_XPYTHON_EXECUTABLE)
     add_executable(xpython ${XPYTHON_SRC})
-    target_link_libraries(xpython PRIVATE pybind11::embed)
+    target_link_libraries(xpython PRIVATE xeus-uv pybind11::embed )
 
     xpyt_set_common_options(xpython)
     xpyt_set_kernel_options(xpython)
