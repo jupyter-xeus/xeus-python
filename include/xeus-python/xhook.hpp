@@ -30,8 +30,7 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    XEUS_PYTHON_API
-    class hook : public xeus::xhook_base
+    class XEUS_PYTHON_API hook : public xeus::xhook_base
     {
     public:
 
