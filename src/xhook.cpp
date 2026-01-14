@@ -24,7 +24,10 @@ namespace xpyt
 {
     hook::~hook()
     {
-        delete p_acquire;
+        if (p_acquire){
+           delete p_acquire;
+           p_acquire = nullptr;
+        }   
     }
 
     void hook::pre_hook_impl()
@@ -37,8 +40,10 @@ namespace xpyt
 
     void hook::post_hook_impl()
     {
-        delete p_acquire;
-        p_acquire = nullptr;
+        if (p_acquire){
+           delete p_acquire;
+           p_acquire = nullptr;
+        }
     }
 
     void hook::run_impl(std::shared_ptr<uvw::loop> /* loop */)

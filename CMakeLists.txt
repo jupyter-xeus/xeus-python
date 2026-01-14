@@ -79,7 +79,7 @@ set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
 set(pyjs_REQUIRED_VERSION 2.0.0)
 
-find_package(Python COMPONENTS Interpreter REQUIRED)
+# find_package(Python COMPONENTS Interpreter REQUIRED)
 
 if (NOT TARGET pybind11::headers)
     # Defaults to ON for cmake >= 3.18

@@ -15,7 +15,7 @@ dependencies:
   # The debugger is not available with python 3.13 because
   # of a spurious bug in debugpy
   - python <3.13
-  - xeus-python-shell>=0.6.3,<0.7
+  #- xeus-python-shell>=0.6.3,<0.7 # we need an unreleased version
   - debugpy>=1.6.5
   - libuvw
   - ipython

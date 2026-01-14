@@ -140,14 +140,12 @@ namespace xpyt
         std::vector<std::string> traceback;
 
 
-
-
-
         auto when_done_callback_lambda = [this, cb, config, user_expressions]() {
             py::gil_scoped_acquire acquire;
             // Placeholder for any actions to perform when execution is done
 
 
+                
 
             // Get payload
             nl::json payload = this->m_ipython_shell.attr("payload_manager").attr("read_payload")();
@@ -362,6 +360,7 @@ namespace xpyt
 
     void interpreter::shutdown_request_impl()
     {
+        std::cout<<"Shutting down interpreter..."<<std::endl;
     }
 
     nl::json interpreter::internal_request_impl(const nl::json& content)

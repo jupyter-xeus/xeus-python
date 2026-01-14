@@ -100,11 +100,12 @@ int main(int argc, char* argv[])
 
     // Instantiating the Python interpreter
     py::scoped_interpreter guard{};
+    py::gil_scoped_acquire acquire;
 
     uv_loop_t* uv_loop_ptr{ nullptr };
 
     {
-        py::gil_scoped_acquire acquire;
+        //py::gil_scoped_acquire acquire;
 
         // Create a uvloop and get pointer to the loop
         py::module asyncio = py::module::import("asyncio");
@@ -212,8 +213,10 @@ int main(int argc, char* argv[])
             "If you want to connect to this kernel from an other client, you can use"
             " the " + connection_filename + " file."
             << std::endl;
-
+            
+        std::cout << "Starting kernel..." << std::endl;
         kernel.start();
+        std::cout << "Kernel stopped." << std::endl;
     }
     else
     {

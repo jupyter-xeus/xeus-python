@@ -87,6 +87,7 @@ namespace xpyt
 
     void sigsegv_handler(int sig)
     {
+        std::cout << "Segmentation fault (signal " << sig << "). Exiting..." << std::endl;
 #if defined(__GNUC__) && !defined(XPYT_EMSCRIPTEN_WASM_BUILD)
         void* array[10];
 
@@ -102,7 +103,9 @@ namespace xpyt
 
     void sigkill_handler(int /*sig*/)
     {
-        exit(0);
+        std::cout << "Received termination signal. Exiting..." << std::endl;
+        // make sure to aquire the gil before exiting
+        //exit(0);
     }
 
     void print_pythonhome()

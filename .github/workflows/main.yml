@@ -32,6 +32,25 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
+      
+      - name: Install xeus-python-shell from GitHub
+        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@libuv
+
+      - name: Checkout xeus-uv
+        uses: actions/checkout@v5
+        with:
+          repository: jupyter-xeus/xeus-uv
+          path: xeus-uv
+
+      - name: Build and install xeus-uv
+        run: |
+          mkdir xeus-uv/build
+          cd xeus-uv/build
+          cmake .. \
+            -D CMAKE_PREFIX_PATH=$CONDA_PREFIX \
+            -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
+            -D CMAKE_INSTALL_LIBDIR=lib
+          make -j 2 install
 
       - name: Make build directory
         run: mkdir build
