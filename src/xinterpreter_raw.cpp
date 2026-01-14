@@ -277,7 +277,7 @@ namespace xpyt
 
     nl::json raw_interpreter::kernel_info_request_impl()
     {
-
+        std::cout<<"raw_interpreter::kernel_info_request_impl()"<<std::endl;
         /* The jupyter-console banner for xeus-python is the following:
           __  _____ _   _ ___
           \ \/ / _ \ | | / __|
