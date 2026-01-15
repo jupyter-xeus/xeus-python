@@ -26,10 +26,12 @@ namespace xpyt
     
     void xasync_runner::run_impl()
     {
-
+        std::cout << "get descriptors "<< std::endl;
 
         int fd_shell_int = static_cast<int>(this->get_shell_fd());
         int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
+
+        std::cout << "Got descriptors: " << fd_shell_int << ", " << fd_controller_int << std::endl;
 
         // wrap this->on_message_doorbell_shell and this->on_message_doorbell_controller
         // into a py::cpp_function
@@ -44,7 +46,7 @@ namespace xpyt
         py::exec(R"(
         
         import sys
-        is_win = sys.platform.startswith("win")
+        is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
         
         import asyncio
         if is_win:
