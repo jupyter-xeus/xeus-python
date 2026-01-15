@@ -78,6 +78,8 @@ namespace xpyt
         while (auto msg = read_controller(ZMQ_DONTWAIT))
         {
             std::string val{ msg.value() };
+
+            std::cout << "Controller message: " << val << std::endl;
             if (val == "stop")
             {
                 send_controller(std::move(val));
