@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
             config,
             eh,
             std::make_unique<xeus::xcontrol_default_runner>(),
-            std::make_unique<xpyt::xasync_runner>();
+            std::make_unique<xpyt::xasync_runner>()
         );
     };
 
