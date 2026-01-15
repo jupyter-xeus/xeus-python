@@ -88,6 +88,10 @@ namespace xpyt
         bool m_release_gil_at_startup = true;
         gil_scoped_release_ptr m_release_gil = nullptr;
         bool m_redirect_display_enabled;
+
+        std::string _i;
+        std::string _ii;
+        std::string _iii;
     };
 
 }

@@ -53,6 +53,7 @@ namespace xpyt
         {
             redirect_output();
         }
+        m_release_gil_at_startup = false;
     }
 
     raw_interpreter::~raw_interpreter()
@@ -61,6 +62,7 @@ namespace xpyt
 
     void raw_interpreter::configure_impl()
     {
+        std::cout<<"raw_interpreter::configure_impl()"<<std::endl;
         if (m_release_gil_at_startup)
         {
             // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
@@ -101,11 +103,9 @@ namespace xpyt
         py::globals()["get_ipython"] = kernel_module.attr("get_ipython");
         kernel_module.attr("get_ipython")();
 
-        py::globals()["_i"] = "";
-        py::globals()["_ii"] = "";
-        py::globals()["_iii"] = "";
-
+        
         py::module context_module = get_request_context_module();
+        std::cout<<"raw_interpreter::configure_impl() done"<<std::endl;
     }
 
     namespace
@@ -146,6 +146,7 @@ namespace xpyt
         xeus::execute_request_config config,
         nl::json /*user_expressions*/)
     {
+        std::cout<<"execute_request_impl()"<<std::endl;
         py::gil_scoped_acquire acquire;
         py::str code_copy;
         // Scope guard performing the temporary monkey patching of input and
@@ -218,13 +219,18 @@ namespace xpyt
             cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
             return;
         }
-
+        
         // Cache inputs
-        py::globals()["_iii"] = py::globals()["_ii"];
-        py::globals()["_ii"] = py::globals()["_i"];
-        py::globals()["_i"] = code;
+        _iii = _ii;
+        _ii = _i;
+        _i = code;
+        py::globals()["_iii"] = _iii;
+        py::globals()["_ii"] = _ii;
+        py::globals()["_i"] = _i;
 
+        
         cb(xeus::create_successful_reply(nl::json::array(), nl::json::object()));
+        std::cout<<"execute_request_impl() done"<<std::endl;
     }
 
     nl::json raw_interpreter::complete_request_impl(
@@ -333,19 +339,39 @@ namespace xpyt
 
     void raw_interpreter::set_request_context(xeus::xrequest_context context)
     {
+        std::cout<<"raw_interpreter::set_request_context()"<<std::endl;
         py::gil_scoped_acquire acquire;
         py::module context_module = get_request_context_module();
         context_module.attr("set_request_context")(context);
+        std::cout<<"raw_interpreter::set_request_context() done"<<std::endl;
+    }
+
+    namespace
+    {
+        xeus::xrequest_context empty_request_context{};
     }
 
     const xeus::xrequest_context& raw_interpreter::get_request_context() const noexcept
     {
         py::gil_scoped_acquire acquire;
         py::module context_module = get_request_context_module();
-        py::object res = context_module.attr("get_request_context")();
-        return *(res.cast<xeus::xrequest_context*>());
+        // When the debugger is started, it send some python code to execute, that triggers
+        // a call to publish_stream, and ultimately to this function. However:
+        // - we are out of the handling of an execute_request, therefore set_request_context
+        // has not been called
+        // - we cannot set it from another thread (the context of the context variable would
+        // be different)
+        // Therefore, we have to catch the exception thrown when the context variable is empty.
+        try
+        {
+            py::object res = context_module.attr("get_request_context")();
+            return *(res.cast<xeus::xrequest_context*>());
+        }
+        catch (py::error_already_set& e)
+        {
+            return empty_request_context;
+        }
     }
-
     void raw_interpreter::redirect_output()
     {
         py::module sys = py::module::import("sys");
