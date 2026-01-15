@@ -139,11 +139,7 @@ jobs:
           set CL=/MP
           ninja install
         working-directory: build
-
-      - name: Test xeus-python Python
-        shell: cmd /C call {0}
-        run: pytest . -vvv
-
+        
       - name: Test xeus-python C++
         shell: cmd /C call {0}
         run: |
@@ -151,4 +147,10 @@ jobs:
           test_xeus_python
         timeout-minutes: 4
         working-directory: build\test
+
+      - name: Test xeus-python Python
+        shell: cmd /C call {0}
+        run: pytest . -s -vvv
+
+   
 
