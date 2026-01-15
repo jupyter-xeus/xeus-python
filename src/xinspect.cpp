@@ -31,8 +31,8 @@ namespace xpyt
 
     py::object static_inspect(const std::string& code, int cursor_pos, py::dict globals)
     {
-        py::module jedi = py::module::import("jedi");
-        return jedi.attr("Interpreter")(code, cursor_pos, py::make_tuple(globals));
+        std::string sub_code = code.substr(0, cursor_pos);
+        return static_inspect(sub_code, globals);
     }
 
 
