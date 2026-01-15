@@ -22,6 +22,7 @@ namespace xpyt
     xasync_runner::xasync_runner()
         : xeus::xshell_runner()
     {
+        std::cout<< "xasync_runner created" << std::endl;
     }
     
     void xasync_runner::run_impl()
