@@ -22,29 +22,29 @@ using namespace pybind11::literals;
 
 namespace xpyt
 {
-    py::object static_inspect(const std::string& code)
+    py::object static_inspect(const std::string& code, py::dict globals)
     {
         py::module jedi = py::module::import("jedi");
-        return jedi.attr("Interpreter")(code, py::make_tuple(py::globals()));
+        return jedi.attr("Interpreter")(code, py::make_tuple(globals));
     }
 
-    py::object static_inspect(const std::string& code, int cursor_pos)
+
+    py::object static_inspect(const std::string& code, int cursor_pos, py::dict globals)
     {
-        std::string sub_code = code.substr(0, cursor_pos);
-        return static_inspect(sub_code);
+        py::module jedi = py::module::import("jedi");
+        return jedi.attr("Interpreter")(code, cursor_pos, py::make_tuple(globals));
     }
 
-    py::list get_completions(const std::string& code, int cursor_pos)
+
+    py::list get_completions(const std::string& code, int cursor_pos, py::dict globals)
     {
-        return static_inspect(code, cursor_pos).attr("complete")();
+        return static_inspect(code, cursor_pos, globals).attr("complete")();
     }
 
-    py::list get_completions(const std::string& code)
+    py::list get_completions(const std::string& code, py::dict globals)
     {
-        return static_inspect(code).attr("complete")();
+        return static_inspect(code, globals).attr("complete")();
     }
-
-    py::list get_completions(const std::string& code);
 
     std::string formatted_docstring_impl(py::object inter)
     {
@@ -121,15 +121,15 @@ namespace xpyt
         return result;
     }
 
-    std::string formatted_docstring(const std::string& code, int cursor_pos)
+    std::string formatted_docstring(const std::string& code, int cursor_pos, py::dict globals)
     {
-        py::object inter = static_inspect(code, cursor_pos);
+        py::object inter = static_inspect(code, cursor_pos, globals);
         return formatted_docstring_impl(inter);
     }
 
-    std::string formatted_docstring(const std::string& code)
+    std::string formatted_docstring(const std::string& code, py::dict globals)
     {
-        py::object inter = static_inspect(code);
+        py::object inter = static_inspect(code, globals);
         return formatted_docstring_impl(inter);
     }
 }

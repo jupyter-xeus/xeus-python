@@ -48,6 +48,7 @@ namespace xpyt
     raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
         :m_redirect_display_enabled{ redirect_display_enabled }
     {
+        m_global_dict = py::globals();
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
         {
@@ -87,8 +88,8 @@ namespace xpyt
         }
 
         // Expose display functions to Python
-        py::globals()["display"] = display_module.attr("display");
-        py::globals()["update_display"] = display_module.attr("update_display");
+       m_global_dict["display"] = display_module.attr("display");
+       m_global_dict["update_display"] = display_module.attr("update_display");
         // Monkey patching "import IPython.core.display"
         sys.attr("modules")["IPython.core.display"] = display_module;
 
@@ -100,9 +101,13 @@ namespace xpyt
         sys.attr("modules")["IPython.core.getipython"] = kernel_module;
 
         // Add get_ipython to global namespace
-        py::globals()["get_ipython"] = kernel_module.attr("get_ipython");
+       m_global_dict["get_ipython"] = kernel_module.attr("get_ipython");
         kernel_module.attr("get_ipython")();
 
+        std::cout<<"write globals _i, _ii, _iii"<<std::endl;
+       m_global_dict["_i"] = "";
+       m_global_dict["_ii"] = "";
+       m_global_dict["_iii"] = "";
         
         py::module context_module = get_request_context_module();
         std::cout<<"raw_interpreter::configure_impl() done"<<std::endl;
@@ -188,14 +193,14 @@ namespace xpyt
                     m_displayhook.attr("set_execution_count")(execution_count);
                 }
 
-                exec(compiled_code);
-                exec(compiled_interactive_code);
+                exec(compiled_code, m_global_dict);
+                exec(compiled_interactive_code, m_global_dict   );
             }
             else
             {
                 splinter_cell guard;
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
-                exec(compiled_code);
+                exec(compiled_code, m_global_dict);
             }
 
         }
@@ -219,14 +224,12 @@ namespace xpyt
             cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
             return;
         }
-        
+
+        std::cout<<"get globals _i, _ii, _iii"<<std::endl;
         // Cache inputs
-        _iii = _ii;
-        _ii = _i;
-        _i = code;
-        py::globals()["_iii"] = _iii;
-        py::globals()["_ii"] = _ii;
-        py::globals()["_i"] = _i;
+        m_global_dict["_iii"] = m_global_dict["_ii"];
+        m_global_dict["_ii"] = m_global_dict["_i"];
+        m_global_dict["_i"] = code;
 
         
         cb(xeus::create_successful_reply(nl::json::array(), nl::json::object()));
@@ -241,7 +244,7 @@ namespace xpyt
         std::vector<std::string> matches;
         int cursor_start = cursor_pos;
 
-        py::list completions = get_completions(code, cursor_pos);
+        py::list completions = get_completions(code, cursor_pos, m_global_dict);
 
         if (py::len(completions) != 0)
         {
@@ -264,7 +267,7 @@ namespace xpyt
         nl::json kernel_res;
         nl::json pub_data;
 
-        std::string docstring = formatted_docstring(code, cursor_pos);
+        std::string docstring = formatted_docstring(code, cursor_pos, m_global_dict);
 
         bool found = false;
         if (!docstring.empty())

@@ -90,6 +90,8 @@ namespace xpyt
         bool m_redirect_display_enabled;
 
         std::string _i,_ii,_iii;
+
+        py::dict m_global_dict;
     };
 
 }
