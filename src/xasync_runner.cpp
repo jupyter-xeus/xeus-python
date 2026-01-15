@@ -127,13 +127,17 @@ namespace xpyt
                  // Or create via exec if you need a more complex function:
                 py::exec(R"(
                 import asyncio
+                import sys
+                
                 def stop_loop(fd_shell, fd_controller):
+                    is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
+                    
 
                     # here we create / ensure we have an event loop
                     loop = asyncio.get_event_loop()
-
-                    loop.remove_reader(fd_shell)
-                    loop.remove_reader(fd_controller)
+                    if not is_win:
+                        loop.remove_reader(fd_shell)
+                        loop.remove_reader(fd_controller)
 
                     loop.stop()
 
