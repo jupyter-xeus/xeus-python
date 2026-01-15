@@ -42,16 +42,42 @@ namespace xpyt
 
 
         py::exec(R"(
+        
+        import sys
+        is_win = sys.platform.startswith("win")
+        
         import asyncio
-        def run_main(fd_shell, fd_controller, shell_callback, controller_callback):
+        if is_win:
 
-            # here we create / ensure we have an event loop
-            loop = asyncio.get_event_loop()
+            async def loop_shell(fd_shell, shell_callback):
+                while True:
+                    await asyncio.sleep(0.01)
+                    shell_callback()
+            async def loop_controller(fd_controller, controller_callback):
+                while True:
+                    await asyncio.sleep(0.01)
+                    controller_callback()
+                
 
-            loop.add_reader(fd_shell, shell_callback)
-            loop.add_reader(fd_controller, controller_callback)
+            def run_main(fd_shell, fd_controller, shell_callback, controller_callback):
 
-            loop.run_forever()
+                # here we create / ensure we have an event loop
+                loop = asyncio.get_event_loop()
+
+                task_shell = loop.create_task(loop_shell(fd_shell, shell_callback))
+                task_controller = loop.create_task(loop_controller(fd_controller, controller_callback))
+
+                loop.run_forever()
+        else:
+            def run_main(fd_shell, fd_controller, shell_callback, controller_callback):
+
+                # here we create / ensure we have an event loop
+                loop = asyncio.get_event_loop()
+
+                loop.add_reader(fd_shell, shell_callback)
+                loop.add_reader(fd_controller, controller_callback)
+
+                loop.run_forever()
 
         )", py::globals());
 
