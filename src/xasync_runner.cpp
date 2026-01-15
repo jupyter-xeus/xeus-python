@@ -27,23 +27,9 @@ namespace xpyt
     void xasync_runner::run_impl()
     {
 
-        //the file descriptor for the shell and controller sockets
-        // and create (libuv) poll handles to bind them to the loop
 
-        auto  fd_shell = this->get_shell_fd();
-        auto fd_controller = this-> get_shell_controller_fd();
-
-
-
-
-
-
-        // cast to integers
-        int fd_shell_int = static_cast<int>(fd_shell);
-        int fd_controller_int = static_cast<int>(fd_controller);
-
-
-
+        int fd_shell_int = static_cast<int>(this->get_shell_fd());
+        int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
 
         // wrap this->on_message_doorbell_shell and this->on_message_doorbell_controller
         // into a py::cpp_function
@@ -97,7 +83,31 @@ namespace xpyt
             if (val == "stop")
             {
                 send_controller(std::move(val));
-                //p_loop->stop(); // TODO
+
+
+
+                int fd_shell_int = static_cast<int>(this->get_shell_fd());
+                int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
+
+
+                 // Or create via exec if you need a more complex function:
+                py::exec(R"(
+                import asyncio
+                def stop_loop(fd_shell, fd_controller):
+
+                    # here we create / ensure we have an event loop
+                    loop = asyncio.get_event_loop()
+
+                    loop.remove_reader(fd_shell)
+                    loop.remove_reader(fd_controller)
+
+                    loop.stop()
+
+                )", py::globals());
+
+                py::object stop_func = py::globals()["stop_loop"];
+                stop_func(fd_shell_int, fd_controller_int);
+
             }
             else
             {
