@@ -177,15 +177,14 @@ int main(int argc, char* argv[])
         const xeus::xconfiguration& config,
          nl::json::error_handler_t eh)
     {
-        std::unique_ptr<xpyt::xasync_runner> async_runner = std::make_unique<xpyt::xasync_runner>();
-
+        std::cout << "Creating xserver_uv" << std::endl;
         return xeus::make_xserver_shell
         (
             context,
             config,
             eh,
             std::make_unique<xeus::xcontrol_default_runner>(),
-            std::move(async_runner)
+            std::make_unique<xpyt::xasync_runner>();
         );
     };
 
