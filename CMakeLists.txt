@@ -106,9 +106,6 @@ else ()
         find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
     endif ()
 
-    find_package(xeus-uv REQUIRED)
-    find_library(UVW_LIBRARY uvw)
-    find_path(UVW_INCLUDE_DIR uvw.hpp)
 endif()
 
 
@@ -169,7 +166,6 @@ set(XEUS_PYTHON_SRC
     src/xdebugpy_client.cpp
     src/xdisplay.cpp
     src/xdisplay.hpp
-    src/xhook.cpp
     src/xinput.cpp
     src/xinput.hpp
     src/xinspect.cpp
@@ -185,6 +181,7 @@ set(XEUS_PYTHON_SRC
     src/xstream.hpp
     src/xtraceback.cpp
     src/xutils.cpp
+    src/xasync_runner.cpp
 )
 
 set(XEUS_PYTHON_HEADERS
@@ -195,7 +192,7 @@ set(XEUS_PYTHON_HEADERS
     include/xeus-python/xinterpreter_raw.hpp
     include/xeus-python/xtraceback.hpp
     include/xeus-python/xutils.hpp
-    include/xeus-python/xhook.hpp
+    include/xeus-python/xasync_runner.hpp
 )
 
 set(XPYTHON_SRC
@@ -382,7 +379,7 @@ endif ()
 
 if (XPYT_BUILD_XPYTHON_EXECUTABLE)
     add_executable(xpython ${XPYTHON_SRC})
-    target_link_libraries(xpython PRIVATE xeus-uv pybind11::embed )
+    target_link_libraries(xpython PRIVATE pybind11::embed )
 
     xpyt_set_common_options(xpython)
     xpyt_set_kernel_options(xpython)

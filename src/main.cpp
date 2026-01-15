@@ -48,7 +48,11 @@
 #include "xeus-python/xpaths.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-python/xutils.hpp"
-#include "xeus-python/xhook.hpp"
+
+
+#include "xeus-python/xasync_runner.hpp"
+#include "xeus-zmq/xcontrol_default_runner.hpp"
+#include "xeus-zmq/xserver_zmq_split.hpp"
 
 namespace py = pybind11;
 
@@ -102,43 +106,7 @@ int main(int argc, char* argv[])
     py::scoped_interpreter guard{};
     py::gil_scoped_acquire acquire;
 
-    uv_loop_t* uv_loop_ptr{ nullptr };
 
-    {
-        //py::gil_scoped_acquire acquire;
-
-        // Create a uvloop and get pointer to the loop
-        py::module asyncio = py::module::import("asyncio");
-        // ifdef for **not win**
-#ifdef _WIN32
-        py::module uvloop = py::module::import("winloop");
-#else
-        py::module uvloop = py::module::import("uvloop");
-#endif
-        py::object loop = uvloop.attr("new_event_loop")();
-        asyncio.attr("set_event_loop")(loop);
-
-        std::cout<<"getting uv loop pointer from uvloop"<<std::endl;
-        py::object py_loop_ptr = uvloop.attr("loop").attr("libuv_get_loop_t_ptr")(loop);
-
-        void* raw_ptr = PyCapsule_GetPointer(py_loop_ptr.ptr(), nullptr);
-        std::cout<<"got raw pointer: "<< raw_ptr <<std::endl;
-        if (!raw_ptr)
-        {
-            throw std::runtime_error("Failed to get uvloop pointer");
-        }
-        std::cout<<"casting to uv_loop_t*"<<std::endl;
-        uv_loop_ptr = static_cast<uv_loop_t*>(raw_ptr);
-
-    }
-
-    if (!uv_loop_ptr)
-    {
-        throw std::runtime_error("Failed to get libuv loop pointer");
-    }
-    std::cout<<"create loop from ptr "<< uv_loop_ptr <<std::endl;
-    auto loop_ptr = uvw::loop::create(uv_loop_ptr);
-    std::cout<<"created uvw loop"<<std::endl;
 
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
@@ -191,15 +159,51 @@ int main(int argc, char* argv[])
     nl::json debugger_config;
     debugger_config["python"] = executable;
 
-    auto py_hook = std::make_unique<xpyt::hook>();
+
+
+
+
 
 
     
-    auto make_xserver = [&](xeus::xcontext& context,
-                                   const xeus::xconfiguration& config,
-                                   nl::json::error_handler_t eh) {
-        return xeus::make_xserver_uv(context, config, eh, loop_ptr, std::move(py_hook));
+    // auto make_xserver = [&](xeus::xcontext& context,
+    //                                const xeus::xconfiguration& config,
+    //                                nl::json::error_handler_t eh) {
+    //     return xeus::make_xserver_uv(context, config, eh, loop_ptr, std::move(py_hook));
+    // };
+
+
+
+
+    // create the runner by hand
+
+    
+
+    auto make_xserver = [](
+        xeus::xcontext& context,
+        const xeus::xconfiguration& config,
+         nl::json::error_handler_t eh)
+    {
+        std::unique_ptr<xpyt::xasync_runner> async_runner = std::make_unique<xpyt::xasync_runner>();
+
+        return xeus::make_xserver_shell
+        (
+            context,
+            config,
+            eh,
+            std::make_unique<xeus::xcontrol_default_runner>(),
+            std::move(async_runner)
+        );
     };
+
+
+
+
+
+
+
+
+
 
     if (!connection_filename.empty())
     {
