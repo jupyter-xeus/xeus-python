@@ -41,8 +41,6 @@ namespace xpyt
         });
 
 
-
-        // Or create via exec if you need a more complex function:
         py::exec(R"(
         import asyncio
         def run_main(fd_shell, fd_controller, shell_callback, controller_callback):

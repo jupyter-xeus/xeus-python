@@ -21,10 +21,6 @@
 #include <unistd.h>
 #endif
 
-#ifndef UVW_AS_LIB
-#define UVW_AS_LIB
-#include <uvw.hpp>
-#endif
 
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
@@ -34,9 +30,6 @@
 #include "xeus-zmq/xserver_zmq.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
 
-
-#include "xeus-uv/xserver_uv.hpp"
-#include "xeus-uv/xhook_base.hpp"
 
 
 #include "pybind11/embed.h"
