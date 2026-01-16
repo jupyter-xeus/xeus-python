@@ -58,12 +58,12 @@ jobs:
           ls -la $CONDA_PREFIX/lib
           
           # we want to find if there is any libpython installed
-          find $CONDA_PREFIX/lib -name "libpython*"
+          find $CONDA_PREFIX/lib -name "libxeus*"
 
           # find globally
-          find /usr/lib -name "libpython*"
-          find /usr/local/lib -name "libpython*"
-          find / lib -name "libpython*"
+          find /usr/lib -name "libxeus*"
+          find /usr/local/lib -name "libxeus*"
+          find / lib -name "libxeus*"
         
       - name: Configure cmake
         run: |
