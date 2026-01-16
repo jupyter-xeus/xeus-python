@@ -49,6 +49,9 @@ namespace xpyt
         });
 
 
+        // ensure gil
+        py::gil_scoped_acquire acquire;
+
         py::exec(R"(
         
         import sys
@@ -120,9 +123,17 @@ namespace xpyt
 
 
 
-                int fd_shell_int = static_cast<int>(this->get_shell_fd());
-                int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
+                std::cout << "get descriptors to stop"<< std::endl;
+                #ifndef _WIN32
+                    int fd_shell_int = static_cast<int>(this->get_shell_fd());
+                    int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
+                #else
+                    //  just use placeholders on Windows
+                    int fd_shell_int = 0;
+                    int fd_controller_int = 0;
+                #endif
 
+                py::gil_scoped_acquire acquire;
 
                  // Or create via exec if you need a more complex function:
                 py::exec(R"(
