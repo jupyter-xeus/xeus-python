@@ -63,7 +63,7 @@ jobs:
           # find globally
           find /usr/lib -name "libxeus*"
           find /usr/local/lib -name "libxeus*"
-          find / lib -name "libxeus*"
+          find /  -name "libxeus*"
         
       - name: Configure cmake
         run: |
