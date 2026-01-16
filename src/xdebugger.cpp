@@ -288,10 +288,9 @@ namespace xpyt
             py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
 
-            // Import debugpy module and get version
-            py::module debugpy = py::module::import("debugpy");
-            std::string version = debugpy.attr("__version__").cast<std::string>();
-
+            // Get debugpy version
+            std::string expression = "debugpy.__version__";
+            std::string version = (eval(py::str(expression))).cast<std::string>();
 
             // Format the version to match [0-9]+(\s[0-9]+)*
             size_t pos = version.find_first_of("abrc");
