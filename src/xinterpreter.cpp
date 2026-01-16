@@ -125,6 +125,7 @@ namespace xpyt
                                            xeus::execute_request_config config,
                                            nl::json user_expressions)
     {
+        std::cout<<"interpreter::execute_request_impl()"<<std::endl;
         py::gil_scoped_acquire acquire;
 
         // Reset traceback
@@ -141,6 +142,7 @@ namespace xpyt
 
 
         auto when_done_callback_lambda = [this, cb, config, user_expressions]() {
+            std::cout<<"when_done_callback invoked"<<std::endl;
             py::gil_scoped_acquire acquire;
             // Placeholder for any actions to perform when execution is done
 

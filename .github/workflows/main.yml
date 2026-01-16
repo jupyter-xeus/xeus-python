@@ -103,6 +103,7 @@ jobs:
         run: mkdir build
       
       - name: Install xeus-python-shell from GitHub
+        shell: cmd /C call {0}
         run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@libuv
 
 
