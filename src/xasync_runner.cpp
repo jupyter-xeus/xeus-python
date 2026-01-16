@@ -19,8 +19,9 @@ namespace py = pybind11;
 namespace xpyt
 {
 
-    xasync_runner::xasync_runner()
-        : xeus::xshell_runner()
+    xasync_runner::xasync_runner(py::dict globals)
+        : xeus::xshell_runner(),
+          m_global_dict{globals}
     {
         std::cout<< "xasync_runner created" << std::endl;
     }
@@ -92,9 +93,9 @@ namespace xpyt
 
                 loop.run_forever()
 
-        )", py::globals());
+        )", m_global_dict);
 
-        py::object run_func = py::globals()["run_main"];
+        py::object run_func = m_global_dict["run_main"];
         run_func(fd_shell_int, fd_controller_int, shell_callback, controller_callback);
         
     
@@ -153,9 +154,9 @@ namespace xpyt
 
                     loop.stop()
 
-                )", py::globals());
+                )", m_global_dict);
 
-                py::object stop_func = py::globals()["stop_loop"];
+                py::object stop_func = m_global_dict["stop_loop"];
                 stop_func(fd_shell_int, fd_controller_int);
 
             }

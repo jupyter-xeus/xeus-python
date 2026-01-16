@@ -44,7 +44,9 @@ namespace xpyt
         // If redirect_display_enabled is true (default) then this interpreter will
         // overwrite sys.displayhook and send execution results using publish_execution_result.
         // Disable this if your interpreter uses custom display hook.
-        interpreter(bool redirect_output_enabled=true, bool redirect_display_enabled = true);
+        interpreter(
+                py::dict globals,
+                bool redirect_output_enabled=true, bool redirect_display_enabled = true);
         virtual ~interpreter();
 
     protected:
@@ -76,6 +78,7 @@ namespace xpyt
 
         void redirect_output();
 
+        py::dict m_global_dict;
         py::object m_ipython_shell_app;
         py::object m_ipython_shell;
         py::object m_displayhook;
@@ -92,7 +95,6 @@ namespace xpyt
         // If an application has already released the GIL by the time the interpreter
         // is started, m_release_gil_at_startup has to be set to false to prevent
         // releasing it again in configure_impl().
-        //
         bool m_release_gil_at_startup = false;
         gil_scoped_release_ptr m_release_gil = nullptr;
 

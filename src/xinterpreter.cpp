@@ -44,8 +44,11 @@ using namespace pybind11::literals;
 namespace xpyt
 {
 
-    interpreter::interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
-        : m_redirect_output_enabled{redirect_output_enabled}, m_redirect_display_enabled{redirect_display_enabled}
+    interpreter::interpreter(
+        py::dict globals,
+        bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
+        : m_global_dict{globals},
+          m_redirect_output_enabled{redirect_output_enabled}, m_redirect_display_enabled{redirect_display_enabled}
     {
         xeus::register_interpreter(this);
     }
@@ -184,7 +187,7 @@ namespace xpyt
 
         try
         {
-            
+
             m_ipython_shell.attr("run_cell_async")(code, when_done_callback, "store_history"_a=config.store_history, "silent"_a=config.silent);
         }
         catch(std::runtime_error& e)

@@ -124,17 +124,25 @@ int main(int argc, char* argv[])
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
+
+
+
+    py::dict globals = py::globals();    
+
+
+    
+
     // Instantiating the xeus xinterpreter
     bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv);
     using interpreter_ptr = std::unique_ptr<xeus::xinterpreter>;
     interpreter_ptr interpreter;
     if (raw_mode)
     {
-        interpreter = interpreter_ptr(new xpyt::raw_interpreter());
+        interpreter = interpreter_ptr(new xpyt::raw_interpreter(globals));
     }
     else
     {
-        interpreter = interpreter_ptr(new xpyt::interpreter());
+        interpreter = interpreter_ptr(new xpyt::interpreter(globals));
     }
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
@@ -158,21 +166,7 @@ int main(int argc, char* argv[])
 
 
 
-    
-    // auto make_xserver = [&](xeus::xcontext& context,
-    //                                const xeus::xconfiguration& config,
-    //                                nl::json::error_handler_t eh) {
-    //     return xeus::make_xserver_uv(context, config, eh, loop_ptr, std::move(py_hook));
-    // };
-
-
-
-
-    // create the runner by hand
-
-    
-
-    auto make_xserver = [](
+    auto make_xserver = [&globals](
         xeus::xcontext& context,
         const xeus::xconfiguration& config,
          nl::json::error_handler_t eh)
@@ -184,10 +178,28 @@ int main(int argc, char* argv[])
             config,
             eh,
             std::make_unique<xeus::xcontrol_default_runner>(),
-            std::make_unique<xpyt::xasync_runner>()
+            std::make_unique<xpyt::xasync_runner>(globals)
         );
     };
 
+
+
+    auto make_the_debugger = [globals](
+                            xeus::xcontext& context,
+                            const xeus::xconfiguration& config,
+                            const std::string& user_name,
+                            const std::string& session_id,
+                            const nl::json& debugger_config) -> std::unique_ptr<xeus::xdebugger>
+    {
+        return xpyt::make_python_debugger(
+            globals,
+            context,
+            config,
+            user_name,
+            session_id,
+            debugger_config);
+    };
+            
 
 
 
@@ -209,7 +221,7 @@ int main(int argc, char* argv[])
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
-                             xpyt::make_python_debugger,
+                             make_the_debugger,
                              debugger_config);
 
         std::clog <<
@@ -231,7 +243,7 @@ int main(int argc, char* argv[])
                              make_xserver,
                              std::move(hist),
                              nullptr,
-                             xpyt::make_python_debugger,
+                             make_the_debugger,
                              debugger_config);
 
         std::cout << "Getting config" << std::endl;

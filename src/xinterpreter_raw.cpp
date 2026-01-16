@@ -45,10 +45,14 @@ using namespace pybind11::literals;
 namespace xpyt
 {
 
-    raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
-        :m_redirect_display_enabled{ redirect_display_enabled }
+    raw_interpreter::raw_interpreter(
+        py::dict globals,
+        bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
+        
+        : m_global_dict{globals},
+         m_redirect_display_enabled{ redirect_display_enabled }
     {
-        m_global_dict = py::globals();
+
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
         {

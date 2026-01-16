@@ -42,7 +42,9 @@ namespace xpyt
         // If redirect_display_enabled is true (default) then this interpreter will
         // overwrite sys.displayhook and send execution results using publish_execution_result.
         // Disable this if your interpreter uses custom display hook.
-        raw_interpreter(bool redirect_output_enabled=true, bool redirect_display_enabled = true);
+        raw_interpreter(
+            py::dict globals,
+            bool redirect_output_enabled=true, bool redirect_display_enabled = true);
         virtual ~raw_interpreter();
 
     protected:

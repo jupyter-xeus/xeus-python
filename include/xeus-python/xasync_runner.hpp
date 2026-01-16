@@ -14,7 +14,10 @@
 
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-zmq/xshell_runner.hpp"
+#include "pybind11/pybind11.h"
 
+
+namespace py = pybind11;
 
 namespace xpyt
 {
@@ -23,7 +26,7 @@ namespace xpyt
     {
     public:
 
-        xasync_runner();
+        xasync_runner(py::dict globals);
 
         xasync_runner(const xasync_runner&) = delete;
         xasync_runner& operator=(const xasync_runner&) = delete;
@@ -37,7 +40,8 @@ namespace xpyt
         void on_message_doorbell_controller();
 
         void run_impl() override;
-
+        
+        py::dict m_global_dict;
 
     };
 
