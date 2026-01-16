@@ -385,6 +385,13 @@ if (XPYT_BUILD_XPYTHON_EXECUTABLE)
     xpyt_set_common_options(xpython)
     xpyt_set_kernel_options(xpython)
     xpyt_target_link_libraries(xpython)
+
+    get_target_property(_libs xpython LINK_LIBRARIES)
+    message(STATUS "xpython LINK_LIBRARIES = ${_libs}")
+
+    message(STATUS "xeus-python file = $<TARGET_FILE:xeus-python>")
+
+
 endif()
 
 # xpython_extension

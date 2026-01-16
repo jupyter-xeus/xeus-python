@@ -188,7 +188,6 @@ int main(int argc, char* argv[])
 
 
 
-
     if (!connection_filename.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
