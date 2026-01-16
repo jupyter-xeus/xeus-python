@@ -35,10 +35,7 @@
 #include "xeus-python/xdebugger.hpp"
 #include "xeus-python/xutils.hpp"
 
-#include "xeus-python/xasync_runner.hpp"
-#include "xeus-zmq/xcontrol_default_runner.hpp"
-#include "xeus-zmq/xserver_zmq_split.hpp"
-
+#include "xeus-python/xaserver.hpp"
 
 namespace py = pybind11;
 
@@ -90,21 +87,7 @@ void launch(const py::list args_list)
         interpreter = interpreter_ptr(new xpyt::interpreter(globals));
     }
 
-    auto make_xserver = [&globals](
-        xeus::xcontext& context,
-        const xeus::xconfiguration& config,
-         nl::json::error_handler_t eh)
-    {
-        std::cout << "Creating xserver_uv" << std::endl;
-        return xeus::make_xserver_shell
-        (
-            context,
-            config,
-            eh,
-            std::make_unique<xeus::xcontrol_default_runner>(),
-            std::make_unique<xpyt::xasync_runner>(globals)
-        );
-    };
+    
     auto make_the_debugger = [&globals](
                             xeus::xcontext& context,
                             const xeus::xconfiguration& config,
@@ -142,7 +125,7 @@ void launch(const py::list args_list)
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             make_xserver,
+                             xpyt::make_xaserver_factory(globals),
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
@@ -161,7 +144,7 @@ void launch(const py::list args_list)
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             make_xserver,
+                             xpyt::make_xaserver_factory(globals),
                              std::move(hist),
                              nullptr,
                              make_the_debugger);
