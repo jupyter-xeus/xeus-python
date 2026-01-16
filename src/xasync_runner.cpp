@@ -64,10 +64,12 @@ namespace xpyt
                 while True:
                     await asyncio.sleep(0.01)
                     shell_callback()
+                    controller_callback()
             async def loop_controller(fd_controller, controller_callback):
                 while True:
                     await asyncio.sleep(0.01)
                     controller_callback()
+                    shell_callback()
                 
 
             def run_main(fd_shell, fd_controller, shell_callback, controller_callback):
