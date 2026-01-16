@@ -49,8 +49,8 @@ namespace xpyt
         py::dict globals,
         bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
         
-        : m_global_dict{globals},
-         m_redirect_display_enabled{ redirect_display_enabled }
+        : m_redirect_display_enabled{ redirect_display_enabled },
+         m_global_dict{globals}
     {
 
         xeus::register_interpreter(this);
