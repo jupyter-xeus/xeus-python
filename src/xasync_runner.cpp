@@ -57,9 +57,11 @@ namespace xpyt
         py::exec(R"(
         
         import sys
-        import os
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
-        os.write(1, b"is_win: " + str(is_win).encode() + b"\n")
+        print("is_win:", is_win)
+
+        sys.stdout.write(f"is win: {is_win}\n")
+        sys.stdout.flush()
         import asyncio
         if is_win:
 
