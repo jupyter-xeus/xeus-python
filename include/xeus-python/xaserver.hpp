@@ -17,6 +17,6 @@ namespace nl = nlohmann;
 namespace xpyt
 {
 
-    XEUS_PYTHON_API xeus::xkernel::server_builder make_xaserver_factory(py::dict globals);
+    XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT xeus::xkernel::server_builder make_xaserver_factory(py::dict globals);
 
 } // namespace xeus

@@ -30,7 +30,7 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
-    class XEUS_PYTHON_API raw_interpreter : public xeus::xinterpreter
+    class XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT raw_interpreter : public xeus::xinterpreter
     {
     public:
 
