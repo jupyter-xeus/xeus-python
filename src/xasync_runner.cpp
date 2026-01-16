@@ -30,14 +30,14 @@ namespace xpyt
     void xasync_runner::run_impl()
     {
         std::cout << "get descriptors "<< std::endl;
-        #ifndef _WIN32
+        //#ifndef _WIN32
             int fd_shell_int = static_cast<int>(this->get_shell_fd());
             int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
-        #else
-            //  just use placeholders on Windows
-            int fd_shell_int = 0;
-            int fd_controller_int = 0;
-        #endif
+        // #else
+        //     //  just use placeholders on Windows
+        //     int fd_shell_int = 0;
+        //     int fd_controller_int = 0;
+        // #endif
 
         std::cout << "Got descriptors: " << fd_shell_int << ", " << fd_controller_int << std::endl;
 
