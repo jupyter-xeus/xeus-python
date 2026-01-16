@@ -58,18 +58,18 @@ namespace xpyt
         
         import sys
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
-        
+        print("is_win:", is_win)
         import asyncio
         if is_win:
 
             async def loop_shell(fd_shell, shell_callback):
                 while True:
-                    await asyncio.sleep(0.01)
+                    await asyncio.sleep()
                     shell_callback()
                     controller_callback()
             async def loop_controller(fd_controller, controller_callback):
                 while True:
-                    await asyncio.sleep(0.01)
+                    await asyncio.sleep()
                     controller_callback()
                     shell_callback()
                 
@@ -97,6 +97,7 @@ namespace xpyt
         )", m_global_dict);
 
         py::object run_func = m_global_dict["run_main"];
+        std::cout << "Starting async loop "<< std::endl;
         run_func(fd_shell_int, fd_controller_int, shell_callback, controller_callback);
         
     
