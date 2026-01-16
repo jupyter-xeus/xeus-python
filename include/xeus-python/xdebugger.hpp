@@ -79,7 +79,7 @@ namespace xpyt
         bool m_copy_to_globals_available;
     };
 
-    XEUS_PYTHON_API
+    XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
     std::unique_ptr<xeus::xdebugger> make_python_debugger(py::dict globals,
                                                           xeus::xcontext& context,
                                                           const xeus::xconfiguration& config,
