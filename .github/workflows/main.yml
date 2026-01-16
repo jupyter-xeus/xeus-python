@@ -34,7 +34,7 @@ jobs:
           environment-file: environment-dev.yml
       
       - name: Install xeus-python-shell from GitHub
-        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@libuv
+        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@libuv --ignore-dependencies
 
 
       - name: Make build directory

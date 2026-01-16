@@ -19,6 +19,7 @@ namespace py = pybind11;
 namespace xpyt
 {
 
+    
     xasync_runner::xasync_runner(py::dict globals)
         : xeus::xshell_runner(),
           m_global_dict{globals}
