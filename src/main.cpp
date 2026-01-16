@@ -221,7 +221,7 @@ int main(int argc, char* argv[])
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
-                             make_the_debugger,
+                            make_the_debugger,
                              debugger_config);
 
         std::clog <<

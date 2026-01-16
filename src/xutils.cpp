@@ -58,12 +58,13 @@ namespace xpyt
 
     void exec(const py::object& code, const py::object& scope)
     {
-        py::exec("exec(_code_, _scope_, _scope_)", py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
+        // py::exec("exec(_code_, _scope_, _scope_)", py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
+        py::exec(code, scope, scope);
     }
 
     py::object eval(const py::object& code, const py::object& scope)
     {
-        return py::eval(code, scope);
+        return py::eval(code, scope, scope);
     }
 
     bool extract_option(std::string short_opt, std::string long_opt, int argc, char* argv[])

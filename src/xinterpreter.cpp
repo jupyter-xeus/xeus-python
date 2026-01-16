@@ -22,6 +22,7 @@
 #include "xeus/xhelper.hpp"
 
 #include "pybind11/functional.h"
+#include "pybind11/embed.h"
 
 #include "pybind11_json/pybind11_json.hpp"
 
@@ -379,7 +380,19 @@ namespace xpyt
 
         try
         {
-            exec(py::str(code));
+            std::cout<<"Executing internal_request_impl code: "<<code<<std::endl;
+            exec(py::str(code), m_global_dict);
+            auto v = eval("debugpy.__version__", m_global_dict);
+            std::cout<<"debugpy version: "<<v.cast<std::string>()<<std::endl;
+            std::cout<<"returning successful reply from internal_request_impl"<<std::endl;
+
+            // print m_global_dict
+            std::cout << "Global dict contents:!111" << std::endl;
+            for (auto item : m_global_dict)
+            {
+                std::cout << "  " << py::str(item.first).cast<std::string>() << ": " << py::str(item.second).cast<std::string>() << std::endl;
+            }
+            
             return xeus::create_successful_reply();
         }
         catch (py::error_already_set& e)
@@ -390,6 +403,8 @@ namespace xpyt
             py::list pyerror = m_ipython_shell.attr("last_error");
 
             xerror error = extract_error(pyerror);
+
+            std::cout<<"Exception occurred during internal_request_impl: "<<error.m_ename<<": "<<error.m_evalue<<std::endl;
 
             publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             error.m_traceback.resize(1);

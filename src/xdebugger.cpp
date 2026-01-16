@@ -24,6 +24,7 @@
 
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
+#include "pybind11/embed.h"
 
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xeus_context.hpp"
@@ -270,7 +271,9 @@ namespace xpyt
         code += "debugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
         nl::json json_code;
         json_code["code"] = code;
+        std::cout<<"sending code to import and start debugpy: "<<code<<std::endl;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
+        std::cout<<"received reply from debugpy import request"<<std::endl;
         std::string status = rep["status"].get<std::string>();
         if(status != "ok")
         {
@@ -292,7 +295,7 @@ namespace xpyt
 
             // Get debugpy version
             std::string expression = "debugpy.__version__";
-            std::string version = (eval(py::str(expression)), m_global_dict).cast<std::string>();
+            std::string version = eval(py::str(expression), m_global_dict).cast<std::string>();
 
             // Format the version to match [0-9]+(\s[0-9]+)*
             size_t pos = version.find_first_of("abrc");

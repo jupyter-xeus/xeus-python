@@ -995,7 +995,7 @@ nl::json debugger_client::attach()
     if (!rep["content"]["success"].get<bool>())
     {
         shutdown();
-        std::this_thread::sleep_for(2s);
+        std::this_thread::sleep_for(4s);
         throw std::runtime_error("Could not initialize debugger, exiting");
     }
     m_client.send_on_control("debug_request", make_attach_request(3));
@@ -1152,7 +1152,7 @@ void start_kernel()
     dump_connection_file();
     std::string cmd = "xpython -f " + KERNEL_JSON + "&";
     int ret2 = std::system(cmd.c_str());
-    std::this_thread::sleep_for(2s);
+    std::this_thread::sleep_for(4s);
 }
 
 TEST_SUITE("debugger")
@@ -1168,7 +1168,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_init();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1184,7 +1184,7 @@ TEST_SUITE("debugger")
             deb.start();
             bool res = deb.test_disconnect();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1201,7 +1201,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_attach();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1216,10 +1216,10 @@ TEST_SUITE("debugger")
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_multi_session.log");
             deb.start();
             bool res1 = deb.test_disconnect();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             bool res2 = deb.test_disconnect();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res1);
             CHECK(res2);
             t.notify_done();
@@ -1237,7 +1237,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_external_set_breakpoints();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1256,7 +1256,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_external_next_continue();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1273,7 +1273,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_set_breakpoints();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1307,7 +1307,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_source();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1326,7 +1326,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_next_continue();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1346,7 +1346,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_step_in();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1364,7 +1364,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_stack_trace();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1381,7 +1381,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_debug_info();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1398,7 +1398,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_inspect_variables();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1416,7 +1416,7 @@ TEST_SUITE("debugger")
             deb.start();
             bool res = deb.test_rich_inspect_variables();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1434,7 +1434,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_variables();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1451,7 +1451,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_copy_to_globals();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
