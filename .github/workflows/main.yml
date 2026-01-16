@@ -127,7 +127,7 @@ jobs:
             -DXPYT_BUILD_TESTS=ON ^
             -DCMAKE_INSTALL_PREFIX="%CONDA_PREFIX%\Library" ^
             -DXEXTRA_JUPYTER_DATA_DIR=%CONDA_PREFIX%\share\jupyter ^
-            -DXPYT_BUILD_XPYTHON_EXTENSION=ON ^
+            -DXPYT_BUILD_XPYTHON_EXTENSION=OFF ^
             -DXEUS_PYTHONHOME_RELPATH=..\\ ^
             -DCMAKE_CXX_FLAGS=/D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING ^
             ${{ env.CMAKE_EXTRA_ARGS }}
@@ -140,6 +140,11 @@ jobs:
           ninja install
         working-directory: build
 
+      - name: Test xeus-python Python
+        shell: cmd /C call {0}
+        run: pytest . -s -vvv
+
+
       - name: Test xeus-python C++
         shell: cmd /C call {0}
         run: |
@@ -147,9 +152,6 @@ jobs:
         timeout-minutes: 4
         working-directory: build\test
 
-      - name: Test xeus-python Python
-        shell: cmd /C call {0}
-        run: pytest . -s -vvv
 
    
 
