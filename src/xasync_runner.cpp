@@ -88,6 +88,10 @@ namespace xpyt
             def run_main(fd_shell, fd_controller, shell_callback, controller_callback, func):
                 func("Starting async loop on Windows")
                 # here we create / ensure we have an event loop
+                try:
+                    loop = asyncio.get_event_loop()
+                except Exception as e:
+                    func(f"Exception getting event loop: {e}")
                 loop = asyncio.get_event_loop()
 
                 task_shell = loop.create_task(loop_shell(fd_shell, shell_callback, func))
