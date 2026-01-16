@@ -58,7 +58,7 @@ namespace xpyt
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
         
         import asyncio
-        if is_win
+        if is_win:
 
             async def loop_shell(fd_shell, shell_callback):
                 while True:
