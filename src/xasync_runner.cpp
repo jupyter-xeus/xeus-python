@@ -100,17 +100,16 @@ namespace xpyt
 
     void xasync_runner::on_message_doorbell_shell()
     {
-        std::cout << "Shell doorbell received!" << std::endl;
         int ZMQ_DONTWAIT{ 1 }; // from zmq.h 
         while (auto msg = read_shell(ZMQ_DONTWAIT))
         {
+            std::cout << "Shell message: " << msg.value() << std::endl;
             notify_shell_listener(std::move(msg.value()));
         }
     }
 
     void xasync_runner::on_message_doorbell_controller()
     {
-        std::cout << "Controller doorbell received!" << std::endl;
         int ZMQ_DONTWAIT{ 1 }; // from zmq.h
         while (auto msg = read_controller(ZMQ_DONTWAIT))
         {
