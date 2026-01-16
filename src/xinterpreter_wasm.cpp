@@ -22,7 +22,7 @@ namespace xpyt
 {
 
     wasm_interpreter::wasm_interpreter()
-        : interpreter(true, true)
+        : interpreter(py::globals(), true, true)
     {
         m_release_gil_at_startup = false;
     }
