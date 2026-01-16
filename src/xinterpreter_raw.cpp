@@ -105,9 +105,9 @@ namespace xpyt
         kernel_module.attr("get_ipython")();
 
         std::cout<<"write globals _i, _ii, _iii"<<std::endl;
-       m_global_dict["_i"] = "";
-       m_global_dict["_ii"] = "";
-       m_global_dict["_iii"] = "";
+        m_global_dict["_i"] = "";
+        m_global_dict["_ii"] = "";
+        m_global_dict["_iii"] = "";
         
         py::module context_module = get_request_context_module();
         std::cout<<"raw_interpreter::configure_impl() done"<<std::endl;

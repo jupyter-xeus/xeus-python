@@ -28,14 +28,14 @@ namespace xpyt
     void xasync_runner::run_impl()
     {
         std::cout << "get descriptors "<< std::endl;
-        #ifndef _WIN32
-            int fd_shell_int = static_cast<int>(this->get_shell_fd());
-            int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
-        #else
+        // #ifndef _WIN32
+        //     int fd_shell_int = static_cast<int>(this->get_shell_fd());
+        //     int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
+        // #else
             //  just use placeholders on Windows
             int fd_shell_int = 0;
             int fd_controller_int = 0;
-        #endif
+        // #endif
 
         std::cout << "Got descriptors: " << fd_shell_int << ", " << fd_controller_int << std::endl;
 
@@ -58,7 +58,7 @@ namespace xpyt
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
         
         import asyncio
-        if is_win:
+        if False:  # is_win
 
             async def loop_shell(fd_shell, shell_callback):
                 while True:
@@ -124,14 +124,14 @@ namespace xpyt
 
 
                 std::cout << "get descriptors to stop"<< std::endl;
-                #ifndef _WIN32
+                //#ifndef _WIN32
                     int fd_shell_int = static_cast<int>(this->get_shell_fd());
                     int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
-                #else
-                    //  just use placeholders on Windows
-                    int fd_shell_int = 0;
-                    int fd_controller_int = 0;
-                #endif
+                // #else
+                //     //  just use placeholders on Windows
+                //     int fd_shell_int = 0;
+                //     int fd_controller_int = 0;
+                // #endif
 
                 py::gil_scoped_acquire acquire;
 
@@ -146,7 +146,7 @@ namespace xpyt
 
                     # here we create / ensure we have an event loop
                     loop = asyncio.get_event_loop()
-                    if not is_win:
+                    if True:
                         loop.remove_reader(fd_shell)
                         loop.remove_reader(fd_controller)
 

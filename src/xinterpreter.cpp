@@ -184,6 +184,7 @@ namespace xpyt
 
         try
         {
+            
             m_ipython_shell.attr("run_cell_async")(code, when_done_callback, "store_history"_a=config.store_history, "silent"_a=config.silent);
         }
         catch(std::runtime_error& e)
