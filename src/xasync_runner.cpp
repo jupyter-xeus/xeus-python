@@ -54,7 +54,14 @@ namespace xpyt
         // ensure gil
         py::gil_scoped_acquire acquire;
 
-        py::exec(R"(
+
+        auto func = py::cpp_function([](
+            std::string msg
+        ) {
+            std::cout << "Received message in Python: " << msg << std::endl;
+        });
+
+        exec(R"(
         
         import sys
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
@@ -65,29 +72,28 @@ namespace xpyt
         import asyncio
         if is_win:
 
-            async def loop_shell(fd_shell, shell_callback):
+            async def loop_shell(fd_shell, shell_callback, func):
                 while True:
+                    func("polling for shell message")
                     await asyncio.sleep()
                     shell_callback()
-                    controller_callback()
-            async def loop_controller(fd_controller, controller_callback):
+            async def loop_controller(fd_controller, controller_callback, func):
                 while True:
+                    func("polling for controller message")
                     await asyncio.sleep()
-                    controller_callback()
-                    shell_callback()
-                
+                    controller_callback()                
 
-            def run_main(fd_shell, fd_controller, shell_callback, controller_callback):
-
+            def run_main(fd_shell, fd_controller, shell_callback, controller_callback, func):
+                func("Starting async loop on Windows")
                 # here we create / ensure we have an event loop
                 loop = asyncio.get_event_loop()
 
-                task_shell = loop.create_task(loop_shell(fd_shell, shell_callback))
-                task_controller = loop.create_task(loop_controller(fd_controller, controller_callback))
-
+                task_shell = loop.create_task(loop_shell(fd_shell, shell_callback, func))
+                task_controller = loop.create_task(loop_controller(fd_controller, controller_callback, func))
+                
                 loop.run_forever()
         else:
-            def run_main(fd_shell, fd_controller, shell_callback, controller_callback):
+            def run_main(fd_shell, fd_controller, shell_callback, controller_callback, func):
 
                 # here we create / ensure we have an event loop
                 loop = asyncio.get_event_loop()
@@ -101,7 +107,7 @@ namespace xpyt
 
         py::object run_func = m_global_dict["run_main"];
         std::cout << "Starting async loop "<< std::endl;
-        run_func(fd_shell_int, fd_controller_int, shell_callback, controller_callback);
+        run_func(fd_shell_int, fd_controller_int, shell_callback, controller_callback, func);
         
     
     }
