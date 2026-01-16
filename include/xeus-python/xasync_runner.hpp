@@ -22,7 +22,7 @@ namespace py = pybind11;
 namespace xpyt
 {
 
-    class XEUS_PYTHON_API xasync_runner final : public xeus::xshell_runner
+    class XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT xasync_runner final : public xeus::xshell_runner
     {
     public:
 
