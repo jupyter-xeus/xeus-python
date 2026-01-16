@@ -103,7 +103,7 @@ namespace xpyt
         int ZMQ_DONTWAIT{ 1 }; // from zmq.h 
         while (auto msg = read_shell(ZMQ_DONTWAIT))
         {
-            std::cout << "Shell message: " << msg.value() << std::endl;
+            std::cout << "got message on shell doorbell:\n"<<std::endl
             notify_shell_listener(std::move(msg.value()));
         }
     }
