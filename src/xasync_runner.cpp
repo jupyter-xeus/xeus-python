@@ -10,7 +10,7 @@
 #include <iostream>
 #include <memory>
 
-#include "xeus-python/xasync_runner.hpp"
+#include "xasync_runner.hpp"
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
 
@@ -19,7 +19,7 @@ namespace py = pybind11;
 namespace xpyt
 {
 
-    
+
     xasync_runner::xasync_runner(py::dict globals)
         : xeus::xshell_runner(),
           m_global_dict{globals}
