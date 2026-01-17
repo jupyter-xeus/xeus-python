@@ -75,14 +75,14 @@ namespace xpyt
             async def loop_shell(fd_shell, shell_callback, func):
                 func("Starting shell loop on Windows")
                 while True:
-                    await asyncio.sleep()
+                    await asyncio.sleep(0)
                     func("polling for shell message")
                     shell_callback()
                     func("done polling for shell message")
             async def loop_controller(fd_controller, controller_callback, func):
                 func("Starting controller loop on Windows")
                 while True:
-                    await asyncio.sleep()
+                    await asyncio.sleep(0)
                     func("polling for controller message")
                     controller_callback()                
                     func("done polling for controller message")
