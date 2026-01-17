@@ -117,7 +117,7 @@ namespace xpyt
             try:
                 run_main_impl(fd_shell, fd_controller, shell_callback, controller_callback, func)
             except Exception as e:
-                func(f"Exception in run_main: {e}"
+                func(f"Exception in run_main: {e}")
 
         )", m_global_dict);
 
