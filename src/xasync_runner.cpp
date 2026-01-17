@@ -85,7 +85,7 @@ namespace xpyt
                     controller_callback()                
                     func("done polling for controller message")
 
-            def run_main(fd_shell, fd_controller, shell_callback, controller_callback, func):
+            def run_main_impl(fd_shell, fd_controller, shell_callback, controller_callback, func):
                 func("Starting async loop on Windows")
                 # here we create / ensure we have an event loop
                 try:
@@ -94,12 +94,16 @@ namespace xpyt
                     func(f"Exception getting event loop: {e}")
                 loop = asyncio.get_event_loop()
 
+                func("Creating tasks for shell and controller")
                 task_shell = loop.create_task(loop_shell(fd_shell, shell_callback, func))
+
+                func("Creating task for controller")
                 task_controller = loop.create_task(loop_controller(fd_controller, controller_callback, func))
                 
+                func("Running event loop forever")
                 loop.run_forever()
         else:
-            def run_main(fd_shell, fd_controller, shell_callback, controller_callback, func):
+            def run_main_impl(fd_shell, fd_controller, shell_callback, controller_callback, func):
 
                 # here we create / ensure we have an event loop
                 loop = asyncio.get_event_loop()
@@ -108,6 +112,12 @@ namespace xpyt
                 loop.add_reader(fd_controller, controller_callback)
 
                 loop.run_forever()
+        
+        def run_main(fd_shell, fd_controller, shell_callback, controller_callback, func):
+            try:
+                run_main_impl(fd_shell, fd_controller, shell_callback, controller_callback, func)
+            except Exception as e:
+                func(f"Exception in run_main: {e}"
 
         )", m_global_dict);
 
