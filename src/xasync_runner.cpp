@@ -73,19 +73,26 @@ namespace xpyt
         if is_win:
 
             async def loop_shell(fd_shell, shell_callback, func):
-                func("Starting shell loop on Windows")
-                while True:
-                    await asyncio.sleep(0)
-                    func("polling for shell message")
-                    shell_callback()
-                    func("done polling for shell message")
+                try:
+                    func("Starting shell loop on Windows")
+                    while True:
+                        await asyncio.sleep(0)
+                        func("polling for shell message")
+                        shell_callback()
+                        func("done polling for shell message")
+                except Exception as e:
+                    func(f"Exception in loop_shell: {e}")
             async def loop_controller(fd_controller, controller_callback, func):
-                func("Starting controller loop on Windows")
-                while True:
-                    await asyncio.sleep(0)
-                    func("polling for controller message")
-                    controller_callback()                
-                    func("done polling for controller message")
+                try:
+                    func("Starting controller loop on Windows")
+                    while True:
+                        await asyncio.sleep(0)
+                        func("polling for controller message")
+                        controller_callback()
+                        func("done polling for controller message")
+                except Exception as e:
+                    func(f"Exception in loop_controller: {e}")
+
 
             def run_main_impl(fd_shell, fd_controller, shell_callback, controller_callback, func):
                 func("Starting async loop on Windows")
