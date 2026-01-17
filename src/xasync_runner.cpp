@@ -101,7 +101,12 @@ namespace xpyt
                 task_controller = loop.create_task(loop_controller(fd_controller, controller_callback, func))
                 
                 func("Running event loop forever")
-                loop.run_forever()
+                try:
+                    loop.run_forever()
+                except Exception as e:
+                    func(f"Exception in event loop: {e}")
+                finally:
+                    func("Event loop has stopped")
         else:
             def run_main_impl(fd_shell, fd_controller, shell_callback, controller_callback, func):
 
