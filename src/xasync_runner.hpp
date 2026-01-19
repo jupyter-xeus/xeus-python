@@ -43,6 +43,8 @@ namespace xpyt
         
         py::dict m_global_dict;
 
+        bool m_use_busy_loop;
+
     };
 
 

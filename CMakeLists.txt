@@ -183,6 +183,8 @@ set(XEUS_PYTHON_SRC
     src/xutils.cpp
     src/xasync_runner.cpp
     src/xaserver.cpp
+    src/xacontrol_default_runner.cpp
+
 )
 
 set(XEUS_PYTHON_HEADERS
@@ -194,6 +196,7 @@ set(XEUS_PYTHON_HEADERS
     include/xeus-python/xtraceback.hpp
     include/xeus-python/xutils.hpp
     include/xeus-python/xaserver.hpp
+    include/xeus-python/xacontrol_default_runner.hpp
 )
 
 set(XPYTHON_SRC
