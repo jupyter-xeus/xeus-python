@@ -67,7 +67,7 @@ namespace xpyt
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
         print("is_win:", is_win)
         import asyncio
-        
+
         if is_win:
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -139,8 +139,10 @@ namespace xpyt
                     fd_shell = ZMQSockReader(fd_shell)
                     fd_controller = ZMQSockReader(fd_controller)
 
+                func("Adding readers to event loop")
                 loop.add_reader(fd_shell, shell_callback)
                 loop.add_reader(fd_controller, controller_callback)
+                func("Running event loop forever") 
 
                 loop.run_forever()
         
