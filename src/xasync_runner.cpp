@@ -70,7 +70,7 @@ namespace xpyt
         sys.stdout.write(f"is win: {is_win}\n")
         sys.stdout.flush()
         import asyncio
-        if is_win:
+        if False and is_win:
 
             async def loop_shell(fd_shell, shell_callback, func):
                 try:
@@ -189,7 +189,7 @@ namespace xpyt
 
                     # here we create / ensure we have an event loop
                     loop = asyncio.get_event_loop()
-                    if not is_win:
+                    if True or not is_win:
                         loop.remove_reader(fd_shell)
                         loop.remove_reader(fd_controller)
 
