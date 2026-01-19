@@ -66,12 +66,23 @@ namespace xpyt
         import sys
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
         print("is_win:", is_win)
+        import asyncio
+        
         if is_win:
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
         sys.stdout.write(f"is win: {is_win}\n")
         sys.stdout.flush()
-        import asyncio
+
+        class ZMQSockReader:
+            def __init__(self, fd):
+                self._fd = fd
+
+            def fileno(self):
+                # This allows asyncio's select to see the handle
+                return self._fd
+
+
         if False and is_win:
 
             async def loop_shell(fd_shell, shell_callback, func):
@@ -123,6 +134,10 @@ namespace xpyt
 
                 # here we create / ensure we have an event loop
                 loop = asyncio.get_event_loop()
+
+                if is_win:
+                    fd_shell = ZMQSockReader(fd_shell)
+                    fd_controller = ZMQSockReader(fd_controller)
 
                 loop.add_reader(fd_shell, shell_callback)
                 loop.add_reader(fd_controller, controller_callback)
@@ -195,6 +210,10 @@ namespace xpyt
                     # here we create / ensure we have an event loop
                     loop = asyncio.get_event_loop()
                     if True or not is_win:
+
+                        if is_win:
+                            fd_shell = ZMQSockReader(fd_shell)
+                            fd_controller = ZMQSockReader(fd_controller)
                         loop.remove_reader(fd_shell)
                         loop.remove_reader(fd_controller)
 
