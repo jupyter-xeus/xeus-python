@@ -134,8 +134,8 @@ namespace xpyt
                 # get full traceback
                 import traceback
                 traceback_str = traceback.format_exc()
-                func(f"Exception in run_main: {traceback_str}"
-                
+                func(f"Exception in run_main: {traceback_str}")
+
         )", m_global_dict);
 
         py::object run_func = m_global_dict["run_main"];
