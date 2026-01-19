@@ -131,8 +131,11 @@ namespace xpyt
             try:
                 run_main_impl(fd_shell, fd_controller, shell_callback, controller_callback, func)
             except Exception as e:
-                func(f"Exception in run_main: {e}")
-
+                # get full traceback
+                import traceback
+                traceback_str = traceback.format_exc()
+                func(f"Exception in run_main: {traceback_str}"
+                
         )", m_global_dict);
 
         py::object run_func = m_global_dict["run_main"];
