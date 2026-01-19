@@ -66,6 +66,8 @@ namespace xpyt
         import sys
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
         print("is_win:", is_win)
+        if is_win:
+            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
         sys.stdout.write(f"is win: {is_win}\n")
         sys.stdout.flush()
