@@ -28,6 +28,7 @@ namespace xpyt
                 std::cout << "Notified control listener." << std::endl;
             }
         }
+        std::clog << "Exiting control default runner loop." << std::endl;
 
         stop_channels();
     }

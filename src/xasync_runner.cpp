@@ -189,6 +189,7 @@ namespace xpyt
 
                 py::object stop_func = m_global_dict["stop_loop"];
                 stop_func(fd_shell_int, fd_controller_int, m_use_busy_loop);
+                break;
 
             }
             else
