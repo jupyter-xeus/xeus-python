@@ -33,7 +33,6 @@ jobs:
           environment-file: environment-wasm-build.yml
           init-shell: bash
           environment-name: xeus-python-wasm-build
- 
       - name: Set ncpus
         run: echo "ncpus=$(nproc --all)" >> $GITHUB_ENV
 
@@ -51,7 +50,6 @@ jobs:
           URL=https://github.com/DerThorsten/xeus-python-shell/archive/refs/heads/libuv.zip 
           curl -L $URL -o xeus-python-shell-libuv.zip
           unzip xeus-python-shell-libuv.zip
-        
 
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
@@ -65,9 +63,6 @@ jobs:
             -DCMAKE_VERBOSE_MAKEFILE=ON
 
           emmake make -j${{ env.ncpus }} install
-
-
-          
 
       - name: Jupyter Lite integration
         shell: bash -l {0}

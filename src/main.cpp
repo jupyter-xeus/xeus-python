@@ -122,13 +122,8 @@ int main(int argc, char* argv[])
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
-
-
-
+    // we want to use **the same global dict everywhere**
     py::dict globals = py::globals();    
-
-
-    
 
     // Instantiating the xeus xinterpreter
     bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv);
@@ -159,11 +154,7 @@ int main(int argc, char* argv[])
     debugger_config["python"] = executable;
 
 
-
-
-
-
-
+    // Factory to create the debugger with the global dict
     auto make_the_debugger = [globals](
                             xeus::xcontext& context,
                             const xeus::xconfiguration& config,
@@ -179,15 +170,7 @@ int main(int argc, char* argv[])
             session_id,
             debugger_config);
     };
-            
-
-
-
-
-
-
-
-
+        
     if (!connection_filename.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
