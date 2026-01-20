@@ -79,7 +79,10 @@ jobs:
   test-win:
 
     runs-on: ${{ matrix.os }}
-
+    defaults:
+      run:
+        shell: cmd /C call {0}
+        
     strategy:
       fail-fast: false
       matrix:
@@ -111,7 +114,6 @@ jobs:
           echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
 
       - name: Configure cmake
-        shell: cmd /C call {0}
         run: |
           cmake .. ^
             -GNinja ^
@@ -126,20 +128,16 @@ jobs:
         working-directory: build
 
       - name: Build and install
-        shell: cmd /C call {0}
         run: |
           set CL=/MP
           ninja install
         working-directory: build
 
-      - name: Test xeus-python Python
-        shell: cmd /C call {0}
+      - name: Test xeus-python Python}
         run: pytest . -vvv
 
-      - name: Test xeus-python C++
-        shell: cmd /C call {0}
+      - name: Test xeus-python C++]
         run: |
-          micromamba activate xeus-python
           test_xeus_python
         timeout-minutes: 4
         working-directory: build\test
