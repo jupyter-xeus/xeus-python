@@ -35,6 +35,11 @@
 #include <unistd.h>
 #endif
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <boost/process.hpp>
+
 /***********************************
  * Should be moved in a utils file *
  ***********************************/
@@ -1147,19 +1152,25 @@ void dump_connection_file()
     }
 }
 
-void start_kernel()
+struct KernelProcess
 {
-    dump_connection_file();
-    std::string cmd = "xpython -f " + KERNEL_JSON + "&";
-    int ret2 = std::system(cmd.c_str());
-    std::this_thread::sleep_for(4s);
-}
+    KernelProcess()
+    {
+        std::this_thread::sleep_for(2s);
+    }
+
+private:
+
+    bool _ = [] { dump_connection_file(); return true; }();
+    boost::asio::io_context ctx;
+    boost::process::process process{ ctx, boost::process::environment::find_executable("xpython"), { "-f" , KERNEL_JSON } };
+};
 
 TEST_SUITE("debugger")
 {
     TEST_CASE("init")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1176,7 +1187,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("disconnect")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1192,7 +1203,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("attach")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1209,7 +1220,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("multisession")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1228,7 +1239,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("set_external_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1247,7 +1258,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("external_next_continue")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1264,7 +1275,7 @@ TEST_SUITE("debugger")
     */
     TEST_CASE("set_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1281,7 +1292,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("set_exception_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1298,7 +1309,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("source")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1317,7 +1328,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("next_continue")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1337,7 +1348,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("stepin")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1355,7 +1366,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("stack_trace")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1372,7 +1383,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("debug_info")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1389,7 +1400,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("inspect_variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1408,7 +1419,7 @@ TEST_SUITE("debugger")
 /*
     TEST_CASE("rich_inspect_variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1425,7 +1436,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1442,7 +1453,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("copy_to_globals")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
