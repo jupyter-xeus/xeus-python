@@ -27,3 +27,6 @@ dependencies:
   - doctest
   - pluggy=1.3
   - libboost
+  - libboost-devel
+  - libboost-headers
+
