@@ -416,7 +416,7 @@ if (EMSCRIPTEN)
 
     include(WasmBuildOptions)
     xeus_wasm_compile_options(xpython)
-    target_link_options("${target}"
+    target_link_options(xpython
         PUBLIC --bind
         PUBLIC -Wno-unused-command-line-argument
         PUBLIC "SHELL: -fexceptions"
