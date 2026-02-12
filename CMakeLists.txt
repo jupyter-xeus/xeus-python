@@ -416,7 +416,26 @@ if (EMSCRIPTEN)
 
     include(WasmBuildOptions)
     xeus_wasm_compile_options(xpython)
-    xeus_wasm_link_options(xpython "web,worker")
+    target_link_options("${target}"
+        PUBLIC --bind
+        PUBLIC -Wno-unused-command-line-argument
+        PUBLIC "SHELL: -fexceptions"
+        PUBLIC "SHELL: -s MODULARIZE=1"
+        PUBLIC "SHELL: -s EXPORT_NAME=\"createXeusModule\""
+        PUBLIC "SHELL: -s EXPORT_ES6=0"
+        PUBLIC "SHELL: -s ASSERTIONS=0"
+        PUBLIC "SHELL: -s ALLOW_MEMORY_GROWTH=1"
+        PUBLIC "SHELL: -s EXIT_RUNTIME=1"
+        PUBLIC "SHELL: -s WASM=1"
+        PUBLIC "SHELL: -s ENVIRONMENT=web,worker"
+        PUBLIC "SHELL: -s STACK_SIZE=32mb"
+        PUBLIC "SHELL: -s INITIAL_MEMORY=64MB"
+        PUBLIC "SHELL: -s WASM_BIGINT"
+        PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS='[\"FS\",\"ENV\",\"PATH\",\"LDSO\",\"loadDynamicLibrary\",\"ERRNO_CODES\"]'"
+        PUBLIC "SHELL: -s FORCE_FILESYSTEM"
+        PUBLIC "SHELL: -s MAIN_MODULE=1"
+    )
+    # xeus_wasm_link_options(xpython "web,worker")
     target_link_options(xpython
         PUBLIC "SHELL: -s LZ4=1"
         PUBLIC "SHELL: --post-js  ${CMAKE_CURRENT_BINARY_DIR}/post.js"
