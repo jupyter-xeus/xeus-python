@@ -23,7 +23,7 @@ namespace xpyt
     xasync_runner::xasync_runner(py::dict globals)
         : xeus::xshell_runner(),
           m_global_dict{globals},
-            m_use_busy_loop{true}
+            m_use_busy_loop{false}
     {
         std::cout<< "xasync_runner created" << std::endl;
     }
@@ -64,6 +64,7 @@ namespace xpyt
         import sys
         import asyncio
         import traceback
+        import socket
 
         is_win = sys.platform.startswith("win") or sys.platform.startswith("cygwin") or sys.platform.startswith("msys")
 
@@ -73,11 +74,14 @@ namespace xpyt
 
         class ZMQSockReader:
             def __init__(self, fd):
-                self._fd = fd
+                # We wrap the raw handle into a Python socket object. 
+                # We don't use this to read/write, but we keep it alive 
+                # so the 'fileno' is recognized as a valid WinSock handle.
+                self._sock = socket.socket(fileno=fd)
 
             def fileno(self):
-                # This allows asyncio's select to see the handle
-                return self._fd
+                # asyncio calls this to get the handle for the select() call
+                return self._sock.fileno()
         
         def make_fd(fd):
             if is_win:
