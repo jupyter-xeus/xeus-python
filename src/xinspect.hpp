@@ -19,11 +19,11 @@ namespace py = pybind11;
 
 namespace xpyt
 {
-    py::list get_completions(const std::string& code, int cursor_pos);
-    py::list get_completions(const std::string& code);
+    py::list get_completions(const std::string& code, int cursor_pos, py::dict globals);
+    py::list get_completions(const std::string& code, py::dict globals);
 
-    std::string formatted_docstring(const std::string& code, int cursor_pos);
-    std::string formatted_docstring(const std::string& code);
+    std::string formatted_docstring(const std::string& code, int cursor_pos, py::dict globals);
+    std::string formatted_docstring(const std::string& code, py::dict globals);
 }
 
 #endif

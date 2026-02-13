@@ -30,7 +30,7 @@ namespace nl = nlohmann;
 
 namespace xpyt
 {
-    class XEUS_PYTHON_API raw_interpreter : public xeus::xinterpreter
+    class XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT raw_interpreter : public xeus::xinterpreter
     {
     public:
 
@@ -42,7 +42,9 @@ namespace xpyt
         // If redirect_display_enabled is true (default) then this interpreter will
         // overwrite sys.displayhook and send execution results using publish_execution_result.
         // Disable this if your interpreter uses custom display hook.
-        raw_interpreter(bool redirect_output_enabled=true, bool redirect_display_enabled = true);
+        raw_interpreter(
+            py::dict globals,
+            bool redirect_output_enabled=true, bool redirect_display_enabled = true);
         virtual ~raw_interpreter();
 
     protected:
@@ -88,6 +90,10 @@ namespace xpyt
         bool m_release_gil_at_startup = true;
         gil_scoped_release_ptr m_release_gil = nullptr;
         bool m_redirect_display_enabled;
+
+        std::string _i,_ii,_iii;
+
+        py::dict m_global_dict;
     };
 
 }
