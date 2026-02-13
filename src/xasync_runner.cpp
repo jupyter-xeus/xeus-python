@@ -23,7 +23,7 @@ namespace xpyt
     xasync_runner::xasync_runner(py::dict globals)
         : xeus::xshell_runner(),
           m_global_dict{globals},
-            m_use_busy_loop{true}
+            m_use_busy_loop{false}
     {
         std::cout<< "xasync_runner created" << std::endl;
     }
@@ -97,7 +97,8 @@ namespace xpyt
 
         def run_main_busy_loop(fd_shell, fd_controller, shell_callback, controller_callback, raw_print):
             raw_print("Creating event loop busy loop")
-            loop = asyncio.get_event_loop()
+            loop = asyncio.new_event_loop() 
+            assign_event_loop = asyncio.set_event_loop(loop)
 
             task_shell = loop.create_task(busy_loop(fd_shell, shell_callback, "shell", raw_print))
             task_controller = loop.create_task(busy_loop(fd_controller, controller_callback, "controller", raw_print))
@@ -109,7 +110,8 @@ namespace xpyt
         def run_main_non_busy_loop(fd_shell, fd_controller, shell_callback, controller_callback, raw_print):
             raw_print("Creating event loop non-busy loop")
             # here we create / ensure we have an event loop
-            loop = asyncio.get_event_loop()
+            loop = asyncio.new_event_loop() 
+            assign_event_loop = asyncio.set_event_loop(loop)
             raw_print("Adding readers to event loop")
             loop.add_reader(fd_shell, shell_callback)
             loop.add_reader(fd_controller, controller_callback)
