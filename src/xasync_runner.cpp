@@ -74,15 +74,23 @@ namespace xpyt
 
         class ZMQSockReader:
             def __init__(self, fd):
-                # We wrap the raw handle into a Python socket object. 
-                # We don't use this to read/write, but we keep it alive 
-                # so the 'fileno' is recognized as a valid WinSock handle.
-                self._sock = socket.socket(fileno=fd)
+                # We wrap the handle, but we MUST NOT let Python close it
+                # because the C++ ZMQ context owns the lifecycle.
+                self._fd = fd
+                # On Windows, we use fromfd to create a socket object from the raw handle
+                # Note: socket.AF_INET is a dummy here; the handle is already initialized.
+                self._sock = socket.fromfd(self._fd, socket.AF_INET, socket.SOCK_STREAM)
 
             def fileno(self):
-                # asyncio calls this to get the handle for the select() call
-                return self._sock.fileno()
-        
+                return self._fd
+
+            def __del__(self):
+                # Detach prevents the destructor from closing the underlying WinSock handle
+                try:
+                    self._sock.detach()
+                except:
+                    pass
+                
         def make_fd(fd):
             if is_win:
                 return ZMQSockReader(fd)
