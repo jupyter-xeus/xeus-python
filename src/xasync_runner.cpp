@@ -23,7 +23,7 @@ namespace xpyt
     xasync_runner::xasync_runner(py::dict globals)
         : xeus::xshell_runner(),
           m_global_dict{globals},
-            m_use_busy_loop{false}
+            m_use_busy_loop{true}
     {
         std::cout<< "xasync_runner created" << std::endl;
     }
