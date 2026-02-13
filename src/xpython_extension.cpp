@@ -35,6 +35,8 @@
 #include "xeus-python/xdebugger.hpp"
 #include "xeus-python/xutils.hpp"
 
+#include "xeus-python/xaserver.hpp"
+
 namespace py = pybind11;
 
 
@@ -70,17 +72,40 @@ void launch(const py::list args_list)
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
 
+
+    py::dict globals = py::globals();    
+
     // Instantiating the xeus xinterpreter
     using interpreter_ptr = std::unique_ptr<xeus::xinterpreter>;
     interpreter_ptr interpreter;
     if (raw_mode)
     {
-        interpreter = interpreter_ptr(new xpyt::raw_interpreter());
+        interpreter = interpreter_ptr(new xpyt::raw_interpreter(globals));
     }
     else
     {
-        interpreter = interpreter_ptr(new xpyt::interpreter());
+        interpreter = interpreter_ptr(new xpyt::interpreter(globals));
     }
+
+    
+    auto make_the_debugger = [&globals](
+                            xeus::xcontext& context,
+                            const xeus::xconfiguration& config,
+                            const std::string& user_name,
+                            const std::string& session_id,
+                            const nl::json& debugger_config) -> std::unique_ptr<xeus::xdebugger>
+    {
+        return xpyt::make_python_debugger(
+            globals,
+            context,
+            config,
+            user_name,
+            session_id,
+            debugger_config);
+    };
+            
+
+
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
@@ -100,11 +125,11 @@ void launch(const py::list args_list)
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main,
+                             xpyt::make_xaserver_factory(globals),
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
-                             xpyt::make_python_debugger);
+                             make_the_debugger);
 
         std::clog <<
             "Starting xeus-python kernel...\n\n"
@@ -119,10 +144,10 @@ void launch(const py::list args_list)
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main,
+                             xpyt::make_xaserver_factory(globals),
                              std::move(hist),
                              nullptr,
-                             xpyt::make_python_debugger);
+                             make_the_debugger);
 
         const auto& config = kernel.get_config();
         std::clog <<

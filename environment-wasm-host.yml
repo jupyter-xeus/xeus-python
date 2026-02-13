@@ -12,9 +12,11 @@ dependencies:
   - numpy
   - xeus-lite
   - xeus
-  - xeus-python-shell>=0.6.3
   - pyjs >=2,<3
   - libpython
   - zstd
   - openssl
   - xz
+  - ipywidgets
+  # - xeus-python-shell>=0.6.3
+
