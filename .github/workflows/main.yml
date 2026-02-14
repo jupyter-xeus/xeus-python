@@ -136,10 +136,12 @@ jobs:
         shell: cmd /C call {0}
         run: pytest . -vvv
 
-      - name: Test xeus-python C++
+      - name: Test xeus-python C++ (20 iterations)
         shell: cmd /C call {0}
         run: |
-          for /L %%i in (1,1,20) do test_xeus_python
-        timeout-minutes: 4
+            for /L %%i in (1,1,20) do (
+                echo Running iteration %%i
+                test_xeus_python || exit /b 1
+            )
+        timeout-minutes: 20
         working-directory: build\test
-
