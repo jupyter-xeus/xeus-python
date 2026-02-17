@@ -41,7 +41,7 @@ namespace xpyt
         using base_type = xeus::xdebugger_base;
 
         debugger(xeus::xcontext& context,
-                 const xeus::xconfiguration& config,
+                 const xeus::xkernel_configuration& config,
                  const std::string& user_name,
                  const std::string& session_id,
                  const nl::json& debugger_config);
@@ -76,7 +76,7 @@ namespace xpyt
 
     XEUS_PYTHON_API
     std::unique_ptr<xeus::xdebugger> make_python_debugger(xeus::xcontext& context,
-                                                          const xeus::xconfiguration& config,
+                                                          const xeus::xkernel_configuration& config,
                                                           const std::string& user_name,
                                                           const std::string& session_id,
                                                           const nl::json& debugger_config);
