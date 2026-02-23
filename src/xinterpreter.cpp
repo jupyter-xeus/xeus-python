@@ -312,8 +312,7 @@ namespace xpyt
         kernel_res["language_info"]["mimetype"] = "text/x-python";
         kernel_res["language_info"]["file_extension"] = ".py";
         kernel_res["language_info"]["pygments_lexer"] = "ipython" + std::to_string(PY_MAJOR_VERSION);
-        // this breaks syntax highlighting
-        //kernel_res["language_info"]["codemirror_mode"] = R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}";
+        kernel_res["language_info"]["codemirror_mode"] = nl::json::object({{"name", "ipython"}, {"version", PY_MAJOR_VERSION}});
         kernel_res["language_info"]["nbconvert_exporter"] = "python";
         kernel_res["banner"] = banner;
         kernel_res["debugger"] = has_debugger;
