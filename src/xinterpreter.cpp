@@ -310,18 +310,21 @@ namespace xpyt
             "text/x-python",    // language_mimetype
             ".py",              // language_file_extension
             "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
+            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",
             "python",           // language_nbconvert_exporter
             banner,             // banner
-            has_debugger, // debugger
+            has_debugger,       // debugger
             help_links          // help_links
         );
-
+        // use a dict, string seems to be not supported by the frontend
+        rep["language_info"]["codemirror_mode"] = nl::json::object({
+            {"name", "ipython"},
+            {"version", PY_MAJOR_VERSION}
+        });
         if (has_debugger)
         {
             rep["supported_features"] = nl::json::array({"debugger"});
         }
-
         return rep;
     }
 
