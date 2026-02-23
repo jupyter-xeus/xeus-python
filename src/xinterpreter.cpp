@@ -301,28 +301,29 @@ namespace xpyt
         });
 
         bool has_debugger = (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13);
-        nl::json rep = xeus::create_info_reply(
-            "5.5",              // protocol_version - overwrited in xeus core
-            "xeus-python",      // implementation
-            XPYT_VERSION,       // implementation_version
-            "python",           // language_name
-            PY_VERSION,         // language_version
-            "text/x-python",    // language_mimetype
-            ".py",              // language_file_extension
-            "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
-            "python",           // language_nbconvert_exporter
-            banner,             // banner
-            has_debugger, // debugger
-            help_links          // help_links
-        );
+
+        nl::json kernel_res;
+        kernel_res["status"] = "ok";
+        kernel_res["protocol_version"] = "5.3";
+        kernel_res["implementation"] = "xeus-python";
+        kernel_res["implementation_version"] = XPYT_VERSION;
+        kernel_res["language_info"]["name"] = "python";
+        kernel_res["language_info"]["version"] = PY_VERSION;
+        kernel_res["language_info"]["mimetype"] = "text/x-python";
+        kernel_res["language_info"]["file_extension"] = ".py";
+        kernel_res["language_info"]["pygments_lexer"] = "ipython" + std::to_string(PY_MAJOR_VERSION);
+        // this breaks syntax highlighting
+        //kernel_res["language_info"]["codemirror_mode"] = R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}";
+        kernel_res["language_info"]["nbconvert_exporter"] = "python";
+        kernel_res["banner"] = banner;
+        kernel_res["debugger"] = has_debugger;
+        kernel_res["help_links"] = help_links;
 
         if (has_debugger)
         {
-            rep["supported_features"] = nl::json::array({"debugger"});
+            kernel_res["supported_features"] = nl::json::array({"debugger"});
         }
-
-        return rep;
+        return kernel_res;
     }
 
     void interpreter::shutdown_request_impl()
