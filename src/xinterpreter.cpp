@@ -304,7 +304,7 @@ namespace xpyt
 
         nl::json kernel_res;
         kernel_res["status"] = "ok";
-        kernel_res["protocol_version"] = "5.3";
+        kernel_res["protocol_version"] = "5.5";
         kernel_res["implementation"] = "xeus-python";
         kernel_res["implementation_version"] = XPYT_VERSION;
         kernel_res["language_info"]["name"] = "python";
