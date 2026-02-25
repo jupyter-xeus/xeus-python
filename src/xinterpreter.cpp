@@ -343,25 +343,52 @@ namespace xpyt
         }
         catch (py::error_already_set& e)
         {
-            std::cout<<"an error occurred during code execution: "<<e.what()<<std::endl;
+            try{
+                std::cout<<"an error occurred during code execution: "<<e.what()<<std::endl;
 
-            std::cout<<"grabbing traceback"<<std::endl;
-            // This will grab the latest traceback and set shell.last_error
-            m_ipython_shell.attr("showtraceback")();
+                std::cout<<"grabbing traceback"<<std::endl;
+                // This will grab the latest traceback and set shell.last_error
+                m_ipython_shell.attr("showtraceback")();
 
-            std::cout<<"extracting error from shell.last_error"<<std::endl;
-            py::list pyerror = m_ipython_shell.attr("last_error");
+                std::cout<<"extracting error from shell.last_error"<<std::endl;
+                py::list pyerror = m_ipython_shell.attr("last_error");
 
-            std::cout<<"create xerror from pyerror"<<std::endl;
-            xerror error = extract_error(pyerror);
+                std::cout<<"create xerror from pyerror"<<std::endl;
+                xerror error = extract_error(pyerror);
 
-            std::cout<<"publishing execution error"<<std::endl;
-            publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+                std::cout<<"publishing execution error"<<std::endl;
+                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
 
-            std::cout<<"creating error reply"<<std::endl;
-            error.m_traceback.resize(1);
-            error.m_traceback[0] = code;
-            return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
+                std::cout<<"creating error reply"<<std::endl;
+                error.m_traceback.resize(1);
+                error.m_traceback[0] = code;
+                return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
+            }
+            catch (py::error_already_set& e)
+            {
+                std::cout<<"an error occurred during error handling: "<<e.what()<<std::endl;
+                return xeus::create_error_reply("ErrorDuringErrorHandling", e.what(), std::vector<std::string>());
+            }
+            catch(std::exception& e)
+            {
+                std::cout<<"a standard exception occurred during error handling: "<<e.what()<<std::endl;
+                return xeus::create_error_reply("ExceptionDuringErrorHandling", e.what(), std::vector<std::string>());
+            }
+            catch (...)
+            {
+                std::cout<<"an unknown error occurred during error handling"<<std::endl;
+                return xeus::create_error_reply("UnknownErrorDuringErrorHandling", "", std::vector<std::string>());
+            }
+        }
+        catch(std::exception& e)
+        {
+            std::cout<<"a standard exception occurred during code execution: "<<e.what()<<std::endl;
+            return xeus::create_error_reply("Exception", e.what(), std::vector<std::string>());
+        }
+        catch (...)
+        {
+            std::cout<<"an unknown error occurred during code execution"<<std::endl;
+            return xeus::create_error_reply("UnknownError", "", std::vector<std::string>());
         }
     }
 
