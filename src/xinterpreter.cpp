@@ -37,6 +37,9 @@
 #include "xinternal_utils.hpp"
 #include "xstream.hpp"
 
+// TODO REMOVE AFTER DEBUGGING
+#include <iostream>
+
 namespace py = pybind11;
 namespace nl = nlohmann;
 using namespace pybind11::literals;
@@ -323,30 +326,41 @@ namespace xpyt
 
     nl::json interpreter::internal_request_impl(const nl::json& content)
     {
+        std::cout << "Received internal request with content: " << content.dump(4) << std::endl;
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
 
+        std::cout<<"reset traceback"<<std::endl;
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
-
+        std::cout<<"entering try block"<<std::endl;
         try
         {
+            std::cout<<"executing code: "<<code<<std::endl;
             exec(py::str(code));
+            std::cout<<"code executed successfully"<<std::endl;
             return xeus::create_successful_reply();
         }
         catch (py::error_already_set& e)
         {
+            std::cout<<"an error occurred during code execution: "<<e.what()<<std::endl;
+
+            std::cout<<"grabbing traceback"<<std::endl;
             // This will grab the latest traceback and set shell.last_error
             m_ipython_shell.attr("showtraceback")();
 
+            std::cout<<"extracting error from shell.last_error"<<std::endl;
             py::list pyerror = m_ipython_shell.attr("last_error");
 
+            std::cout<<"create xerror from pyerror"<<std::endl;
             xerror error = extract_error(pyerror);
 
+            std::cout<<"publishing execution error"<<std::endl;
             publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+
+            std::cout<<"creating error reply"<<std::endl;
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
-
             return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
         }
     }
