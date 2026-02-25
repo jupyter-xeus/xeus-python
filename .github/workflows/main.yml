@@ -138,10 +138,10 @@ jobs:
         shell: cmd /C call {0}
         run: pytest . -vvv
 
-      - name: Test xeus-python C++ (40 iterations)
+      - name: Test xeus-python C++ (100 iterations)
         shell: cmd /C call {0}
         run: |
-            for /L %%i in (1,1,40) do (
+            for /L %%i in (1,1,100) do (
                 echo Running iteration %%i
                 test_xeus_python || exit /b 1
             )
