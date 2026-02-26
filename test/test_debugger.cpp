@@ -8,7 +8,9 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+
 #include "doctest/doctest.h"
+
 
 #include <algorithm>
 #include <chrono>
@@ -18,6 +20,7 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+
 
 #include "xeus/xsystem.hpp"
 
@@ -34,6 +37,11 @@
 #else
 #include <unistd.h>
 #endif
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <boost/process.hpp>
 
 /***********************************
  * Should be moved in a utils file *
@@ -361,7 +369,7 @@ nl::json make_exception_breakpoint_request(int seq)
         })},
         {"breakMode", "always"}
     };
-    nl::json options = nl::json::array({except_option, except_option});
+    nl::json options = nl::json::array({ except_option, except_option });
     nl::json req = {
         {"type", "request"},
         {"seq", seq},
@@ -383,8 +391,8 @@ class debugger_client
 public:
 
     debugger_client(xeus::xcontext& context,
-                    const std::string& connection_file,
-                    const std::string& log_file);
+        const std::string& connection_file,
+        const std::string& log_file);
 
     bool test_init();
     bool test_disconnect();
@@ -430,10 +438,10 @@ private:
 };
 
 debugger_client::debugger_client(xeus::xcontext& context,
-                                 const std::string& connection_file,
-                                 const std::string& log_file)
+    const std::string& connection_file,
+    const std::string& log_file)
     : m_client(context, "debugger_client",
-               xeus::load_configuration(connection_file), log_file)
+        xeus::load_configuration(connection_file), log_file)
 {
 }
 
@@ -471,7 +479,7 @@ bool debugger_client::print_code_variable(const std::string& expected, int& seq)
     ++seq;
     nl::json json1 = m_client.receive_on_control();
 
-    if(json1["content"]["body"]["stackFrames"].empty())
+    if (json1["content"]["body"]["stackFrames"].empty())
     {
         m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
         ++seq;
@@ -491,11 +499,11 @@ bool debugger_client::print_code_variable(const std::string& expected, int& seq)
     const auto& ar = json3["content"]["body"]["variables"];
     bool var_found = false;
     std::string name, value;
-    for(auto it = ar.begin(); it != ar.end() && !var_found; ++it)
+    for (auto it = ar.begin(); it != ar.end() && !var_found; ++it)
     {
         auto d = *it;
         name = d["name"];
-        if(name == "i")
+        if (name == "i")
         {
             var_found = true;
             value = d["value"];
@@ -745,7 +753,7 @@ bool debugger_client::test_inspect_variables()
     auto check_var = [&vars](const std::string& name, const std::string& value) {
         auto x = std::find_if(vars.begin(), vars.end(), [&name](const nl::json& var) {
             return var.is_object() && var.value("name", "") == name;
-        });
+            });
         if (x == vars.end())
         {
             std::cout << "missing " << name << std::endl;
@@ -753,7 +761,7 @@ bool debugger_client::test_inspect_variables()
         }
         nl::json var = *x;
         return var["value"] == value && var["variablesReference"] == 0;
-    };
+        };
 
     bool res = check_var("i", "4") && check_var("j", "8") && check_var("k", "5");
     return res;
@@ -858,7 +866,7 @@ bool debugger_client::test_variables()
     ++seq;
     nl::json json1 = m_client.receive_on_control();
 
-    if(json1["content"]["body"]["stackFrames"].empty())
+    if (json1["content"]["body"]["stackFrames"].empty())
     {
         m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
         ++seq;
@@ -909,7 +917,7 @@ bool debugger_client::test_copy_to_globals()
     m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
     ++seq;
     nl::json json1 = m_client.receive_on_control();
-    if(json1["content"]["body"]["stackFrames"].empty())
+    if (json1["content"]["body"]["stackFrames"].empty())
     {
         m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
         ++seq;
@@ -935,7 +943,7 @@ bool debugger_client::test_copy_to_globals()
     ++seq;
     nl::json json3 = m_client.receive_on_control();
     nl::json local_var = {};
-    for (auto &var: json3["content"]["body"]["variables"]){
+    for (auto& var : json3["content"]["body"]["variables"]) {
         if (var["evaluateName"] == local_var_name) {
             local_var = var;
         }
@@ -952,7 +960,7 @@ bool debugger_client::test_copy_to_globals()
     ++seq;
     nl::json json4 = m_client.receive_on_control();
     nl::json global_var = {};
-    for (auto &var: json4["content"]["body"]["variables"]){
+    for (auto& var : json4["content"]["body"]["variables"]) {
         if (var["evaluateName"] == global_var_name) {
             global_var = var;
         }
@@ -1034,7 +1042,7 @@ std::string debugger_client::get_external_path()
 void debugger_client::dump_external_file()
 {
     static bool already_dumped = false;
-    if(!already_dumped)
+    if (!already_dumped)
     {
         std::ofstream out(get_external_path());
         out << make_external_code() << std::endl;
@@ -1139,7 +1147,7 @@ void dump_connection_file()
   "kernel_name": "xcpp"
 }
         )";
-    if(!dumped)
+    if (!dumped)
     {
         std::ofstream out(KERNEL_JSON);
         out << connection_file;
@@ -1147,19 +1155,25 @@ void dump_connection_file()
     }
 }
 
-void start_kernel()
+struct KernelProcess
 {
-    dump_connection_file();
-    std::string cmd = "xpython -f " + KERNEL_JSON + "&";
-    int ret2 = std::system(cmd.c_str());
-    std::this_thread::sleep_for(2s);
-}
+    KernelProcess()
+    {
+        std::this_thread::sleep_for(2s);
+    }
+
+private:
+
+    bool _ = [] { dump_connection_file(); return true; }();
+    boost::asio::io_context ctx;
+    boost::process::process process{ ctx, boost::process::environment::find_executable("xpython"), { "-f" , KERNEL_JSON } };
+};
 
 TEST_SUITE("debugger")
 {
     TEST_CASE("init")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1176,7 +1190,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("disconnect")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1192,7 +1206,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("attach")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1209,7 +1223,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("multisession")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1228,7 +1242,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("set_external_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1247,7 +1261,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("external_next_continue")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1264,7 +1278,7 @@ TEST_SUITE("debugger")
     */
     TEST_CASE("set_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1281,7 +1295,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("set_exception_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1298,7 +1312,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("source")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1317,7 +1331,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("next_continue")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1337,7 +1351,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("stepin")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1355,7 +1369,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("stack_trace")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1372,7 +1386,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("debug_info")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1389,7 +1403,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("inspect_variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1404,28 +1418,28 @@ TEST_SUITE("debugger")
         }
     }
 
-// TODO: Get test_rich_inspect_variables to work
-/*
-    TEST_CASE("rich_inspect_variables")
-    {
-        start_kernel();
-        timer t;
-        auto context_ptr = xeus::make_zmq_context();
+    // TODO: Get test_rich_inspect_variables to work
+    /*
+        TEST_CASE("rich_inspect_variables")
         {
-            debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_rich_inspect_variables.log");
-            deb.start();
-            bool res = deb.test_rich_inspect_variables();
-            deb.shutdown();
-            std::this_thread::sleep_for(2s);
-            CHECK(res);
-            t.notify_done();
+            KernelProcess xpython_process;
+            timer t;
+            auto context_ptr = xeus::make_zmq_context();
+            {
+                debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_rich_inspect_variables.log");
+                deb.start();
+                bool res = deb.test_rich_inspect_variables();
+                deb.shutdown();
+                std::this_thread::sleep_for(2s);
+                CHECK(res);
+                t.notify_done();
+            }
         }
-    }
-*/
+    */
 
     TEST_CASE("variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1442,7 +1456,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("copy_to_globals")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
