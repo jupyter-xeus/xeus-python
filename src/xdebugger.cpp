@@ -59,7 +59,10 @@ namespace xpyt
         , m_debugpy_host("127.0.0.1")
         , m_debugpy_port("")
         , m_debugger_config(debugger_config)
+        , m_just_my_code(false)
+        , m_filter_internal_frames(true)
     {
+        std::cout << "Debugger Config: " << m_debugger_config << std::endl;
         m_debugpy_port = xeus::find_free_port(100, 5678, 5900);
         register_request_handler("inspectVariables", std::bind(&debugger::inspect_variables_request, this, _1), false);
         register_request_handler("richInspectVariables", std::bind(&debugger::rich_inspect_variables_request, this, _1), false);
@@ -67,7 +70,6 @@ namespace xpyt
         register_request_handler("configurationDone", std::bind(&debugger::configuration_done_request, this, _1), true);
         register_request_handler("copyToGlobals", std::bind(&debugger::copy_to_globals_request, this, _1), true);
         register_request_handler("modules", std::bind(&debugger::modules, this, _1), false);
-
     }
 
     debugger::~debugger()
@@ -176,6 +178,24 @@ namespace xpyt
             {"port", std::stoi(m_debugpy_port)}
         };
         new_message["arguments"]["logToFile"] = true;
+
+        // Add DebugStdLib when not just-my-code
+        if (!m_just_my_code)
+        {
+            new_message["arguments"]["debugOptions"] = {"DebugStdLib"};
+        }
+
+        // Dynamic skip rules
+        if (m_filter_internal_frames)
+        {
+            nl::json rules = nl::json::array();
+            for (const auto& path : m_internal_modules)
+            {
+                rules.push_back({{"path", path}, {"include", false}});
+            }
+            new_message["arguments"]["rules"] = rules;
+        }
+
         return forward_message(new_message);
     }
 

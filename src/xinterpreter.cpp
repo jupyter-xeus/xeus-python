@@ -81,6 +81,21 @@ namespace xpyt
 
         instanciate_ipython_shell();
 
+        py::dict modules = sys.attr("modules");
+        std::vector<std::string> internal_mod_paths;
+        internal_mod_paths.reserve(len(modules));
+
+        for (auto item : modules)
+        {
+            py::object mod = py::reinterpret_borrow<py::object>(item.second);
+            if (py::hasattr(mod, "__file__"))
+            {
+                std::string path = mod.attr("__file__").cast<std::string>();
+                internal_mod_paths.push_back(path);
+            }
+        }
+
+
         m_ipython_shell_app.attr("initialize")(use_jedi_for_completion());
         m_ipython_shell = m_ipython_shell_app.attr("shell");
 
