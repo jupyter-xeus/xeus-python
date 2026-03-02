@@ -259,6 +259,7 @@ namespace xpyt
         if (std::getenv("XEUS_LOG") != nullptr)
         {
             std::ofstream out("xeus.log", std::ios_base::app);
+            //auto& out = std::cout;
             out << "===== DEBUGGER CONFIG =====" << std::endl;
             out << m_debugger_config.dump() << std::endl;
         }
@@ -289,9 +290,11 @@ namespace xpyt
         }
         else
         {
+            std::cout << "\n### " << std::this_thread::get_id() << " CREATING PYDEBUGGER ..." << std::endl;
             py::gil_scoped_acquire acquire;
             py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
+            std::cout << "\n### " << std::this_thread::get_id() << " CREATING PYDEBUGGER - DONE" << std::endl;
 
             // Get debugpy version
             std::string expression = "debugpy.__version__";
