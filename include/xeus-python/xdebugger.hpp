@@ -80,7 +80,7 @@ namespace xpyt
         py::object m_pydebugger;
         struct before { 
             py::object& ref_pydebugger;
-            __declspec(noinline) ~before(){
+            ~before(){
                 std::cout << "\n### " << std::this_thread::get_id() << " DESTROYING PYDEBUGGER ..." << std::endl; 
                 py::gil_scoped_acquire acquire;
                 auto pydebugger = std::move(ref_pydebugger);
