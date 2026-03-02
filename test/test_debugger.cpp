@@ -41,6 +41,7 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+#include <boost/asio.hpp>
 #include <boost/process.hpp>
 
 /***********************************
@@ -1166,7 +1167,14 @@ struct KernelProcess
     {
         running.emplace_back(m_impl);
         std::cout << "=> xpython launched" << std::endl;
-        std::this_thread::sleep_for(4s);
+
+        // wait for xpython to be ready before continuing
+        constexpr std::string_view ready_message = "Run with XEUS";
+        std::string err_output;
+        boost::asio::read_until(m_impl->err_pipe, boost::asio::dynamic_buffer(err_output), ready_message);
+        
+        std::cout << "=> xpython is ready" << std::endl;
+
     }
 
     ~KernelProcess()
@@ -1179,8 +1187,9 @@ struct KernelProcess
         {
             bool _ = [] { dump_connection_file(); return true; }();
             boost::asio::io_context ctx;
+            boost::asio::readable_pipe err_pipe{ ctx };
             boost::filesystem::path xpython_path = boost::process::environment::find_executable("xpython");
-            boost::process::process process{ ctx, xpython_path, { "-f" , KERNEL_JSON } };
+            boost::process::process process{ ctx, xpython_path, { "-f" , KERNEL_JSON }, boost::process::process_stdio{{}, {}, err_pipe} };
 
             struct on_destruction {
                 ~on_destruction()
