@@ -77,6 +77,7 @@ namespace xpyt
         nl::json m_debugger_config;
 
         struct after { ~after(){ std::cout << "\n### " << std::this_thread::get_id() << " DESTROYING PYDEBUGGER - DONE" << std::endl; } } after_pydebugger;
+
         py::object m_pydebugger;
         struct before { 
             py::object& ref_pydebugger;
