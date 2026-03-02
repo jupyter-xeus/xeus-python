@@ -393,6 +393,36 @@ namespace xpyt
         std::cout << "\n--> D " << std::endl;
         return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
 
+
+        std::cout << "\n--> processing error ... " << std::endl;
+        py::list pyerror = [&]() -> py::list {
+            try {
+                auto last_error = m_ipython_shell.attr("last_error");
+                std::cout << "\n--> converting last_error to list ... " << std::endl;
+                return py::list(last_error);
+            }
+            catch (py::error_already_set& e)
+            {
+                std::cout << "\n--> processing error: failed acquiring `last_error` " << std::endl;
+                return py::list{};
+            }
+        }();
+
+        if (pyerror.empty())
+        {
+            return xeus::create_error_reply("SNAFU", "python SNAFU");
+        }
+
+        std::cout << "\n--> A " << std::endl;
+        xerror error = extract_error(pyerror);
+        std::cout << "\n--> B " << std::endl;
+        publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+        std::cout << "\n--> C " << std::endl;
+        error.m_traceback.resize(1);
+        error.m_traceback[0] = code;
+        std::cout << "\n--> D " << std::endl;
+        return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
+
     }
 
     void interpreter::set_request_context(xeus::xrequest_context context)
