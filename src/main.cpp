@@ -80,6 +80,10 @@ int main(int argc, char* argv[])
     // Setting Program Name
     static const std::string executable(xpyt::get_python_path());
     static const std::wstring wexecutable(executable.cbegin(), executable.cend());
+    if (!std::filesystem::exists(wexecutable))
+    {
+        throw std::runtime_error(std::string("cannot find python executable, tried ") + executable);
+    }
     config.program_name = const_cast<wchar_t*>(wexecutable.c_str());
 
     // Setting Python Home
