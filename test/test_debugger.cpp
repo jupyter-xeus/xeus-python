@@ -1073,6 +1073,8 @@ class timer
 {
 public:
 
+    struct timeout : std::runtime_error { using std::runtime_error::runtime_error; };
+
     timer();
     ~timer();
 
@@ -1116,8 +1118,10 @@ void timer::run_timer()
     std::unique_lock<std::mutex> lk(m_mcv);
     if (!m_cv.wait_for(lk, std::chrono::seconds(20), [this]() { return m_done; }))
     {
-        std::clog << "Unit test time out !!" << std::endl;
-        std::terminate();
+        constexpr auto message = "Unit test time out !!";
+        std::clog << message << std::endl;
+        //std::terminate();
+        throw timeout{ message }; // same as calling terminate if unhandled, but some impl will also display the error in the console
     }
 }
 
@@ -1157,17 +1161,68 @@ void dump_connection_file()
 
 struct KernelProcess
 {
+
     KernelProcess()
     {
-        std::this_thread::sleep_for(2s);
+        running.emplace_back(m_impl);
+        std::cout << "=> xpython launched" << std::endl;
+        std::this_thread::sleep_for(4s);
     }
 
-private:
+    ~KernelProcess()
+    {
+        std::cout << "=> xpython - destructor end" << std::endl;
+    }
 
-    bool _ = [] { dump_connection_file(); return true; }();
-    boost::asio::io_context ctx;
-    boost::process::process process{ ctx, boost::process::environment::find_executable("xpython"), { "-f" , KERNEL_JSON } };
+    private:
+        struct Impl
+        {
+            bool _ = [] { dump_connection_file(); return true; }();
+            boost::asio::io_context ctx;
+            boost::filesystem::path xpython_path = boost::process::environment::find_executable("xpython");
+            boost::process::process process{ ctx, xpython_path, { "-f" , KERNEL_JSON } };
+
+            struct on_destruction {
+                ~on_destruction()
+                {
+                    std::cout << "=> xpython - destructor begin" << std::endl;
+                }
+            };
+        };
+
+        std::shared_ptr<Impl> m_impl = std::make_shared<Impl>();
+
+        struct on_program_exit
+        {
+            ~on_program_exit()
+            {
+                std::cout << "=> test program exiting (after `main()`): explicitly terminate remaining sub-processes ..." << std::endl;
+                for (auto& maybe_process : running)
+                {
+                    if (auto process_impl = maybe_process.lock())
+                    {
+                        std::cout << "=>   request exit politely : " << process_impl->xpython_path << "(" << process_impl->process.id() << ") ..." << std::endl;
+                        process_impl->process.request_exit();
+                        //process_impl->process.wait();
+                        std::this_thread::sleep_for(std::chrono::seconds(2));
+                        if (process_impl->process.running())
+                        {
+                            std::cout << "=>   still running, force terminate : " << process_impl->xpython_path << "(" << process_impl->process.id() << ") ..." << std::endl;
+                            process_impl->process.terminate();
+                            process_impl->process.wait();
+                        }
+                        std::cout << "=>   terminate " << process_impl->xpython_path << "(" << process_impl->process.id() << ") - DONE" << std::endl;
+                    }
+                }
+                std::cout << "=> test program exiting : explicitly terminate remaining sub-processes - DONE" << std::endl;
+            }
+        };
+        static std::vector<std::weak_ptr<Impl>> running;
+        static on_program_exit run_on_program_exit;
 };
+
+std::vector<std::weak_ptr<KernelProcess::Impl>> KernelProcess::running;
+KernelProcess::on_program_exit KernelProcess::run_on_program_exit;
 
 TEST_SUITE("debugger")
 {
