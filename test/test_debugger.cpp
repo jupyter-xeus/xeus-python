@@ -8,7 +8,9 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
+
 #include "doctest/doctest.h"
+
 
 #include <algorithm>
 #include <chrono>
@@ -18,6 +20,7 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+
 
 #include "xeus/xsystem.hpp"
 
@@ -34,6 +37,12 @@
 #else
 #include <unistd.h>
 #endif
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <boost/asio.hpp>
+#include <boost/process.hpp>
 
 /***********************************
  * Should be moved in a utils file *
@@ -361,7 +370,7 @@ nl::json make_exception_breakpoint_request(int seq)
         })},
         {"breakMode", "always"}
     };
-    nl::json options = nl::json::array({except_option, except_option});
+    nl::json options = nl::json::array({ except_option, except_option });
     nl::json req = {
         {"type", "request"},
         {"seq", seq},
@@ -383,8 +392,8 @@ class debugger_client
 public:
 
     debugger_client(xeus::xcontext& context,
-                    const std::string& connection_file,
-                    const std::string& log_file);
+        const std::string& connection_file,
+        const std::string& log_file);
 
     bool test_init();
     bool test_disconnect();
@@ -430,10 +439,10 @@ private:
 };
 
 debugger_client::debugger_client(xeus::xcontext& context,
-                                 const std::string& connection_file,
-                                 const std::string& log_file)
+    const std::string& connection_file,
+    const std::string& log_file)
     : m_client(context, "debugger_client",
-               xeus::load_configuration(connection_file), log_file)
+        xeus::load_configuration(connection_file), log_file)
 {
 }
 
@@ -471,7 +480,7 @@ bool debugger_client::print_code_variable(const std::string& expected, int& seq)
     ++seq;
     nl::json json1 = m_client.receive_on_control();
 
-    if(json1["content"]["body"]["stackFrames"].empty())
+    if (json1["content"]["body"]["stackFrames"].empty())
     {
         m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
         ++seq;
@@ -491,11 +500,11 @@ bool debugger_client::print_code_variable(const std::string& expected, int& seq)
     const auto& ar = json3["content"]["body"]["variables"];
     bool var_found = false;
     std::string name, value;
-    for(auto it = ar.begin(); it != ar.end() && !var_found; ++it)
+    for (auto it = ar.begin(); it != ar.end() && !var_found; ++it)
     {
         auto d = *it;
         name = d["name"];
-        if(name == "i")
+        if (name == "i")
         {
             var_found = true;
             value = d["value"];
@@ -745,7 +754,7 @@ bool debugger_client::test_inspect_variables()
     auto check_var = [&vars](const std::string& name, const std::string& value) {
         auto x = std::find_if(vars.begin(), vars.end(), [&name](const nl::json& var) {
             return var.is_object() && var.value("name", "") == name;
-        });
+            });
         if (x == vars.end())
         {
             std::cout << "missing " << name << std::endl;
@@ -753,7 +762,7 @@ bool debugger_client::test_inspect_variables()
         }
         nl::json var = *x;
         return var["value"] == value && var["variablesReference"] == 0;
-    };
+        };
 
     bool res = check_var("i", "4") && check_var("j", "8") && check_var("k", "5");
     return res;
@@ -858,7 +867,7 @@ bool debugger_client::test_variables()
     ++seq;
     nl::json json1 = m_client.receive_on_control();
 
-    if(json1["content"]["body"]["stackFrames"].empty())
+    if (json1["content"]["body"]["stackFrames"].empty())
     {
         m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
         ++seq;
@@ -909,7 +918,7 @@ bool debugger_client::test_copy_to_globals()
     m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
     ++seq;
     nl::json json1 = m_client.receive_on_control();
-    if(json1["content"]["body"]["stackFrames"].empty())
+    if (json1["content"]["body"]["stackFrames"].empty())
     {
         m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
         ++seq;
@@ -935,7 +944,7 @@ bool debugger_client::test_copy_to_globals()
     ++seq;
     nl::json json3 = m_client.receive_on_control();
     nl::json local_var = {};
-    for (auto &var: json3["content"]["body"]["variables"]){
+    for (auto& var : json3["content"]["body"]["variables"]) {
         if (var["evaluateName"] == local_var_name) {
             local_var = var;
         }
@@ -952,7 +961,7 @@ bool debugger_client::test_copy_to_globals()
     ++seq;
     nl::json json4 = m_client.receive_on_control();
     nl::json global_var = {};
-    for (auto &var: json4["content"]["body"]["variables"]){
+    for (auto& var : json4["content"]["body"]["variables"]) {
         if (var["evaluateName"] == global_var_name) {
             global_var = var;
         }
@@ -1034,7 +1043,7 @@ std::string debugger_client::get_external_path()
 void debugger_client::dump_external_file()
 {
     static bool already_dumped = false;
-    if(!already_dumped)
+    if (!already_dumped)
     {
         std::ofstream out(get_external_path());
         out << make_external_code() << std::endl;
@@ -1064,6 +1073,8 @@ std::string debugger_client::make_external_invoker_code() const
 class timer
 {
 public:
+
+    struct timeout : std::runtime_error { using std::runtime_error::runtime_error; };
 
     timer();
     ~timer();
@@ -1108,8 +1119,10 @@ void timer::run_timer()
     std::unique_lock<std::mutex> lk(m_mcv);
     if (!m_cv.wait_for(lk, std::chrono::seconds(20), [this]() { return m_done; }))
     {
-        std::clog << "Unit test time out !!" << std::endl;
-        std::terminate();
+        constexpr auto message = "Unit test time out !!";
+        std::clog << message << std::endl;
+        //std::terminate();
+        throw timeout{ message }; // same as calling terminate if unhandled, but some impl will also display the error in the console
     }
 }
 
@@ -1139,7 +1152,7 @@ void dump_connection_file()
   "kernel_name": "xcpp"
 }
         )";
-    if(!dumped)
+    if (!dumped)
     {
         std::ofstream out(KERNEL_JSON);
         out << connection_file;
@@ -1147,19 +1160,84 @@ void dump_connection_file()
     }
 }
 
-void start_kernel()
+struct KernelProcess
 {
-    dump_connection_file();
-    std::string cmd = "xpython -f " + KERNEL_JSON + "&";
-    int ret2 = std::system(cmd.c_str());
-    std::this_thread::sleep_for(2s);
-}
+
+    KernelProcess()
+    {
+        running.emplace_back(m_impl);
+        std::cout << "=> xpython launched" << std::endl;
+
+        // wait for xpython to be ready before continuing
+        constexpr std::string_view ready_message = "Run with XEUS";
+        std::string err_output;
+        boost::asio::read_until(m_impl->err_pipe, boost::asio::dynamic_buffer(err_output), ready_message);
+        
+        std::cout << "=> xpython is ready" << std::endl;
+
+    }
+
+    ~KernelProcess()
+    {
+        std::cout << "=> xpython - destructor end" << std::endl;
+    }
+
+    private:
+        struct Impl
+        {
+            bool _ = [] { dump_connection_file(); return true; }();
+            boost::asio::io_context ctx;
+            boost::asio::readable_pipe err_pipe{ ctx };
+            boost::filesystem::path xpython_path = boost::process::environment::find_executable("xpython");
+            boost::process::process process{ ctx, xpython_path, { "-f" , KERNEL_JSON }, boost::process::process_stdio{{}, {}, err_pipe} };
+
+            struct on_destruction {
+                ~on_destruction()
+                {
+                    std::cout << "=> xpython - destructor begin" << std::endl;
+                }
+            };
+        };
+
+        std::shared_ptr<Impl> m_impl = std::make_shared<Impl>();
+
+        struct on_program_exit
+        {
+            ~on_program_exit()
+            {
+                std::cout << "=> test program exiting (after `main()`): explicitly terminate remaining sub-processes ..." << std::endl;
+                for (auto& maybe_process : running)
+                {
+                    if (auto process_impl = maybe_process.lock())
+                    {
+                        std::cout << "=>   request exit politely : " << process_impl->xpython_path << "(" << process_impl->process.id() << ") ..." << std::endl;
+                        process_impl->process.request_exit();
+                        //process_impl->process.wait();
+                        std::this_thread::sleep_for(std::chrono::seconds(2));
+                        if (process_impl->process.running())
+                        {
+                            std::cout << "=>   still running, force terminate : " << process_impl->xpython_path << "(" << process_impl->process.id() << ") ..." << std::endl;
+                            process_impl->process.terminate();
+                            process_impl->process.wait();
+                        }
+                        std::cout << "=>   terminate " << process_impl->xpython_path << "(" << process_impl->process.id() << ") - DONE" << std::endl;
+                    }
+                }
+                std::cout << "=> test program exiting : explicitly terminate remaining sub-processes - DONE" << std::endl;
+            }
+        };
+        static std::vector<std::weak_ptr<Impl>> running;
+        static on_program_exit run_on_program_exit;
+};
+
+std::vector<std::weak_ptr<KernelProcess::Impl>> KernelProcess::running;
+KernelProcess::on_program_exit KernelProcess::run_on_program_exit;
 
 TEST_SUITE("debugger")
 {
     TEST_CASE("init")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1176,7 +1254,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("disconnect")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1192,7 +1270,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("attach")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1209,7 +1287,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("multisession")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1228,7 +1306,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("set_external_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1247,7 +1325,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("external_next_continue")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1264,7 +1342,7 @@ TEST_SUITE("debugger")
     */
     TEST_CASE("set_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1281,7 +1359,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("set_exception_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1298,7 +1376,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("source")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1317,7 +1395,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("next_continue")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1337,7 +1415,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("stepin")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1355,7 +1433,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("stack_trace")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1372,7 +1450,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("debug_info")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1389,7 +1467,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("inspect_variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1404,28 +1482,28 @@ TEST_SUITE("debugger")
         }
     }
 
-// TODO: Get test_rich_inspect_variables to work
-/*
-    TEST_CASE("rich_inspect_variables")
-    {
-        start_kernel();
-        timer t;
-        auto context_ptr = xeus::make_zmq_context();
+    // TODO: Get test_rich_inspect_variables to work
+    /*
+        TEST_CASE("rich_inspect_variables")
         {
-            debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_rich_inspect_variables.log");
-            deb.start();
-            bool res = deb.test_rich_inspect_variables();
-            deb.shutdown();
-            std::this_thread::sleep_for(2s);
-            CHECK(res);
-            t.notify_done();
+            KernelProcess xpython_process;
+            timer t;
+            auto context_ptr = xeus::make_zmq_context();
+            {
+                debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_rich_inspect_variables.log");
+                deb.start();
+                bool res = deb.test_rich_inspect_variables();
+                deb.shutdown();
+                std::this_thread::sleep_for(2s);
+                CHECK(res);
+                t.notify_done();
+            }
         }
-    }
-*/
+    */
 
     TEST_CASE("variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1442,7 +1520,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("copy_to_globals")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {

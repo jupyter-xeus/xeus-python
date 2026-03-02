@@ -43,7 +43,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
 endif()
 
 find_package(Threads)
-find_package(doctest)
+find_package(doctest REQUIRED)
+
+cmake_policy(SET CMP0167 OLD) # use find boost from old cmake
+find_package(Boost REQUIRED COMPONENTS process filesystem)
 
 include_directories(${GTEST_INCLUDE_DIRS} SYSTEM)
 
@@ -70,7 +73,7 @@ set_target_properties(test_xeus_python PROPERTIES
 )
 
 include_directories(${PYTHON_INCLUDE_DIRS})
-target_link_libraries(test_xeus_python ${PYTHON_LIBRARIES} xeus-zmq doctest::doctest ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(test_xeus_python ${PYTHON_LIBRARIES} xeus-zmq doctest::doctest Boost::headers Boost::filesystem Boost::process ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(test_xeus_python PRIVATE ${XEUS_PYTHON_INCLUDE_DIR})
 
 add_custom_target(xtest COMMAND test_xeus_python DEPENDS test_xeus_python)
