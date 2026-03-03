@@ -65,7 +65,9 @@ namespace xpyt
 
         nl::json kernel_info_request_impl() override;
 
-        void shutdown_request_impl() override;
+        nl::json shutdown_request_impl(bool restart) override;
+
+        nl::json interrupt_request_impl() override;
 
         void set_request_context(xeus::xrequest_context context) override;
         const xeus::xrequest_context& get_request_context() const noexcept override;

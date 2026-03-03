@@ -302,7 +302,6 @@ namespace xpyt
 
         bool has_debugger = (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13);
         nl::json rep = xeus::create_info_reply(
-            "5.5",              // protocol_version - overwrited in xeus core
             "xeus-python",      // implementation
             XPYT_VERSION,       // implementation_version
             "python",           // language_name
@@ -310,26 +309,28 @@ namespace xpyt
             "text/x-python",    // language_mimetype
             ".py",              // language_file_extension
             "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",
+            nl::json{{"name", "ipython"}, {"version", std::to_string(PY_MAJOR_VERSION)}},
             "python",           // language_nbconvert_exporter
             banner,             // banner
-            has_debugger,       // debugger
             help_links          // help_links
         );
-        // use a dict, string seems to be not supported by the frontend
-        rep["language_info"]["codemirror_mode"] = nl::json::object({
-            {"name", "ipython"},
-            {"version", PY_MAJOR_VERSION}
-        });
+
         if (has_debugger)
         {
             rep["supported_features"] = nl::json::array({"debugger"});
         }
+
         return rep;
     }
 
-    void interpreter::shutdown_request_impl()
+    nl::json interpreter::shutdown_request_impl(bool /*restart*/)
     {
+        return xeus::create_shutdown_reply(false);
+    }
+
+    nl::json interpreter::interrupt_request_impl()
+    {
+        return xeus::create_interrupt_reply();
     }
 
     nl::json interpreter::internal_request_impl(const nl::json& content)

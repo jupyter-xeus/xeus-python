@@ -25,7 +25,7 @@ using namespace std::chrono_literals;
 
 xeus_logger_client::xeus_logger_client(xeus::xcontext& context,
                                        const std::string& user_name,
-                                       const xeus::xconfiguration& config,
+                                       const xeus::xkernel_configuration& config,
                                        const std::string& file_name)
     : m_user_name(user_name)
     , m_file_name(file_name)
