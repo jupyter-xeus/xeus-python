@@ -26,7 +26,7 @@ namespace xpyt
         using event_callback = base_type::event_callback;
 
         xdebugpy_client(xeus::xcontext& context,
-                        const xeus::xconfiguration& config,
+                        const xeus::xkernel_configuration& config,
                         int socket_linger,
                         const xdap_tcp_configuration& dap_config,
                         const event_callback& cb);

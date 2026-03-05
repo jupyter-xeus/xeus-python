@@ -40,7 +40,7 @@ namespace xpyt
 
     private:
 
-        xeus::xtarget* target(const py::object& target_name) const;
+        const xeus::xtarget* target(const py::object& target_name) const;
         xeus::xguid id(const py::kwargs& kwargs) const;
         cpp_callback_type cpp_callback(const python_callback_type& callback) const;
 

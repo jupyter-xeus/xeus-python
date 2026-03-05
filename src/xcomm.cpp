@@ -82,7 +82,7 @@ namespace xpyt
         m_comm.on_close(cpp_callback(callback));
     }
 
-    xeus::xtarget* xcomm::target(const py::object& target_name) const
+    const xeus::xtarget* xcomm::target(const py::object& target_name) const
     {
         return xeus::get_interpreter().comm_manager().target(target_name.cast<std::string>());
     }
