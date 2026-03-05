@@ -301,6 +301,12 @@ namespace xpyt
         });
 
         bool has_debugger = (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13);
+        std::vector<std::string> features{};
+        if (has_debugger)
+        {
+            features.push_back("debugger");
+        }
+
         nl::json rep = xeus::create_info_reply(
             "xeus-python",      // implementation
             XPYT_VERSION,       // implementation_version
@@ -312,13 +318,9 @@ namespace xpyt
             nl::json{{"name", "ipython"}, {"version", std::to_string(PY_MAJOR_VERSION)}},
             "python",           // language_nbconvert_exporter
             banner,             // banner
-            help_links          // help_links
+            help_links,         // help_links
+            features
         );
-
-        if (has_debugger)
-        {
-            rep["supported_features"] = nl::json::array({"debugger"});
-        }
 
         return rep;
     }
