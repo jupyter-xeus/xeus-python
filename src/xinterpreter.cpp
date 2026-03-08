@@ -315,7 +315,7 @@ namespace xpyt
             "text/x-python",    // language_mimetype
             ".py",              // language_file_extension
             "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-            nl::json{{"name", "ipython"}, {"version", std::to_string(PY_MAJOR_VERSION)}},
+            nl::json{{"name", "ipython"}, {"version", PY_MAJOR_VERSION}},
             "python",           // language_nbconvert_exporter
             banner,             // banner
             help_links,         // help_links
