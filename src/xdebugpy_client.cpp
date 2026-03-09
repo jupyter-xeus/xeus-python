@@ -10,6 +10,7 @@
 
 #include "nlohmann/json.hpp"
 #include "xeus/xmessage.hpp"
+#include "xeus/xeus_context.hpp"
 #include "xdebugpy_client.hpp"
 
 #include <thread>

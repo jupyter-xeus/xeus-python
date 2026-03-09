@@ -35,6 +35,11 @@
 #include <unistd.h>
 #endif
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <boost/process.hpp>
+
 /***********************************
  * Should be moved in a utils file *
  ***********************************/
@@ -995,7 +1000,7 @@ nl::json debugger_client::attach()
     if (!rep["content"]["success"].get<bool>())
     {
         shutdown();
-        std::this_thread::sleep_for(2s);
+        std::this_thread::sleep_for(4s);
         throw std::runtime_error("Could not initialize debugger, exiting");
     }
     m_client.send_on_control("debug_request", make_attach_request(3));
@@ -1147,19 +1152,25 @@ void dump_connection_file()
     }
 }
 
-void start_kernel()
+struct KernelProcess
 {
-    dump_connection_file();
-    std::string cmd = "xpython -f " + KERNEL_JSON + "&";
-    int ret2 = std::system(cmd.c_str());
-    std::this_thread::sleep_for(2s);
-}
+    KernelProcess()
+    {
+        std::this_thread::sleep_for(2s);
+    }
+
+private:
+
+    bool _ = [] { dump_connection_file(); return true; }();
+    boost::asio::io_context ctx;
+    boost::process::process process{ ctx, boost::process::environment::find_executable("xpython"), { "-f" , KERNEL_JSON } };
+};
 
 TEST_SUITE("debugger")
 {
     TEST_CASE("init")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1168,7 +1179,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_init();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1176,7 +1187,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("disconnect")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1184,7 +1195,7 @@ TEST_SUITE("debugger")
             deb.start();
             bool res = deb.test_disconnect();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1192,7 +1203,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("attach")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1201,7 +1212,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_attach();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1209,17 +1220,17 @@ TEST_SUITE("debugger")
 
     TEST_CASE("multisession")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
             debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_multi_session.log");
             deb.start();
             bool res1 = deb.test_disconnect();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             bool res2 = deb.test_disconnect();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res1);
             CHECK(res2);
             t.notify_done();
@@ -1228,7 +1239,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("set_external_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1237,7 +1248,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_external_set_breakpoints();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1247,7 +1258,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("external_next_continue")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1256,7 +1267,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_external_next_continue();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1264,7 +1275,7 @@ TEST_SUITE("debugger")
     */
     TEST_CASE("set_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1273,7 +1284,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_set_breakpoints();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1281,7 +1292,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("set_exception_breakpoints")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1298,7 +1309,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("source")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1307,7 +1318,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_source();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1317,7 +1328,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("next_continue")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1326,7 +1337,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_next_continue();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1337,7 +1348,7 @@ TEST_SUITE("debugger")
     /*
     TEST_CASE("stepin")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1346,7 +1357,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_step_in();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1355,7 +1366,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("stack_trace")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1364,7 +1375,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_stack_trace();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1372,7 +1383,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("debug_info")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1381,7 +1392,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_debug_info();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1389,7 +1400,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("inspect_variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1398,7 +1409,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_inspect_variables();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1408,7 +1419,7 @@ TEST_SUITE("debugger")
 /*
     TEST_CASE("rich_inspect_variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1416,7 +1427,7 @@ TEST_SUITE("debugger")
             deb.start();
             bool res = deb.test_rich_inspect_variables();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1425,7 +1436,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("variables")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1434,7 +1445,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_variables();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }
@@ -1442,7 +1453,7 @@ TEST_SUITE("debugger")
 
     TEST_CASE("copy_to_globals")
     {
-        start_kernel();
+        KernelProcess xpython_process;
         timer t;
         auto context_ptr = xeus::make_zmq_context();
         {
@@ -1451,7 +1462,7 @@ TEST_SUITE("debugger")
             bool res = deb.test_copy_to_globals();
             deb.disconnect_debugger();
             deb.shutdown();
-            std::this_thread::sleep_for(2s);
+            std::this_thread::sleep_for(4s);
             CHECK(res);
             t.notify_done();
         }

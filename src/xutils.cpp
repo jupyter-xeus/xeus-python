@@ -59,6 +59,7 @@ namespace xpyt
     void exec(const py::object& code, const py::object& scope)
     {
         py::exec("exec(_code_, _scope_, _scope_)", py::globals(), py::dict(py::arg("_code_") = code, py::arg("_scope_") = scope));
+        // py::exec(code, scope, scope);
     }
 
     py::object eval(const py::object& code, const py::object& scope)
@@ -87,6 +88,7 @@ namespace xpyt
 
     void sigsegv_handler(int sig)
     {
+        std::cout << "Segmentation fault (signal " << sig << "). Exiting..." << std::endl;
 #if defined(__GNUC__) && !defined(XPYT_EMSCRIPTEN_WASM_BUILD)
         void* array[10];
 
@@ -102,6 +104,7 @@ namespace xpyt
 
     void sigkill_handler(int /*sig*/)
     {
+        std::cout << "Received termination signal. Exiting..." << std::endl;
         exit(0);
     }
 

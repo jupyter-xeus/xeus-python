@@ -33,7 +33,6 @@ jobs:
           environment-file: environment-wasm-build.yml
           init-shell: bash
           environment-name: xeus-python-wasm-build
-
       - name: Set ncpus
         run: echo "ncpus=$(nproc --all)" >> $GITHUB_ENV
 
@@ -46,6 +45,11 @@ jobs:
             -c https://prefix.dev/conda-forge
 
           set -eux
+
+
+          URL=https://github.com/DerThorsten/xeus-python-shell/archive/refs/heads/libuv.zip 
+          curl -L $URL -o xeus-python-shell-libuv.zip
+          unzip xeus-python-shell-libuv.zip
 
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
@@ -63,10 +67,13 @@ jobs:
       - name: Jupyter Lite integration
         shell: bash -l {0}
         run: |
+          THIS_DIR=$(pwd)
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --contents notebooks/ \
-              --output-dir dist
+              --output-dir dist \
+              --XeusAddon.mounts=$THIS_DIR/xeus-python-shell-libuv/xeus_python_shell/:/lib/python3.13/site-packages/xeus_python_shell/
+
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
