@@ -365,9 +365,10 @@ namespace xpyt
 
     }
 
-    void interpreter::shutdown_request_impl()
+    nl::json interpreter::interrupt_request_impl()
     {
         std::cout<<"Shutting down interpreter..."<<std::endl;
+        return xeus::create_interrupt_reply();
     }
 
     nl::json interpreter::internal_request_impl(const nl::json& content)

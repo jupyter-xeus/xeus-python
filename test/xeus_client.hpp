@@ -31,7 +31,7 @@ public:
 
     xeus_logger_client(xeus::xcontext& context,
                        const std::string& user_name,
-                       const xeus::xconfiguration& config,
+                       const xeus::xkernel_configuration& config,
                        const std::string& file_name);
 
     virtual ~xeus_logger_client();

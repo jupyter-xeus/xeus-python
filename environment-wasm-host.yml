@@ -1,6 +1,6 @@
 name: xeus-python-wasm-host
 channels:
-  - https://prefix.dev/emscripten-forge-dev
+  - https://prefix.dev/emscripten-forge-4x
   - https://prefix.dev/conda-forge
 dependencies:
   - ipython
@@ -12,7 +12,7 @@ dependencies:
   - numpy
   - xeus-lite
   - xeus
-  - pyjs >=2,<3
+  - pyjs >=4,<5
   - libpython
   - zstd
   - openssl

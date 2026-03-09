@@ -324,7 +324,6 @@ namespace xpyt
         });
 
         return xeus::create_info_reply(
-            "5.3",                 // protocol_version
             "xeus-python",      // implementation
             XPYT_VERSION,       // implementation_version
             "python",           // language_name
@@ -332,16 +331,21 @@ namespace xpyt
             "text/x-python",    // language_mimetype
             ".py",              // language_file_extension
             "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
+            nl::json{{"name", "ipython"}, {"version", PY_MAJOR_VERSION}},
             "python",           // language_nbconvert_exporter
             banner,             // banner
-            false,              // debugger
             help_links          // help_links
         );
     }
 
-    void raw_interpreter::shutdown_request_impl()
+    nl::json raw_interpreter::shutdown_request_impl(bool /*restart*/)
     {
+        return xeus::create_shutdown_reply(false);
+    }
+
+    nl::json raw_interpreter::interrupt_request_impl()
+    {
+        return xeus::create_interrupt_reply();
     }
 
     void raw_interpreter::set_request_context(xeus::xrequest_context context)

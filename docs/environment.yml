@@ -1,6 +1,6 @@
 name: xeus-python-kernel-docs
 channels:
-  - https://repo.mamba.pm/emscripten-forge
+  - https://prefix.dev/emscripten-forge-dev
   - conda-forge
 dependencies:
   - xeus-python
