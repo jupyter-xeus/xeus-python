@@ -90,7 +90,7 @@ void launch(const py::list args_list)
     
     auto make_the_debugger = [&globals](
                             xeus::xcontext& context,
-                            const xeus::xconfiguration& config,
+                            const xeus::xkernel_configuration& config,
                             const std::string& user_name,
                             const std::string& session_id,
                             const nl::json& debugger_config) -> std::unique_ptr<xeus::xdebugger>
