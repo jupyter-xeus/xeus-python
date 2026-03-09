@@ -22,7 +22,7 @@ namespace py = pybind11;
 namespace xpyt
 {
 
-    class __attribute__((visibility("hidden"))) xasync_runner final : public xeus::xshell_runner
+    class XEUS_PYTHON_HIDDEN xasync_runner final : public xeus::xshell_runner
     {
     public:
 
