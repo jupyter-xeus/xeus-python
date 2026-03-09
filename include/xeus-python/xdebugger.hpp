@@ -43,7 +43,7 @@ namespace xpyt
         debugger(
                 py::dict globals,
                 xeus::xcontext& context,
-                 const xeus::xconfiguration& config,
+                 const xeus::xkernel_configuration& config,
                  const std::string& user_name,
                  const std::string& session_id,
                  const nl::json& debugger_config);
@@ -83,7 +83,7 @@ namespace xpyt
     XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
     std::unique_ptr<xeus::xdebugger> make_python_debugger(py::dict globals,
                                                           xeus::xcontext& context,
-                                                          const xeus::xconfiguration& config,
+                                                          const xeus::xkernel_configuration& config,
                                                           const std::string& user_name,
                                                           const std::string& session_id,
                                                           const nl::json& debugger_config);

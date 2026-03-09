@@ -327,7 +327,7 @@ macro(xpyt_create_target target_name src headers linkage output_name)
     endif ()
 
     target_link_libraries(${target_name}
-        PUBLIC ${XPYT_XEUS_TARGET}  ${UVW_LIBRARY}
+        PUBLIC ${XPYT_XEUS_TARGET} 
         PRIVATE pybind11::pybind11 pybind11_json
     )
     if (WIN32 OR CYGWIN)
