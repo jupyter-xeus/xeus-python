@@ -232,6 +232,12 @@ namespace xpyt
 
     }
 
+    nl::json interpreter::shutdown_request_impl(bool /*restart*/)
+    {
+        return xeus::create_shutdown_reply(false);
+    }
+
+
     nl::json interpreter::complete_request_impl(
         const std::string& code,
         int cursor_pos)
@@ -364,6 +370,8 @@ namespace xpyt
         return kernel_res;
 
     }
+
+
 
     nl::json interpreter::interrupt_request_impl()
     {
