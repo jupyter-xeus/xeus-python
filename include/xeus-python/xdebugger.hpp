@@ -72,6 +72,10 @@ namespace xpyt
         py::object m_pydebugger;
         xeus::xthread m_client_runner;
         bool m_copy_to_globals_available;
+
+        bool m_just_my_code = false;
+        bool m_filter_internal_frames = false;
+        std::vector<std::string> m_internal_modules;
     };
 
     XEUS_PYTHON_API

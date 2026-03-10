@@ -71,6 +71,20 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
 
         py::module sys = py::module::import("sys");
+
+        py::dict modules = sys.attr("modules");
+        std::vector<std::string> internal_mod_paths;
+        internal_mod_paths.reserve(py::len(modules));
+
+        for (auto item : modules)
+        {
+            py::object mod = py::reinterpret_borrow<py::object>(item.second);
+            if (py::hasattr(mod, "__file__"))
+            {
+                std::string path = mod.attr("__file__").cast<std::string>();
+                internal_mod_paths.push_back(path);
+            }
+        }
         py::module jedi = py::module::import("jedi");
         jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
             jedi.attr("api").attr("environment").attr("SameEnvironment")();
