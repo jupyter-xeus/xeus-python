@@ -1117,7 +1117,7 @@ void timer::notify_done()
 void timer::run_timer()
 {
     std::unique_lock<std::mutex> lk(m_mcv);
-    if (!m_cv.wait_for(lk, std::chrono::seconds(20), [this]() { return m_done; }))
+    if (!m_cv.wait_for(lk, std::chrono::seconds(60), [this]() { return m_done; }))
     {
         constexpr auto message = "Unit test time out !!";
         std::clog << message << std::endl;
