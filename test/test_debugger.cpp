@@ -442,7 +442,7 @@ debugger_client::debugger_client(xeus::xcontext& context,
     const std::string& connection_file,
     const std::string& log_file)
     : m_client(context, "debugger_client",
-        xeus::load_configuration(connection_file), log_file)
+       std::get<xeus::xkernel_configuration>(xeus::load_configuration(connection_file)), log_file)
 {
 }
 
