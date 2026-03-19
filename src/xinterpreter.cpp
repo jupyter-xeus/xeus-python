@@ -392,7 +392,7 @@ namespace xpyt
         try
         {
             std::cout<<"executing code: "<<code<<std::endl;
-            exec(py::str(code));
+            exec(py::str(code), m_global_dict);
             std::cout<<"code executed successfully"<<std::endl;
             return xeus::create_successful_reply();
         }
