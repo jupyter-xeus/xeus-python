@@ -154,6 +154,8 @@ jobs:
       - name: Test xeus-python C++
         shell: cmd /C call {0}
         run: |
-          test_xeus_python
-        timeout-minutes: 4
+          for /L %i in (1,1,20) do (
+            test_xeus_python
+          )
+        timeout-minutes: 40
         working-directory: build\test
