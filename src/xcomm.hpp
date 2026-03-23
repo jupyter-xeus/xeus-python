@@ -40,6 +40,9 @@ namespace xpyt
 
     private:
 
+        // Warning: this function creates and register the target with a dummy
+        // comm_open handler when the target does not exist, so that create_comm
+        // has the same behavior as ipykernel.
         const xeus::xtarget* target(const py::object& target_name) const;
         xeus::xguid id(const py::kwargs& kwargs) const;
         cpp_callback_type cpp_callback(const python_callback_type& callback) const;
