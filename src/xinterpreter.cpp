@@ -129,7 +129,6 @@ namespace xpyt
                                            xeus::execute_request_config config,
                                            nl::json user_expressions)
     {
-        std::cout<<"interpreter::execute_request_impl()"<<std::endl;
         py::gil_scoped_acquire acquire;
 
         // Reset traceback
@@ -139,29 +138,18 @@ namespace xpyt
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(config.allow_stdin);
 
-        bool exception_occurred = false;
         std::string ename;
         std::string evalue;
         std::vector<std::string> traceback;
 
 
         auto when_done_callback_lambda = [this, cb, config, user_expressions]() {
-            std::cout<<"when_done_callback invoked"<<std::endl;
             py::gil_scoped_acquire acquire;
-            // Placeholder for any actions to perform when execution is done
-
-
                 
-
             // Get payload
             nl::json payload = this->m_ipython_shell.attr("payload_manager").attr("read_payload")();
             this->m_ipython_shell.attr("payload_manager").attr("clear_payload")();
 
-            // if(exception_occurred)
-            // {
-            //     cb(xeus::create_error_reply(ename, evalue, traceback));
-            //     return;
-            // }
 
             if (this->m_ipython_shell.attr("last_error").is_none())
             {
@@ -184,8 +172,6 @@ namespace xpyt
         };
         std::function<void()> when_done_callback = when_done_callback_lambda;
 
-
-
         try
         {
 
@@ -198,7 +184,6 @@ namespace xpyt
             {
                 publish_execution_error("RuntimeError", error_msg, std::vector<std::string>());
             }
-            exception_occurred = true;
         }
         catch (py::error_already_set& e)
         {
@@ -207,11 +192,7 @@ namespace xpyt
             {
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
-
-            ename = error.m_ename;
-            evalue = error.m_evalue;
-            traceback = error.m_traceback;
-            exception_occurred = true;
+            cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
         }
         catch(...)
         {
@@ -219,17 +200,8 @@ namespace xpyt
             {
                 publish_execution_error("unknown_error", "", std::vector<std::string>());
             }
-            ename = "UnknownError";
-            evalue = "";
-            exception_occurred = true;
+            cb(xeus::create_error_reply("UnknownError", "", std::vector<std::string>()));
         }
-
-
-
-
-
-
-
     }
 
     nl::json interpreter::shutdown_request_impl(bool /*restart*/)
