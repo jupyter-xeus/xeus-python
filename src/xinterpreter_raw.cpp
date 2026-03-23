@@ -105,10 +105,9 @@ namespace xpyt
         sys.attr("modules")["IPython.core.getipython"] = kernel_module;
 
         // Add get_ipython to global namespace
-       m_global_dict["get_ipython"] = kernel_module.attr("get_ipython");
+        m_global_dict["get_ipython"] = kernel_module.attr("get_ipython");
         kernel_module.attr("get_ipython")();
 
-        std::cout<<"write globals _i, _ii, _iii"<<std::endl;
         m_global_dict["_i"] = "";
         m_global_dict["_ii"] = "";
         m_global_dict["_iii"] = "";
@@ -229,7 +228,6 @@ namespace xpyt
             return;
         }
 
-        std::cout<<"get globals _i, _ii, _iii"<<std::endl;
         // Cache inputs
         m_global_dict["_iii"] = m_global_dict["_ii"];
         m_global_dict["_ii"] = m_global_dict["_i"];
@@ -237,7 +235,6 @@ namespace xpyt
 
         
         cb(xeus::create_successful_reply(nl::json::array(), nl::json::object()));
-        std::cout<<"execute_request_impl() done"<<std::endl;
     }
 
     nl::json raw_interpreter::complete_request_impl(
@@ -290,7 +287,6 @@ namespace xpyt
 
     nl::json raw_interpreter::kernel_info_request_impl()
     {
-        std::cout<<"raw_interpreter::kernel_info_request_impl()"<<std::endl;
         /* The jupyter-console banner for xeus-python is the following:
           __  _____ _   _ ___
           \ \/ / _ \ | | / __|
@@ -350,11 +346,9 @@ namespace xpyt
 
     void raw_interpreter::set_request_context(xeus::xrequest_context context)
     {
-        std::cout<<"raw_interpreter::set_request_context()"<<std::endl;
         py::gil_scoped_acquire acquire;
         py::module context_module = get_request_context_module();
         context_module.attr("set_request_context")(context);
-        std::cout<<"raw_interpreter::set_request_context() done"<<std::endl;
     }
 
     namespace

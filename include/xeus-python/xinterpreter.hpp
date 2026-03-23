@@ -103,7 +103,7 @@ namespace xpyt
         bool m_redirect_output_enabled;
         bool m_redirect_display_enabled;
 
-    private:                    
+    private:
 
         virtual void instanciate_ipython_shell();
         virtual bool use_jedi_for_completion() const;

@@ -48,8 +48,6 @@
 #endif
 
 
-
-// macros for hidden visibility of classes and functions in the public headers, to avoid symbol conflicts when multiple instances of xeus-python are loaded in the same process (e.g. in multiple kernels running in the same Jupyter server)
 #ifdef _MSC_VER
     #define XEUS_PYTHON_HIDDEN
 #else
