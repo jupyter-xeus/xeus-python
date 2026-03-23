@@ -72,6 +72,9 @@ namespace xpyt
 
     debugger::~debugger()
     {
+        // release/destroy the debugger python object while GIL is acquired
+        pybind11::gil_scoped_acquire gil_lock;
+        auto local_debug = std::move(m_pydebugger);
     }
 
     nl::json debugger::inspect_variables_request(const nl::json& message)
