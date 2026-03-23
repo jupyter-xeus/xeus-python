@@ -31,7 +31,7 @@ namespace  xpyt
                 context,
                 config,
                 eh,
-                std::make_unique<xcontrol_default_runner>(),
+                std::make_unique<xeus::xcontrol_default_runner>(),
                 std::make_unique<xpyt::xasync_runner>(globals)
             );
         };

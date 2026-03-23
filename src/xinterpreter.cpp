@@ -354,7 +354,6 @@ namespace xpyt
         }
         catch (py::error_already_set& e)
         {
-    §   
             // This will grab the latest traceback and set shell.last_error
             m_ipython_shell.attr("showtraceback")();
 
