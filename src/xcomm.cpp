@@ -84,7 +84,15 @@ namespace xpyt
 
     const xeus::xtarget* xcomm::target(const py::object& target_name) const
     {
-        return xeus::get_interpreter().comm_manager().target(target_name.cast<std::string>());
+        auto& comm_manager = xeus::get_interpreter().comm_manager();
+        auto res = comm_manager.target(target_name.cast<std::string>());
+        if (!res)
+        {
+            comm_manager.register_comm_target(
+                target_name.cast<std::string>(), [](xeus::xcomm&&, const xeus::xmessage&) {}
+            );
+        }
+        return comm_manager.target(target_name.cast<std::string>());
     }
 
     xeus::xguid xcomm::id(const py::kwargs& kwargs) const
