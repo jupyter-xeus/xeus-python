@@ -1,7 +1,7 @@
 
 #include "xeus-python/xaserver.hpp"
 #include "xasync_runner.hpp"
-#include "xeus-python/xacontrol_default_runner.hpp"
+#include "xeus-zmq/xcontrol_default_runner.hpp"
 #include "xeus-zmq/xserver_zmq_split.hpp"
 
 #include "xeus/xkernel.hpp"
@@ -31,11 +31,11 @@ namespace  xpyt
                 context,
                 config,
                 eh,
-                std::make_unique<xpyt::xacontrol_default_runner>(),
+                std::make_unique<xcontrol_default_runner>(),
                 std::make_unique<xpyt::xasync_runner>(globals)
             );
         };
     }
 
 
-} // namespace xeus
+} // namespace xpyt
