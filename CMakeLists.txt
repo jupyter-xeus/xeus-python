@@ -183,7 +183,6 @@ set(XEUS_PYTHON_SRC
     src/xutils.cpp
     src/xasync_runner.cpp
     src/xaserver.cpp
-
 )
 
 set(XEUS_PYTHON_HEADERS

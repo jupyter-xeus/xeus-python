@@ -275,7 +275,8 @@ namespace xpyt
     }
 
     nl::json interpreter::kernel_info_request_impl()
-    {   
+    {
+
         /* The jupyter-console banner for xeus-python is the following:
           __  _____ _   _ ___
           \ \/ / _ \ | | / __|
@@ -308,8 +309,14 @@ namespace xpyt
             {"url", "https://xeus-python.readthedocs.io"}
         });
 
-        return xeus::create_info_reply(
-            "5.3",              // protocol_version
+        bool has_debugger = (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13);
+        std::vector<std::string> features{};
+        if (has_debugger)
+        {
+            features.push_back("debugger");
+        }
+
+        nl::json rep = xeus::create_info_reply(
             "xeus-python",      // implementation
             XPYT_VERSION,       // implementation_version
             "python",           // language_name
@@ -317,16 +324,15 @@ namespace xpyt
             "text/x-python",    // language_mimetype
             ".py",              // language_file_extension
             "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
+            nl::json{{"name", "ipython"}, {"version", PY_MAJOR_VERSION}},
             "python",           // language_nbconvert_exporter
             banner,             // banner
-            (PY_MAJOR_VERSION != 3) || (PY_MINOR_VERSION != 13), // debugger
-            help_links          // help_links
+            help_links,         // help_links
+            features
         );
 
+        return rep;
     }
-
-
 
     nl::json interpreter::interrupt_request_impl()
     {
