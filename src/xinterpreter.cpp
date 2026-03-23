@@ -308,38 +308,21 @@ namespace xpyt
             {"url", "https://xeus-python.readthedocs.io"}
         });
 
-        // return xeus::create_info_reply(
-        //     "5.3",              // protocol_version
-        //     "xeus-python",      // implementation
-        //     XPYT_VERSION,       // implementation_version
-        //     "python",           // language_name
-        //     PY_VERSION,         // language_version
-        //     "text/x-python",    // language_mimetype
-        //     ".py",              // language_file_extension
-        //     "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
-        //     R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
-        //     "python",           // language_nbconvert_exporter
-        //     banner,             // banner
-        //     (PY_MAJOR_VERSION != 3) || (PY_MINOR_VERSION != 13), // debugger
-        //     help_links          // help_links
-        // );
-
-        nl::json kernel_res;
-        kernel_res["status"] = "ok";
-        kernel_res["protocol_version"] = "5.3";
-        kernel_res["implementation"] = "xeus-python";
-        kernel_res["implementation_version"] = XPYT_VERSION;
-        kernel_res["language_info"]["name"] = "python";
-        kernel_res["language_info"]["version"] = PY_VERSION;
-        kernel_res["language_info"]["mimetype"] = "text/x-python";
-        kernel_res["language_info"]["file_extension"] = ".py";
-        kernel_res["language_info"]["pygments_lexer"] = "ipython" + std::to_string(PY_MAJOR_VERSION);
-        //kernel_res["language_info"]["codemirror_mode"] = R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}";
-        kernel_res["language_info"]["nbconvert_exporter"] = "python";
-        kernel_res["banner"] = banner;
-        kernel_res["debugger"] = false;
-        kernel_res["help_links"] = help_links;
-        return kernel_res;
+        return xeus::create_info_reply(
+            "5.3",              // protocol_version
+            "xeus-python",      // implementation
+            XPYT_VERSION,       // implementation_version
+            "python",           // language_name
+            PY_VERSION,         // language_version
+            "text/x-python",    // language_mimetype
+            ".py",              // language_file_extension
+            "ipython" + std::to_string(PY_MAJOR_VERSION), // pygments_lexer
+            R"({"name": "ipython", "version": )" + std::to_string(PY_MAJOR_VERSION) + "}",    // language_codemirror_mode
+            "python",           // language_nbconvert_exporter
+            banner,             // banner
+            (PY_MAJOR_VERSION != 3) || (PY_MINOR_VERSION != 13), // debugger
+            help_links          // help_links
+        );
 
     }
 
@@ -353,99 +336,41 @@ namespace xpyt
 
     nl::json interpreter::internal_request_impl(const nl::json& content)
     {
-        std::cout << "Received internal request with content: " << content.dump(4) << std::endl;
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
 
-        std::cout<<"reset traceback"<<std::endl;
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
-        std::cout<<"entering try block"<<std::endl;
         try
         {
-            std::cout<<"executing code: "<<code<<std::endl;
             exec(py::str(code), m_global_dict);
-            std::cout<<"code executed successfully"<<std::endl;
             return xeus::create_successful_reply();
         }
         catch (py::error_already_set& e)
         {
-            try{
-                std::cout<<"an error occurred during code execution: "<<e.what()<<std::endl;
+    §   
+            // This will grab the latest traceback and set shell.last_error
+            m_ipython_shell.attr("showtraceback")();
 
-                std::cout<<"grabbing traceback"<<std::endl;
-                // This will grab the latest traceback and set shell.last_error
-                m_ipython_shell.attr("showtraceback")();
+            py::list pyerror = m_ipython_shell.attr("last_error");
+            
+            xerror error = extract_error(pyerror);
 
-                std::cout<<"extracting error from shell.last_error"<<std::endl;
-                py::list pyerror = m_ipython_shell.attr("last_error");
-
-                std::cout<<"create xerror from pyerror"<<std::endl;
-                xerror error = extract_error(pyerror);
-
-                std::cout<<"publishing execution error"<<std::endl;
-                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
-
-                std::cout<<"creating error reply"<<std::endl;
-                error.m_traceback.resize(1);
-                error.m_traceback[0] = code;
-                return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
-            }
-            catch (py::error_already_set& e)
-            {
-                std::cout<<"an error occurred during error handling: "<<e.what()<<std::endl;
-                return xeus::create_error_reply("ErrorDuringErrorHandling", e.what(), std::vector<std::string>());
-            }
-            catch(std::exception& e)
-            {
-                std::cout<<"a standard exception occurred during error handling: "<<e.what()<<std::endl;
-                return xeus::create_error_reply("ExceptionDuringErrorHandling", e.what(), std::vector<std::string>());
-            }
-            catch (...)
-            {
-                std::cout<<"an unknown error occurred during error handling"<<std::endl;
-                return xeus::create_error_reply("UnknownErrorDuringErrorHandling", "", std::vector<std::string>());
-            }
+            publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+            
+            error.m_traceback.resize(1);
+            error.m_traceback[0] = code;
+            return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
+            
         }
         catch(std::exception& e)
         {
-            std::cout<<"a standard exception occurred during code execution: "<<e.what()<<std::endl;
             return xeus::create_error_reply("Exception", e.what(), std::vector<std::string>());
         }
         catch (...)
         {
-            std::cout<<"an unknown error occurred during code execution"<<std::endl;
             return xeus::create_error_reply("UnknownError", "", std::vector<std::string>());
         }
-
-        std::cout << "\n--> processing error ... " << std::endl;
-        py::list pyerror = [&]() -> py::list {
-            try {
-                auto last_error = m_ipython_shell.attr("last_error");
-                std::cout << "\n--> converting last_error to list ... " << std::endl;
-                return py::list(last_error);
-            }
-            catch (py::error_already_set& e)
-            {
-                std::cout << "\n--> processing error: failed acquiring `last_error` " << std::endl;
-                return py::list{};
-            }
-        }();
-
-        if (pyerror.empty())
-        {
-            return xeus::create_error_reply("SNAFU", "python SNAFU");
-        }
-
-        std::cout << "\n--> A " << std::endl;
-        xerror error = extract_error(pyerror);
-        std::cout << "\n--> B " << std::endl;
-        publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
-        std::cout << "\n--> C " << std::endl;
-        error.m_traceback.resize(1);
-        error.m_traceback[0] = code;
-        std::cout << "\n--> D " << std::endl;
-        return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
 
     }
 
