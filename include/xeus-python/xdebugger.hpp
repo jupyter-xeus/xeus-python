@@ -20,6 +20,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <thread>
 
 #include "nlohmann/json.hpp"
 #include "pybind11/pybind11.h"
@@ -40,7 +41,9 @@ namespace xpyt
 
         using base_type = xeus::xdebugger_base;
 
-        debugger(xeus::xcontext& context,
+        debugger(
+                py::dict globals,
+                xeus::xcontext& context,
                  const xeus::xkernel_configuration& config,
                  const std::string& user_name,
                  const std::string& session_id,
@@ -65,17 +68,35 @@ namespace xpyt
         xeus::xdebugger_info get_debugger_info() const override;
         std::string get_cell_temporary_file(const std::string& code) const override;
 
+        
+        py::dict m_global_dict;
+
         std::unique_ptr<xdebugpy_client> p_debugpy_client;
         std::string m_debugpy_host;
         std::string m_debugpy_port;
         nl::json m_debugger_config;
+
+        struct after { ~after(){ std::cout << "\n### " << std::this_thread::get_id() << " DESTROYING PYDEBUGGER - DONE" << std::endl; } } after_pydebugger;
+
         py::object m_pydebugger;
+        struct before { 
+            py::object& ref_pydebugger;
+            ~before(){
+                std::cout << "\n### " << std::this_thread::get_id() << " DESTROYING PYDEBUGGER ..." << std::endl; 
+                py::gil_scoped_acquire acquire;
+                auto pydebugger = std::move(ref_pydebugger);
+                std::cout << "\n### " << std::this_thread::get_id() << " DESTROYING PYDEBUGGER - local destroy ..." << std::endl;
+            } 
+        } before_pydebugger{ m_pydebugger };
+
         xeus::xthread m_client_runner;
         bool m_copy_to_globals_available;
     };
 
-    XEUS_PYTHON_API
-    std::unique_ptr<xeus::xdebugger> make_python_debugger(xeus::xcontext& context,
+
+    XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
+    std::unique_ptr<xeus::xdebugger> make_python_debugger(py::dict globals,
+                                                          xeus::xcontext& context,
                                                           const xeus::xkernel_configuration& config,
                                                           const std::string& user_name,
                                                           const std::string& session_id,

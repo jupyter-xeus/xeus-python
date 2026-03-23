@@ -22,6 +22,7 @@
 #include "xeus/xhelper.hpp"
 
 #include "pybind11/functional.h"
+#include "pybind11/embed.h"
 
 #include "pybind11_json/pybind11_json.hpp"
 
@@ -44,8 +45,11 @@ using namespace pybind11::literals;
 namespace xpyt
 {
 
-    interpreter::interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
-        : m_redirect_output_enabled{redirect_output_enabled}, m_redirect_display_enabled{redirect_display_enabled}
+    interpreter::interpreter(
+        py::dict globals,
+        bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
+        : m_global_dict{globals},
+          m_redirect_output_enabled{redirect_output_enabled}, m_redirect_display_enabled{redirect_display_enabled}
     {
         xeus::register_interpreter(this);
     }
@@ -58,6 +62,7 @@ namespace xpyt
     {
         if (m_release_gil_at_startup)
         {
+            std::cout << "Releasing GIL at startup." << std::endl;
             // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
             // will need to acquire the GIL
             m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
@@ -114,6 +119,10 @@ namespace xpyt
         py::module context_module = get_request_context_module();
     }
 
+
+
+
+
     void interpreter::execute_request_impl(send_reply_callback cb,
                                            int /*execution_count*/,
                                            const std::string& code,
@@ -129,14 +138,44 @@ namespace xpyt
         // getpass with a function sending input_request messages.
         auto input_guard = input_redirection(config.allow_stdin);
 
-        bool exception_occurred = false;
         std::string ename;
         std::string evalue;
         std::vector<std::string> traceback;
 
+
+        auto when_done_callback_lambda = [this, cb, config, user_expressions]() {
+            py::gil_scoped_acquire acquire;
+                
+            // Get payload
+            nl::json payload = this->m_ipython_shell.attr("payload_manager").attr("read_payload")();
+            this->m_ipython_shell.attr("payload_manager").attr("clear_payload")();
+
+
+            if (this->m_ipython_shell.attr("last_error").is_none())
+            {
+                nl::json user_exprs = this->m_ipython_shell.attr("user_expressions")(user_expressions);
+                cb(xeus::create_successful_reply(payload, user_exprs));
+            }
+            else
+            {
+                py::list pyerror = this->m_ipython_shell.attr("last_error");
+
+                xerror error = extract_error(pyerror);
+
+                if (!config.silent)
+                {
+                    publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+                }
+
+                cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
+            }
+        };
+        std::function<void()> when_done_callback = when_done_callback_lambda;
+
         try
         {
-            m_ipython_shell.attr("run_cell")(code, "store_history"_a=config.store_history, "silent"_a=config.silent);
+
+            m_ipython_shell.attr("run_cell_async")(code, when_done_callback, "store_history"_a=config.store_history, "silent"_a=config.silent);
         }
         catch(std::runtime_error& e)
         {
@@ -145,7 +184,6 @@ namespace xpyt
             {
                 publish_execution_error("RuntimeError", error_msg, std::vector<std::string>());
             }
-            exception_occurred = true;
         }
         catch (py::error_already_set& e)
         {
@@ -154,11 +192,7 @@ namespace xpyt
             {
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
             }
-
-            ename = error.m_ename;
-            evalue = error.m_evalue;
-            traceback = error.m_traceback;
-            exception_occurred = true;
+            cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
         }
         catch(...)
         {
@@ -166,40 +200,15 @@ namespace xpyt
             {
                 publish_execution_error("unknown_error", "", std::vector<std::string>());
             }
-            ename = "UnknownError";
-            evalue = "";
-            exception_occurred = true;
-        }
-
-        // Get payload
-        nl::json payload = m_ipython_shell.attr("payload_manager").attr("read_payload")();
-        m_ipython_shell.attr("payload_manager").attr("clear_payload")();
-
-        if(exception_occurred)
-        {
-            cb(xeus::create_error_reply(ename, evalue, traceback));
-            return;
-        }
-
-        if (m_ipython_shell.attr("last_error").is_none())
-        {
-            nl::json user_exprs = m_ipython_shell.attr("user_expressions")(user_expressions);
-            cb(xeus::create_successful_reply(payload, user_exprs));
-        }
-        else
-        {
-            py::list pyerror = m_ipython_shell.attr("last_error");
-
-            xerror error = extract_error(pyerror);
-
-            if (!config.silent)
-            {
-                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
-            }
-
-            cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
+            cb(xeus::create_error_reply("UnknownError", "", std::vector<std::string>()));
         }
     }
+
+    nl::json interpreter::shutdown_request_impl(bool /*restart*/)
+    {
+        return xeus::create_shutdown_reply(false);
+    }
+
 
     nl::json interpreter::complete_request_impl(
         const std::string& code,
@@ -325,13 +334,9 @@ namespace xpyt
         return rep;
     }
 
-    nl::json interpreter::shutdown_request_impl(bool /*restart*/)
-    {
-        return xeus::create_shutdown_reply(false);
-    }
-
     nl::json interpreter::interrupt_request_impl()
     {
+        std::cout<<"Shutting down interpreter..."<<std::endl;
         return xeus::create_interrupt_reply();
     }
 
@@ -342,10 +347,9 @@ namespace xpyt
 
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
-
         try
         {
-            exec(py::str(code));
+            exec(py::str(code), m_global_dict);
             return xeus::create_successful_reply();
         }
         catch (py::error_already_set& e)
@@ -354,16 +358,27 @@ namespace xpyt
             m_ipython_shell.attr("showtraceback")();
 
             py::list pyerror = m_ipython_shell.attr("last_error");
-
+            
             xerror error = extract_error(pyerror);
 
             publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
+            
             error.m_traceback.resize(1);
             error.m_traceback[0] = code;
-
             return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
+            
         }
+        catch(std::exception& e)
+        {
+            return xeus::create_error_reply("Exception", e.what(), std::vector<std::string>());
+        }
+        catch (...)
+        {
+            return xeus::create_error_reply("UnknownError", "", std::vector<std::string>());
+        }
+
     }
+
 
     void interpreter::set_request_context(xeus::xrequest_context context)
     {

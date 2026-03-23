@@ -12,7 +12,7 @@
 # ==========
 
 cmake_minimum_required(VERSION 3.20)
-
+enable_testing()
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     project(xeus-python-test)
 
@@ -45,6 +45,9 @@ endif()
 find_package(Threads)
 find_package(doctest)
 
+cmake_policy(SET CMP0167 OLD) # use find boost from old cmake
+find_package(Boost REQUIRED COMPONENTS process filesystem)
+
 include_directories(${GTEST_INCLUDE_DIRS} SYSTEM)
 
 set(XEUS_PYTHON_TESTS
@@ -56,6 +59,7 @@ set(XEUS_PYTHON_TESTS
 )
 
 add_executable(test_xeus_python ${XEUS_PYTHON_TESTS})
+
 
 target_compile_features(test_xeus_python PRIVATE cxx_std_17)
 
@@ -70,7 +74,7 @@ set_target_properties(test_xeus_python PROPERTIES
 )
 
 include_directories(${PYTHON_INCLUDE_DIRS})
-target_link_libraries(test_xeus_python ${PYTHON_LIBRARIES} xeus-zmq doctest::doctest ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(test_xeus_python ${PYTHON_LIBRARIES} xeus-zmq doctest::doctest Boost::headers Boost::filesystem Boost::process ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(test_xeus_python PRIVATE ${XEUS_PYTHON_INCLUDE_DIR})
 
 add_custom_target(xtest COMMAND test_xeus_python DEPENDS test_xeus_python)

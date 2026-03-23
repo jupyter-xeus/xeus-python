@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <filesystem>
 
 #include "pybind11/pybind11.h"
 
@@ -44,7 +45,12 @@ namespace xpyt
 #elif defined(XEUS_PYTHONHOME_ABSPATH)
             static const std::string pythonhome = XPYT_STRINGIFY(XEUS_PYTHONHOME_ABSPATH);
 #else
+#   ifdef _WIN32
+            using namespace std::filesystem;
+            static const std::string pythonhome = canonical(xeus::prefix_path()).parent_path().string(); // wont work with unicode paths
+#   else
             static const std::string pythonhome = xeus::prefix_path();
+#   endif
 #endif
             return pythonhome;
         }
@@ -52,6 +58,13 @@ namespace xpyt
 
     std::string get_python_path()
     {
+        const char* python_exe_environment = std::getenv("PYTHON_EXECUTABLE");
+        if (python_exe_environment != nullptr && std::strlen(python_exe_environment) != 0)
+        {
+            static const std::string python_exe_path = python_exe_environment;
+            return python_exe_path;
+        }
+
         std::string python_prefix = get_python_prefix();
 #ifdef _WIN32
         if (python_prefix.back() != '\\')

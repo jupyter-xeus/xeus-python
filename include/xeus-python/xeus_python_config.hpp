@@ -46,3 +46,10 @@
     #define XPYT_FORCE_PYBIND11_EXPORT __attribute__ ((visibility ("default")))
 #endif
 #endif
+
+
+#ifdef _MSC_VER
+    #define XEUS_PYTHON_HIDDEN
+#else
+    #define XEUS_PYTHON_HIDDEN __attribute__ ((visibility ("hidden")))
+#endif
