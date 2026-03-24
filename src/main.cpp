@@ -88,8 +88,12 @@ int main(int argc, char* argv[])
 
     // Setting Python Home
     static const std::string pythonhome{ xpyt::get_python_prefix() };
-    static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
-    config.home = const_cast<wchar_t*>(wstr.c_str());
+    static const std::wstring wpythonhome(pythonhome.cbegin(), pythonhome.cend());
+    if (!std::filesystem::exists(wpythonhome))
+    {
+        throw std::runtime_error(std::string("cannot find python home directory, tried ") + pythonhome);
+    }
+    config.home = const_cast<wchar_t*>(wpythonhome.c_str());
     xpyt::print_pythonhome();
 
     // Implicitly pre-initialize Python
