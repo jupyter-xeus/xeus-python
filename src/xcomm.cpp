@@ -48,10 +48,6 @@ namespace xpyt
     {
     }
 
-    xcomm::~xcomm()
-    {
-    }
-
     std::string xcomm::comm_id() const
     {
         return m_comm.id();
@@ -79,7 +75,16 @@ namespace xpyt
 
     void xcomm::on_close(const python_callback_type& callback)
     {
-        m_comm.on_close(cpp_callback(callback));
+        m_comm.on_close(cpp_close_callback(callback));
+    }
+
+    void xcomm::on_close_cleanup(close_callback_type callback)
+    {
+        m_close_callback = std::move(callback);
+        m_comm.on_close([this](const xeus::xmessage&)
+        {
+            m_close_callback(comm_id());
+        });
     }
 
     const xeus::xtarget* xcomm::target(const py::object& target_name) const
@@ -116,6 +121,18 @@ namespace xpyt
         };
     }
 
+    auto xcomm::cpp_close_callback(const python_callback_type& py_callback) const -> cpp_callback_type
+    {
+        return [this, py_callback](const xeus::xmessage& msg)
+        {
+            XPYT_HOLDING_GIL(py_callback(cppmessage_to_pymessage(msg)))
+            if (m_close_callback)
+            {
+                m_close_callback(comm_id());
+            }
+        };
+    }
+
     void xcomm_manager::register_target(const py::str& target_name, const py::object& callback)
     {
         auto target_callback = [callback] (xeus::xcomm&& comm, const xeus::xmessage& msg)
@@ -126,6 +143,20 @@ namespace xpyt
         xeus::get_interpreter().comm_manager().register_comm_target(
             static_cast<std::string>(target_name), target_callback
         );
+    }
+
+    void xcomm_manager::register_comm(py::object pycomm)
+    {
+        // pycomm was created with initial refcount = 0
+        // Therefore we need to increment it to avoid its
+        // deletion by the garbage collector
+        pycomm.inc_ref();
+        xcomm& comm = pycomm.cast<xcomm&>();
+        comm.on_close_cleanup([this](std::string id)
+        {
+            XPYT_HOLDING_GIL(m_comms.erase(id))
+        });
+        m_comms[comm.comm_id()] = pycomm;
     }
 
     /***************
@@ -150,16 +181,18 @@ namespace xpyt
 
         py::class_<xcomm_manager>(comm_module, "CommManager")
             .def(py::init<>())
-            .def("register_target", &xcomm_manager::register_target);
-
-        comm_module.def("create_comm", [&comm_module](py::args objs, py::kwargs kw) {
-            return comm_module.attr("Comm")(*objs, **kw);
-        });
+            .def("register_target", &xcomm_manager::register_target)
+            .def("register_comm", &xcomm_manager::register_comm);
 
         comm_module.def("get_comm_manager", [&comm_module]() {
             static py::object comm_manager = comm_module.attr("CommManager")();
-
             return comm_manager;
+        });
+
+        comm_module.def("create_comm", [&comm_module](py::args objs, py::kwargs kw) {
+            py::object comm = comm_module.attr("Comm")(*objs, **kw);
+            comm_module.attr("get_comm_manager")().attr("register_comm")(comm);
+            return comm;
         });
 
         return comm_module;
