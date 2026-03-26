@@ -21,7 +21,7 @@ namespace xpyt
     {
     public:
 
-        using close_callback_type = std::function<void(std::string)>;
+        using close_callback_type = std::function<void()>;
         using python_callback_type = std::function<void(py::object)>;
         using cpp_callback_type = std::function<void(const xeus::xmessage&)>;
         using buffers_sequence = xeus::buffer_sequence;
@@ -58,18 +58,12 @@ namespace xpyt
         close_callback_type m_close_callback;
     };
 
-    class xcomm_manager
+    struct xcomm_manager
     {
-    public:
-
         xcomm_manager() = default;
 
         void register_target(const py::str& target_name, const py::object& callback);
         void register_comm(py::object comm);
-
-    private:
-
-        std::map<std::string, py::object> m_comms;
     };
 
     py::module get_comm_module();

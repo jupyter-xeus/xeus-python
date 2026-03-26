@@ -83,7 +83,7 @@ namespace xpyt
         m_close_callback = std::move(callback);
         m_comm.on_close([this](const xeus::xmessage&)
         {
-            m_close_callback(comm_id());
+            m_close_callback();
         });
     }
 
@@ -128,7 +128,7 @@ namespace xpyt
             XPYT_HOLDING_GIL(py_callback(cppmessage_to_pymessage(msg)))
             if (m_close_callback)
             {
-                m_close_callback(comm_id());
+                m_close_callback();
             }
         };
     }
@@ -152,11 +152,10 @@ namespace xpyt
         // deletion by the garbage collector
         pycomm.inc_ref();
         xcomm& comm = pycomm.cast<xcomm&>();
-        comm.on_close_cleanup([this](std::string id)
+        comm.on_close_cleanup([pycomm]()
         {
-            XPYT_HOLDING_GIL(m_comms.erase(id))
+            XPYT_HOLDING_GIL(pycomm.dec_ref())
         });
-        m_comms[comm.comm_id()] = pycomm;
     }
 
     /***************
