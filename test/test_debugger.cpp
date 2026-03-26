@@ -21,7 +21,6 @@
 #include <mutex>
 #include <thread>
 
-
 #include "xeus/xsystem.hpp"
 
 #include "xeus_client.hpp"
@@ -1166,20 +1165,22 @@ struct KernelProcess
     KernelProcess()
     {
         running.emplace_back(m_impl);
-        std::cout << "=> xpython launched" << std::endl;
-
-        // wait for xpython to be ready before continuing
-        constexpr std::string_view ready_message = "Run with XEUS";
+        
+        std::cout << "-> xpython sub-process started, waiting for ready message ..." << std::endl;
+        constexpr std::string_view ready_message = "Run with XEUS"; // we expect this to appear in the error output of xpython once it's ready
         std::string err_output;
         boost::asio::read_until(m_impl->err_pipe, boost::asio::dynamic_buffer(err_output), ready_message);
-
-        std::cout << "=> xpython is ready" << std::endl;
-
+        std::cout << "-> xpython ready, proceeding with the test" << std::endl;
     }
 
     ~KernelProcess()
     {
-        std::cout << "=> xpython - destructor end" << std::endl;
+        if (m_impl)
+        {
+            std::cout << "-> xpython - stopping ..." << std::endl;
+            m_impl.reset();
+            std::cout << "-> xpython - done" << std::endl;
+        }
     }
 
     private:
@@ -1190,40 +1191,40 @@ struct KernelProcess
             boost::asio::readable_pipe err_pipe{ ctx };
             boost::filesystem::path xpython_path = boost::process::environment::find_executable("xpython");
             boost::process::process process{ ctx, xpython_path, { "-f" , KERNEL_JSON }, boost::process::process_stdio{{}, {}, err_pipe} };
-
-            struct on_destruction {
-                ~on_destruction()
-                {
-                    std::cout << "=> xpython - destructor begin" << std::endl;
-                }
-            };
         };
 
         std::shared_ptr<Impl> m_impl = std::make_shared<Impl>();
 
         struct on_program_exit
         {
+            // Makes sure sub-processes are all destroyed even if an abort occcurs.
+            // Will not be invoked on quick_exit however.
             ~on_program_exit()
             {
-                std::cout << "=> test program exiting (after `main()`): explicitly terminate remaining sub-processes ..." << std::endl;
+                const auto still_running_count = std::count_if(running.begin(), running.end(), [](const auto& maybe_impl) { return !maybe_impl.expired(); });
+                if (still_running_count == 0)
+                {
+                    return;
+                }
+
+                std::cerr << "=> test program exiting (after `main()`): explicitly terminate remaining sub-processes (" << still_running_count << ") ..." << std::endl;
                 for (auto& maybe_process : running)
                 {
                     if (auto process_impl = maybe_process.lock())
                     {
-                        std::cout << "=>   request exit politely : " << process_impl->xpython_path << "(" << process_impl->process.id() << ") ..." << std::endl;
+                        std::cerr << "=>   request exit politely : " << process_impl->xpython_path << "(" << process_impl->process.id() << ") ..." << std::endl;
                         process_impl->process.request_exit();
-                        //process_impl->process.wait();
                         std::this_thread::sleep_for(std::chrono::seconds(2));
                         if (process_impl->process.running())
                         {
-                            std::cout << "=>   still running, force terminate : " << process_impl->xpython_path << "(" << process_impl->process.id() << ") ..." << std::endl;
+                            std::cerr << "=>   still running, force terminate : " << process_impl->xpython_path << "(" << process_impl->process.id() << ") ..." << std::endl;
                             process_impl->process.terminate();
                             process_impl->process.wait();
                         }
-                        std::cout << "=>   terminate " << process_impl->xpython_path << "(" << process_impl->process.id() << ") - DONE" << std::endl;
+                        std::cerr << "=>   terminate " << process_impl->xpython_path << "(" << process_impl->process.id() << ") - DONE" << std::endl;
                     }
                 }
-                std::cout << "=> test program exiting : explicitly terminate remaining sub-processes - DONE" << std::endl;
+                std::cerr << "=> test program exiting : explicitly terminate remaining sub-processes - DONE" << std::endl;
             }
         };
         static std::vector<std::weak_ptr<Impl>> running;
