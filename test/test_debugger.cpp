@@ -1160,15 +1160,31 @@ void dump_connection_file()
 
 struct KernelProcess
 {
+    struct error : std::runtime_error {
+        using std::runtime_error::runtime_error;
+    };
 
     KernelProcess()
     {
         running.emplace_back(m_impl);
 
         std::cout << "-> xpython sub-process started, waiting for ready message ..." << std::endl;
+
         constexpr std::string_view ready_message = "Run with XEUS"; // we expect this to appear in the error output of xpython once it's ready
         std::string err_output;
-        boost::asio::read_until(m_impl->err_pipe, boost::asio::dynamic_buffer(err_output), ready_message);
+        try 
+        {
+            boost::asio::read_until(m_impl->err_pipe, boost::asio::dynamic_buffer(err_output), ready_message);
+        }
+        catch (const std::exception& ex)
+        {
+            std::stringstream msgbuilder;
+            msgbuilder << "xpython startup failed: " << ex.what();
+            msgbuilder << "\nxpython's standard error output : " << err_output;
+            auto message = msgbuilder.str();
+            std::cerr << message << std::endl;
+            throw error(message);
+        }
         std::cout << "-> xpython ready, proceeding with the test" << std::endl;
     }
 
