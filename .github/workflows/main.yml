@@ -69,8 +69,12 @@ jobs:
         run: xpython --version
 
       - name: Test xeus-python C++
-        run: ./test_xeus_python
-        timeout-minutes: 4
+        run: |
+          for i in $(seq 1 20);
+          do
+              ./test_xeus_python
+          done
+        timeout-minutes: 40
         working-directory: build/test
 
       - name: Test xeus-python Python
