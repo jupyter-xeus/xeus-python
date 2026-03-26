@@ -337,100 +337,59 @@ namespace xpyt
 
     nl::json interpreter::internal_request_impl(const nl::json& content)
     {
-        std::cout << "Received internal request with content: " << content.dump(4) << std::endl;
+        std::cerr << "Received internal request with content: " << content.dump(4) << std::endl;
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
 
-        std::cout<<"reset traceback"<<std::endl;
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
-        std::cout<<"entering try block"<<std::endl;
         try
         {
-            std::cout<<"executing code: "<<code<<std::endl;
             exec(py::str(code));
-            std::cout<<"code executed successfully"<<std::endl;
             return xeus::create_successful_reply();
         }
         catch (py::error_already_set& e)
         {
             try{
-                std::cout<<"an error occurred during code execution: "<<e.what()<<std::endl;
+                std::cerr << "an error occurred during code execution: " << e.what() <<std::endl;
 
-                std::cout<<"grabbing traceback"<<std::endl;
                 // This will grab the latest traceback and set shell.last_error
                 m_ipython_shell.attr("showtraceback")();
-
-                std::cout<<"extracting error from shell.last_error"<<std::endl;
                 py::list pyerror = m_ipython_shell.attr("last_error");
-
-                std::cout<<"create xerror from pyerror"<<std::endl;
                 xerror error = extract_error(pyerror);
 
-                std::cout<<"publishing execution error"<<std::endl;
                 publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
 
-                std::cout<<"creating error reply"<<std::endl;
                 error.m_traceback.resize(1);
                 error.m_traceback[0] = code;
                 return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
             }
             catch (py::error_already_set& e)
             {
-                std::cout<<"an error occurred during error handling: "<<e.what()<<std::endl;
+                std::cerr << "an error occurred during error handling: "<<e.what()<<std::endl;
                 return xeus::create_error_reply("ErrorDuringErrorHandling", e.what(), std::vector<std::string>());
             }
             catch(std::exception& e)
             {
-                std::cout<<"a standard exception occurred during error handling: "<<e.what()<<std::endl;
+                std::cerr << "a standard exception occurred during error handling: "<<e.what()<<std::endl;
                 return xeus::create_error_reply("ExceptionDuringErrorHandling", e.what(), std::vector<std::string>());
             }
             catch (...)
             {
-                std::cout<<"an unknown error occurred during error handling"<<std::endl;
+                std::cerr << "an unknown error occurred during error handling"<<std::endl;
                 return xeus::create_error_reply("UnknownErrorDuringErrorHandling", "", std::vector<std::string>());
             }
         }
         catch(std::exception& e)
         {
-            std::cout<<"a standard exception occurred during code execution: "<<e.what()<<std::endl;
+            std::cerr << "a standard exception occurred during code execution: "<<e.what()<<std::endl;
             return xeus::create_error_reply("Exception", e.what(), std::vector<std::string>());
         }
         catch (...)
         {
-            std::cout<<"an unknown error occurred during code execution"<<std::endl;
+            std::cerr << "an unknown error occurred during code execution"<<std::endl;
             return xeus::create_error_reply("UnknownError", "", std::vector<std::string>());
         }
-
-        std::cout << "\n--> processing error ... " << std::endl;
-        py::list pyerror = [&]() -> py::list {
-            try {
-                auto last_error = m_ipython_shell.attr("last_error");
-                std::cout << "\n--> converting last_error to list ... " << std::endl;
-                return py::list(last_error);
-            }
-            catch (py::error_already_set& e)
-            {
-                std::cout << "\n--> processing error: failed acquiring `last_error` " << std::endl;
-                return py::list{};
-            }
-        }();
-
-        if (pyerror.empty())
-        {
-            return xeus::create_error_reply("SNAFU", "python SNAFU");
-        }
-
-        std::cout << "\n--> A " << std::endl;
-        xerror error = extract_error(pyerror);
-        std::cout << "\n--> B " << std::endl;
-        publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
-        std::cout << "\n--> C " << std::endl;
-        error.m_traceback.resize(1);
-        error.m_traceback[0] = code;
-        std::cout << "\n--> D " << std::endl;
-        return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
-
     }
 
 
