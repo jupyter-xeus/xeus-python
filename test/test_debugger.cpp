@@ -1120,7 +1120,6 @@ void timer::run_timer()
     {
         constexpr auto message = "Unit test time out !!";
         std::clog << message << std::endl;
-        //std::terminate();
         throw timeout{ message }; // same as calling terminate if unhandled, but some impl will also display the error in the console
     }
 }
@@ -1165,7 +1164,7 @@ struct KernelProcess
     KernelProcess()
     {
         running.emplace_back(m_impl);
-        
+
         std::cout << "-> xpython sub-process started, waiting for ready message ..." << std::endl;
         constexpr std::string_view ready_message = "Run with XEUS"; // we expect this to appear in the error output of xpython once it's ready
         std::string err_output;

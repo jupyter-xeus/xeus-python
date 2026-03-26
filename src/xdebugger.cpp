@@ -258,7 +258,6 @@ namespace xpyt
         if (std::getenv("XEUS_LOG") != nullptr)
         {
             std::ofstream out("xeus.log", std::ios_base::app);
-            //auto& out = std::cout;
             out << "===== DEBUGGER CONFIG =====" << std::endl;
             out << m_debugger_config.dump() << std::endl;
         }
