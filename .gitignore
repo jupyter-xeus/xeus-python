@@ -44,6 +44,7 @@ docs/build/
 
 # Build directory
 build/
+/build-*/
 
 # generated kernel specs
 /share/jupyter/kernels/xpython/kernel.json

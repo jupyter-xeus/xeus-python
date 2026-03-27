@@ -20,6 +20,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <thread>
 
 #include "nlohmann/json.hpp"
 #include "pybind11/pybind11.h"

@@ -72,6 +72,9 @@ namespace xpyt
 
     debugger::~debugger()
     {
+        // release/destroy the debugger python object while GIL is acquired
+        pybind11::gil_scoped_acquire gil_lock;
+        m_pydebugger.dec_ref();
     }
 
     nl::json debugger::inspect_variables_request(const nl::json& message)
@@ -286,7 +289,7 @@ namespace xpyt
             py::gil_scoped_acquire acquire;
             py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
-
+            
             // Get debugpy version
             std::string expression = "debugpy.__version__";
             std::string version = (eval(py::str(expression))).cast<std::string>();

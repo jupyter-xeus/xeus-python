@@ -342,7 +342,6 @@ namespace xpyt
 
         // Reset traceback
         m_ipython_shell.attr("last_error") = py::none();
-
         try
         {
             exec(py::str(code));
@@ -350,20 +349,44 @@ namespace xpyt
         }
         catch (py::error_already_set& e)
         {
-            // This will grab the latest traceback and set shell.last_error
-            m_ipython_shell.attr("showtraceback")();
+            try{
+                // This will grab the latest traceback and set shell.last_error
+                m_ipython_shell.attr("showtraceback")();
+                py::list pyerror = m_ipython_shell.attr("last_error");
+                xerror error = extract_error(pyerror);
 
-            py::list pyerror = m_ipython_shell.attr("last_error");
+                publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
 
-            xerror error = extract_error(pyerror);
-
-            publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
-            error.m_traceback.resize(1);
-            error.m_traceback[0] = code;
-
-            return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
+                error.m_traceback.resize(1);
+                error.m_traceback[0] = code;
+                return xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback);
+            }
+            catch (py::error_already_set& e)
+            {
+                std::cerr << "an error occurred during error handling: "<<e.what()<<std::endl;
+                return xeus::create_error_reply("ErrorDuringErrorHandling", e.what(), std::vector<std::string>());
+            }
+            catch(std::exception& e)
+            {
+                std::cerr << "a standard exception occurred during error handling: "<<e.what()<<std::endl;
+                return xeus::create_error_reply("ExceptionDuringErrorHandling", e.what(), std::vector<std::string>());
+            }
+            catch (...)
+            {
+                std::cerr << "an unknown error occurred during error handling"<<std::endl;
+                return xeus::create_error_reply("UnknownErrorDuringErrorHandling", "", std::vector<std::string>());
+            }
+        }
+        catch(std::exception& e)
+        {
+            return xeus::create_error_reply("Exception", e.what(), std::vector<std::string>());
+        }
+        catch (...)
+        {
+            return xeus::create_error_reply("UnknownError", "", std::vector<std::string>());
         }
     }
+
 
     void interpreter::set_request_context(xeus::xrequest_context context)
     {

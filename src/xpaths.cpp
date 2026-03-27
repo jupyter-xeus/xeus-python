@@ -52,6 +52,13 @@ namespace xpyt
 
     std::string get_python_path()
     {
+        const char* python_exe_environment = std::getenv("PYTHON_EXECUTABLE");
+        if (python_exe_environment != nullptr && std::strlen(python_exe_environment) != 0)
+        {
+            static const std::string python_exe_path = python_exe_environment;
+            return python_exe_path;
+        }
+
         std::string python_prefix = get_python_prefix();
 #ifdef _WIN32
         if (python_prefix.back() != '\\')

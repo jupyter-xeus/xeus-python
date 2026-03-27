@@ -77,15 +77,32 @@ int main(int argc, char* argv[])
     PyConfig_InitPythonConfig(&config);
     // config.isolated = 1;
 
+    constexpr std::string_view python_path_help = "PYTHONHOME or PYTHON_EXECUTABLE environment variables can be used to specify the correct path";
+    const auto fail_with_error_message = [](const auto&... message_parts) {
+            std::stringstream message_stream;
+            ((message_stream << message_parts), ...);
+            auto message = message_stream.str();
+            std::cerr << message << std::endl;
+            throw std::runtime_error(std::move(message));
+        };
+
     // Setting Program Name
     static const std::string executable(xpyt::get_python_path());
     static const std::wstring wexecutable(executable.cbegin(), executable.cend());
+    if (!std::filesystem::exists(wexecutable))
+    {
+        fail_with_error_message("cannot find python executable, tried  '", executable, "' - ", python_path_help);
+    }
     config.program_name = const_cast<wchar_t*>(wexecutable.c_str());
 
     // Setting Python Home
     static const std::string pythonhome{ xpyt::get_python_prefix() };
-    static const std::wstring wstr(pythonhome.cbegin(), pythonhome.cend());;
-    config.home = const_cast<wchar_t*>(wstr.c_str());
+    static const std::wstring wpythonhome(pythonhome.cbegin(), pythonhome.cend());
+    if (!std::filesystem::exists(wpythonhome))
+    {
+        fail_with_error_message("cannot find python home directory, tried  '", pythonhome, "' - ", python_path_help);
+    }
+    config.home = const_cast<wchar_t*>(wpythonhome.c_str());
     xpyt::print_pythonhome();
 
     // Implicitly pre-initialize Python
