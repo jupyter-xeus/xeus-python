@@ -337,7 +337,6 @@ namespace xpyt
 
     nl::json interpreter::internal_request_impl(const nl::json& content)
     {
-        std::cerr << "Received internal request with content: " << content.dump(4) << std::endl;
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
 
@@ -351,8 +350,6 @@ namespace xpyt
         catch (py::error_already_set& e)
         {
             try{
-                std::cerr << "an error occurred during code execution: " << e.what() <<std::endl;
-
                 // This will grab the latest traceback and set shell.last_error
                 m_ipython_shell.attr("showtraceback")();
                 py::list pyerror = m_ipython_shell.attr("last_error");
@@ -382,12 +379,10 @@ namespace xpyt
         }
         catch(std::exception& e)
         {
-            std::cerr << "a standard exception occurred during code execution: "<<e.what()<<std::endl;
             return xeus::create_error_reply("Exception", e.what(), std::vector<std::string>());
         }
         catch (...)
         {
-            std::cerr << "an unknown error occurred during code execution"<<std::endl;
             return xeus::create_error_reply("UnknownError", "", std::vector<std::string>());
         }
     }
