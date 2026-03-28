@@ -8,12 +8,8 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#include <cctype>
-#include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <string>
-#include <thread>
 
 // This must be included BEFORE pybind
 // otherwise it fails to build on Windows
