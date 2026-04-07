@@ -16,11 +16,8 @@
     #pragma GCC diagnostic ignored "-Wattributes"
 #endif
 
-#include <map>
 #include <memory>
-#include <mutex>
-#include <set>
-#include <thread>
+#include <string>
 
 #include "nlohmann/json.hpp"
 #include "pybind11/pybind11.h"

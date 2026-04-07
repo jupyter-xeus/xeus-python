@@ -44,6 +44,8 @@ option(XPYT_USE_SHARED_XEUS_PYTHON "Link xpython and xpython_extension with the 
 
 option(XPYT_EMSCRIPTEN_WASM_BUILD "Build for wasm with emscripten" OFF)
 
+option(XPYT_SANITIZE_ADDRESS "Enable address sanitizer" OFF)
+
 # Test options
 option(XPYT_BUILD_TESTS "xeus-python test suite" OFF)
 
@@ -256,6 +258,10 @@ macro(xpyt_set_common_options target_name)
         CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
         CMAKE_CXX_COMPILER_ID MATCHES "Intel")
         target_compile_options(${target_name} PUBLIC -Wunused-parameter -Wextra -Wreorder)
+        if (XPYT_SANITIZE_ADDRESS)
+            target_compile_options(${target_name} PUBLIC -fsanitize=address -fno-omit-frame-pointer)
+            target_link_options(${target_name} PUBLIC -fsanitize=address)
+        endif ()
     endif ()
 endmacro()
 
