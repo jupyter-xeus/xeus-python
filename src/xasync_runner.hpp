@@ -32,7 +32,6 @@ namespace xpyt
         xasync_runner& operator=(const xasync_runner&) = delete;
         xasync_runner(xasync_runner&&) = delete;
         xasync_runner& operator=(xasync_runner&&) = delete;
-
         ~xasync_runner() override = default;
         
     private:

@@ -33,7 +33,7 @@ jobs:
           environment-file: environment-wasm-build.yml
           init-shell: bash
           environment-name: xeus-python-wasm-build
-      
+
       - name: Set ncpus
         run: echo "ncpus=$(nproc --all)" >> $GITHUB_ENV
 

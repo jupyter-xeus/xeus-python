@@ -89,7 +89,7 @@ nl::json make_init_request()
         {"seq", 1},
         {"command", "initialize"},
         {"arguments", {
-            {"cliendID", "vscode"}, 
+            {"cliendID", "vscode"},
             {"clientName", "Visual Studio Code"},
             {"adapterID", "python"},
             {"pathFormat", "path"},
