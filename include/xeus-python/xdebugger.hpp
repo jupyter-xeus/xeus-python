@@ -16,11 +16,8 @@
     #pragma GCC diagnostic ignored "-Wattributes"
 #endif
 
-#include <map>
 #include <memory>
-#include <mutex>
-#include <set>
-#include <thread>
+#include <string>
 
 #include "nlohmann/json.hpp"
 #include "pybind11/pybind11.h"
@@ -75,20 +72,7 @@ namespace xpyt
         std::string m_debugpy_host;
         std::string m_debugpy_port;
         nl::json m_debugger_config;
-
-        struct after { ~after(){ std::cout << "\n### " << std::this_thread::get_id() << " DESTROYING PYDEBUGGER - DONE" << std::endl; } } after_pydebugger;
-
         py::object m_pydebugger;
-        struct before { 
-            py::object& ref_pydebugger;
-            ~before(){
-                std::cout << "\n### " << std::this_thread::get_id() << " DESTROYING PYDEBUGGER ..." << std::endl; 
-                py::gil_scoped_acquire acquire;
-                auto pydebugger = std::move(ref_pydebugger);
-                std::cout << "\n### " << std::this_thread::get_id() << " DESTROYING PYDEBUGGER - local destroy ..." << std::endl;
-            } 
-        } before_pydebugger{ m_pydebugger };
-
         xeus::xthread m_client_runner;
         bool m_copy_to_globals_available;
     };

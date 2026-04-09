@@ -79,8 +79,13 @@ jobs:
         run: xpython --version
 
       - name: Test xeus-python C++
-        run: ./test_xeus_python
-        timeout-minutes: 4
+        run: |
+          for i in $(seq 1 10);
+          do
+              echo "tests run $i"
+              ./test_xeus_python
+          done
+        timeout-minutes: 40
         working-directory: build/test
 
       - name: Test xeus-python Python
@@ -155,7 +160,9 @@ jobs:
         shell: cmd /C call {0}
         run: |
           for /L %%i in (1,1,20) do (
+            echo tests run %%i
             test_xeus_python
           )
         timeout-minutes: 40
         working-directory: build\test
+
