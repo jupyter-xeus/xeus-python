@@ -22,23 +22,18 @@ namespace xpyt
 
     xasync_runner::xasync_runner(py::dict globals)
         : xeus::xshell_runner(),
-          m_global_dict{globals},
-            m_use_busy_loop{false}
+          m_global_dict{globals}
     {
-        std::cout<< "xasync_runner created" << std::endl;
     }
     
     void xasync_runner::run_impl()
     {
-        std::cout << "get descriptors "<< std::endl;
-            int fd_shell_int = static_cast<int>(this->get_shell_fd());
-            int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
+
+        const int fd_shell_int = static_cast<int>(this->get_shell_fd());
+        const int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
 
 
-        std::cout << "Got descriptors: " << fd_shell_int << ", " << fd_controller_int << std::endl;
-
-        // wrap this->on_message_doorbell_shell and this->on_message_doorbell_controller
-        // into a py::cpp_function
+        // wrap c++ callbacks into python functions
         py::cpp_function shell_callback = py::cpp_function([this]() {
             this->on_message_doorbell_shell();
         });
@@ -46,20 +41,10 @@ namespace xpyt
             this->on_message_doorbell_controller();
         });
 
-
         // ensure gil
         py::gil_scoped_acquire acquire;
 
-
-        // the usual print function is not working for debugging since 
-        // its replaced by the kernel's stdout handling, so we define
-        // a custom function that writes to sys.stdout directly
-        auto raw_print = py::cpp_function([](
-            std::string msg
-        ) {
-            std::cout << "Received message in Python: " << msg << std::endl;
-        });
-
+        // pure python impl of the main loop
         exec(R"(
         import sys
         import asyncio
@@ -71,21 +56,15 @@ namespace xpyt
         if is_win:
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-
         class ZMQSockReader:
             def __init__(self, fd):
-                # We wrap the handle, but we MUST NOT let Python close it
-                # because the C++ ZMQ context owns the lifecycle.
                 self._fd = fd
-                # On Windows, we use fromfd to create a socket object from the raw handle
-                # Note: socket.AF_INET is a dummy here; the handle is already initialized.
                 self._sock = socket.fromfd(self._fd, socket.AF_INET, socket.SOCK_STREAM)
 
             def fileno(self):
                 return self._fd
 
             def __del__(self):
-                # Detach prevents the destructor from closing the underlying WinSock handle
                 try:
                     self._sock.detach()
                 except:
@@ -97,59 +76,28 @@ namespace xpyt
             else:
                 return fd
 
-
-        async def busy_loop(fd, callback, name, raw_print):
-            try:
-                raw_print(f"Starting busy loop {name} ")
-                while True:
-                    await asyncio.sleep(0)
-                    callback()
-            except Exception as e:
-                raw_print(f"Exception in busy_loop {name} : {e}")
-
-        def run_main_busy_loop(fd_shell, fd_controller, shell_callback, controller_callback, raw_print):
-            raw_print("Creating event loop busy loop")
-            loop = asyncio.new_event_loop() 
-            assign_event_loop = asyncio.set_event_loop(loop)
-
-            task_shell = loop.create_task(busy_loop(fd_shell, shell_callback, "shell", raw_print))
-            task_controller = loop.create_task(busy_loop(fd_controller, controller_callback, "controller", raw_print))
-            
-            raw_print("Running event loop forever")
-            loop.run_forever()
-        
-
-        def run_main_non_busy_loop(fd_shell, fd_controller, shell_callback, controller_callback, raw_print):
-            raw_print("Creating event loop non-busy loop")
+        def run_main_non_busy_loop(fd_shell, fd_controller, shell_callback, controller_callback):
             # here we create / ensure we have an event loop
             loop = asyncio.new_event_loop() 
-            assign_event_loop = asyncio.set_event_loop(loop)
-            raw_print("Adding readers to event loop")
+            asyncio.set_event_loop(loop)
             loop.add_reader(fd_shell, shell_callback)
             loop.add_reader(fd_controller, controller_callback)
-            raw_print("Running event loop forever") 
             loop.run_forever()
     
-        def run_main(fd_shell, fd_controller, shell_callback, controller_callback, use_busy_loop, raw_print):
+        def run_main(fd_shell, fd_controller, shell_callback, controller_callback):
             try:
                 fd_controller = make_fd(fd_controller)
                 fd_shell = make_fd(fd_shell)
-                
-                main = run_main_busy_loop if use_busy_loop else run_main_non_busy_loop
-                main(fd_shell, fd_controller, shell_callback, controller_callback, raw_print)
+                run_main_non_busy_loop(fd_shell, fd_controller, shell_callback, controller_callback)
 
             except Exception as e:
-                # get full traceback
-
                 traceback_str = traceback.format_exc()
-                raw_print(f"Exception in run_main: {traceback_str}")
+                print(f"Exception in async runner: {e}\n{traceback_str}", file=sys.stderr)
+                sys.exit(1)
 
         )", m_global_dict);
 
-        py::object run_func = m_global_dict["run_main"];
-        std::cout << "Starting async loop "<< std::endl;
-        run_func(fd_shell_int, fd_controller_int, shell_callback, controller_callback, m_use_busy_loop, raw_print);
-        
+        m_global_dict["run_main"](fd_shell_int, fd_controller_int, shell_callback, controller_callback);
     
     }
 
@@ -158,7 +106,6 @@ namespace xpyt
         int ZMQ_DONTWAIT{ 1 }; // from zmq.h 
         while (auto msg = read_shell(ZMQ_DONTWAIT))
         {
-            std::cout << "got message on shell "<<std::endl;
             notify_shell_listener(std::move(msg.value()));
         }
     }
@@ -170,17 +117,12 @@ namespace xpyt
         {
             std::string val{ msg.value() };
 
-            std::cout << "Controller message: " << val << std::endl;
             if (val == "stop")
             {
                 send_controller(std::move(val));
 
-
-
-                std::cout << "get descriptors to stop"<< std::endl;
                 int fd_shell_int = static_cast<int>(this->get_shell_fd());
                 int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
-
 
                 py::gil_scoped_acquire acquire;
 
@@ -190,9 +132,6 @@ namespace xpyt
                 import sys
                 
                 def stop_loop(fd_shell, fd_controller, use_busy_loop):
-                    
-
-                    # here we create / ensure we have an event loop
                     loop = asyncio.get_event_loop()
                     if not use_busy_loop:
                         loop.remove_reader(make_fd(fd_shell))
