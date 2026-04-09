@@ -271,9 +271,7 @@ namespace xpyt
         code += "debugpy.listen((\'" + m_debugpy_host + "\'," + m_debugpy_port + "))";
         nl::json json_code;
         json_code["code"] = code;
-        std::cout<<"sending code to import and start debugpy: "<<code<<std::endl;
         nl::json rep = xdebugger::get_control_messenger().send_to_shell(json_code);
-        std::cout<<"received reply from debugpy import request"<<std::endl;
         std::string status = rep["status"].get<std::string>();
         if(status != "ok")
         {
@@ -289,7 +287,6 @@ namespace xpyt
         }
         else
         {
-            std::cout << "\n### " << std::this_thread::get_id() << " CREATING PYDEBUGGER ..." << std::endl;
             py::gil_scoped_acquire acquire;
             py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();

@@ -47,7 +47,6 @@
 #endif
 #endif
 
-
 #ifdef _MSC_VER
     #define XEUS_PYTHON_HIDDEN
 #else

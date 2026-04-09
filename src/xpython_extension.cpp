@@ -103,8 +103,6 @@ void launch(const py::list args_list)
             session_id,
             debugger_config);
     };
-            
-
 
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;

@@ -1,4 +1,5 @@
 /***************************************************************************
+* Copyright (c) 2026, Thorsten Beier                                       *
 * Copyright (c) 2018, Martin Renou, Johan Mabille, Sylvain Corlay, and     *
 * Wolf Vollprecht                                                          *
 * Copyright (c) 2018, QuantStack                                           *
@@ -21,7 +22,6 @@
 #include <unistd.h>
 #endif
 
-
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus/xinterpreter.hpp"
@@ -29,8 +29,6 @@
 
 #include "xeus-zmq/xserver_zmq.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
-
-
 
 #include "pybind11/embed.h"
 #include "pybind11/pybind11.h"
@@ -41,8 +39,6 @@
 #include "xeus-python/xpaths.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-python/xutils.hpp"
-
-
 #include "xeus-python/xaserver.hpp"
 
 namespace py = pybind11;
@@ -114,8 +110,6 @@ int main(int argc, char* argv[])
     py::scoped_interpreter guard{};
     py::gil_scoped_acquire acquire;
 
-
-
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
     for(auto i = 0; i < argc; ++i)
@@ -134,7 +128,6 @@ int main(int argc, char* argv[])
         PyMem_RawFree(argw[i]);
     }
     delete[] argw;
-
 
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
@@ -245,9 +238,7 @@ int main(int argc, char* argv[])
             "}\n```"
             << std::endl;
 
-        std::cout << "Starting kernel..." << std::endl;
         kernel.start();
-        std::cout << "Kernel stopped." << std::endl;
     }
 
     return 0;

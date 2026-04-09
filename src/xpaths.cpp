@@ -46,20 +46,7 @@ namespace xpyt
             static const std::string pythonhome = XPYT_STRINGIFY(XEUS_PYTHONHOME_ABSPATH);
 #else
             using namespace std::filesystem;
-#   ifdef _WIN32
-            // python is located in the root dir of the env on Windows, not the prefix path which is in env-root/Library/
-            static const std::string pythonhome = [] {
-                    // makes sure std::filesystem knows the string we pass is indeed UTF-8 (by convention)
-                    // and not some other encoding (as often expected on Windows)
-                    const path prefix_path_u8(xeus::prefix_path(), std::locale("en_US.UTF-8"));
-                    // we need the parent path of the prefix path
-                    const auto python_dir_u8 = canonical(prefix_path_u8).parent_path().u8string(); 
-                    // TOOD: in C++20, `python_dir_u8` will have changed type to `std::u8string`, a conversion would be needed here.
-                    return python_dir_u8;
-                }();
-#   else
-            static const std::string pythonhome = canonical(xeus::prefix_path()).u8string();
-#   endif
+            static const std::string pythonhome = xeus::prefix_path();
 #endif
             return pythonhome;
         }

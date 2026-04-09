@@ -1,4 +1,12 @@
-
+/***************************************************************************
+* Copyright (c) 2026, Thorsten Beier                                       *
+* Copyright (c) 2024, Isabel Paredes                                       *
+* Copyright (c) 2024, QuantStack                                           *
+*                                                                          *
+* Distributed under the terms of the BSD 3-Clause License.                 *
+*                                                                          *
+* The full license is in the file LICENSE, distributed with this software. *
+****************************************************************************/
 #include "xeus-python/xaserver.hpp"
 #include "xasync_runner.hpp"
 #include "xeus-zmq/xcontrol_default_runner.hpp"
@@ -16,9 +24,6 @@ namespace nl = nlohmann;
 
 namespace  xpyt
 {
-
-
-    
     xeus::xkernel::server_builder make_xaserver_factory(py::dict globals)
     {
         return [globals](

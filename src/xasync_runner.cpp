@@ -1,4 +1,5 @@
 /***************************************************************************
+* Copyright (c) 2026, Thorsten Beier                                       *
 * Copyright (c) 2024, Isabel Paredes                                       *
 * Copyright (c) 2024, QuantStack                                           *
 *                                                                          *
@@ -19,7 +20,6 @@ namespace py = pybind11;
 namespace xpyt
 {
 
-
     xasync_runner::xasync_runner(py::dict globals)
         : xeus::xshell_runner(),
           m_global_dict{globals}
@@ -31,7 +31,6 @@ namespace xpyt
 
         const int fd_shell_int = static_cast<int>(this->get_shell_fd());
         const int fd_controller_int = static_cast<int>(this-> get_shell_controller_fd());
-
 
         // wrap c++ callbacks into python functions
         py::cpp_function shell_callback = py::cpp_function([this]() {
@@ -152,7 +151,5 @@ namespace xpyt
             }
         }
     }
-
-
 
 } // namespace xpyt

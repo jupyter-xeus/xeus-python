@@ -81,7 +81,7 @@ set(pybind11_REQUIRED_VERSION 2.6.1)
 set(pybind11_json_REQUIRED_VERSION 0.2.8)
 set(pyjs_REQUIRED_VERSION 2.0.0)
 
-# find_package(Python COMPONENTS Interpreter REQUIRED)
+find_package(Python COMPONENTS Interpreter REQUIRED)
 
 if (NOT TARGET pybind11::headers)
     # Defaults to ON for cmake >= 3.18
@@ -107,10 +107,7 @@ else ()
     if (NOT TARGET xeus-zmq AND NOT TARGET xeus-zmq-static)
         find_package(xeus-zmq ${xeus-zmq_REQUIRED_VERSION} REQUIRED)
     endif ()
-
 endif()
-
-
 
 # Configuration
 # =============
@@ -329,10 +326,7 @@ macro(xpyt_create_target target_name src headers linkage output_name)
         set(XPYT_XEUS_TARGET xeus-zmq-static)
     endif ()
 
-    target_link_libraries(${target_name}
-        PUBLIC ${XPYT_XEUS_TARGET} 
-        PRIVATE pybind11::pybind11 pybind11_json
-    )
+    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} PRIVATE pybind11::pybind11 pybind11_json)
     if (WIN32 OR CYGWIN)
         target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
     elseif (APPLE)
@@ -386,18 +380,11 @@ endif ()
 
 if (XPYT_BUILD_XPYTHON_EXECUTABLE)
     add_executable(xpython ${XPYTHON_SRC})
-    target_link_libraries(xpython PRIVATE pybind11::embed )
+    target_link_libraries(xpython PRIVATE pybind11::embed)
 
     xpyt_set_common_options(xpython)
     xpyt_set_kernel_options(xpython)
     xpyt_target_link_libraries(xpython)
-
-    get_target_property(_libs xpython LINK_LIBRARIES)
-    message(STATUS "xpython LINK_LIBRARIES = ${_libs}")
-
-    message(STATUS "xeus-python file = $<TARGET_FILE:xeus-python>")
-
-
 endif()
 
 # xpython_extension

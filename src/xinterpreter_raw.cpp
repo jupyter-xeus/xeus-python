@@ -52,7 +52,6 @@ namespace xpyt
         : m_redirect_display_enabled{ redirect_display_enabled },
          m_global_dict{globals}
     {
-
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
         {
@@ -67,7 +66,6 @@ namespace xpyt
 
     void raw_interpreter::configure_impl()
     {
-        std::cout<<"raw_interpreter::configure_impl()"<<std::endl;
         if (m_release_gil_at_startup)
         {
             // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
@@ -111,9 +109,7 @@ namespace xpyt
         m_global_dict["_i"] = "";
         m_global_dict["_ii"] = "";
         m_global_dict["_iii"] = "";
-        
         py::module context_module = get_request_context_module();
-        std::cout<<"raw_interpreter::configure_impl() done"<<std::endl;
     }
 
     namespace
@@ -233,7 +229,6 @@ namespace xpyt
         m_global_dict["_ii"] = m_global_dict["_i"];
         m_global_dict["_i"] = code;
 
-        
         cb(xeus::create_successful_reply(nl::json::array(), nl::json::object()));
     }
 

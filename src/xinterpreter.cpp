@@ -62,7 +62,6 @@ namespace xpyt
     {
         if (m_release_gil_at_startup)
         {
-            std::cout << "Releasing GIL at startup." << std::endl;
             // The GIL is not held by default by the interpreter, so every time we need to execute Python code we
             // will need to acquire the GIL
             m_release_gil = gil_scoped_release_ptr(new py::gil_scoped_release());
@@ -118,10 +117,6 @@ namespace xpyt
 
         py::module context_module = get_request_context_module();
     }
-
-
-
-
 
     void interpreter::execute_request_impl(send_reply_callback cb,
                                            int /*execution_count*/,
@@ -336,7 +331,6 @@ namespace xpyt
 
     nl::json interpreter::interrupt_request_impl()
     {
-        std::cout<<"Shutting down interpreter..."<<std::endl;
         return xeus::create_interrupt_reply();
     }
 
@@ -392,7 +386,6 @@ namespace xpyt
         }
 
     }
-
 
     void interpreter::set_request_context(xeus::xrequest_context context)
     {

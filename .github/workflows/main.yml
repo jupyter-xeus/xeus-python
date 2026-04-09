@@ -23,7 +23,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04, macos-14, macos-15]
-
         build_type: [static_build, shared_build]
 
     steps:
@@ -35,7 +34,7 @@ jobs:
           environment-file: environment-dev.yml
       
       - name: Install xeus-python-shell from GitHub
-        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@libuv 
+        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@akernel 
 
 
       - name: Make build directory
@@ -52,8 +51,7 @@ jobs:
         run: |
           CMAKE_EXTRA_ARGS="$CMAKE_EXTRA_ARGS -DXPYT_BUILD_STATIC=OFF"
           echo "CMAKE_EXTRA_ARGS=$CMAKE_EXTRA_ARGS" >> $GITHUB_ENV
-        
-        
+
       - name: Configure cmake
         run: |
           cmake .. \
@@ -67,12 +65,8 @@ jobs:
             ${{ env.CMAKE_EXTRA_ARGS }}
         working-directory: build
 
-      - name: Build all targets
-        run: cmake --build . --verbose -j ${{ runner.os == 'macOS' && 3 || 4 }}
-        working-directory: build
-
       - name: Install
-        run: cmake --install .
+        run: make -j ${{ runner.os == 'macOS' && 3 || 4 }} install
         working-directory: build
 
       - name: Print version
@@ -115,7 +109,7 @@ jobs:
       
       - name: Install xeus-python-shell from GitHub
         shell: cmd /C call {0}
-        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@libuv
+        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@akernel
 
       - name: Static build option
         if: matrix.build_type == 'static_build'
@@ -153,8 +147,7 @@ jobs:
 
       - name: Test xeus-python Python
         shell: cmd /C call {0}
-        run: pytest . -s -vvv
-
+        run: pytest . -vvv
 
       - name: Test xeus-python C++
         shell: cmd /C call {0}

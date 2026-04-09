@@ -1,4 +1,5 @@
 /***************************************************************************
+* Copyright (c) 2026, Thorsten Beier                                       *
 * Copyright (c) 2024, Isabel Paredes                                       *
 * Copyright (c) 2024, QuantStack                                           *
 *                                                                          *
@@ -27,7 +28,6 @@ namespace xpyt
     public:
 
         xasync_runner(py::dict globals);
-
         xasync_runner(const xasync_runner&) = delete;
         xasync_runner& operator=(const xasync_runner&) = delete;
         xasync_runner(xasync_runner&&) = delete;
@@ -46,11 +46,6 @@ namespace xpyt
         bool m_use_busy_loop;
 
     };
-
-
-
-
-
 
 } // namespace xeus
 
