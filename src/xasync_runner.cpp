@@ -130,17 +130,16 @@ namespace xpyt
                 import asyncio
                 import sys
                 
-                def stop_loop(fd_shell, fd_controller, use_busy_loop):
+                def stop_loop(fd_shell, fd_controller):
                     loop = asyncio.get_event_loop()
-                    if not use_busy_loop:
-                        loop.remove_reader(make_fd(fd_shell))
-                        loop.remove_reader(make_fd(fd_controller))
+                    loop.remove_reader(make_fd(fd_shell))
+                    loop.remove_reader(make_fd(fd_controller))
                     loop.stop()
 
                 )", m_global_dict);
 
                 py::object stop_func = m_global_dict["stop_loop"];
-                stop_func(fd_shell_int, fd_controller_int, m_use_busy_loop);
+                stop_func(fd_shell_int, fd_controller_int);
                 break;
 
             }

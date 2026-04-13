@@ -24,7 +24,7 @@ namespace nl = nlohmann;
 
 namespace  xpyt
 {
-    xeus::xkernel::server_builder make_xaserver_factory(py::dict globals)
+    xeus::xkernel::server_builder make_async_server_factory(py::dict globals)
     {
         return [globals](
             xeus::xcontext& context,
