@@ -145,7 +145,6 @@ namespace xpyt
             nl::json payload = this->m_ipython_shell.attr("payload_manager").attr("read_payload")();
             this->m_ipython_shell.attr("payload_manager").attr("clear_payload")();
 
-
             if (this->m_ipython_shell.attr("last_error").is_none())
             {
                 nl::json user_exprs = this->m_ipython_shell.attr("user_expressions")(user_expressions);
@@ -154,14 +153,12 @@ namespace xpyt
             else
             {
                 py::list pyerror = this->m_ipython_shell.attr("last_error");
-
                 xerror error = extract_error(pyerror);
 
                 if (!config.silent)
                 {
                     publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
                 }
-
                 cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
             }
         };

@@ -348,7 +348,7 @@ namespace xpyt
 
     namespace
     {
-        xeus::xrequest_context empty_request_context{};
+        xeus::xrequest_context empty_request_context{};     
     }
 
     const xeus::xrequest_context& raw_interpreter::get_request_context() const noexcept

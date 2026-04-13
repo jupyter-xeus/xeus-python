@@ -86,7 +86,6 @@ void launch(const py::list args_list)
     {
         interpreter = interpreter_ptr(new xpyt::interpreter(globals));
     }
-
     
     auto make_the_debugger = [&globals](
                             xeus::xcontext& context,
@@ -103,7 +102,6 @@ void launch(const py::list args_list)
             session_id,
             debugger_config);
     };
-
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
