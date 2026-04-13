@@ -106,6 +106,12 @@ int main(int argc, char* argv[])
     config.home = const_cast<wchar_t*>(wpythonhome.c_str());
     xpyt::print_pythonhome();
 
+    // Implicitly pre-initialize Python
+    status = PyConfig_SetBytesArgv(&config, argc, argv);
+    if (PyStatus_Exception(status)) {
+        std::cerr << "Error:" << status.err_msg << std::endl;
+    }
+
     // Instantiating the Python interpreter
     py::scoped_interpreter guard{};
     py::gil_scoped_acquire acquire;
