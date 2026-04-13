@@ -121,7 +121,7 @@ void launch(const py::list args_list)
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xpyt::make_xaserver_factory(globals),
+                             xpyt::make_async_server_factory(globals),
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
@@ -140,7 +140,7 @@ void launch(const py::list args_list)
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xpyt::make_xaserver_factory(globals),
+                             xpyt::make_async_server_factory(globals),
                              std::move(hist),
                              nullptr,
                              make_the_debugger);
