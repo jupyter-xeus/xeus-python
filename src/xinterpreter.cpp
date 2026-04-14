@@ -131,14 +131,13 @@ namespace xpyt
 
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
-        auto input_guard = input_redirection(config.allow_stdin);
+        auto input_guard = std::make_unique<xpyt::input_redirection>(config.allow_stdin);
 
         std::string ename;
         std::string evalue;
         std::vector<std::string> traceback;
 
-
-        auto when_done_callback_lambda = [this, cb, config, user_expressions]() {
+        py::cpp_function when_done_callback([this, cb, config, user_expressions, input_guard = std::move(input_guard)](){
             py::gil_scoped_acquire acquire;
                 
             // Get payload
@@ -161,13 +160,11 @@ namespace xpyt
                 }
                 cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
             }
-        };
-        std::function<void()> when_done_callback = when_done_callback_lambda;
+        });
 
         try
         {
-
-            m_ipython_shell.attr("run_cell_async")(code, when_done_callback, "store_history"_a=config.store_history, "silent"_a=config.silent);
+            m_ipython_shell.attr("run_cell_async")(code, std::move(when_done_callback), "store_history"_a=config.store_history, "silent"_a=config.silent);
         }
         catch(std::runtime_error& e)
         {
