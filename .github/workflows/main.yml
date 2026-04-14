@@ -33,9 +33,6 @@ jobs:
         with:
           environment-file: environment-dev.yml
       
-      - name: Install xeus-python-shell from GitHub
-        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@akernel 
-
 
       - name: Make build directory
         run: mkdir build
@@ -106,10 +103,6 @@ jobs:
 
       - name: Make build directory
         run: mkdir build
-      
-      - name: Install xeus-python-shell from GitHub
-        shell: cmd /C call {0}
-        run: pip install git+https://github.com/DerThorsten/xeus-python-shell.git@akernel
 
       - name: Static build option
         if: matrix.build_type == 'static_build'

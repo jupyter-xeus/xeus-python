@@ -16,7 +16,7 @@ dependencies:
   # of a spurious bug in debugpy
   - python <3.13
   - pip
-  #- xeus-python-shell>=0.6.3,<0.7 # we need an unreleased version
+  - xeus-python-shell>=0.7.0,<0.8
   - debugpy>=1.6.5
   - ipython
   # Test dependencies
