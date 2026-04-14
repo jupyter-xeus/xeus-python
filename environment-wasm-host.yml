@@ -11,7 +11,7 @@ dependencies:
   - pybind11_json
   - numpy
   - xeus-lite
-  - xeus
+  - xeus>=6.0.4
   - pyjs >=4,<5
   - libpython
   - zstd
