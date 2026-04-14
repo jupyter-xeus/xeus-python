@@ -31,7 +31,7 @@ namespace xpyt
     class input_redirection
     {
     public:
-        
+
         input_redirection(bool allow_stdin);
         ~input_redirection();
 
