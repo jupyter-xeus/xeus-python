@@ -31,8 +31,6 @@ namespace xpyt
     class input_redirection
     {
     public:
-        // move constructor
-        input_redirection(input_redirection&& other) noexcept = default;
         
         input_redirection(bool allow_stdin);
         ~input_redirection();
