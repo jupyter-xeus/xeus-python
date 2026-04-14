@@ -72,8 +72,7 @@ jobs:
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --contents notebooks/ \
-              --output-dir dist \
-              --XeusAddon.mounts=$THIS_DIR/xeus-python-shell-akernel/xeus_python_shell/:/lib/python3.13/site-packages/xeus_python_shell/
+              --output-dir dist 
 
 
       - name: Upload artifact
