@@ -1,4 +1,5 @@
 /***************************************************************************
+* Copyright (c) 2026, Thorsten Beier                                       *
 * Copyright (c) 2018, Martin Renou, Johan Mabille, Sylvain Corlay, and     *
 * Wolf Vollprecht                                                          *
 * Copyright (c) 2018, QuantStack                                           *
@@ -26,7 +27,7 @@
 #include "xeus/xinterpreter.hpp"
 #include "xeus/xhelper.hpp"
 
-#include "xeus-zmq/xserver_zmq_split.hpp"
+#include "xeus-zmq/xserver_zmq.hpp"
 #include "xeus-zmq/xzmq_context.hpp"
 
 #include "pybind11/embed.h"
@@ -38,9 +39,9 @@
 #include "xeus-python/xpaths.hpp"
 #include "xeus-python/xeus_python_config.hpp"
 #include "xeus-python/xutils.hpp"
+#include "xeus-python/xaserver.hpp"
 
 namespace py = pybind11;
-
 
 int main(int argc, char* argv[])
 {
@@ -111,6 +112,10 @@ int main(int argc, char* argv[])
         std::cerr << "Error:" << status.err_msg << std::endl;
     }
 
+    // Instantiating the Python interpreter
+    py::scoped_interpreter guard{};
+    py::gil_scoped_acquire acquire;
+
     // Setting argv
     wchar_t** argw = new wchar_t*[size_t(argc)];
     for(auto i = 0; i < argc; ++i)
@@ -130,10 +135,11 @@ int main(int argc, char* argv[])
     }
     delete[] argw;
 
-    // Instantiating the Python interpreter
-    py::scoped_interpreter guard;
 
     std::unique_ptr<xeus::xcontext> context = xeus::make_zmq_context();
+
+    // we want to use **the same global dict everywhere**
+    py::dict globals = py::globals();    
 
     // Instantiating the xeus xinterpreter
     bool raw_mode = xpyt::extract_option("-r", "--raw", argc, argv);
@@ -141,11 +147,11 @@ int main(int argc, char* argv[])
     interpreter_ptr interpreter;
     if (raw_mode)
     {
-        interpreter = interpreter_ptr(new xpyt::raw_interpreter());
+        interpreter = interpreter_ptr(new xpyt::raw_interpreter(globals));
     }
     else
     {
-        interpreter = interpreter_ptr(new xpyt::interpreter());
+        interpreter = interpreter_ptr(new xpyt::interpreter(globals));
     }
 
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
@@ -163,6 +169,24 @@ int main(int argc, char* argv[])
     nl::json debugger_config;
     debugger_config["python"] = executable;
 
+
+    // Factory to create the debugger with the global dict
+    auto make_the_debugger = [globals](
+                            xeus::xcontext& context,
+                            const xeus::xkernel_configuration& config,
+                            const std::string& user_name,
+                            const std::string& session_id,
+                            const nl::json& debugger_config) -> std::unique_ptr<xeus::xdebugger>
+    {
+        return xpyt::make_python_debugger(
+            globals,
+            context,
+            config,
+            user_name,
+            session_id,
+            debugger_config);
+    };
+        
     if (!connection_filename.empty())
     {
         xeus::xconfiguration config = xeus::load_configuration(connection_filename);
@@ -171,11 +195,11 @@ int main(int argc, char* argv[])
                              xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main,
+                             xpyt::make_async_server_factory(globals),
                              std::move(hist),
                              xeus::make_console_logger(xeus::xlogger::msg_type,
                                                        xeus::make_file_logger(xeus::xlogger::content, "xeus.log")),
-                             xpyt::make_python_debugger,
+                            make_the_debugger,
                              debugger_config);
 
         std::clog <<
@@ -183,8 +207,10 @@ int main(int argc, char* argv[])
             "If you want to connect to this kernel from an other client, you can use"
             " the " + connection_filename + " file."
             << std::endl;
-
+            
+        std::cout << "Starting kernel..." << std::endl;
         kernel.start();
+        std::cout << "Kernel stopped." << std::endl;
     }
     else
     {
@@ -192,10 +218,10 @@ int main(int argc, char* argv[])
         xeus::xkernel kernel(xeus::get_user_name(),
                              std::move(context),
                              std::move(interpreter),
-                             xeus::make_xserver_shell_main,
+                             xpyt::make_async_server_factory(globals),
                              std::move(hist),
                              nullptr,
-                             xpyt::make_python_debugger,
+                             make_the_debugger,
                              debugger_config);
 
         std::cout << "Getting config" << std::endl;

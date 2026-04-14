@@ -47,6 +47,11 @@ jobs:
 
           set -eux
 
+
+          URL=https://github.com/DerThorsten/xeus-python-shell/archive/refs/heads/akernel.zip 
+          curl -L $URL -o xeus-python-shell-akernel.zip
+          unzip xeus-python-shell-akernel.zip
+
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
 
@@ -63,10 +68,12 @@ jobs:
       - name: Jupyter Lite integration
         shell: bash -l {0}
         run: |
+          THIS_DIR=$(pwd)
           jupyter lite build \
               --XeusAddon.prefix=${{ env.PREFIX }} \
               --contents notebooks/ \
-              --output-dir dist
+              --output-dir dist 
+
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

@@ -12,6 +12,7 @@
 #define XPYT_DEBUGPY_CLIENT_HPP
 
 #include "xeus-zmq/xdap_tcp_client.hpp"
+#include "xeus/xeus_context.hpp"
 
 namespace xpyt
 {

@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <filesystem>
 
 #include "pybind11/pybind11.h"
 
@@ -44,6 +45,7 @@ namespace xpyt
 #elif defined(XEUS_PYTHONHOME_ABSPATH)
             static const std::string pythonhome = XPYT_STRINGIFY(XEUS_PYTHONHOME_ABSPATH);
 #else
+            using namespace std::filesystem;
             static const std::string pythonhome = xeus::prefix_path();
 #endif
             return pythonhome;

@@ -38,7 +38,9 @@ namespace xpyt
 
         using base_type = xeus::xdebugger_base;
 
-        debugger(xeus::xcontext& context,
+        debugger(
+                py::dict globals,
+                xeus::xcontext& context,
                  const xeus::xkernel_configuration& config,
                  const std::string& user_name,
                  const std::string& session_id,
@@ -63,6 +65,9 @@ namespace xpyt
         xeus::xdebugger_info get_debugger_info() const override;
         std::string get_cell_temporary_file(const std::string& code) const override;
 
+        
+        py::dict m_global_dict;
+
         std::unique_ptr<xdebugpy_client> p_debugpy_client;
         std::string m_debugpy_host;
         std::string m_debugpy_port;
@@ -72,8 +77,10 @@ namespace xpyt
         bool m_copy_to_globals_available;
     };
 
-    XEUS_PYTHON_API
-    std::unique_ptr<xeus::xdebugger> make_python_debugger(xeus::xcontext& context,
+
+    XEUS_PYTHON_API XPYT_FORCE_PYBIND11_EXPORT
+    std::unique_ptr<xeus::xdebugger> make_python_debugger(py::dict globals,
+                                                          xeus::xcontext& context,
                                                           const xeus::xkernel_configuration& config,
                                                           const std::string& user_name,
                                                           const std::string& session_id,

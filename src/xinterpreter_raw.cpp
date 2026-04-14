@@ -45,14 +45,19 @@ using namespace pybind11::literals;
 namespace xpyt
 {
 
-    raw_interpreter::raw_interpreter(bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
-        :m_redirect_display_enabled{ redirect_display_enabled }
+    raw_interpreter::raw_interpreter(
+        py::dict globals,
+        bool redirect_output_enabled /*=true*/, bool redirect_display_enabled /*=true*/)
+        
+        : m_redirect_display_enabled{ redirect_display_enabled },
+         m_global_dict{globals}
     {
         xeus::register_interpreter(this);
         if (redirect_output_enabled)
         {
             redirect_output();
         }
+        m_release_gil_at_startup = false;
     }
 
     raw_interpreter::~raw_interpreter()
@@ -85,8 +90,8 @@ namespace xpyt
         }
 
         // Expose display functions to Python
-        py::globals()["display"] = display_module.attr("display");
-        py::globals()["update_display"] = display_module.attr("update_display");
+       m_global_dict["display"] = display_module.attr("display");
+       m_global_dict["update_display"] = display_module.attr("update_display");
         // Monkey patching "import IPython.core.display"
         sys.attr("modules")["IPython.core.display"] = display_module;
 
@@ -98,13 +103,12 @@ namespace xpyt
         sys.attr("modules")["IPython.core.getipython"] = kernel_module;
 
         // Add get_ipython to global namespace
-        py::globals()["get_ipython"] = kernel_module.attr("get_ipython");
+        m_global_dict["get_ipython"] = kernel_module.attr("get_ipython");
         kernel_module.attr("get_ipython")();
 
-        py::globals()["_i"] = "";
-        py::globals()["_ii"] = "";
-        py::globals()["_iii"] = "";
-
+        m_global_dict["_i"] = "";
+        m_global_dict["_ii"] = "";
+        m_global_dict["_iii"] = "";
         py::module context_module = get_request_context_module();
     }
 
@@ -146,6 +150,7 @@ namespace xpyt
         xeus::execute_request_config config,
         nl::json /*user_expressions*/)
     {
+        std::cout<<"execute_request_impl()"<<std::endl;
         py::gil_scoped_acquire acquire;
         py::str code_copy;
         // Scope guard performing the temporary monkey patching of input and
@@ -187,14 +192,14 @@ namespace xpyt
                     m_displayhook.attr("set_execution_count")(execution_count);
                 }
 
-                exec(compiled_code);
-                exec(compiled_interactive_code);
+                exec(compiled_code, m_global_dict);
+                exec(compiled_interactive_code, m_global_dict   );
             }
             else
             {
                 splinter_cell guard;
                 py::object compiled_code = builtins.attr("compile")(code_ast, filename, "exec");
-                exec(compiled_code);
+                exec(compiled_code, m_global_dict);
             }
 
         }
@@ -220,9 +225,9 @@ namespace xpyt
         }
 
         // Cache inputs
-        py::globals()["_iii"] = py::globals()["_ii"];
-        py::globals()["_ii"] = py::globals()["_i"];
-        py::globals()["_i"] = code;
+        m_global_dict["_iii"] = m_global_dict["_ii"];
+        m_global_dict["_ii"] = m_global_dict["_i"];
+        m_global_dict["_i"] = code;
 
         cb(xeus::create_successful_reply(nl::json::array(), nl::json::object()));
     }
@@ -235,7 +240,7 @@ namespace xpyt
         std::vector<std::string> matches;
         int cursor_start = cursor_pos;
 
-        py::list completions = get_completions(code, cursor_pos);
+        py::list completions = get_completions(code, cursor_pos, m_global_dict);
 
         if (py::len(completions) != 0)
         {
@@ -258,7 +263,7 @@ namespace xpyt
         nl::json kernel_res;
         nl::json pub_data;
 
-        std::string docstring = formatted_docstring(code, cursor_pos);
+        std::string docstring = formatted_docstring(code, cursor_pos, m_global_dict);
 
         bool found = false;
         if (!docstring.empty())
@@ -277,7 +282,6 @@ namespace xpyt
 
     nl::json raw_interpreter::kernel_info_request_impl()
     {
-
         /* The jupyter-console banner for xeus-python is the following:
           __  _____ _   _ ___
           \ \/ / _ \ | | / __|
@@ -342,14 +346,32 @@ namespace xpyt
         context_module.attr("set_request_context")(context);
     }
 
+    namespace
+    {
+        xeus::xrequest_context empty_request_context{};     
+    }
+
     const xeus::xrequest_context& raw_interpreter::get_request_context() const noexcept
     {
         py::gil_scoped_acquire acquire;
         py::module context_module = get_request_context_module();
-        py::object res = context_module.attr("get_request_context")();
-        return *(res.cast<xeus::xrequest_context*>());
+        // When the debugger is started, it send some python code to execute, that triggers
+        // a call to publish_stream, and ultimately to this function. However:
+        // - we are out of the handling of an execute_request, therefore set_request_context
+        // has not been called
+        // - we cannot set it from another thread (the context of the context variable would
+        // be different)
+        // Therefore, we have to catch the exception thrown when the context variable is empty.
+        try
+        {
+            py::object res = context_module.attr("get_request_context")();
+            return *(res.cast<xeus::xrequest_context*>());
+        }
+        catch (py::error_already_set& e)
+        {
+            return empty_request_context;
+        }
     }
-
     void raw_interpreter::redirect_output()
     {
         py::module sys = py::module::import("sys");

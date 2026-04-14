@@ -10,8 +10,8 @@
 
 import unittest
 import jupyter_kernel_test
-
 from jupyter_client.manager import start_new_kernel
+import textwrap
 
 class XeusPythonTests(jupyter_kernel_test.KernelTests):
 
@@ -48,6 +48,32 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
     def test_xeus_python_stderr(self):
         reply, output_msgs = self.execute_helper(code='a = []; a.push_back(3)')
         self.assertEqual(output_msgs[0]['msg_type'], 'error')
+    
+    def test_toplevel_await(self):
+        code =  textwrap.dedent(R"""
+        import asyncio
+        async def f():
+            await asyncio.sleep(0.25)
+            print("World")
+        print("Hello")
+        await f()
+        print("!")
+        """)
+        reply, output_msgs = self.execute_helper(code=code)
+        self.assertEqual(reply['content']['status'], 'ok')
+        import json
+        print(json.dumps(output_msgs, indent=2, default=str))
+
+        def checkMsg(msg, text):
+            self.assertEqual(msg['msg_type'], 'stream')
+            self.assertEqual(msg['content']['name'], 'stdout')
+            self.assertEqual(msg['content']['text'], text)
+
+        checkMsg(output_msgs[0], 'Hello')
+        checkMsg(output_msgs[1], '\n')  # The newline after "Hello"
+        checkMsg(output_msgs[2], 'World')
+        checkMsg(output_msgs[3], '\n')  # The newline after "World"
+        checkMsg(output_msgs[4], '!')
 
 
 if __name__ == '__main__':

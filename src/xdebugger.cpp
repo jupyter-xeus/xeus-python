@@ -20,8 +20,10 @@
 
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
+#include "pybind11/embed.h"
 
 #include "xeus/xinterpreter.hpp"
+#include "xeus/xeus_context.hpp"
 #include "xeus/xsystem.hpp"
 #include "xeus-zmq/xmiddleware.hpp"
 
@@ -38,12 +40,14 @@ using namespace std::placeholders;
 
 namespace xpyt
 {
-    debugger::debugger(xeus::xcontext& context,
+    debugger::debugger(py::dict globals,
+                        xeus::xcontext& context,
                        const xeus::xkernel_configuration& config,
                        const std::string& user_name,
                        const std::string& session_id,
                        const nl::json& debugger_config)
         : xdebugger_base(context)
+        , m_global_dict{globals}
         , p_debugpy_client(new xdebugpy_client(context,
                                                config,
                                                xeus::get_socket_linger(),
@@ -144,7 +148,7 @@ namespace xpyt
         }
 
         py::gil_scoped_acquire acquire;
-        py::object variables = py::globals();
+        py::object variables = m_global_dict;
         py::object repr_data = variables[py::str(var_repr_data)];
         py::object repr_metadata = variables[py::str(var_repr_metadata)];
         nl::json body = {
@@ -254,6 +258,7 @@ namespace xpyt
         if (std::getenv("XEUS_LOG") != nullptr)
         {
             std::ofstream out("xeus.log", std::ios_base::app);
+            //auto& out = std::cout;
             out << "===== DEBUGGER CONFIG =====" << std::endl;
             out << m_debugger_config.dump() << std::endl;
         }
@@ -288,7 +293,7 @@ namespace xpyt
             
             // Get debugpy version
             std::string expression = "debugpy.__version__";
-            std::string version = (eval(py::str(expression))).cast<std::string>();
+            std::string version = eval(py::str(expression), m_global_dict).cast<std::string>();
 
             // Format the version to match [0-9]+(\s[0-9]+)*
             size_t pos = version.find_first_of("abrc");
@@ -361,13 +366,15 @@ namespace xpyt
         return get_cell_tmp_file(code);
     }
 
-    std::unique_ptr<xeus::xdebugger> make_python_debugger(xeus::xcontext& context,
+    std::unique_ptr<xeus::xdebugger> make_python_debugger(
+                                                         py::dict globals,   
+                                                          xeus::xcontext& context,
                                                           const xeus::xkernel_configuration& config,
                                                           const std::string& user_name,
                                                           const std::string& session_id,
                                                           const nl::json& debugger_config)
     {
-        return std::unique_ptr<xeus::xdebugger>(new debugger(context,
+        return std::unique_ptr<xeus::xdebugger>(new debugger(globals,context,
                                                              config, user_name, session_id, debugger_config));
     }
 
