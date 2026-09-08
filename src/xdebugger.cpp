@@ -212,9 +212,30 @@ namespace xpyt
 
         std::string src_var_name = message["arguments"]["srcVariableName"].get<std::string>();
         std::string dst_var_name = message["arguments"]["dstVariableName"].get<std::string>();
-        int src_frame_id = message["arguments"]["srcFrameId"].get<int>();
+        bool valid = false;
+        {
+            py::gil_scoped_acquire acquire;
+            py::str py_src_var_name = py::str(src_var_name);
+            py::str py_dst_var_name = py::str(dst_var_name);
+            bool valid_src_name = PyUnicode_IsIdentifier(py_src_var_name.ptr()) == 1;
+            bool valid_dst_name = PyUnicode_IsIdentifier(py_dst_var_name.ptr()) == 1;
+            valid = valid_src_name && valid_dst_name;
+        }
+
+        if (!valid)
+        {
+            nl::json reply = {
+                {"type", "response"},
+                {"request_seq", message["seq"]},
+                {"success", false},
+                {"command", message["command"]},
+                {"message", "dstVariableName and srcVariableName must be valid identifiers"}
+            };
+            return reply;
+        }
 
         // It basically runs a setExpression in the globals dictionary of Python.
+        int src_frame_id = message["arguments"]["srcFrameId"].get<int>();
         int seq = message["seq"].get<int>();
         std::string expression = "globals()['" + dst_var_name + "']";
         nl::json request = {
