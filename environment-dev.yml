@@ -12,9 +12,7 @@ dependencies:
   - nlohmann_json=3.12.0
   - pybind11>=2.6.1,<3.0
   - pybind11_json>=0.2.6,<0.3
-  # The debugger is not available with python 3.13 because
-  # of a spurious bug in debugpy
-  - python <3.13
+  - python
   - pip
   - xeus-python-shell>=0.8.0,<0.9
   - debugpy>=1.6.5
