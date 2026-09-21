@@ -405,7 +405,6 @@ if (EMSCRIPTEN)
 
     add_executable(xpython ${XPYTHON_WASM_SRC})
     target_link_libraries(xpython PRIVATE  pybind11::embed)
-    target_compile_options(xpython PRIVATE "SHELL: -s MAXIMUM_MEMORY=${MAX_MEM}")
 
     xpyt_set_common_options(xpython)
     target_compile_options(xpython PRIVATE -fPIC)
