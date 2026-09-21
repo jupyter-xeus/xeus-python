@@ -402,20 +402,9 @@ endif()
 # ============
 
 if (EMSCRIPTEN)
-    # TODO MAKE BETTER
-    SET(PYTHON_UTIL_LIBS
-        ${CMAKE_INSTALL_PREFIX}/lib/libbz2.a
-        ${CMAKE_INSTALL_PREFIX}/lib/libz.a
-        ${CMAKE_INSTALL_PREFIX}/lib/libsqlite3.a
-        ${CMAKE_INSTALL_PREFIX}/lib/libffi.a
-        ${CMAKE_INSTALL_PREFIX}/lib/libzstd.a
-        ${CMAKE_INSTALL_PREFIX}/lib/libssl.a
-        ${CMAKE_INSTALL_PREFIX}/lib/libcrypto.a
-        ${CMAKE_INSTALL_PREFIX}/lib/liblzma.a
-    )
 
     add_executable(xpython ${XPYTHON_WASM_SRC})
-    target_link_libraries(xpython PRIVATE ${PYTHON_UTIL_LIBS} pybind11::embed)
+    target_link_libraries(xpython PRIVATE  pybind11::embed)
 
     xpyt_set_common_options(xpython)
     target_compile_options(xpython PRIVATE -fPIC)
@@ -431,7 +420,6 @@ if (EMSCRIPTEN)
         PUBLIC "SHELL: --post-js  ${CMAKE_CURRENT_BINARY_DIR}/post.js"
         PUBLIC "SHELL: --pre-js pre.js"
         PUBLIC "SHELL: -s MAIN_MODULE=1"
-        PUBLIC "SHELL: -s WASM_BIGINT"
         PUBLIC "-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['\$Browser', '\$ERRNO_CODES']\" "
     )
 endif()
