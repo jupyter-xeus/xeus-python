@@ -47,21 +47,25 @@ jobs:
 
           set -eux
 
-
-          URL=https://github.com/DerThorsten/xeus-python-shell/archive/refs/heads/akernel.zip 
-          curl -L $URL -o xeus-python-shell-akernel.zip
-          unzip xeus-python-shell-akernel.zip
-
           export PREFIX=$MAMBA_ROOT_PREFIX/envs/xeus-python-wasm-host
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
-
+          export PY_VER=3.13
           emcmake cmake . \
             -DCMAKE_PREFIX_PATH=$PREFIX \
             -DCMAKE_INSTALL_PREFIX=$PREFIX \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
             -DXPYT_EMSCRIPTEN_WASM_BUILD=ON \
-            -DCMAKE_VERBOSE_MAKEFILE=ON
+            -DCMAKE_VERBOSE_MAKEFILE=ON \
+            -DPYTHON_LIBRARIES="$PREFIX/lib/libbz2.a;\
+              $PREFIX/lib/libz.a;\
+              $PREFIX/lib/libsqlite3.a;\
+              $PREFIX/lib/libffi.a;\
+              $PREFIX/lib/libzstd.a;\
+              $PREFIX/lib/libssl.a;\
+              $PREFIX/lib/libcrypto.a;\
+              $PREFIX/lib/liblzma.a;\
+              $PREFIX/lib/libpython$PY_VER.a;"
 
           emmake make -j${{ env.ncpus }} install
 
