@@ -87,6 +87,7 @@ namespace xpyt
 
         m_ipython_shell_app.attr("initialize")(use_jedi_for_completion());
         m_ipython_shell = m_ipython_shell_app.attr("shell");
+        m_ipython_shell.attr("last_error") = py::none();
 
         // Setting kernel property owning the CommManager and get_parent
         m_ipython_shell.attr("kernel") = kernel_module.attr("XKernel")();
@@ -126,8 +127,10 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
 
-        // Reset traceback
-        m_ipython_shell.attr("last_error") = py::none();
+        // Note: last_error is not reset here but consumed in when_done_callback.
+        // Cells run asynchronously: when several execute requests arrive at once
+        // ("Run All"), resetting here would clear the error of a cell that is
+        // still running.
 
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
@@ -152,6 +155,7 @@ namespace xpyt
             else
             {
                 py::list pyerror = this->m_ipython_shell.attr("last_error");
+                this->m_ipython_shell.attr("last_error") = py::none();
                 xerror error = extract_error(pyerror);
 
                 if (!config.silent)
