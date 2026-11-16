@@ -99,6 +99,44 @@ class XeusPythonTests(jupyter_kernel_test.KernelTests):
         status = self.run_all_helper(['1 / 0', 'print("foo")'])
         self.assertEqual(status, ['error', 'ok'])
 
+    def test_requests_while_replies_are_sent(self):
+        """Requests arriving while replies are sent must not get stuck.
+
+        ZMQ_FD is edge-triggered: zmq only signals it when the incoming queue
+        goes from empty to non-empty. The async runner (xasync_runner.cpp)
+        reads the shell socket when the fd is signaled, but execute replies
+        are sent later, from the cell's done callback. Such a send can consume
+        the signal of requests that arrived meanwhile: they were never read,
+        the queue never became empty again, the fd was never signaled again,
+        and the kernel hung (not even kernel_info was answered).
+
+        Many short async cells sent at random moments make requests arrive
+        while replies are being sent. Before the fix this hung reliably after
+        a few dozen cells.
+        """
+        import random
+        import time
+        self.flush_channels()
+        self.kc.execute_interactive("import asyncio", timeout=30)
+        rng = random.Random(1)
+        ids = []
+        for i in range(100):
+            delay = rng.choice([0, 0.0005, 0.001, 0.002])
+            ids.append(self.kc.execute(f"await asyncio.sleep({delay})\n{i}"))
+            time.sleep(rng.uniform(0, 0.003))
+        status = {}
+        while len(status) < len(ids):
+            # a stuck kernel sends nothing more: get_shell_msg raises Empty
+            msg = self.kc.get_shell_msg(timeout=10)
+            status[msg['parent_header']['msg_id']] = msg['content']['status']
+        self.assertEqual([status[i] for i in ids], ['ok'] * len(ids))
+        # consume the iopub messages (the kernel is shared with other tests)
+        idle = set()
+        while idle != set(ids):
+            msg = self.kc.get_iopub_msg(timeout=10)
+            if msg['msg_type'] == 'status' and msg['content']['execution_state'] == 'idle':
+                idle.add(msg['parent_header'].get('msg_id'))
+
     def test_run_all_keeps_error_request_while_running(self):
         """The error of a cell must not be lost when the next execute request
         is dispatched after the cell raised but before its reply is sent.

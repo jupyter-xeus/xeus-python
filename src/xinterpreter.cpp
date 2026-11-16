@@ -164,6 +164,16 @@ namespace xpyt
                 }
                 cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
             }
+
+            // The reply is sent outside of the shell runner's read callback.
+            // Sending can swallow the wake-up (ZMQ_FD is edge-triggered) of
+            // requests that arrived meanwhile, they would never be read: let
+            // the runner re-check its socket (see xasync_runner.cpp; the hook
+            // only exists with the async runner of the native kernel).
+            if (this->m_global_dict.contains("_xpyt_shell_poll"))
+            {
+                this->m_global_dict["_xpyt_shell_poll"]();
+            }
         });
 
         try
