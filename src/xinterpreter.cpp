@@ -337,8 +337,25 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
 
-        // Reset traceback
-        m_ipython_shell.attr("last_error") = py::none();
+        // Internal requests (e.g. from the debugger) can run while a cell is
+        // running: keep that cell's last_error, and do not leave this request's
+        // error behind, it would be reported as the error of the next cell
+        // (last_error is consumed by the done callback of execute_request_impl).
+        struct last_error_guard
+        {
+            py::object shell;
+            py::object saved;
+            explicit last_error_guard(py::object s)
+                : shell(s), saved(s.attr("last_error"))
+            {
+                shell.attr("last_error") = py::none();
+            }
+            ~last_error_guard()
+            {
+                try { shell.attr("last_error") = saved; } catch (...) {}
+            }
+        } error_guard(m_ipython_shell);
+
         try
         {
             exec(py::str(code), m_global_dict);
