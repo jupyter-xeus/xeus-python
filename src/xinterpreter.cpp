@@ -87,6 +87,7 @@ namespace xpyt
 
         m_ipython_shell_app.attr("initialize")(use_jedi_for_completion());
         m_ipython_shell = m_ipython_shell_app.attr("shell");
+        m_ipython_shell.attr("last_error") = py::none();
 
         // Setting kernel property owning the CommManager and get_parent
         m_ipython_shell.attr("kernel") = kernel_module.attr("XKernel")();
@@ -126,8 +127,10 @@ namespace xpyt
     {
         py::gil_scoped_acquire acquire;
 
-        // Reset traceback
-        m_ipython_shell.attr("last_error") = py::none();
+        // Note: last_error is not reset here but consumed in when_done_callback.
+        // Cells run asynchronously: when several execute requests arrive at once
+        // ("Run All"), resetting here would clear the error of a cell that is
+        // still running.
 
         // Scope guard performing the temporary monkey patching of input and
         // getpass with a function sending input_request messages.
@@ -152,6 +155,7 @@ namespace xpyt
             else
             {
                 py::list pyerror = this->m_ipython_shell.attr("last_error");
+                this->m_ipython_shell.attr("last_error") = py::none();
                 xerror error = extract_error(pyerror);
 
                 if (!config.silent)
@@ -159,6 +163,16 @@ namespace xpyt
                     publish_execution_error(error.m_ename, error.m_evalue, error.m_traceback);
                 }
                 cb(xeus::create_error_reply(error.m_ename, error.m_evalue, error.m_traceback));
+            }
+
+            // The reply is sent outside of the shell runner's read callback.
+            // Sending can swallow the wake-up (ZMQ_FD is edge-triggered) of
+            // requests that arrived meanwhile, they would never be read: let
+            // the runner re-check its socket (see xasync_runner.cpp; the hook
+            // only exists with the async runner of the native kernel).
+            if (this->m_global_dict.contains("_xpyt_shell_poll"))
+            {
+                this->m_global_dict["_xpyt_shell_poll"]();
             }
         });
 
@@ -333,8 +347,25 @@ namespace xpyt
         py::gil_scoped_acquire acquire;
         std::string code = content.value("code", "");
 
-        // Reset traceback
-        m_ipython_shell.attr("last_error") = py::none();
+        // Internal requests (e.g. from the debugger) can run while a cell is
+        // running: keep that cell's last_error, and do not leave this request's
+        // error behind, it would be reported as the error of the next cell
+        // (last_error is consumed by the done callback of execute_request_impl).
+        struct last_error_guard
+        {
+            py::object shell;
+            py::object saved;
+            explicit last_error_guard(py::object s)
+                : shell(s), saved(s.attr("last_error"))
+            {
+                shell.attr("last_error") = py::none();
+            }
+            ~last_error_guard()
+            {
+                try { shell.attr("last_error") = saved; } catch (...) {}
+            }
+        } error_guard(m_ipython_shell);
+
         try
         {
             exec(py::str(code), m_global_dict);

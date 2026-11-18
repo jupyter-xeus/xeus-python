@@ -81,6 +81,20 @@ namespace xpyt
             asyncio.set_event_loop(loop)
             loop.add_reader(fd_shell, shell_callback)
             loop.add_reader(fd_controller, controller_callback)
+
+            # ZMQ_FD is edge-triggered: zmq only signals it when the incoming
+            # queue goes from empty to non-empty. Execute replies are sent from
+            # the cell's done callback, outside of shell_callback; such a send
+            # can consume the signal of requests that arrived meanwhile. They
+            # are never read (and since the queue never becomes empty again,
+            # the fd is never signaled again: the kernel hangs). The done
+            # callback (xinterpreter.cpp) calls this hook after sending the
+            # reply: drain the shell socket on the next loop iteration
+            # (shell_callback reads non-blocking until the socket is empty).
+            global _xpyt_shell_poll
+            def _xpyt_shell_poll():
+                loop.call_soon(shell_callback)
+
             loop.run_forever()
     
         def run_main(fd_shell, fd_controller, shell_callback, controller_callback):
@@ -131,6 +145,8 @@ namespace xpyt
                 import sys
                 
                 def stop_loop(fd_shell, fd_controller):
+                    global _xpyt_shell_poll
+                    _xpyt_shell_poll = None
                     loop = asyncio.get_event_loop()
                     loop.remove_reader(make_fd(fd_shell))
                     loop.remove_reader(make_fd(fd_controller))

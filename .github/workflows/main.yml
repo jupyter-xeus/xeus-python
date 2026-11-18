@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, ubuntu-24.04, macos-14, macos-15]
+        os: [ubuntu-22.04, ubuntu-24.04, macos-15, macos-26]
         build_type: [static_build, shared_build]
 
     steps:
@@ -32,7 +32,6 @@ jobs:
         uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-dev.yml
-      
 
       - name: Make build directory
         run: mkdir build
