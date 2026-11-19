@@ -37,6 +37,14 @@ namespace xpyt
 
         py::gil_scoped_acquire acquire;
         py::module::import("pyjs");
+
+        // Import getpass now, before JupyterLite mounts the drive as the cwd.
+        // input_redirection imports it on the first execute_request. At that point
+        // '' (the cwd, i.e. the drive) is first on sys.path, and getpass' failed
+        // "import termios" / "import msvcrt" lookups go through the drive, where
+        // every stat is a round-trip to the main thread (~90 ms on the first cell
+        // on a mid-range Android tablet).
+        py::module::import("getpass");
     }
 
     bool wasm_interpreter::use_jedi_for_completion() const
