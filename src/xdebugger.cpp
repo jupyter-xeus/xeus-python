@@ -40,6 +40,28 @@ using namespace std::placeholders;
 
 namespace xpyt
 {
+    namespace
+    {
+        // The debugger requests are processed in the control thread, which is
+        // a native thread unknown to debugpy. When such a thread runs Python
+        // code, pydevd handles it as a regular user thread (a threading._DummyThread)
+        // and suspends it with the other threads when a breakpoint is hit. If this
+        // happens while a request is being processed (e.g. inspectVariables sent by
+        // the frontend when a cell starts executing), the control thread hangs and no
+        // further debug request is answered. Since Python 3.13, the dummy thread (and
+        // its pydevd state) is not destroyed between two requests, making this more
+        // likely to happen.
+        //
+        // Marking the thread as a pydevd daemon thread prevents pydevd from
+        // tracing and suspending it. This must be called with the GIL acquired.
+        void disable_debugpy_tracing_for_current_thread()
+        {
+            py::object thread = py::module::import("threading").attr("current_thread")();
+            thread.attr("is_pydev_daemon_thread") = true;
+            thread.attr("pydev_do_not_trace") = true;
+        }
+    }
+
     debugger::debugger(py::dict globals,
                         xeus::xcontext& context,
                        const xeus::xkernel_configuration& config,
@@ -80,6 +102,7 @@ namespace xpyt
     nl::json debugger::inspect_variables_request(const nl::json& message)
     {
         py::gil_scoped_acquire acquire;
+        disable_debugpy_tracing_for_current_thread();
         py::object pymessage = message;
         nl::json reply = m_pydebugger.attr("inspect_variables")(pymessage);
         return reply;
@@ -95,8 +118,13 @@ namespace xpyt
         };
 
         std::string var_name = message["arguments"]["variableName"].get<std::string>();
-        py::str py_var_name = py::str(var_name);
-        bool valid_name = PyUnicode_IsIdentifier(py_var_name.ptr()) == 1;
+        bool valid_name = false;
+        {
+            py::gil_scoped_acquire acquire;
+            disable_debugpy_tracing_for_current_thread();
+            py::str py_var_name = py::str(var_name);
+            valid_name = PyUnicode_IsIdentifier(py_var_name.ptr()) == 1;
+        }
         if (!valid_name)
         {
             reply["body"] = {
@@ -120,6 +148,7 @@ namespace xpyt
             std::string code = "from IPython import get_ipython;";
             code += var_repr_data + ',' + var_repr_metadata + "= get_ipython().display_formatter.format(" + var_name + ")";
             py::gil_scoped_acquire acquire;
+            disable_debugpy_tracing_for_current_thread();
             exec(py::str(code));
         }
         else
@@ -143,11 +172,13 @@ namespace xpyt
             std::string result = request_reply["body"]["result"];
 
             py::gil_scoped_acquire acquire;
+            disable_debugpy_tracing_for_current_thread();
             std::string exec_code = var_repr_data + ',' + var_repr_metadata + "= eval(str(" + result + "))";
             exec(py::str(exec_code));
         }
 
         py::gil_scoped_acquire acquire;
+        disable_debugpy_tracing_for_current_thread();
         py::object variables = m_global_dict;
         py::object repr_data = variables[py::str(var_repr_data)];
         py::object repr_metadata = variables[py::str(var_repr_metadata)];
@@ -215,6 +246,7 @@ namespace xpyt
         bool valid = false;
         {
             py::gil_scoped_acquire acquire;
+            disable_debugpy_tracing_for_current_thread();
             py::str py_src_var_name = py::str(src_var_name);
             py::str py_dst_var_name = py::str(dst_var_name);
             bool valid_src_name = PyUnicode_IsIdentifier(py_src_var_name.ptr()) == 1;
@@ -256,6 +288,7 @@ namespace xpyt
         if (base_type::get_stopped_threads().empty())
         {
             py::gil_scoped_acquire acquire;
+            disable_debugpy_tracing_for_current_thread();
             py::object pymessage = message;
             nl::json reply = m_pydebugger.attr("variables")(pymessage);
             return reply;
@@ -264,6 +297,7 @@ namespace xpyt
         {
             nl::json rep = base_type::variables_request_impl(message);
             py::gil_scoped_acquire acquire;
+            disable_debugpy_tracing_for_current_thread();
             py::object pymessage = message;
             py::object pyvariables = rep["body"]["variables"];
             nl::json reply = m_pydebugger.attr("build_variables_response")(pymessage, pyvariables);
@@ -309,6 +343,7 @@ namespace xpyt
         else
         {
             py::gil_scoped_acquire acquire;
+            disable_debugpy_tracing_for_current_thread();
             py::module xeus_python_shell = py::module::import("xeus_python_shell.debugger");
             m_pydebugger = xeus_python_shell.attr("XDebugger")();
             
@@ -402,6 +437,7 @@ namespace xpyt
     nl::json debugger::modules(const nl::json& message)
     {
         py::gil_scoped_acquire acquire;
+        disable_debugpy_tracing_for_current_thread();
         py::module sys = py::module::import("sys");
         py::list modules = sys.attr("modules").attr("values")();
 
