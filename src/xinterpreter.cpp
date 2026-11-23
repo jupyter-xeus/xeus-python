@@ -298,12 +298,8 @@ namespace xpyt
             {"url", "https://xeus-python.readthedocs.io"}
         });
 
-        bool has_debugger = (PY_MAJOR_VERSION != 3) || (PY_MAJOR_VERSION != 13);
         std::vector<std::string> features{};
-        if (has_debugger)
-        {
-            features.push_back("debugger");
-        }
+        features.push_back("debugger");
 
         nl::json rep = xeus::create_info_reply(
             "xeus-python",      // implementation

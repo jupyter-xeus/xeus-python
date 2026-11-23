@@ -7,5 +7,5 @@
   ],
   "language": "python",
   "kernel_protocol_version": "5.6.0",
-  "metadata": { "debugger": @XPYTHON_DEBUGGER_AVAILABLE@}
+  "metadata": { "debugger": true }
 }
