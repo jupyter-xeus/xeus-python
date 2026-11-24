@@ -54,7 +54,7 @@ jobs:
             -D CMAKE_PREFIX_PATH=$CONDA_PREFIX \
             -D CMAKE_INSTALL_PREFIX=$CONDA_PREFIX \
             -D CMAKE_INSTALL_LIBDIR=lib \
-            -D PYTHON_EXECUTABLE=`which python` \
+            -D Python_EXECUTABLE=`which python` \
             -D XPYT_BUILD_TESTS=ON \
             ${{ env.CMAKE_EXTRA_ARGS }}
         working-directory: build

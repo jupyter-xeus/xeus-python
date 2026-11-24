@@ -8,7 +8,7 @@
 # The full license is in the file LICENSE, distributed with this software. #
 ############################################################################
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.28)
 project(xeus-python)
 
 set(XEUS_PYTHON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -77,16 +77,13 @@ endif()
 
 set(xeus_zmq_REQUIRED_VERSION 4.0.0)
 set(xeus-lite_REQUIRED_VERSION 5.0.0)
-set(pybind11_REQUIRED_VERSION 2.6.1)
-set(pybind11_json_REQUIRED_VERSION 0.2.8)
+set(pybind11_REQUIRED_VERSION 3.0.0)
+set(pybind11_json_REQUIRED_VERSION 0.3.0)
 set(pyjs_REQUIRED_VERSION 2.0.0)
 
-find_package(Python COMPONENTS Interpreter REQUIRED)
+find_package(Python COMPONENTS Interpreter Development.Embed Development.Module REQUIRED)
 
 if (NOT TARGET pybind11::headers)
-    # Defaults to ON for cmake >= 3.18
-    # https://github.com/pybind/pybind11/blob/35ff42b56e9d34d9a944266eb25f2c899dbdfed7/CMakeLists.txt#L96
-    set(PYBIND11_FINDPYTHON OFF)
     find_package(pybind11 ${pybind11_REQUIRED_VERSION} REQUIRED)
 endif ()
 if (NOT TARGET pybind11_json)
@@ -119,13 +116,13 @@ if (NOT DEFINED XPYTHON_KERNELSPEC_PATH)
 endif ()
 
 if(EMSCRIPTEN)
-    # the variables PYTHON_VERSION_MAJOR and PYTHON_VERSION_MINOR
+    # the variables Python_VERSION_MAJOR and PYTHON_VERSION_MINOR
     # might be wrong for the EMSCRIPTEN case since it may contains
     # the versions of build-python and not the one of the host.
     FILE(GLOB WASM_PYTHON_LIBRARY  $ENV{PREFIX}/lib/libpython*.a)
     STRING(REGEX MATCH "python[0-9]+[.][0-9]+" PYTHON_VERSION_STRING ${WASM_PYTHON_LIBRARY})
-    STRING(REGEX MATCH "[0-9]+" PYTHON_VERSION_MAJOR ${PYTHON_VERSION_STRING})
-    STRING(REGEX MATCH "[0-9]+$" PYTHON_VERSION_MINOR ${PYTHON_VERSION_STRING})
+    STRING(REGEX MATCH "[0-9]+" Python_VERSION_MAJOR ${Python_VERSION_STRING})
+    STRING(REGEX MATCH "[0-9]+$" Python_VERSION_MINOR ${Python_VERSION_STRING})
 
     configure_file (
         "${CMAKE_CURRENT_SOURCE_DIR}/share/jupyter/kernels/xpython/wasm_kernel.json.in"
@@ -304,7 +301,6 @@ macro(xpyt_create_target target_name src headers linkage output_name)
 
     target_include_directories(${target_name}
                                PUBLIC
-                               ${PYTHON_INCLUDE_DIRS}
                                $<BUILD_INTERFACE:${XEUS_PYTHON_INCLUDE_DIR}>
                                $<INSTALL_INTERFACE:include>)
 
@@ -316,12 +312,9 @@ macro(xpyt_create_target target_name src headers linkage output_name)
         set(XPYT_XEUS_TARGET xeus-zmq-static)
     endif ()
 
-    target_link_libraries(${target_name} PUBLIC ${XPYT_XEUS_TARGET} PRIVATE pybind11::pybind11 pybind11_json)
-    if (WIN32 OR CYGWIN)
-        target_link_libraries(${target_name} PRIVATE ${PYTHON_LIBRARIES})
-    elseif (APPLE)
-        target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
-    endif ()
+    target_link_libraries(${target_name}
+        PUBLIC ${XPYT_XEUS_TARGET}
+        PRIVATE pybind11::pybind11 pybind11_json Python::Module)
 
     find_package(Threads) # TODO: add Threads as a dependence of xeus-static?
     target_link_libraries(${target_name} PRIVATE ${CMAKE_THREAD_LIBS_INIT})

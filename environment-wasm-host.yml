@@ -4,7 +4,7 @@ channels:
   - https://prefix.dev/conda-forge
 dependencies:
   - ipython
-  - pybind11 <3
+  - pybind11 <4
   - jedi
   - nlohmann_json
   - nlohmann_json-abi
