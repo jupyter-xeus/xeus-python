@@ -195,8 +195,8 @@ namespace xpyt
         py::object repr_data = variables[py::str(var_repr_data)];
         py::object repr_metadata = variables[py::str(var_repr_metadata)];
         nl::json body = {
-            {"data", {}},
-            {"metadata", {}}
+            {"data", nl::json::object()},
+            {"metadata", nl::json::object()}
         };
         for (const py::handle& key : repr_data)
         {

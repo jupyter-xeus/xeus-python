@@ -864,19 +864,47 @@ bool debugger_client::test_rich_inspect_variables_non_literal()
     m_client.send_on_shell("execute_request", make_execute_request(rich_inspect_non_literal_class_def));
     m_client.receive_on_shell();
 
-    std::string code = "obj = RichNonLiteral()";
-    m_client.send_on_shell("execute_request", make_execute_request(code));
-    m_client.receive_on_shell();
+    attach();
+    std::string code = "obj = RichNonLiteral()\ni = 4\nj = 2";
+    m_client.send_on_control("debug_request", make_dump_cell_request(4, code));
+    nl::json dump_res = m_client.receive_on_control();
+    std::string path = dump_res["content"]["body"]["sourcePath"].get<std::string>();
+    m_client.send_on_control("debug_request", make_breakpoint_request(4, path, 2));
+    m_client.receive_on_control();
 
-    m_client.send_on_control("debug_request", make_rich_inspect_variables_request(0, "obj"));
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
+    m_client.send_on_shell("execute_request", make_execute_request(code));
+    nl::json ev = m_client.wait_for_debug_event("stopped");
+    int seq = ev["content"]["seq"].get<int>();
+
+    m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+    ++seq;
+    nl::json stackframes = m_client.receive_on_control();
+    if (stackframes["content"]["body"]["stackFrames"].empty())
+    {
+        m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+        ++seq;
+        stackframes = m_client.receive_on_control();
+    }
+
+    int frame_id = stackframes["content"]["body"]["stackFrames"][0]["id"].get<int>();
+    m_client.send_on_control("debug_request", make_rich_inspect_variables_request(seq, "obj", frame_id));
+    ++seq;
     nl::json rep = m_client.receive_on_control();
+
+    m_client.send_on_control("debug_request", make_continue_request(seq, 1));
+    m_client.receive_on_control();
+    m_client.receive_on_shell();
 
     // The fix must not crash and must return empty dicts as a fallback
     // when ast.literal_eval cannot parse the repr string.
+    bool success = rep["content"]["success"].get<bool>();
     nl::json body = rep["content"]["body"];
-    bool data_is_object = body["data"].is_object();
-    bool metadata_is_object = body["metadata"].is_object();
-    return data_is_object && metadata_is_object;
+    bool data_empty_obj = body["data"].is_object() && body["data"].empty();
+    bool metadata_empty_obj = body["metadata"].is_object() && body["metadata"].empty();
+    return success && data_empty_obj && metadata_empty_obj;
 }
 
 bool debugger_client::test_variables()
