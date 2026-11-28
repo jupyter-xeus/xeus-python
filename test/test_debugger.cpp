@@ -408,6 +408,7 @@ public:
     bool test_debug_info();
     bool test_inspect_variables();
     bool test_rich_inspect_variables();
+    bool test_rich_inspect_variables_non_literal();
     bool test_variables();
     bool test_copy_to_globals();
     void start();
@@ -841,6 +842,69 @@ bool debugger_client::test_rich_inspect_variables()
 
     }
     return res && res2;
+}
+
+// Class whose _repr_mimebundle_ returns a value whose __repr__ is a
+// non-literal expression (e.g. "len('abc')").  Before the fix, eval()
+// would execute that expression and potentially crash or behave
+// unexpectedly.  After the fix, ast.literal_eval fails to parse it and
+// we get empty-dict fallbacks instead.
+std::string rich_inspect_non_literal_class_def = R"RICH(
+class NonLiteralRepr:
+    def __repr__(self):
+        return "len('abc')"
+
+class RichNonLiteral:
+    def _repr_mimebundle_(self, include=None, exclude=None):
+        return {"text/plain": NonLiteralRepr()}, {}
+)RICH";
+
+bool debugger_client::test_rich_inspect_variables_non_literal()
+{
+    m_client.send_on_shell("execute_request", make_execute_request(rich_inspect_non_literal_class_def));
+    m_client.receive_on_shell();
+
+    attach();
+    std::string code = "obj = RichNonLiteral()\ni = 4\nj = 2";
+    m_client.send_on_control("debug_request", make_dump_cell_request(4, code));
+    nl::json dump_res = m_client.receive_on_control();
+    std::string path = dump_res["content"]["body"]["sourcePath"].get<std::string>();
+    m_client.send_on_control("debug_request", make_breakpoint_request(4, path, 2));
+    m_client.receive_on_control();
+
+    m_client.send_on_control("debug_request", make_configuration_done_request(5));
+    m_client.receive_on_control();
+
+    m_client.send_on_shell("execute_request", make_execute_request(code));
+    nl::json ev = m_client.wait_for_debug_event("stopped");
+    int seq = ev["content"]["seq"].get<int>();
+
+    m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+    ++seq;
+    nl::json stackframes = m_client.receive_on_control();
+    if (stackframes["content"]["body"]["stackFrames"].empty())
+    {
+        m_client.send_on_control("debug_request", make_stacktrace_request(seq, 1));
+        ++seq;
+        stackframes = m_client.receive_on_control();
+    }
+
+    int frame_id = stackframes["content"]["body"]["stackFrames"][0]["id"].get<int>();
+    m_client.send_on_control("debug_request", make_rich_inspect_variables_request(seq, "obj", frame_id));
+    ++seq;
+    nl::json rep = m_client.receive_on_control();
+
+    m_client.send_on_control("debug_request", make_continue_request(seq, 1));
+    m_client.receive_on_control();
+    m_client.receive_on_shell();
+
+    // The fix must not crash and must return empty dicts as a fallback
+    // when ast.literal_eval cannot parse the repr string.
+    bool success = rep["content"]["success"].get<bool>();
+    nl::json body = rep["content"]["body"];
+    bool data_empty_obj = body["data"].is_object() && body["data"].empty();
+    bool metadata_empty_obj = body["metadata"].is_object() && body["metadata"].empty();
+    return success && data_empty_obj && metadata_empty_obj;
 }
 
 bool debugger_client::test_variables()
@@ -1516,6 +1580,23 @@ TEST_SUITE("debugger")
             }
         }
     */
+
+    TEST_CASE("rich_inspect_variables_non_literal")
+    {
+        KernelProcess xpython_process;
+        timer t;
+        auto context_ptr = xeus::make_zmq_context();
+        {
+            debugger_client deb(*context_ptr, KERNEL_JSON, "debugger_rich_inspect_variables_non_literal.log");
+            deb.start();
+            bool res = deb.test_rich_inspect_variables_non_literal();
+            deb.disconnect_debugger();
+            deb.shutdown();
+            std::this_thread::sleep_for(2s);
+            CHECK(res);
+            t.notify_done();
+        }
+    }
 
     TEST_CASE("variables")
     {

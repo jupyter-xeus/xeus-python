@@ -173,8 +173,20 @@ namespace xpyt
 
             py::gil_scoped_acquire acquire;
             disable_debugpy_tracing_for_current_thread();
-            std::string exec_code = var_repr_data + ',' + var_repr_metadata + "= eval(str(" + result + "))";
-            exec(py::str(exec_code));
+            py::object variables = m_global_dict;
+            try
+            {
+                py::module ast = py::module::import("ast");
+                py::object parsed = ast.attr("literal_eval")(py::str(result));
+                py::tuple res_tuple = parsed.cast<py::tuple>();
+                variables[py::str(var_repr_data)] = res_tuple[0];
+                variables[py::str(var_repr_metadata)] = res_tuple[1];
+            }
+            catch (const py::error_already_set&)
+            {
+                variables[py::str(var_repr_data)] = py::dict();
+                variables[py::str(var_repr_metadata)] = py::dict();
+            }
         }
 
         py::gil_scoped_acquire acquire;
@@ -183,8 +195,8 @@ namespace xpyt
         py::object repr_data = variables[py::str(var_repr_data)];
         py::object repr_metadata = variables[py::str(var_repr_metadata)];
         nl::json body = {
-            {"data", {}},
-            {"metadata", {}}
+            {"data", nl::json::object()},
+            {"metadata", nl::json::object()}
         };
         for (const py::handle& key : repr_data)
         {
